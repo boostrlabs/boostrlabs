@@ -1,0 +1,30 @@
+{
+  "version": "0.2.6",
+  "name": "BOOSTR Mother UI frontend system",
+  "updates": [
+    "public/home/index.html",
+    "public/manager/index.html",
+    "public/login/index.html",
+    "public/app/index.html",
+    "public/admin/index.html",
+    "public/partner-dashboard/index.html",
+    "public/ecosystem/index.html",
+    "public/modules/index.html",
+    "public/portfolio/index.html",
+    "public/partner/index.html",
+    "public/partner/gemese/index.html",
+    "public/partner/janko/index.html",
+    "public/partner/omgbeauty/index.html",
+    "public/_redirects",
+    "public/assets/boostr-mother/mother.css"
+  ],
+  "custom_modules_preserved": [
+    "/82store",
+    "/82ngel",
+    "/jankodiorr",
+    "/app/82ngel",
+    "/app/gemese",
+    "/audit",
+    "/portfolio/omgbeauty"
+  ]
+}
