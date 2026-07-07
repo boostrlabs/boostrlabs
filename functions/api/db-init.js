@@ -175,5 +175,10 @@ export async function onRequestOptions() {
   return json({ ok: true });
 }
 
-export const onRequestGet = initDb;
-export const onRequestPost = initDb;
+export async function onRequestGet({ request, env }) {
+  return initDb(request, env);
+}
+
+export async function onRequestPost({ request, env }) {
+  return initDb(request, env);
+}
