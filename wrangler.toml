@@ -1,0 +1,6 @@
+name = "boostrlabs"
+pages_build_output_dir = "dist"
+
+[vars]
+VITE_SITE_URL = "https://boostrlabs.pages.dev"
+VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
