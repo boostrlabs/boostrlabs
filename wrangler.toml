@@ -11,10 +11,21 @@ database_name = "boostr_labs_core"
 database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
 preview_database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
 
-# MANAGER_PIN must be set as a Cloudflare secret via wrangler
-# Set it locally: wrangler secret put MANAGER_PIN
-# Then push to Cloudflare: wrangler secret put MANAGER_PIN --env production
-# This PIN protects /manager/leads and /api/leads endpoints
+[env.production.vars]
+VITE_SITE_URL = "https://boostrlabs.pages.dev"
+VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
 
-[env.production.secrets]
-# MANAGER_PIN will be injected at runtime via wrangler secrets
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "boostr_labs_core"
+database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
+
+[env.preview.vars]
+VITE_SITE_URL = "https://boostrlabs.pages.dev"
+VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "boostr_labs_core"
+database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
+preview_database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
