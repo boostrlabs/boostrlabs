@@ -1,40 +1,15 @@
-CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  full_name TEXT,
-  phone TEXT,
-  role TEXT NOT NULL DEFAULT 'client',
-  status TEXT NOT NULL DEFAULT 'invited',
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+-- BOOSTR Labs core D1 schema v0.3.0
+-- Safe to run once on a new Cloudflare D1 database.
 
-CREATE TABLE IF NOT EXISTS businesses (
-  id TEXT PRIMARY KEY,
-  owner_user_id TEXT REFERENCES users(id),
-  business_name TEXT NOT NULL,
-  industry TEXT,
-  city TEXT,
-  state TEXT,
-  country TEXT NOT NULL DEFAULT 'US',
-  current_website_url TEXT,
-  instagram_url TEXT,
-  facebook_url TEXT,
-  tiktok_url TEXT,
-  google_business_url TEXT,
-  notes TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS leads (
   id TEXT PRIMARY KEY,
-  business_id TEXT REFERENCES businesses(id),
   source TEXT NOT NULL DEFAULT 'website',
   contact_name TEXT,
   contact_email TEXT,
   contact_phone TEXT,
-  preferred_contact_method TEXT DEFAULT 'email',
+  preferred_contact_method TEXT,
   business_name TEXT,
   industry TEXT,
   project_goal TEXT,
@@ -42,128 +17,134 @@ CREATE TABLE IF NOT EXISTS leads (
   timeline TEXT,
   current_status TEXT,
   message TEXT,
-  lead_score INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'new',
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  assigned_to TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS projects (
-  id TEXT PRIMARY KEY,
-  business_id TEXT NOT NULL REFERENCES businesses(id),
-  lead_id TEXT REFERENCES leads(id),
-  project_name TEXT,
-  project_type TEXT NOT NULL DEFAULT 'custom_os',
-  status TEXT NOT NULL DEFAULT 'discovery',
-  priority TEXT NOT NULL DEFAULT 'normal',
-  quoted_amount REAL,
-  deposit_amount REAL,
-  balance_amount REAL,
-  currency TEXT NOT NULL DEFAULT 'USD',
-  start_date TEXT,
-  due_date TEXT,
-  summary TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS project_modules (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL REFERENCES projects(id),
-  module_type TEXT NOT NULL,
-  module_name TEXT,
-  description TEXT,
-  status TEXT NOT NULL DEFAULT 'planned',
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS project_tasks (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL REFERENCES projects(id),
-  module_id TEXT REFERENCES project_modules(id),
-  assigned_to TEXT REFERENCES users(id),
-  title TEXT NOT NULL,
-  description TEXT,
-  status TEXT NOT NULL DEFAULT 'todo',
-  due_date TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS project_files (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL REFERENCES projects(id),
-  file_name TEXT,
-  file_url TEXT,
-  file_type TEXT,
-  uploaded_by TEXT REFERENCES users(id),
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS messages (
-  id TEXT PRIMARY KEY,
-  project_id TEXT REFERENCES projects(id),
-  lead_id TEXT REFERENCES leads(id),
-  sender_user_id TEXT REFERENCES users(id),
-  channel TEXT NOT NULL DEFAULT 'note',
-  subject TEXT,
-  body TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS partners (
-  id TEXT PRIMARY KEY,
-  user_id TEXT REFERENCES users(id),
-  name TEXT NOT NULL,
-  email TEXT,
-  phone TEXT,
-  referral_code TEXT UNIQUE,
-  status TEXT NOT NULL DEFAULT 'pending',
-  commission_type TEXT,
-  commission_value REAL,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS referrals (
-  id TEXT PRIMARY KEY,
-  partner_id TEXT NOT NULL REFERENCES partners(id),
-  lead_id TEXT NOT NULL REFERENCES leads(id),
-  project_id TEXT REFERENCES projects(id),
-  status TEXT NOT NULL DEFAULT 'referred',
-  commission_amount REAL,
-  paid_at TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS invoices (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL REFERENCES projects(id),
-  client_user_id TEXT REFERENCES users(id),
-  amount REAL NOT NULL,
-  currency TEXT NOT NULL DEFAULT 'USD',
-  status TEXT NOT NULL DEFAULT 'draft',
-  payment_provider TEXT,
-  provider_invoice_id TEXT,
-  due_date TEXT,
-  paid_at TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS audit_log (
-  id TEXT PRIMARY KEY,
-  actor_user_id TEXT REFERENCES users(id),
-  entity_type TEXT,
-  entity_id TEXT,
-  action TEXT,
-  metadata TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
+CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
-CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads(created_at);
-CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
-CREATE INDEX IF NOT EXISTS idx_project_modules_project_id ON project_modules(project_id);
-CREATE INDEX IF NOT EXISTS idx_project_tasks_project_id ON project_tasks(project_id);
-CREATE INDEX IF NOT EXISTS idx_referrals_partner_id ON referrals(partner_id);
+CREATE INDEX IF NOT EXISTS idx_leads_source ON leads(source);
+CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(contact_email);
+CREATE INDEX IF NOT EXISTS idx_leads_assigned_to ON leads(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_leads_business ON leads(business_name);
+
+CREATE TABLE IF NOT EXISTS audit_submissions (
+  id TEXT PRIMARY KEY,
+  source TEXT NOT NULL DEFAULT 'boostr-audit',
+  page_url TEXT,
+  language TEXT,
+  contact_name TEXT,
+  contact_email TEXT,
+  contact_phone TEXT,
+  contact_raw TEXT,
+  business_name TEXT,
+  industry TEXT,
+  stage TEXT,
+  traffic TEXT,
+  signals INTEGER DEFAULT 0,
+  recommended_modules TEXT,
+  answers_json TEXT NOT NULL,
+  ip TEXT,
+  user_agent TEXT,
+  status TEXT NOT NULL DEFAULT 'new',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_created_at ON audit_submissions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_status ON audit_submissions(status);
+CREATE INDEX IF NOT EXISTS idx_audit_email ON audit_submissions(contact_email);
+CREATE INDEX IF NOT EXISTS idx_audit_source ON audit_submissions(source);
+
+CREATE TABLE IF NOT EXISTS lead_events (
+  id TEXT PRIMARY KEY,
+  lead_id TEXT,
+  audit_submission_id TEXT,
+  event_type TEXT NOT NULL,
+  payload_json TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL,
+  FOREIGN KEY (audit_submission_id) REFERENCES audit_submissions(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_lead_events_lead ON lead_events(lead_id);
+CREATE INDEX IF NOT EXISTS idx_lead_events_audit ON lead_events(audit_submission_id);
+CREATE INDEX IF NOT EXISTS idx_lead_events_type ON lead_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_lead_events_created_at ON lead_events(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS modules (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  category TEXT,
+  status TEXT NOT NULL DEFAULT 'available',
+  description TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_modules_status ON modules(status);
+CREATE INDEX IF NOT EXISTS idx_modules_category ON modules(category);
+
+-- Reserved for role-based auth later. This is schema only; no login backend yet.
+CREATE TABLE IF NOT EXISTS workspaces (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE,
+  owner_email TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  role TEXT NOT NULL DEFAULT 'client',
+  workspace_id TEXT,
+  status TEXT NOT NULL DEFAULT 'invited',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_workspace ON users(workspace_id);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id TEXT PRIMARY KEY,
+  lead_id TEXT,
+  workspace_id TEXT,
+  source TEXT NOT NULL DEFAULT 'manual',
+  customer_name TEXT,
+  customer_email TEXT,
+  customer_phone TEXT,
+  item_name TEXT NOT NULL,
+  item_type TEXT,
+  amount_cents INTEGER DEFAULT 0,
+  currency TEXT NOT NULL DEFAULT 'USD',
+  payment_status TEXT NOT NULL DEFAULT 'pending',
+  fulfillment_status TEXT NOT NULL DEFAULT 'pending',
+  metadata_json TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_orders_lead ON orders(lead_id);
+CREATE INDEX IF NOT EXISTS idx_orders_workspace ON orders(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON orders(payment_status);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
+
+INSERT OR IGNORE INTO modules (id, name, slug, category, status, description, created_at, updated_at)
+VALUES
+  ('mod_audit', 'BOOSTR Audit', 'boostr-audit', 'lead-capture', 'active', 'Public diagnostic intake and recommendation flow.', datetime('now'), datetime('now')),
+  ('mod_smart_links', 'Smart Links', 'smart-links', 'front-door', 'available', 'Custom partner front doors and deep links.', datetime('now'), datetime('now')),
+  ('mod_manager_os', 'Manager OS', 'manager-os', 'operations', 'active', 'Internal lead and operations workspace.', datetime('now'), datetime('now')),
+  ('mod_checkout', 'Smart Checkout', 'smart-checkout', 'commerce', 'planned', 'Order and payment flow for products, services and licenses.', datetime('now'), datetime('now')),
+  ('mod_artist_os', 'Artist OS', 'artist-os', 'vertical', 'available', 'Artist infrastructure without creative control.', datetime('now'), datetime('now'));

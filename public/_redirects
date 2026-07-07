@@ -1,4 +1,4 @@
-# BOOSTR Labs v0.2.8 Mother UI cleanup routes
+# BOOSTR Labs v0.2.9 Mother UI + D1 routes
 /              /home/index.html             200
 /home          /home/index.html             200
 /home/*        /home/index.html             200
@@ -8,6 +8,8 @@
 /modules/*     /modules/index.html          200
 /login         /login/index.html            200
 /login/*       /login/index.html            200
+/manager/leads /manager/leads/index.html    200
+/manager/leads/* /manager/leads/index.html  200
 /manager       /manager/index.html          200
 /manager/*     /manager/index.html          200
 /manager-os    /manager/index.html          200

@@ -1,105 +1,219 @@
-const json = (body, status = 200) =>
-  Response.json(body, {
-    status,
-    headers: { 'Cache-Control': 'no-store' }
-  });
+import { addLeadEvent, clean, getIp, getUa, json, normalizeArray, readJson } from "../_lib/api.js";
 
-const clean = (value, max = 5000) => String(value || '').trim().slice(0, max);
-
-const summarizeAnswers = (answers = {}) => ({
-  identity: answers.identity || [],
-  futureId: answers.futureId || [],
-  current: answers.current || [],
-  future: answers.future || [],
-  assets: answers.assets || [],
-  stage: answers.stage || '',
-  friction: answers.friction || [],
-  traffic: answers.traffic || '',
-  contact: clean(answers.contact, 500)
-});
-
-export async function onRequestPost({ request, env }) {
-  let payload;
-  try {
-    payload = await request.json();
-  } catch (error) {
-    return json({ ok: false, error: 'Invalid JSON body.' }, 400);
-  }
-
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
-  const answers = payload.answers || {};
-  const summary = summarizeAnswers(answers);
-  const contact = clean(payload.contact || answers.contact || '', 500);
-  const lead = {
-    id,
-    source: 'boostr-audit',
-    contact_name: contact || 'BOOSTR Audit Lead',
-    contact_email: '',
-    contact_phone: '',
-    preferred_contact_method: 'audit-contact-field',
-    business_name: contact || 'BOOSTR Audit Submission',
-    industry: Array.isArray(summary.identity) ? summary.identity.join(', ').slice(0, 180) : '',
-    project_goal: JSON.stringify(summary).slice(0, 2000),
-    budget_range: '',
-    timeline: summary.stage || '',
-    current_status: Array.isArray(summary.friction) ? summary.friction.join(', ').slice(0, 2000) : '',
-    message: JSON.stringify({ ...payload, answers: summary }).slice(0, 12000),
-    created_at: now,
-    updated_at: now
+const inferContact = (payload) => {
+  const free = clean(payload.contact || payload.contact_info || payload.free || payload.link || payload.website || payload.social || payload.business_link, 500);
+  const emailMatch = free.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return {
+    raw: free,
+    email: clean(payload.email || payload.contact_email || emailMatch?.[0] || "", 180).toLowerCase(),
+    phone: clean(payload.phone || payload.contact_phone || "", 80)
   };
+};
 
-  let stored = false;
-  if (env.DB) {
-    try {
-      await env.DB.prepare(
-        `INSERT INTO leads (
-          id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
-          business_name, industry, project_goal, budget_range, timeline, current_status,
-          message, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
-      )
-        .bind(
-          lead.id,
-          lead.source,
-          lead.contact_name,
-          lead.contact_email,
-          lead.contact_phone,
-          lead.preferred_contact_method,
-          lead.business_name,
-          lead.industry,
-          lead.project_goal,
-          lead.budget_range,
-          lead.timeline,
-          lead.current_status,
-          lead.message,
-          lead.created_at,
-          lead.updated_at
-        )
-        .run();
-      stored = true;
-    } catch (error) {
-      console.error('BOOSTR audit DB insert failed', { id, error: String(error) });
-    }
+const buildAuditRecord = (payload, request) => {
+  const answers = payload.answers && typeof payload.answers === "object" ? payload.answers : payload;
+  const contact = inferContact(payload);
+  const language = clean(payload.lang || payload.language || answers.lang || "unknown", 20);
+  const businessName = clean(
+    payload.business_name ||
+      payload.business ||
+      payload.businessProject ||
+      answers.business_name ||
+      answers.business ||
+      answers.contact ||
+      contact.raw ||
+      "BOOSTR Audit Lead",
+    180
+  );
+
+  const identity = normalizeArray(answers.identity || answers.ids || answers.identity_current);
+  const futureIdentity = normalizeArray(answers.futureId || answers.future_identity);
+  const currentMoney = normalizeArray(answers.current || answers.current_money);
+  const futureMoney = normalizeArray(answers.future || answers.future_money);
+  const assets = normalizeArray(answers.assets);
+  const frictions = normalizeArray(answers.friction || answers.frictions);
+  const traffic = clean(answers.traffic || payload.traffic, 400);
+  const stage = clean(answers.stage || payload.stage, 400);
+  const signals = Number(payload.signals || answers.signals || 0) || 0;
+
+  const modules = new Set(["BOOSTR Review"]);
+  const frictionText = frictions.join(" ").toLowerCase();
+  const futureText = futureMoney.join(" ").toLowerCase();
+
+  if (frictionText.includes("dm") || frictionText.includes("pregunt") || frictionText.includes("question")) {
+    modules.add("Smart Link");
+    modules.add("Lead Capture");
+  }
+  if (frictionText.includes("cobrar") || frictionText.includes("charging") || frictionText.includes("payment")) {
+    modules.add("Payment Flow");
+  }
+  if (frictionText.includes("audiencia") || frictionText.includes("audience") || frictionText.includes("sales")) {
+    modules.add("Conversion Path");
+  }
+  if (futureText.includes("clothing") || futureText.includes("ropa") || futureText.includes("products")) {
+    modules.add("Store");
+  }
+  if (!assets.some((item) => item.toLowerCase().includes("website") || item.toLowerCase().includes("web"))) {
+    modules.add("Website / Landing");
   }
 
-  console.info('BOOSTR audit received', {
-    id,
-    stored,
-    contact,
-    signals: payload.signals,
-    language: payload.language,
-    summary
+  return {
+    id: crypto.randomUUID(),
+    source: clean(payload.source || "boostr-audit", 80),
+    page_url: clean(payload.pageUrl || payload.page_url || request.headers.get("Referer") || "", 800),
+    language,
+    contact_name: clean(payload.name || payload.contact_name || answers.name || "", 160),
+    contact_email: contact.email,
+    contact_phone: contact.phone,
+    contact_raw: contact.raw,
+    business_name: businessName,
+    industry: identity.join(", ").slice(0, 260),
+    stage,
+    traffic,
+    signals,
+    recommended_modules: [...modules],
+    answers_json: JSON.stringify({
+      identity,
+      futureIdentity,
+      currentMoney,
+      futureMoney,
+      assets,
+      frictions,
+      traffic,
+      stage,
+      raw: answers
+    }),
+    ip: getIp(request),
+    user_agent: getUa(request),
+    created_at: new Date().toISOString()
+  };
+};
+
+async function storeAudit(env, record) {
+  if (!env.DB) return { stored: false, reason: "D1 DB binding missing" };
+
+  await env.DB.prepare(
+    `INSERT INTO audit_submissions (
+      id, source, page_url, language, contact_name, contact_email, contact_phone, contact_raw,
+      business_name, industry, stage, traffic, signals, recommended_modules, answers_json,
+      ip, user_agent, status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
+  )
+    .bind(
+      record.id,
+      record.source,
+      record.page_url,
+      record.language,
+      record.contact_name,
+      record.contact_email,
+      record.contact_phone,
+      record.contact_raw,
+      record.business_name,
+      record.industry,
+      record.stage,
+      record.traffic,
+      record.signals,
+      JSON.stringify(record.recommended_modules),
+      record.answers_json,
+      record.ip,
+      record.user_agent,
+      record.created_at,
+      record.created_at
+    )
+    .run();
+
+  await env.DB.prepare(
+    `INSERT INTO leads (
+      id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
+      business_name, industry, project_goal, budget_range, timeline, current_status,
+      message, status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
+  )
+    .bind(
+      record.id,
+      "boostr-audit",
+      record.contact_name || "Audit Lead",
+      record.contact_email,
+      record.contact_phone,
+      "unknown",
+      record.business_name,
+      record.industry,
+      `BOOSTR Audit submitted. Signals: ${record.signals}. Recommended modules: ${record.recommended_modules.join(", ")}`,
+      "not_collected",
+      "not_collected",
+      record.stage || "Audit submitted",
+      JSON.stringify({
+        contact_raw: record.contact_raw,
+        traffic: record.traffic,
+        recommended_modules: record.recommended_modules,
+        audit_submission_id: record.id
+      }),
+      record.created_at,
+      record.created_at
+    )
+    .run();
+
+  await addLeadEvent(env, {
+    lead_id: record.id,
+    audit_submission_id: record.id,
+    event_type: "audit.submitted",
+    payload: {
+      business_name: record.business_name,
+      signals: record.signals,
+      recommended_modules: record.recommended_modules,
+      source: record.source
+    },
+    created_at: record.created_at
   });
 
-  return json({
-    ok: true,
-    id,
-    stored,
-    needsDbBinding: !Boolean(env.DB)
-  });
+  return { stored: true };
 }
 
-export async function onRequestGet() {
-  return json({ ok: true, endpoint: 'BOOSTR Audit API', accepts: 'POST JSON' });
+export async function onRequestOptions() {
+  return json({ ok: true });
+}
+
+export async function onRequestPost({ request, env }) {
+  const parsed = await readJson(request);
+  if (!parsed.ok) return parsed.response;
+
+  const record = buildAuditRecord(parsed.payload || {}, request);
+
+  if (!record.contact_email && !record.contact_phone && !record.contact_raw) {
+    return json({
+      ok: false,
+      error: "Missing contact channel.",
+      message: "Audit needs at least email, phone, Instagram, WhatsApp, website or another contact link."
+    }, 400);
+  }
+
+  try {
+    const storage = await storeAudit(env, record);
+    console.info("BOOSTR Audit received", {
+      id: record.id,
+      stored: storage.stored,
+      business_name: record.business_name,
+      recommended_modules: record.recommended_modules
+    });
+
+    return json({
+      ok: true,
+      id: record.id,
+      stored: storage.stored,
+      storage_reason: storage.reason || null,
+      recommended_modules: record.recommended_modules
+    });
+  } catch (error) {
+    console.error("BOOSTR Audit storage failed", error);
+    return json({ ok: false, error: "Audit storage failed." }, 500);
+  }
+}
+
+export async function onRequestGet({ env }) {
+  return json({
+    ok: true,
+    endpoint: "/api/audit",
+    accepts: "POST",
+    dbBound: Boolean(env.DB)
+  });
 }

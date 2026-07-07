@@ -1,0 +1,44 @@
+{
+  "patch": "BOOSTR Labs v0.3.0 backend/D1 patch",
+  "status": "ready_for_commit",
+  "cloudflare_completed": [
+    "D1 database boostr_labs_core verified",
+    "migrations/0001_boostr_core.sql applied to remote D1",
+    "Pages project boostrlabs bound to D1 as DB in production",
+    "Pages project boostrlabs bound to D1 as DB in preview"
+  ],
+  "adds": [
+    "functions/_lib/api.js",
+    "functions/api/modules.js",
+    "functions/api/orders.js",
+    "functions/api/leads/[id].js"
+  ],
+  "updates": [
+    "functions/api/audit.js",
+    "functions/api/health.js",
+    "functions/api/intake.js",
+    "functions/api/leads.js",
+    "migrations/0001_boostr_core.sql",
+    "wrangler.toml",
+    "public/_redirects",
+    "public/manager/leads/index.html",
+    "docs/CLOUDFLARE_D1_SETUP.md",
+    "README_BOOSTR_V029_D1_DATABASE_PATCH.md"
+  ],
+  "manual_cloudflare_steps_remaining": [
+    "Set MANAGER_PIN environment variable in Cloudflare Pages project boostrlabs",
+    "Commit, push, and let Cloudflare Pages deploy main"
+  ],
+  "backend_endpoints": [
+    "GET /api/health",
+    "GET /api/modules",
+    "POST /api/audit",
+    "POST /api/intake",
+    "GET /api/leads",
+    "POST /api/leads",
+    "GET /api/leads/:id",
+    "PATCH /api/leads/:id",
+    "GET /api/orders",
+    "POST /api/orders"
+  ]
+}

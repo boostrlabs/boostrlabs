@@ -1,50 +1,37 @@
-const requiredFields = ['contact_name', 'contact_email', 'business_name', 'industry', 'project_goal', 'current_status'];
+import { addLeadEvent, clean, json, normalizeArray, readJson } from "../_lib/api.js";
 
-const json = (body, status = 200) =>
-  Response.json(body, {
-    status,
-    headers: {
-      'Cache-Control': 'no-store'
-    }
-  });
-
-const normalizeText = (value, maxLength = 2000) => String(value || '').trim().slice(0, maxLength);
-
-const normalizeModules = (value) => {
-  if (Array.isArray(value)) return value.map((item) => normalizeText(item, 80)).filter(Boolean);
-  if (!value) return [];
-  return [normalizeText(value, 80)].filter(Boolean);
-};
+const requiredFields = ["contact_name", "contact_email", "business_name", "industry", "project_goal", "current_status"];
 
 const escapeHtml = (value) =>
-  String(value || '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+  String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 const leadFromPayload = (payload) => ({
   id: crypto.randomUUID(),
-  source: normalizeText(payload.source || 'website', 40),
-  contact_name: normalizeText(payload.contact_name, 140),
-  contact_email: normalizeText(payload.contact_email, 180).toLowerCase(),
-  contact_phone: normalizeText(payload.contact_phone, 60),
-  preferred_contact_method: normalizeText(payload.preferred_contact_method || 'email', 40),
-  business_name: normalizeText(payload.business_name, 180),
-  industry: normalizeText(payload.industry, 120),
-  current_website_url: normalizeText(payload.current_website_url, 300),
-  social_links: normalizeText(payload.social_links, 1000),
-  project_goal: normalizeText(payload.project_goal, 2000),
-  requested_modules: normalizeModules(payload.requested_modules),
-  timeline: normalizeText(payload.timeline, 80),
-  budget_range: normalizeText(payload.budget_range, 80),
-  current_status: normalizeText(payload.current_status, 2000),
-  biggest_problem: normalizeText(payload.biggest_problem, 2000),
-  manual_or_confusing: normalizeText(payload.manual_or_confusing, 2000),
-  system_outcome: normalizeText(payload.system_outcome, 2000),
-  extra_message: normalizeText(payload.extra_message, 3000),
-  referral_code: normalizeText(payload.referralCode, 80),
+  source: clean(payload.source || "website", 80),
+  contact_name: clean(payload.contact_name, 140),
+  contact_email: clean(payload.contact_email, 180).toLowerCase(),
+  contact_phone: clean(payload.contact_phone, 60),
+  preferred_contact_method: clean(payload.preferred_contact_method || "email", 40),
+  business_name: clean(payload.business_name, 180),
+  industry: clean(payload.industry, 120),
+  current_website_url: clean(payload.current_website_url, 300),
+  social_links: clean(payload.social_links, 1000),
+  project_goal: clean(payload.project_goal, 2000),
+  requested_modules: normalizeArray(payload.requested_modules, 80),
+  timeline: clean(payload.timeline, 80),
+  budget_range: clean(payload.budget_range, 80),
+  current_status: clean(payload.current_status, 2000),
+  biggest_problem: clean(payload.biggest_problem, 2000),
+  manual_or_confusing: clean(payload.manual_or_confusing, 2000),
+  system_outcome: clean(payload.system_outcome, 2000),
+  extra_message: clean(payload.extra_message, 3000),
+  referral_code: clean(payload.referralCode || payload.referral_code, 80),
+  page_url: clean(payload.pageUrl || payload.page_url, 800),
   created_at: new Date().toISOString()
 });
 
@@ -62,7 +49,7 @@ const emailHtml = (lead) => `
   <p><strong>Socials:</strong> ${escapeHtml(lead.social_links)}</p>
   <h2>Project</h2>
   <p><strong>Goal:</strong> ${escapeHtml(lead.project_goal)}</p>
-  <p><strong>Requested modules:</strong> ${escapeHtml(lead.requested_modules.join(', '))}</p>
+  <p><strong>Requested modules:</strong> ${escapeHtml(lead.requested_modules.join(", "))}</p>
   <p><strong>Current status:</strong> ${escapeHtml(lead.current_status)}</p>
   <p><strong>Biggest problem:</strong> ${escapeHtml(lead.biggest_problem)}</p>
   <h2>Timeline / Budget</h2>
@@ -72,18 +59,18 @@ const emailHtml = (lead) => `
   <p>${escapeHtml(lead.extra_message)}</p>
 `;
 
+export async function onRequestOptions() {
+  return json({ ok: true });
+}
+
 export async function onRequestPost({ request, env }) {
-  let payload;
+  const parsed = await readJson(request);
+  if (!parsed.ok) return parsed.response;
 
-  try {
-    payload = await request.json();
-  } catch (error) {
-    return json({ ok: false, error: 'Invalid JSON body.' }, 400);
-  }
-
-  const missingFields = requiredFields.filter((field) => !normalizeText(payload[field]));
+  const payload = parsed.payload || {};
+  const missingFields = requiredFields.filter((field) => !clean(payload[field]));
   if (missingFields.length) {
-    return json({ ok: false, error: 'Missing required fields.', fields: missingFields }, 400);
+    return json({ ok: false, error: "Missing required fields.", fields: missingFields }, 400);
   }
 
   const lead = leadFromPayload(payload);
@@ -117,15 +104,28 @@ export async function onRequestPost({ request, env }) {
           manual_or_confusing: lead.manual_or_confusing,
           system_outcome: lead.system_outcome,
           extra_message: lead.extra_message,
-          referral_code: lead.referral_code
+          referral_code: lead.referral_code,
+          page_url: lead.page_url
         }),
         lead.created_at,
         lead.created_at
       )
       .run();
+
+    await addLeadEvent(env, {
+      lead_id: lead.id,
+      event_type: "intake.submitted",
+      payload: {
+        source: lead.source,
+        business_name: lead.business_name,
+        requested_modules: lead.requested_modules,
+        referral_code: lead.referral_code
+      },
+      created_at: lead.created_at
+    });
   }
 
-  console.info('BOOSTR intake received', {
+  console.info("BOOSTR intake received", {
     id: lead.id,
     business: lead.business_name,
     modules: lead.requested_modules,

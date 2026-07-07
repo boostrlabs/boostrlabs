@@ -4,3 +4,9 @@ pages_build_output_dir = "dist"
 [vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
 VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "boostr_labs_core"
+database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
+preview_database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"

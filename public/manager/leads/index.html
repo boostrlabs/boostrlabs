@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOOSTR Manager — Leads</title>
+<link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+<link rel="stylesheet" href="/assets/boostr-mother/mother.css">
+<style>
+.table-card{overflow:auto}
+.lead-table{width:100%;border-collapse:separate;border-spacing:0 10px}
+.lead-table th{color:var(--soft);font-size:11px;text-transform:uppercase;letter-spacing:.12em;text-align:left;padding:0 12px 6px}
+.lead-table td{background:rgba(255,255,255,.055);border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:13px 12px;font-size:13px;vertical-align:top}
+.lead-table td:first-child{border-left:1px solid var(--line2);border-radius:16px 0 0 16px}
+.lead-table td:last-child{border-right:1px solid var(--line2);border-radius:0 16px 16px 0}
+.pin-box{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.pin-box input{min-height:44px;border-radius:16px;border:1px solid var(--line2);background:rgba(0,0,0,.25);color:white;padding:0 14px}
+.badge{border:1px solid var(--line2);border-radius:999px;padding:6px 8px;font-size:10px;font-weight:900;color:var(--green);background:rgba(119,255,172,.08);display:inline-block}
+pre{white-space:pre-wrap;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<div class="os">
+  <aside class="sidebar glass">
+    <a class="logo-mark" href="/"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))"></a>
+    <nav class="icon-nav">
+      <a class="active" href="/manager" title="Manager">⌘</a>
+      <a href="/app" title="Client">◫</a>
+      <a href="/partner-dashboard" title="Partner">◇</a>
+      <a href="/audit" title="Audit">↯</a>
+      <a href="/portfolio" title="Portfolio">◌</a>
+    </nav>
+    <div class="utility"><a href="/login" title="Login">◎</a><a href="/ecosystem" title="Map">?</a></div>
+  </aside>
+  <main class="main">
+    <header class="topbar glass">
+      <div class="greeting"><span>BOOSTR Manager OS</span><strong>Lead Inbox</strong></div>
+      <div class="search">Audit submissions and website leads</div>
+      <a class="bell" href="/api/health" title="API health">●</a>
+      <a class="role-pill" href="/manager"><div class="avatar"></div><div><b>Manager</b><div class="micro">Temporary PIN gate</div></div></a>
+    </header>
+
+    <section class="card glass">
+      <div class="section-head">
+        <div>
+          <span class="chip live">D1 Ready</span>
+          <h1 style="margin-top:12px">BOOSTR Lead Inbox</h1>
+          <p class="micro">Enter your Manager PIN to load Audit submissions from Cloudflare D1.</p>
+        </div>
+        <a class="btn" href="/audit">Open Audit</a>
+      </div>
+      <div class="pin-box">
+        <input id="pin" type="password" placeholder="Manager PIN">
+        <button class="btn primary" id="load">Load audit leads</button>
+        <button class="btn" id="loadLeads">Load all leads</button>
+      </div>
+      <p class="micro" id="status" style="margin-top:12px"></p>
+    </section>
+
+    <section class="card glass table-card">
+      <div class="section-head">
+        <div><h2>Submissions</h2><div class="micro" id="count">No data loaded yet.</div></div>
+      </div>
+      <table class="lead-table">
+        <thead><tr><th>Date</th><th>Contact</th><th>Business</th><th>Signals</th><th>Modules</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <pre id="raw"></pre>
+    </section>
+
+    <nav class="bottom-tabs glass">
+      <a class="active" href="/manager">Manager</a>
+      <a href="/partner-dashboard">Partner</a>
+      <a href="/app">Client</a>
+      <a href="/audit">Audit</a>
+      <a href="/modules">Modules</a>
+      <a class="plus" href="/login">+</a>
+    </nav>
+  </main>
+</div>
+<script>
+const pin = document.getElementById('pin');
+const rows = document.getElementById('rows');
+const raw = document.getElementById('raw');
+const statusEl = document.getElementById('status');
+const count = document.getElementById('count');
+
+function esc(value){return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function modules(value){
+  try { return JSON.parse(value || '[]').join(', '); } catch { return value || ''; }
+}
+async function load(type='audit'){
+  rows.innerHTML = '';
+  raw.textContent = '';
+  count.textContent = 'Loading...';
+  statusEl.textContent = '';
+  const value = pin.value.trim();
+  if(!value){ statusEl.textContent = 'Enter MANAGER_PIN first.'; return; }
+  const res = await fetch(`/api/leads?type=${encodeURIComponent(type)}&limit=50`, {headers:{'X-Manager-Pin': value}});
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok || !data.ok){
+    statusEl.textContent = data.error || 'Could not load leads.';
+    count.textContent = 'No data loaded.';
+    raw.textContent = JSON.stringify(data, null, 2);
+    return;
+  }
+  count.textContent = `${data.rows.length} ${type === 'audit' ? 'audit submissions' : 'leads'} loaded.`;
+  rows.innerHTML = data.rows.map(item => `
+    <tr>
+      <td>${esc(new Date(item.created_at).toLocaleString())}<br><span class="badge">${esc(item.status || 'new')}</span></td>
+      <td>${esc(item.contact_name || 'No name')}<br><span class="micro">${esc(item.contact_email || item.contact_phone || item.contact_raw || '')}</span></td>
+      <td>${esc(item.business_name || 'No business')}<br><span class="micro">${esc(item.industry || item.source || '')}</span></td>
+      <td>${esc(item.signals ?? '')}</td>
+      <td>${esc(modules(item.recommended_modules) || item.project_goal || '')}</td>
+    </tr>
+  `).join('');
+}
+document.getElementById('load').addEventListener('click', () => load('audit'));
+document.getElementById('loadLeads').addEventListener('click', () => load('leads'));
+</script>
+</body>
+</html>
