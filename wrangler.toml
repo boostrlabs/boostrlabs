@@ -10,3 +10,8 @@ binding = "DB"
 database_name = "boostr_labs_core"
 database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
 preview_database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
+
+# MANAGER_PIN must be set as a Cloudflare Pages environment variable
+# Set it in: Pages > Settings > Environment variables > MANAGER_PIN
+# Example: "1234" (simple PIN) or "manager-secure-pin-2024" (strong PIN)
+# This PIN protects /manager/leads and /api/leads endpoints
