@@ -92,81 +92,86 @@ const buildAuditRecord = (payload, request) => {
 async function storeAudit(env, record) {
   if (!env.DB) return { stored: false, reason: "D1 DB binding missing" };
 
-  await env.DB.prepare(
-    `INSERT INTO audit_submissions (
-      id, source, page_url, language, contact_name, contact_email, contact_phone, contact_raw,
-      business_name, industry, stage, traffic, signals, recommended_modules, answers_json,
-      ip, user_agent, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
-  )
-    .bind(
-      record.id,
-      record.source,
-      record.page_url,
-      record.language,
-      record.contact_name,
-      record.contact_email,
-      record.contact_phone,
-      record.contact_raw,
-      record.business_name,
-      record.industry,
-      record.stage,
-      record.traffic,
-      record.signals,
-      JSON.stringify(record.recommended_modules),
-      record.answers_json,
-      record.ip,
-      record.user_agent,
-      record.created_at,
-      record.created_at
+  try {
+    await env.DB.prepare(
+      `INSERT INTO audit_submissions (
+        id, source, page_url, language, contact_name, contact_email, contact_phone, contact_raw,
+        business_name, industry, stage, traffic, signals, recommended_modules, answers_json,
+        ip, user_agent, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
     )
-    .run();
+      .bind(
+        record.id,
+        record.source,
+        record.page_url,
+        record.language,
+        record.contact_name,
+        record.contact_email,
+        record.contact_phone,
+        record.contact_raw,
+        record.business_name,
+        record.industry,
+        record.stage,
+        record.traffic,
+        record.signals,
+        JSON.stringify(record.recommended_modules),
+        record.answers_json,
+        record.ip,
+        record.user_agent,
+        record.created_at,
+        record.created_at
+      )
+      .run();
 
-  await env.DB.prepare(
-    `INSERT INTO leads (
-      id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
-      business_name, industry, project_goal, budget_range, timeline, current_status,
-      message, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
-  )
-    .bind(
-      record.id,
-      "boostr-audit",
-      record.contact_name || "Audit Lead",
-      record.contact_email,
-      record.contact_phone,
-      "unknown",
-      record.business_name,
-      record.industry,
-      `BOOSTR Audit submitted. Signals: ${record.signals}. Recommended modules: ${record.recommended_modules.join(", ")}`,
-      "not_collected",
-      "not_collected",
-      record.stage || "Audit submitted",
-      JSON.stringify({
-        contact_raw: record.contact_raw,
-        traffic: record.traffic,
+    await env.DB.prepare(
+      `INSERT INTO leads (
+        id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
+        business_name, industry, project_goal, budget_range, timeline, current_status,
+        message, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
+    )
+      .bind(
+        record.id,
+        "boostr-audit",
+        record.contact_name || "Audit Lead",
+        record.contact_email,
+        record.contact_phone,
+        "unknown",
+        record.business_name,
+        record.industry,
+        `BOOSTR Audit submitted. Signals: ${record.signals}. Recommended modules: ${record.recommended_modules.join(", ")}`,
+        "not_collected",
+        "not_collected",
+        record.stage || "Audit submitted",
+        JSON.stringify({
+          contact_raw: record.contact_raw,
+          traffic: record.traffic,
+          recommended_modules: record.recommended_modules,
+          audit_submission_id: record.id
+        }),
+        record.created_at,
+        record.created_at
+      )
+      .run();
+
+    await addLeadEvent(env, {
+      lead_id: record.id,
+      audit_submission_id: record.id,
+      event_type: "audit.submitted",
+      payload: {
+        business_name: record.business_name,
+        signals: record.signals,
         recommended_modules: record.recommended_modules,
-        audit_submission_id: record.id
-      }),
-      record.created_at,
-      record.created_at
-    )
-    .run();
+        source: record.source
+      },
+      created_at: record.created_at
+    });
 
-  await addLeadEvent(env, {
-    lead_id: record.id,
-    audit_submission_id: record.id,
-    event_type: "audit.submitted",
-    payload: {
-      business_name: record.business_name,
-      signals: record.signals,
-      recommended_modules: record.recommended_modules,
-      source: record.source
-    },
-    created_at: record.created_at
-  });
-
-  return { stored: true };
+    return { stored: true };
+  } catch (error) {
+    console.error("BOOSTR Audit storage error", error);
+    return { stored: false, reason: error.message || "Database storage failed" };
+  }
 }
 
 export async function onRequestOptions() {
@@ -189,9 +194,18 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const storage = await storeAudit(env, record);
-    console.info("BOOSTR Audit received", {
+    
+    if (!storage.stored) {
+      console.error("BOOSTR Audit storage failed", { id: record.id, reason: storage.reason });
+      return json({
+        ok: false,
+        error: "Audit storage failed.",
+        reason: storage.reason
+      }, 503);
+    }
+
+    console.info("BOOSTR Audit received and stored", {
       id: record.id,
-      stored: storage.stored,
       business_name: record.business_name,
       recommended_modules: record.recommended_modules
     });
@@ -200,12 +214,11 @@ export async function onRequestPost({ request, env }) {
       ok: true,
       id: record.id,
       stored: storage.stored,
-      storage_reason: storage.reason || null,
       recommended_modules: record.recommended_modules
     });
   } catch (error) {
-    console.error("BOOSTR Audit storage failed", error);
-    return json({ ok: false, error: "Audit storage failed." }, 500);
+    console.error("BOOSTR Audit endpoint error", error);
+    return json({ ok: false, error: "Audit processing failed." }, 500);
   }
 }
 
