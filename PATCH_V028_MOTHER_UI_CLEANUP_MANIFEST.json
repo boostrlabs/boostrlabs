@@ -1,0 +1,8 @@
+{
+  "version": "0.2.8",
+  "name": "Mother UI cleanup and Audit endpoint",
+  "replaces_old_root_vite_landing": true,
+  "removes_concepts": ["ambassador", "BOOSTR Pulse", "BOOSTR Pulse Plus", "duplicate lead forms on general UI"],
+  "adds_function": "/api/audit",
+  "custom_ui_untouched": ["/82store", "/82ngel", "/jankodiorr", "/app/82ngel", "/app/gemese", "/omgbeauty"]
+}

@@ -1,4 +1,4 @@
-# BOOSTR Labs v0.2.7 Mother UI + Codex-ready routes
+# BOOSTR Labs v0.2.8 Mother UI cleanup routes
 /              /home/index.html             200
 /home          /home/index.html             200
 /home/*        /home/index.html             200

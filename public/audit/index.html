@@ -118,5 +118,42 @@ function results(){let a=state.answers, al=[],mods=new Set(["BOOSTR Review"]);le
 function copy(){navigator.clipboard.writeText("BOOSTR AUDIT V5\\n"+JSON.stringify(state.answers,null,2)).then(()=>alert("Copied"))}
 render()
 </script>
+
+<script>
+(function(){
+  async function submitAuditToCloudflare(){
+    try{
+      if(!window.state || window.__boostrAuditSubmitted) return;
+      window.__boostrAuditSubmitted=true;
+      const payload={
+        source:'boostr-audit',
+        formKind:'audit',
+        language:state.lang||'es',
+        signals:state.signals||0,
+        answers:state.answers||{},
+        pageUrl:location.href,
+        submittedAt:new Date().toISOString(),
+        contact:String((state.answers||{}).contact||'').trim()
+      };
+      const res=await fetch('/api/audit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const data=await res.json().catch(()=>({ok:false}));
+      const box=document.createElement('div');
+      box.className='cta';
+      box.innerHTML=data.ok?'<b>BOOSTR received this Audit.</b> Your submission is logged for Manager review.': '<b>Audit completed.</b> If submission status is unclear, screenshot this page or contact BOOSTR.';
+      const stage=document.getElementById('stage');
+      if(stage && !document.querySelector('[data-audit-submit-status]')){box.setAttribute('data-audit-submit-status','1');stage.append(box)}
+    }catch(e){
+      console.warn('BOOSTR Audit submit failed',e);
+    }
+  }
+  const wait=setInterval(function(){
+    if(typeof window.final==='function'){
+      clearInterval(wait);
+      const oldFinal=window.final;
+      window.final=function(){ oldFinal(); setTimeout(submitAuditToCloudflare,700); };
+    }
+  },100);
+})();
+</script>
 </body>
 </html>
