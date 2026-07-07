@@ -29,6 +29,7 @@ export async function onRequestGet({ env }) {
     },
     endpoints: [
       "/api/health",
+      "/api/db-init",
       "/api/audit",
       "/api/intake",
       "/api/leads",
