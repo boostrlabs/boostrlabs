@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.vite/
+.next/
+apps/*/.next/
+apps/*/tsconfig.tsbuildinfo
+*.log
+.env
+.env.local
+apps/*/.env
+apps/*/.env.local

@@ -1,0 +1,21 @@
+{
+  "name": "BOOSTR_CODEX_TEXT_DIRECTION_UPDATE_v1_0",
+  "date": "2026-07-07",
+  "type": "text_direction_update_only",
+  "purpose": "Update local BOOSTR Labs docs/direction before GitHub becomes source of truth.",
+  "do_not_do": [
+    "do not code",
+    "do not redesign",
+    "do not delete assets",
+    "do not run build",
+    "do not install dependencies"
+  ],
+  "primary_entry": "CODEX_START_HERE.md",
+  "folders": [
+    "docs",
+    "manifests",
+    "prompts",
+    "source_digest"
+  ],
+  "status": "ready_for_codex_text_update"
+}
