@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BOOSTR — GEMESE Partner OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#070707; --ink:#f7f5ef; --soft:#aaa6a0; --muted:#77736d;
+      --card:rgba(255,255,255,.075); --card2:rgba(255,255,255,.045); --line:rgba(255,255,255,.13);
+      --platinum:#eeeae2; --black:#050505; --green:#91f2b1; --gold:#e9d9a4;
+      --radius:28px; --shadow:0 26px 80px rgba(0,0,0,.52);
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 80% 0%,rgba(255,255,255,.11),transparent 34%),radial-gradient(circle at 20% 20%,rgba(255,255,255,.075),transparent 28%),linear-gradient(135deg,#000,#111 46%,#050505)}
+    body:after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.28;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E")}
+    .wrap{width:min(1180px,calc(100% - 36px));margin:0 auto;padding:32px 0 56px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:12px}.b{width:44px;height:44px;border-radius:16px;background:linear-gradient(145deg,#fff,#a5a5a5 55%,#5c5c5c);display:grid;place-items:center;color:#080808;font-weight:950;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}.brand strong{font-size:15px;letter-spacing:-.04em}.brand span{display:block;color:var(--soft);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-top:2px}.login{border:1px solid var(--line);background:rgba(255,255,255,.075);border-radius:999px;padding:11px 15px;font-size:13px;font-weight:800;color:var(--ink)}
+    .profile{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:25px;background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035));box-shadow:var(--shadow);backdrop-filter:blur(20px);margin-bottom:22px}.profile img{width:52px;height:52px;border-radius:18px;object-fit:cover;filter:grayscale(1) contrast(1.1)}.profile h1{font-size:17px;margin:0;letter-spacing:-.05em}.profile p{margin:3px 0 0;color:var(--soft);font-size:12px}.live{margin-left:auto;display:flex;align-items:center;gap:7px;color:var(--green);font-size:12px;font-weight:850}.live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+    .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-bottom:18px}.hero-card{min-height:455px;border-radius:36px;border:1px solid var(--line);background:linear-gradient(90deg,rgba(0,0,0,.75),rgba(0,0,0,.35)),url('assets/cover.jpg') center/cover;box-shadow:var(--shadow);padding:34px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative}.hero-card:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.82));pointer-events:none}.hero-card>*{position:relative}.eyebrow{font-size:11px;letter-spacing:.38em;font-weight:950;color:#d8d5cd;text-transform:uppercase;margin-bottom:13px}.hero-card h2{font-size:clamp(38px,5.4vw,72px);line-height:.94;letter-spacing:-.095em;margin:0 0 14px}.hero-card p{font-size:16px;line-height:1.45;color:#ddd8ce;max-width:560px;margin:0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.btn{appearance:none;border:1px solid rgba(255,255,255,.20);padding:14px 17px;border-radius:17px;font-weight:950;font-size:14px;color:#0b0b0b;background:var(--platinum);text-decoration:none}.btn.dark{color:var(--ink);background:rgba(255,255,255,.085);backdrop-filter:blur(12px)}
+    .side{display:grid;gap:18px}.visual{border-radius:34px;border:1px solid var(--line);background:rgba(255,255,255,.065);overflow:hidden;min-height:218px;box-shadow:var(--shadow);position:relative}.visual img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.1)}.visual .cap{position:absolute;left:16px;right:16px;bottom:14px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:12px;backdrop-filter:blur(10px)}.cap b{display:block;font-size:15px}.cap span{display:block;color:#c5c0b7;font-size:12px;margin-top:3px}.advisor{border-radius:34px;border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.04));padding:22px;box-shadow:var(--shadow)}.advisor .mini-title{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);font-weight:950}.advisor h3{font-size:29px;letter-spacing:-.08em;margin:12px 0 7px}.advisor p{margin:0;color:#c9c4ba;line-height:1.45;font-size:13px}
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px}.section-title h3{margin:0;font-size:18px;letter-spacing:-.05em}.pill{border:1px solid var(--line);background:rgba(255,255,255,.08);border-radius:999px;padding:8px 11px;font-size:11px;color:#cbc7bf;font-weight:850}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{border:1px solid var(--line);border-radius:28px;background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035));box-shadow:var(--shadow);padding:20px;overflow:hidden}.span4{grid-column:span 4}.span5{grid-column:span 5}.span6{grid-column:span 6}.span7{grid-column:span 7}.span12{grid-column:span 12}.label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#aaa59b;font-weight:950}.num{font-size:42px;letter-spacing:-.09em;font-weight:950;margin:10px 0 2px}.green{color:var(--green);font-weight:950}.muted{color:#b9b3a9;font-size:13px;line-height:1.42}.list{display:grid;gap:11px}.move{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:15px;border-radius:21px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.11)}.move b{display:block;font-size:15px;letter-spacing:-.04em;margin-bottom:4px}.move span{display:block;color:#bcb6ad;font-size:13px;line-height:1.35}.badge{white-space:nowrap;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.085);padding:8px 10px;font-size:11px;font-weight:950;color:#e8e4dc}.board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.task{min-height:145px;padding:18px;border-radius:24px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045)}.n{width:28px;height:28px;border-radius:10px;background:var(--platinum);color:#080808;display:grid;place-items:center;font-weight:950;margin-bottom:13px}.task b{display:block;font-size:17px;letter-spacing:-.055em;margin-bottom:8px}.task p{margin:0;color:#bcb6ad;font-size:13px;line-height:1.45}
+    .phone{width:100%;max-width:360px;margin:0 auto;border-radius:38px;border:10px solid #030303;background:#0b0b0b;box-shadow:0 28px 90px rgba(0,0,0,.7);overflow:hidden}.phone-top{height:34px;display:flex;align-items:center;justify-content:center;color:#8d8982;font-size:10px}.link-preview{padding:14px}.link-hero{border-radius:25px;background:#efede7;color:#080808;overflow:hidden}.link-hero img{width:100%;height:170px;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)}.link-text{padding:16px}.link-text h4{margin:0;font-size:22px;letter-spacing:-.075em}.link-text p{margin:7px 0 14px;color:#47423b;font-size:13px;line-height:1.38}.link-btn{display:block;text-align:center;background:#080808;color:#fff;text-decoration:none;border-radius:15px;padding:13px;font-weight:950;font-size:13px}.comments{display:grid;grid-template-columns:1fr 1fr;gap:12px}.comment-img{border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}.comment-img img{width:100%;height:260px;object-fit:cover;display:block;filter:contrast(1.02)}.collab{display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:center}.collab img{width:140px;height:140px;object-fit:cover;border-radius:22px;filter:grayscale(1);border:1px solid rgba(255,255,255,.14)}
+    .bottom-nav{display:none;position:fixed;z-index:9;left:12px;right:12px;bottom:12px;background:rgba(10,10,10,.78);border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(18px);border-radius:24px;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}.bottom-nav a{flex:1;text-align:center;text-decoration:none;color:#d8d4cc;font-size:11px;font-weight:850;padding:8px 4px;border-radius:16px}.bottom-nav a.active{background:#efede7;color:#080808}.foot{text-align:center;color:#69645d;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:30px 0 0}
+    @media(max-width:900px){.wrap{width:min(100% - 22px,680px);padding:18px 0 86px}.top{margin-bottom:10px}.login{font-size:12px;padding:10px 13px}.profile{border-radius:22px}.hero{grid-template-columns:1fr;gap:12px}.hero-card{min-height:475px;border-radius:32px;padding:22px;background-position:center}.hero-card h2{font-size:46px}.hero-card p{font-size:14px}.side{grid-template-columns:1fr 1fr;gap:12px}.visual{min-height:210px}.advisor{padding:18px}.advisor h3{font-size:25px}.span4,.span5,.span6,.span7{grid-column:span 12}.grid{gap:12px}.board{grid-template-columns:1fr}.card{border-radius:26px;padding:17px}.num{font-size:38px}.comments{grid-template-columns:1fr 1fr}.comment-img img{height:240px}.bottom-nav{display:flex}}
+    @media(max-width:560px){.brand span{display:none}.hero-card{min-height:520px;justify-content:flex-end}.hero-card h2{font-size:40px}.actions .btn{flex:1;text-align:center}.side{grid-template-columns:1fr}.visual:first-child{display:none}.visual{min-height:230px}.profile .live{display:none}.section-title{margin-top:20px}.card.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card.stats .statbox:first-child{grid-column:1/-1}.statbox{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);border-radius:20px;padding:14px}.num{font-size:34px}.move{align-items:flex-start}.badge{font-size:10px}.comments{grid-template-columns:1fr}.comment-img img{height:330px}.collab{grid-template-columns:1fr}.collab img{width:100%;height:220px}.phone{max-width:100%;border-width:8px}.link-hero img{height:210px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><div class="b">B</div><div><strong>BOOSTR Labs</strong><span>Partner OS</span></div></div>
+      <div class="login">Gemese conectado</div>
+    </header>
+
+    <section class="profile">
+      <img src="assets/cover.jpg" alt="Gemese">
+      <div><h1>GEMESE</h1><p>NNE · música · ropa · comunidad</p></div>
+      <div class="live"><i></i> Live</div>
+    </section>
+
+    <section class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">GEMESE COMMAND</div>
+        <h2>Aquí están todas las razones por las cuales somos NOSOTROS NO ELLOS.</h2>
+        <p>#NNE powered by BOOSTR Labs.</p>
+        <div class="actions">
+          <a class="btn" href="#link">Abrir Smart Link</a>
+          <a class="btn dark" href="#moves">Ver qué toca</a>
+        </div>
+      </article>
+      <aside class="side">
+        <div class="visual"><img src="assets/street.jpg" alt="NNE visual"><div class="cap"><b>NOSOTROS NO ELLOS</b><span>visual activo del dashboard</span></div></div>
+        <div class="advisor"><div class="mini-title">BOOSTR viendo la vuelta</div><h3>$3.2k en ropa este mes.</h3><p>La señal es simple: si esto ya caminó orgánico, toca probarlo con pauta.</p></div>
+      </aside>
+    </section>
+
+    <div class="section-title"><h3>Lo que importa hoy</h3><span class="pill">limpio</span></div>
+    <section class="grid">
+      <article class="card stats span7">
+        <div class="grid" style="gap:10px">
+          <div class="statbox" style="grid-column:span 4"><div class="label">Ropa este mes</div><div class="num">$3.2k</div><div class="green">solo en piezas NNE</div></div>
+          <div class="statbox" style="grid-column:span 4"><div class="label">Comentarios calientes</div><div class="num">68</div><div class="green">sirven para mover comunidad</div></div>
+          <div class="statbox" style="grid-column:span 4"><div class="label">NONONO</div><div class="num">1.5k</div><div class="green">streams · 7 días</div></div>
+        </div>
+        <p class="muted" style="margin:18px 0 0">No hace falta mirar mil métricas. Esta semana hay tres señales: ropa caminando, comentarios calientes y NONONO respirando otra vez.</p>
+      </article>
+
+      <article class="card span5" id="moves">
+        <div class="label" style="margin-bottom:12px">Qué toca ahora</div>
+        <div class="list">
+          <div class="move"><div><b>Reinvertir $300 en ads</b><span>El drop ya caminó solo. Ahora toca empujarlo con intención.</span></div><span class="badge">hoy</span></div>
+          <div class="move"><div><b>Preguntar por el próximo tema</b><span>Usar NONONO como excusa: “¿quieren otro tema con este mood?”</span></div><span class="badge">story</span></div>
+          <div class="move"><div><b>Responder fuego</b><span>who.isaul, kevin_valdezm y melian comentaron fuego. Respóndeles.</span></div><span class="badge">fans</span></div>
+        </div>
+      </article>
+
+      <article class="card span12">
+        <div class="section-title" style="margin:0 0 12px"><h3>Board BOOSTR</h3><span class="pill">3 movimientos</span></div>
+        <div class="board">
+          <div class="task"><div class="n">1</div><b>Drop arriba del link</b><p>La ropa está convirtiendo. Que sea lo primero del link esta semana.</p></div>
+          <div class="task"><div class="n">2</div><b>NONONO volvió</b><p>1,500 streams en 7 días. La canción todavía tiene pulso.</p></div>
+          <div class="task"><div class="n">3</div><b>Calentar comunidad</b><p>Responder comentarios calientes y meterlos en lista VIP.</p></div>
+        </div>
+      </article>
+
+      <article class="card span6" id="link">
+        <div class="section-title" style="margin:0 0 12px"><h3>Smart Link preview</h3><span class="pill">fan view</span></div>
+        <div class="phone">
+          <div class="phone-top">gemese.boostr.link</div>
+          <div class="link-preview">
+            <div class="link-hero">
+              <img src="assets/nne_shirt.jpg" alt="NNE drop">
+              <div class="link-text"><h4>NNE drop</h4><p>La ropa se está moviendo. Si quieres pieza, entra antes de que suba.</p><a class="link-btn" href="#">Ver piezas</a></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card span6">
+        <div class="section-title" style="margin:0 0 12px"><h3>Fans que están hablando</h3><span class="pill">comments</span></div>
+        <div class="comments">
+          <div class="comment-img"><img src="assets/comments_a.jpg" alt="Comentarios"></div>
+          <div class="comment-img"><img src="assets/comments_b.jpg" alt="Comentarios"></div>
+        </div>
+      </article>
+
+      <article class="card span7">
+        <div class="label" style="margin-bottom:13px">Señal musical</div>
+        <div class="move" style="align-items:center"><div><b>NONONO sigue respirando.</b><span>NONONO sumó 1.5k streams en 7 días. Buen momento para preguntar si la gente quiere otro tema con esa energía.</span></div><span class="badge">7 días</span></div>
+      </article>
+
+      <article class="card span5">
+        <div class="label" style="margin-bottom:13px">Señal de collab</div>
+        <div class="collab"><img src="assets/janko_collab.jpg" alt="NONONO collab visual"><div><h3 style="margin:0 0 8px;font-size:21px;letter-spacing:-.06em">NONONO no se apagó.</h3><p class="muted" style="margin:0">1.5k streams en 7 días. Buen momento para tantear si la gente quiere otro junte en esa línea.</p></div></div>
+      </article>
+    </section>
+
+    <div class="foot">BOOSTR Labs · #NNE Partner OS</div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="active" href="#">Inicio</a><a href="#link">Link</a><a href="#moves">Toca</a><a href="#">Fans</a>
+  </nav>
+</body>
+</html>

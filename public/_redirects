@@ -1,1 +1,16 @@
-/*    /index.html   200
+# BOOSTR Labs explicit static module routes
+/audit        /audit/index.html       200
+/audit/*      /audit/index.html       200
+/modules      /modules/index.html     200
+/modules/*    /modules/index.html     200
+/82store      /82store/index.html     200
+/82store/*    /82store/index.html     200
+/82-store     /82store/index.html     200
+/82-store/*   /82store/index.html     200
+/app/82ngel   /app/82ngel/index.html  200
+/app/82ngel/* /app/82ngel/index.html  200
+/app/gemese   /app/gemese/index.html  200
+/app/gemese/* /app/gemese/index.html  200
+
+# SPA fallback for Vite app routes
+/*            /index.html             200

@@ -1,0 +1,86 @@
+{
+  "patch": "BOOSTR Labs v0.2.3 82 Store module",
+  "routes": [
+    "/82store",
+    "/82-store"
+  ],
+  "optimized_assets": [
+    {
+      "file": "82-clothing.webp",
+      "size_kb": 277.1
+    },
+    {
+      "file": "82apparel1.webp",
+      "size_kb": 306.4
+    },
+    {
+      "file": "82apparel10.webp",
+      "size_kb": 47.0
+    },
+    {
+      "file": "82apparel2.webp",
+      "size_kb": 243.1
+    },
+    {
+      "file": "82apparel3.webp",
+      "size_kb": 196.0
+    },
+    {
+      "file": "82apparel4.webp",
+      "size_kb": 107.7
+    },
+    {
+      "file": "82apparel5.webp",
+      "size_kb": 65.8
+    },
+    {
+      "file": "82apparel6.webp",
+      "size_kb": 76.4
+    },
+    {
+      "file": "82apparel7.webp",
+      "size_kb": 133.7
+    },
+    {
+      "file": "82apparel8.webp",
+      "size_kb": 162.3
+    },
+    {
+      "file": "82apparel9.webp",
+      "size_kb": 45.1
+    },
+    {
+      "file": "assetmoving.mp4",
+      "size_kb": 418.1
+    },
+    {
+      "file": "fullclothing.webp",
+      "size_kb": 77.2
+    },
+    {
+      "file": "mcbogang-westdetro-t-shirt-mock-up.webp",
+      "size_kb": 125.9
+    },
+    {
+      "file": "piloto-final-logo-82ngel.webp",
+      "size_kb": 103.0
+    },
+    {
+      "file": "primer-piloto-82ngel.webp",
+      "size_kb": 123.0
+    },
+    {
+      "file": "reffe-82ngel-aesthetic1.webp",
+      "size_kb": 17.4
+    },
+    {
+      "file": "ropa-82ngel.webp",
+      "size_kb": 83.4
+    },
+    {
+      "file": "westdetro-collection-t-shirt-oversized.webp",
+      "size_kb": 180.1
+    }
+  ],
+  "source_zip": "BOOSTR_Labs_CORE_FULL_DEPLOY_82STORE_MOTION_BG.zip"
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BOOSTR Labs — Module QA Index</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050505;--panel:#111;--line:#292929;--text:#f7f7f7;--muted:#aaa;--accent:#d7ff5c}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#1d1d1d,#050505 45%);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);padding:28px} main{max-width:980px;margin:0 auto} h1{font-size:clamp(36px,7vw,78px);letter-spacing:-.08em;line-height:.92;margin:0 0 16px} p{color:var(--muted);line-height:1.5}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:22px}.card{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border-radius:24px;padding:18px}.card span{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);font-weight:900}.card h2{margin:10px 0 8px;font-size:22px;letter-spacing:-.04em}.card a{display:inline-block;margin-top:12px;color:#050505;background:var(--text);text-decoration:none;font-weight:900;border-radius:999px;padding:10px 13px}.muted{color:var(--muted);font-size:13px}.list{margin-top:28px;border-top:1px solid var(--line);padding-top:18px} code{background:#111;border:1px solid var(--line);border-radius:8px;padding:2px 6px;color:#fff}</style>
+</head>
+<body>
+<main>
+  <p class="muted">BOOSTR Labs v0.2.2 migration patch</p>
+  <h1>Module QA Index</h1>
+  <p>Use this page to test the migrated static front-end modules before backend/Codex work. These pages are front-end demos and may still use fictional or placeholder data.</p>
+  <section class="grid">
+    <article class="card"><span>Core lead tool</span><h2>BOOSTR Audit V5</h2><p>Interactive audit/lead-capture demo migrated from Netlify.</p><a href="/audit?fresh=1">Open Audit</a></article>
+    <article class="card"><span>Artist OS dashboard</span><h2>82NGEL Dashboard</h2><p>HTML dashboard demo integrated under the app namespace.</p><a href="/app/82ngel?fresh=1">Open 82NGEL App</a></article>
+    <article class="card"><span>Partner dashboard</span><h2>GEMESE Partner OS</h2><p>Static dashboard design migrated from Netlify V7.</p><a href="/app/gemese?fresh=1">Open GEMESE App</a></article>
+  </section>
+  <section class="list">
+    <p><strong>Existing core routes to keep testing:</strong></p>
+    <p><a href="/">/</a> · <a href="/janko?fresh=1">/janko</a> · <a href="/jankodiorr?fresh=1">/jankodiorr</a> · <a href="/82ngel?fresh=1">/82ngel</a> · <a href="/quote?fresh=1">/quote</a> · <a href="/admin?fresh=1">/admin</a></p>
+    <p class="muted">If a route appears stale, add <code>?fresh=1</code> first to bypass cache.</p>
+  </section>
+
+      <a class="module-card" href="/82store?fresh=1">
+        <span>Public Store</span>
+        <strong>82 Store</strong>
+        <p>82NGEL apparel/storefront module migrated into BOOSTR Cloudflare ecosystem.</p>
+      </a>
+</main>
+</body>
+</html>

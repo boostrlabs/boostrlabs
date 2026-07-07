@@ -1,21 +1,66 @@
-{
-  "name": "BOOSTR_CODEX_TEXT_DIRECTION_UPDATE_v1_0",
-  "date": "2026-07-07",
-  "type": "text_direction_update_only",
-  "purpose": "Update local BOOSTR Labs docs/direction before GitHub becomes source of truth.",
-  "do_not_do": [
-    "do not code",
-    "do not redesign",
-    "do not delete assets",
-    "do not run build",
-    "do not install dependencies"
-  ],
-  "primary_entry": "CODEX_START_HERE.md",
-  "folders": [
-    "docs",
-    "manifests",
-    "prompts",
-    "source_digest"
-  ],
-  "status": "ready_for_codex_text_update"
-}
+[
+  {
+    "path": "BOOSTR_FRONTEND_ROADMAP_PRE_BACKEND.md",
+    "bytes": 5460
+  },
+  {
+    "path": "README_BOOSTR_V022_MODULES_PATCH.md",
+    "bytes": 1438
+  },
+  {
+    "path": "public/_redirects",
+    "bytes": 458
+  },
+  {
+    "path": "public/app/82ngel/index.html",
+    "bytes": 20962
+  },
+  {
+    "path": "public/app/gemese/assets/comments_a.jpg",
+    "bytes": 83884
+  },
+  {
+    "path": "public/app/gemese/assets/comments_b.jpg",
+    "bytes": 82967
+  },
+  {
+    "path": "public/app/gemese/assets/cover.jpg",
+    "bytes": 184382
+  },
+  {
+    "path": "public/app/gemese/assets/fit.jpg",
+    "bytes": 258343
+  },
+  {
+    "path": "public/app/gemese/assets/janko_collab.jpg",
+    "bytes": 420235
+  },
+  {
+    "path": "public/app/gemese/assets/nne_shirt.jpg",
+    "bytes": 192845
+  },
+  {
+    "path": "public/app/gemese/assets/street.jpg",
+    "bytes": 212338
+  },
+  {
+    "path": "public/app/gemese/index.html",
+    "bytes": 16599
+  },
+  {
+    "path": "public/audit/README.md",
+    "bytes": 418
+  },
+  {
+    "path": "public/audit/boostr-logo.png",
+    "bytes": 559101
+  },
+  {
+    "path": "public/audit/index.html",
+    "bytes": 27541
+  },
+  {
+    "path": "public/modules/index.html",
+    "bytes": 2849
+  }
+]
