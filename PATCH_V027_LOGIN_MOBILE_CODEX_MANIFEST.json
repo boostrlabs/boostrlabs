@@ -1,0 +1,12 @@
+{
+  "version": "0.2.7",
+  "name": "BOOSTR Mother UI Login Mobile Codex Patch",
+  "changes": [
+    "Redirect root to /home Mother UI",
+    "Rebuild Mother UI pages with less text and more visual cards",
+    "Prepare /login role access shell",
+    "Improve mobile responsiveness with compact sidebar and bottom nav",
+    "Add Codex backend front-end contract"
+  ],
+  "safe_to_overlay": true
+}
