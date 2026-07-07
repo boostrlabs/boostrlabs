@@ -1,0 +1,26 @@
+{
+  "version": "v0.2.5",
+  "purpose": "Connected front-end navigation and role shells before backend",
+  "new_routes": [
+    "/",
+    "/ecosystem",
+    "/modules",
+    "/login",
+    "/manager",
+    "/manager-os",
+    "/app",
+    "/client",
+    "/client-os",
+    "/admin",
+    "/partner-dashboard",
+    "/partner-os",
+    "/partner",
+    "/partner/gemese",
+    "/partner/janko",
+    "/partner/omgbeauty",
+    "/portfolio",
+    "/portfolio/omgbeauty",
+    "/omgbeauty"
+  ],
+  "backend_status": "pending"
+}
