@@ -1,4 +1,30 @@
-# BOOSTR Labs explicit static module routes
+# BOOSTR Labs v0.2.4 front-end network routes
+/              /home/index.html             200
+/home          /home/index.html             200
+/home/*        /home/index.html             200
+/ecosystem     /ecosystem/index.html        200
+/ecosystem/*   /ecosystem/index.html        200
+/login         /login/index.html            200
+/login/*       /login/index.html            200
+/app           /app/index.html              200
+/app/82ngel    /app/82ngel/index.html       200
+/app/82ngel/*  /app/82ngel/index.html       200
+/app/gemese    /app/gemese/index.html       200
+/app/gemese/*  /app/gemese/index.html       200
+/admin         /admin/index.html            200
+/admin/*       /admin/index.html            200
+/partner       /partner/index.html          200
+/partner/gemese      /partner/gemese/index.html      200
+/partner/gemese/*    /partner/gemese/index.html      200
+/partner/janko       /partner/janko/index.html       200
+/partner/janko/*     /partner/janko/index.html       200
+/partner/omgbeauty   /partner/omgbeauty/index.html   200
+/partner/omgbeauty/* /partner/omgbeauty/index.html   200
+/portfolio           /portfolio/index.html           200
+/portfolio/*         /portfolio/index.html           200
+/portfolio/omgbeauty /portfolio/omgbeauty/index.html 200
+/omgbeauty           /portfolio/omgbeauty/index.html 200
+/omgbeauty/*         /portfolio/omgbeauty/index.html 200
 /audit        /audit/index.html       200
 /audit/*      /audit/index.html       200
 /modules      /modules/index.html     200
@@ -7,10 +33,4 @@
 /82store/*    /82store/index.html     200
 /82-store     /82store/index.html     200
 /82-store/*   /82store/index.html     200
-/app/82ngel   /app/82ngel/index.html  200
-/app/82ngel/* /app/82ngel/index.html  200
-/app/gemese   /app/gemese/index.html  200
-/app/gemese/* /app/gemese/index.html  200
-
-# SPA fallback for Vite app routes
 /*            /index.html             200
