@@ -34,12 +34,15 @@ export async function onRequestGet({ env }) {
     audits_total: null,
     orders_total: null,
     events_total: null,
+    products_total: null,
+    active_products_total: null,
     invite_codes_total: null,
     users_total: null,
     workspaces_total: null,
     admins_total: null,
     last_lead: null,
-    last_audit: null
+    last_audit: null,
+    last_product: null
   };
 
   if (env.DB) {
@@ -79,6 +82,22 @@ export async function onRequestGet({ env }) {
         metrics.last_lead = lastLead || null;
         metrics.last_audit = lastAudit || null;
       }
+      if (db.tables.includes("products")) {
+        const [productsTotal, activeProductsTotal, lastProduct] = await Promise.all([
+          env.DB.prepare("SELECT COUNT(*) AS total FROM products WHERE status != 'archived'").first(),
+          env.DB.prepare("SELECT COUNT(*) AS total FROM products WHERE status = 'active'").first(),
+          env.DB.prepare(
+            `SELECT id, workspace_id, title, product_type, status, price_amount, currency, created_at
+             FROM products
+             WHERE status != 'archived'
+             ORDER BY created_at DESC
+             LIMIT 1`
+          ).first()
+        ]);
+        metrics.products_total = productsTotal?.total ?? 0;
+        metrics.active_products_total = activeProductsTotal?.total ?? 0;
+        metrics.last_product = lastProduct || null;
+      }
       if (db.tables.includes("invite_codes")) {
         const inviteCodesTotal = await env.DB.prepare("SELECT COUNT(*) AS total FROM invite_codes").first();
         metrics.invite_codes_total = inviteCodesTotal?.total ?? 0;
@@ -103,7 +122,7 @@ export async function onRequestGet({ env }) {
   return json({
     ok: true,
     service: "BOOSTR Labs API",
-    version: "0.3.3-production-readiness",
+    version: "0.3.4-product-foundation",
     db,
     metrics,
     manager: {
@@ -123,6 +142,13 @@ export async function onRequestGet({ env }) {
       creates_workspace: true,
       creates_default_cards: true,
       increments_invite_usage_after_signup: true
+    },
+    products: {
+      endpoint: "/api/products",
+      item_endpoint: "/api/products/:id",
+      workspace_ui: "/app/products",
+      creates_real_workspace_products: true,
+      stripe_required: false
     },
     secret_code: {
       endpoint: "/api/invite-codes/validate",
@@ -168,6 +194,8 @@ export async function onRequestGet({ env }) {
       "/api/events",
       "/api/modules",
       "/api/orders",
+      "/api/products",
+      "/api/products/:id",
       "/api/cards",
       "/api/cards/:id",
       "/api/cards/:id/action",
