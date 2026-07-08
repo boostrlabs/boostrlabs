@@ -42,12 +42,12 @@ export async function onRequestPost({ request, env, params }) {
       status, amount_cents, currency, related_type, related_id, line_items_json, metadata_json, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, 'draft', ?, ?, 'order_reservation', ?, ?, ?, ?, ?)`
   ).bind(invoiceId, reservation.workspace_id, auth.user?.id || null, clean(metadata.customer_name || "", 180), clean(reservation.guest_email, 180).toLowerCase(), invoiceNumber, amount, currency, reservation.id, JSON.stringify(lineItems), JSON.stringify({ payment_link_id: reservation.payment_link_id, product_id: reservation.product_id, generated_from: "reservation" }), timestamp, timestamp).run();
-  await env.DB.prepare("UPDATE order_reservations SET status = 'invoice_drafted', updated_at = ? WHERE id = ?").bind(timestamp, reservation.id).run().catch(() => null);
+  await env.DB.prepare("UPDATE order_reservations SET status = 'converted', updated_at = ? WHERE id = ?").bind(timestamp, reservation.id).run().catch(() => null);
   try {
     await env.DB.prepare(
       `INSERT INTO activity_events (id, workspace_id, user_id, event_type, title, body, metadata_json, created_at)
        VALUES (?, ?, ?, 'invoice.created_from_reservation', 'Invoice created from reservation', ?, ?, ?)`
     ).bind(crypto.randomUUID(), reservation.workspace_id, auth.user?.id || null, invoiceNumber, JSON.stringify({ invoice_id: invoiceId, reservation_id: reservation.id }), timestamp).run();
   } catch {}
-  return json({ ok: true, invoice: { id: invoiceId, invoice_number: invoiceNumber, status: "draft", amount_cents: amount, currency }, reservation_status: "invoice_drafted" }, 201);
+  return json({ ok: true, invoice: { id: invoiceId, invoice_number: invoiceNumber, status: "draft", amount_cents: amount, currency }, reservation_status: "converted" }, 201);
 }
