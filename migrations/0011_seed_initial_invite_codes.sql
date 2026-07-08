@@ -1,0 +1,76 @@
+-- BOOSTR Labs D1 Migration 0011
+-- Seeds initial Secret BOOSTR Codes as salted hashes only.
+-- Plaintext codes are intentionally not stored in the database or repo.
+
+INSERT OR IGNORE INTO invite_codes (
+  id,
+  code_hash,
+  code_salt,
+  label,
+  status,
+  max_uses,
+  used_count,
+  allowed_role,
+  allowed_persona,
+  allowed_workspace_type,
+  campaign,
+  source,
+  bypass_audit,
+  metadata_json,
+  created_at,
+  updated_at
+) VALUES
+(
+  'boostr-invite-initial-a',
+  'a004b159d85ffa177f9d12f1f24fa35efe6d3830b7cfeb4caf6f9ed558d6044f',
+  'boostr_initial_a_20260708',
+  'BOOSTR private access A',
+  'active',
+  100,
+  0,
+  'client',
+  'creator',
+  'onboarding',
+  'founder_seed',
+  'manual_seed',
+  1,
+  '{"seed":"initial","public_plaintext_committed":false}',
+  strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+  strftime('%Y-%m-%dT%H:%M:%fZ','now')
+),
+(
+  'boostr-invite-initial-b',
+  'dc5ce4525e1e9218cecb48b7d61f5fd1a2f17df7c703ab10b4075b56132a3a65',
+  'boostr_initial_b_20260708',
+  'BOOSTR private access B',
+  'active',
+  100,
+  0,
+  'client',
+  'artist',
+  'onboarding',
+  'founder_seed',
+  'manual_seed',
+  1,
+  '{"seed":"initial","public_plaintext_committed":false}',
+  strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+  strftime('%Y-%m-%dT%H:%M:%fZ','now')
+),
+(
+  'boostr-invite-initial-c',
+  '0c800fc247ca3aad8796b7d384ce3d3fdde4ff93c78b4378626ae06a4de84296',
+  'boostr_initial_c_20260708',
+  'BOOSTR private access C',
+  'active',
+  100,
+  0,
+  'client',
+  'artist',
+  'onboarding',
+  'founder_seed',
+  'manual_seed',
+  1,
+  '{"seed":"initial","public_plaintext_committed":false}',
+  strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+  strftime('%Y-%m-%dT%H:%M:%fZ','now')
+);
