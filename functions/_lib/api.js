@@ -51,6 +51,167 @@ export const requireDb = (env) => {
   return { ok: true };
 };
 
+export const authRoles = new Set(["admin", "manager", "partner", "client", "artist"]);
+
+const parseCookies = (request) => {
+  const header = request.headers.get("Cookie") || "";
+  return Object.fromEntries(
+    header
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item) => {
+        const index = item.indexOf("=");
+        if (index === -1) return [item, ""];
+        return [item.slice(0, index), decodeURIComponent(item.slice(index + 1))];
+      })
+  );
+};
+
+const toHex = (buffer) =>
+  [...new Uint8Array(buffer)].map((value) => value.toString(16).padStart(2, "0")).join("");
+
+export async function hashSessionToken(token) {
+  const bytes = new TextEncoder().encode(token);
+  return toHex(await crypto.subtle.digest("SHA-256", bytes));
+}
+
+export const getSessionToken = (request) => {
+  const authorization = clean(request.headers.get("Authorization"), 1000);
+  if (authorization.toLowerCase().startsWith("bearer ")) return clean(authorization.slice(7), 1000);
+  return clean(request.headers.get("X-BOOSTR-Session") || parseCookies(request).boostr_session || "", 1000);
+};
+
+const managerPinFallback = (request, env) => {
+  const allowed = env.ENVIRONMENT === "development" || env.ALLOW_MANAGER_PIN_FALLBACK === "true";
+  if (!allowed) return null;
+
+  const configured = clean(env.MANAGER_PIN || env.ADMIN_PIN || "", 120);
+  const supplied = clean(request.headers.get("X-Manager-Pin") || "", 120);
+  if (!configured || supplied !== configured) return null;
+
+  return {
+    ok: true,
+    dev_fallback: true,
+    user: {
+      id: "dev-manager",
+      email: "dev-manager@boostr.local",
+      name: "Development Manager",
+      role: "manager",
+      status: "active"
+    },
+    session: null,
+    memberships: [],
+    roles: ["manager"],
+    active_workspace_id: null
+  };
+};
+
+export async function requireSession(request, env) {
+  if (!env.DB) return { ok: false, response: json({ ok: false, error: "D1 DB binding missing." }, 503) };
+
+  const fallback = managerPinFallback(request, env);
+  if (fallback) return fallback;
+
+  const token = getSessionToken(request);
+  if (!token) return { ok: false, response: json({ ok: false, error: "Missing session." }, 401) };
+
+  const tokenHash = await hashSessionToken(token);
+  const current = now();
+  const row = await env.DB.prepare(
+    `SELECT
+       sessions.id AS session_id,
+       sessions.active_workspace_id,
+       sessions.expires_at,
+       users.id AS user_id,
+       users.email,
+       users.name,
+       users.role,
+       users.workspace_id,
+       users.status
+     FROM sessions
+     JOIN users ON users.id = sessions.user_id
+     WHERE sessions.session_token_hash = ?
+       AND sessions.status = 'active'
+       AND sessions.revoked_at IS NULL
+       AND sessions.expires_at > ?
+     LIMIT 1`
+  )
+    .bind(tokenHash, current)
+    .first();
+
+  if (!row?.user_id) return { ok: false, response: json({ ok: false, error: "Invalid session." }, 401) };
+  if (row.status && !["active", "invited"].includes(row.status)) {
+    return { ok: false, response: json({ ok: false, error: "User is not active." }, 403) };
+  }
+
+  await env.DB.prepare("UPDATE sessions SET last_seen_at = ?, updated_at = ? WHERE id = ?")
+    .bind(current, current, row.session_id)
+    .run();
+
+  const membershipResult = await env.DB.prepare(
+    `SELECT workspace_members.workspace_id, workspace_members.role, workspace_members.status,
+            workspaces.name AS workspace_name, workspaces.type AS workspace_type, workspaces.slug AS workspace_slug
+     FROM workspace_members
+     LEFT JOIN workspaces ON workspaces.id = workspace_members.workspace_id
+     WHERE workspace_members.user_id = ?
+       AND workspace_members.status = 'active'
+     ORDER BY workspace_members.created_at ASC`
+  )
+    .bind(row.user_id)
+    .all();
+
+  const memberships = membershipResult.results || [];
+  const roles = [...new Set([row.role, ...memberships.map((item) => item.role)].filter((role) => authRoles.has(role)))];
+  const activeWorkspace = clean(row.active_workspace_id || row.workspace_id || memberships[0]?.workspace_id || "", 120) || null;
+
+  return {
+    ok: true,
+    user: {
+      id: row.user_id,
+      email: row.email,
+      name: row.name,
+      role: row.role,
+      status: row.status
+    },
+    session: {
+      id: row.session_id,
+      expires_at: row.expires_at
+    },
+    memberships,
+    roles,
+    active_workspace_id: activeWorkspace
+  };
+}
+
+export async function requireRole(request, env, roles) {
+  const auth = await requireSession(request, env);
+  if (!auth.ok) return auth;
+
+  const allowed = new Set(Array.isArray(roles) ? roles : [roles]);
+  if (!auth.roles.some((role) => allowed.has(role))) {
+    return { ok: false, response: json({ ok: false, error: "Forbidden." }, 403) };
+  }
+
+  return auth;
+}
+
+export const authCanSeeAll = (auth) =>
+  Boolean(auth?.dev_fallback || auth?.roles?.includes("admin") || auth?.roles?.includes("manager"));
+
+export function requireWorkspaceAccess(auth, workspaceId) {
+  const workspace = clean(workspaceId, 120);
+  if (authCanSeeAll(auth)) return { ok: true };
+  if (!workspace) return { ok: false, response: json({ ok: false, error: "workspace_id is required." }, 400) };
+  if (auth.memberships?.some((member) => member.workspace_id === workspace && member.status === "active")) {
+    return { ok: true };
+  }
+  return { ok: false, response: json({ ok: false, error: "Workspace access denied." }, 403) };
+}
+
+export const defaultWorkspaceId = (auth) =>
+  clean(auth?.active_workspace_id || auth?.memberships?.[0]?.workspace_id || "", 120) || null;
+
 export const managerAuth = (request, env) => {
   const configured = clean(env.MANAGER_PIN || env.ADMIN_PIN || "", 120);
   if (!configured) return { ok: false, response: json({ ok: false, error: "MANAGER_PIN is not configured." }, 503) };
@@ -100,11 +261,12 @@ export async function addLeadEvent(env, event) {
   const createdAt = event.created_at || now();
   await env.DB.prepare(
     `INSERT INTO lead_events (
-      id, lead_id, audit_submission_id, event_type, payload_json, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?)`
+      id, workspace_id, lead_id, audit_submission_id, event_type, payload_json, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       event.id || crypto.randomUUID(),
+      event.workspace_id || null,
       event.lead_id || null,
       event.audit_submission_id || null,
       clean(event.event_type || "note", 80),

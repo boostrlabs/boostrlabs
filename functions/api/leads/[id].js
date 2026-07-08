@@ -1,7 +1,7 @@
-import { addLeadEvent, clean, json, managerAuth, normalizeStatus, now, readJson, requireDb } from "../../_lib/api.js";
+import { addLeadEvent, clean, json, normalizeStatus, now, readJson, requireDb, requireRole, requireWorkspaceAccess } from "../../_lib/api.js";
 
 const leadColumns = `
-  id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
+  id, workspace_id, created_by_user_id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
   business_name, industry, project_goal, budget_range, timeline, current_status,
   message, status, assigned_to, created_at, updated_at
 `;
@@ -14,12 +14,15 @@ export async function onRequestGet({ request, env, params }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, ["admin", "manager", "partner", "client", "artist"]);
   if (!auth.ok) return auth.response;
 
   const id = clean(params.id, 120);
   const lead = await env.DB.prepare(`SELECT ${leadColumns} FROM leads WHERE id = ?`).bind(id).first();
   if (!lead) return json({ ok: false, error: "Lead not found." }, 404);
+
+  const workspaceAccess = requireWorkspaceAccess(auth, lead.workspace_id);
+  if (!workspaceAccess.ok) return workspaceAccess.response;
 
   const events = await env.DB.prepare(
     `SELECT id, event_type, payload_json, created_at
@@ -38,14 +41,14 @@ export async function onRequestPatch({ request, env, params }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, ["admin", "manager"]);
   if (!auth.ok) return auth.response;
 
   const parsed = await readJson(request);
   if (!parsed.ok) return parsed.response;
 
   const id = clean(params.id, 120);
-  const existing = await env.DB.prepare("SELECT id, status, assigned_to FROM leads WHERE id = ?").bind(id).first();
+  const existing = await env.DB.prepare("SELECT id, workspace_id, status, assigned_to FROM leads WHERE id = ?").bind(id).first();
   if (!existing) return json({ ok: false, error: "Lead not found." }, 404);
 
   const payload = parsed.payload || {};
@@ -70,6 +73,7 @@ export async function onRequestPatch({ request, env, params }) {
       : "lead.note";
 
   await addLeadEvent(env, {
+    workspace_id: existing.workspace_id,
     lead_id: id,
     event_type: eventType,
     payload: {
