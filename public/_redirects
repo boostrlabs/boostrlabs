@@ -10,6 +10,8 @@
 /login/*       /login/index.html            200
 /signup        /signup/index.html           200
 /signup/*      /signup/index.html           200
+/accept-invite /accept-invite/index.html    200
+/accept-invite/* /accept-invite/index.html  200
 /demo/janko-os /demo/janko-os/index.html    200
 /demo/janko-os/* /demo/janko-os/index.html  200
 /janko-os-demo /demo/janko-os/index.html    200
@@ -26,6 +28,8 @@
 /manager/*     /manager/index.html          200
 /manager-os    /manager/index.html          200
 /manager-os/*  /manager/index.html          200
+/app/intelligence /app/intelligence/index.html 200
+/app/intelligence/* /app/intelligence/index.html 200
 /app/orders    /app/orders/index.html       200
 /app/orders/*  /app/orders/index.html       200
 /app/files     /app/files/index.html        200
