@@ -5,7 +5,7 @@ Last updated: 2026-07-08
 
 ## Purpose
 
-Some BOOSTR routes are product surfaces. Others are branded worlds.
+Some BOOSTR routes are core product surfaces. Others are branded worlds.
 
 Do not flatten branded worlds into generic BOOSTR dashboards.
 
@@ -13,12 +13,12 @@ Do not flatten branded worlds into generic BOOSTR dashboards.
 
 These rules are active:
 
-1. Separate core BOOSTR from client/artist branded pages.
+1. Separate BOOSTR core from client/artist branded pages.
 2. Restore before improving.
 3. EN / ES toggle must be visible where language switching is expected.
-4. BOOSTR system names stay fixed.
+4. Names must be clear before they are clever.
 5. QA live after meaningful commits.
-6. BOOSTR Intake is an experience, not a generic form.
+6. BOOSTR Audit is an experience, not a generic form.
 7. JANKO/WESTDETRO must feel custom, not like a BOOSTR template.
 8. 82NGEL must keep its own world and visual identity.
 
@@ -28,14 +28,14 @@ These can share the BOOSTR visual system, console behavior, floating cards and m
 
 | Route | Product name | Visual ownership |
 |---|---|---|
-| `/home` | Mother OS | BOOSTR core |
-| `/login` | Identity OS | BOOSTR core |
-| `/manager` | Manager OS | BOOSTR core |
-| `/manager/leads` | Signal Inbox | BOOSTR core |
+| `/home` | BOOSTR CORE | BOOSTR core |
+| `/login` | Login | BOOSTR core |
+| `/manager` | Manager | BOOSTR core |
+| `/manager/leads` | Leads | BOOSTR core |
 | `/modules` | Module Deck | BOOSTR core |
-| `/app` | Workspace Core | BOOSTR core |
-| `/partner-dashboard` | Partner Grid | BOOSTR core |
-| `/admin` | System Core | BOOSTR core |
+| `/app` | Dashboard | BOOSTR core |
+| `/partner-dashboard` | Partners | BOOSTR core |
+| `/admin` | BOOSTR CORE / Admin | BOOSTR core |
 
 ## Protected branded/custom routes
 
@@ -43,19 +43,19 @@ These routes should not be made generic.
 
 | Route | Surface | Protection rule |
 |---|---|---|
-| `/audit` | BOOSTR Intake | Must be premium interactive intake, not a basic contact form. Restore best version before further changes. |
-| `/jankodiorr` | WESTDETRO OS | Must feel JANKO/WESTDETRO/NNE first, BOOSTR-powered second. Preserve approved logo/assets/mood. |
+| `/audit` | BOOSTR Audit | Must be premium interactive diagnosis, not a basic contact form. Restore best version before further changes. |
+| `/jankodiorr` | JANKO / WESTDETRO Link OS | Must feel JANKO/WESTDETRO/NNE first, BOOSTR-powered second. Preserve approved logo/assets/mood. |
 | `/82ngel` | 82NGEL OS | Must preserve 82NGEL red/black/white artist world. |
-| `/app/82ngel` | 82 Command | Must preserve 82NGEL dashboard direction and not become generic SaaS. |
+| `/app/82ngel` | 82NGEL Dashboard | Must preserve 82NGEL dashboard direction and not become generic SaaS. |
 | `/82store` | 82 Storefront | Commerce reference route with 82NGEL identity. |
-| `/portfolio` | Proof Vault | Proof only, not a core dashboard module. |
+| `/portfolio` | Proof | Proof only, not a core dashboard module. |
 
 ## Restore-before-improve rule
 
 Before changing a protected route:
 
 1. Check whether the current route is the approved version.
-2. If user says an earlier version was better, stop feature work.
+2. If the owner says an earlier version was better, stop feature work.
 3. Search commit history or request the old ZIP/screenshot.
 4. Restore the approved direction first.
 5. Only then apply language, performance or small bug fixes.
@@ -116,6 +116,7 @@ Must preserve or restore:
 - approved music/press visuals
 - approved dark mood
 - approved service/music links
+- many CTA buttons
 
 ## 82NGEL lock
 
@@ -127,9 +128,9 @@ Must preserve or restore:
 - direct and visual
 - not generic dashboard SaaS
 
-## BOOSTR Intake lock
+## BOOSTR Audit lock
 
-`/audit` must become or return to:
+`/audit` must be:
 
 - premium interactive diagnosis
 - multi-step or high-signal flow
@@ -137,7 +138,7 @@ Must preserve or restore:
 - progress state
 - EN / ES support
 - public guest access
-- useful Signal Inbox output
+- useful Leads output
 
 It must not remain a basic contact form as the final direction.
 
