@@ -24,6 +24,8 @@
 /demo/janko/*  /demo/janko-os/index.html    200
 /manager/leads /manager/leads/index.html    200
 /manager/leads/* /manager/leads/index.html  200
+/manager/workspaces /manager/workspaces/index.html 200
+/manager/workspaces/* /manager/workspaces/index.html 200
 /manager/payment-links   /manager/payment-links/index.html 200
 /manager/payment-links/* /manager/payment-links/index.html 200
 /manager/orders          /manager/orders/index.html 200
