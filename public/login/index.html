@@ -8,18 +8,7 @@
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="stylesheet" href="/assets/boostr-mother/mother.css">
   <style>
-    .login-shell{min-height:100vh;display:grid;place-items:center;padding:28px;position:relative;z-index:1}
-    .login-card{width:min(520px,100%);border-radius:34px;padding:28px}
-    .login-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
-    .login-brand img{width:78px;max-height:40px;object-fit:contain}
-    .login-card h1{font-family:Space Grotesk,Inter,sans-serif;font-size:clamp(42px,7vw,72px);line-height:.9;letter-spacing:-.075em;margin:0 0 12px}
-    .auth-form{display:grid;gap:12px;margin-top:22px}
-    .auth-form label{display:grid;gap:7px;color:var(--soft);font-size:11px;text-transform:uppercase;letter-spacing:.11em;font-weight:900}
-    .auth-form label span {display:block}
-    .auth-form input,.auth-form select{min-height:52px;border-radius:17px;border:1px solid var(--line2);background:rgba(0,0,0,.28);color:white;padding:0 14px}
-    .login-note{border:1px solid rgba(119,255,172,.2);background:rgba(119,255,172,.06);border-radius:20px;padding:13px;color:var(--muted);font-size:12px;line-height:1.45}
-    .login-foot{margin-top:18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
-    .ghost-link{font-size:12px;color:var(--champagne);font-weight:900}
+    .login-shell{min-height:100vh;display:grid;place-items:center;padding:28px;position:relative;z-index:1}.login-card{width:min(520px,100%);border-radius:34px;padding:28px}.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.login-brand img{width:78px;max-height:40px;object-fit:contain}.login-card h1{font-family:Space Grotesk,Inter,sans-serif;font-size:clamp(42px,7vw,72px);line-height:.9;letter-spacing:-.075em;margin:0 0 12px}.auth-form{display:grid;gap:12px;margin-top:22px}.auth-form label{display:grid;gap:7px;color:var(--soft);font-size:11px;text-transform:uppercase;letter-spacing:.11em;font-weight:900}.auth-form label span{display:block}.auth-form input,.auth-form select{min-height:52px;border-radius:17px;border:1px solid var(--line2);background:rgba(0,0,0,.28);color:white;padding:0 14px}.login-note{border:1px solid rgba(119,255,172,.2);background:rgba(119,255,172,.06);border-radius:20px;padding:13px;color:var(--muted);font-size:12px;line-height:1.45}.login-foot{margin-top:18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.ghost-link{font-size:12px;color:var(--champagne);font-weight:900}
   </style>
   <script src="/assets/boostr-mother/i18n.js"></script>
 </head>
@@ -30,106 +19,32 @@
       <a class="login-brand" href="/home">
         <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
         <div>
-          <span class="eyebrow" data-i18n="login_topbar_span">BOOSTR Identity</span>
+          <span class="eyebrow" data-i18n="login_topbar_span">BOOSTR Login</span>
           <strong data-i18n="login_topbar_val">Account Access</strong>
         </div>
       </a>
       <h1 data-i18n="login_h1">Sign in.</h1>
-      <p class="micro" data-i18n="login_desc">Access Manager OS, Partner OS, Client OS or Artist OS.</p>
+      <p class="micro" data-i18n="login_desc">Access Manager, Partners, Dashboard or Artist routes.</p>
       <form class="auth-form" id="loginForm">
-        <label>
-          <span data-i18n="login_label_email">Email</span>
-          <input name="email" type="email" autocomplete="email" placeholder="you@company.com" required data-i18n="login_label_email">
-        </label>
-        <label>
-          <span data-i18n="login_label_password">Password</span>
-          <input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
-        </label>
-        <label>
-          <span data-i18n="login_label_role">Workspace role</span>
-          <select name="role" id="roleSelect">
-            <option value="manager" data-i18n="login_option_manager">Manager</option>
-            <option value="partner" data-i18n="login_option_partner">Partner</option>
-            <option value="client" data-i18n="login_option_client">Client</option>
-            <option value="artist" data-i18n="login_option_artist">Artist</option>
-          </select>
-        </label>
+        <label><span data-i18n="login_label_email">Email</span><input name="email" type="email" autocomplete="email" placeholder="you@company.com" required></label>
+        <label><span data-i18n="login_label_password">Password</span><input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required></label>
+        <label><span data-i18n="login_label_role">Role</span><select name="role" id="roleSelect"><option value="manager" data-i18n="login_option_manager">Manager</option><option value="partner" data-i18n="login_option_partner">Partners</option><option value="client" data-i18n="login_option_client">Dashboard</option><option value="artist" data-i18n="login_option_artist">Artist</option></select></label>
         <button class="btn primary" type="submit" data-i18n="login_btn_continue">Continue</button>
         <button class="btn" type="button" id="clearSession" data-i18n="login_btn_clear">Clear session</button>
         <div class="login-note" id="authStatus" data-i18n="login_note_preview">Use your BOOSTR account email and password.</div>
       </form>
-      <div class="login-foot">
-        <a class="ghost-link" href="/home" data-i18n="login_foot_home">← Home</a>
-        <a class="ghost-link" href="/audit" target="_blank" rel="noopener noreferrer" data-i18n="login_foot_audit">Start Audit ↗</a>
-      </div>
+      <div class="login-foot"><a class="ghost-link" href="/home" data-i18n="login_foot_home">← BOOSTR CORE</a><a class="ghost-link" href="/audit" target="_blank" rel="noopener noreferrer" data-i18n="login_foot_audit">Start Audit ↗</a></div>
     </section>
-    <footer class="footer">POWERED BY <strong>BOOSTR LABS</strong> · Identity OS</footer>
+    <footer class="footer">POWERED BY <strong>BOOSTR LABS</strong> · BOOSTR Login</footer>
   </main>
   <script>
     const routes={manager:'/manager',partner:'/partner-dashboard',client:'/app',artist:'/app/82ngel'};
-    const loginForm=document.getElementById('loginForm');
-    const clearSession=document.getElementById('clearSession');
-    const roleSelect=document.getElementById('roleSelect');
-    const email=document.querySelector('[name=email]');
-    const password=document.querySelector('[name=password]');
-    const status=document.getElementById('authStatus');
+    const loginForm=document.getElementById('loginForm'),clearSession=document.getElementById('clearSession'),roleSelect=document.getElementById('roleSelect'),email=document.querySelector('[name=email]'),password=document.querySelector('[name=password]'),status=document.getElementById('authStatus');
     const isEs=()=>localStorage.getItem('boostr_lang')==='es';
-    
-    function paint(){
-      const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
-      if(s){
-        email.value=s.email||'';
-        roleSelect.value=s.role||'manager';
-        status.textContent=isEs()
-          ? `Sesión activa: ${s.email||'sin correo'} · ${s.role}.`
-          : `Session active: ${s.email||'no email'} · ${s.role}.`;
-      }
-    }
-    
-    loginForm.addEventListener('submit',async e=>{
-      e.preventDefault();
-      status.textContent=isEs()?'Entrando...':'Signing in...';
-      try{
-        const res=await fetch('/api/session',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({email:email.value.trim(),password:password.value})
-        });
-        const data=await res.json();
-        if(!res.ok||!data.ok) throw data;
-        const s={email:data.user.email,role:data.role,token:data.token,createdAt:new Date().toISOString()};
-        localStorage.setItem('boostr_auth_token',data.token);
-        localStorage.setItem('boostr_session',JSON.stringify(s));
-        status.textContent=isEs()?'Sesión iniciada.':'Signed in.';
-        location.href=routes[data.role]||routes[roleSelect.value]||'/app';
-      }catch(err){
-        status.textContent=err?.message||err?.error||(isEs()?'No se pudo iniciar sesión.':'Sign-in failed.');
-      }
-    });
-    
-    clearSession.addEventListener('click',async()=>{
-      const token=localStorage.getItem('boostr_auth_token');
-      if(token){
-        try{await fetch('/api/session',{method:'DELETE',headers:{Authorization:`Bearer ${token}`}});}catch{}
-      }
-      localStorage.removeItem('boostr_auth_token');
-      localStorage.removeItem('boostr_session');
-      status.textContent=isEs()?'Sesión cerrada.':'Session cleared.';
-      email.value='';
-      password.value='';
-    });
-    
-    paint();
-    
-    // Dynamically update paint message if language changes
-    document.addEventListener('boostrLangChanged', () => {
-      const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
-      if(s){
-        status.textContent = isEs()
-          ? `Sesión activa: ${s.email||'sin correo'} · ${s.role}.`
-          : `Session active: ${s.email||'no email'} · ${s.role}.`;
-      }
-    });
+    function paint(){const s=JSON.parse(localStorage.getItem('boostr_session')||'null');if(s){email.value=s.email||'';roleSelect.value=s.role||'manager';status.textContent=isEs()?`Sesión activa: ${s.email||'sin correo'} · ${s.role}.`:`Session active: ${s.email||'no email'} · ${s.role}.`;}}
+    loginForm.addEventListener('submit',async e=>{e.preventDefault();status.textContent=isEs()?'Entrando...':'Signing in...';try{const res=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email.value.trim(),password:password.value})});const data=await res.json();if(!res.ok||!data.ok)throw data;const s={email:data.user.email,role:data.role,token:data.token,createdAt:new Date().toISOString()};localStorage.setItem('boostr_auth_token',data.token);localStorage.setItem('boostr_session',JSON.stringify(s));status.textContent=isEs()?'Sesión iniciada.':'Signed in.';location.href=routes[data.role]||routes[roleSelect.value]||'/app'}catch(err){status.textContent=err?.message||err?.error||(isEs()?'No se pudo iniciar sesión.':'Sign-in failed.')}});
+    clearSession.addEventListener('click',async()=>{const token=localStorage.getItem('boostr_auth_token');if(token){try{await fetch('/api/session',{method:'DELETE',headers:{Authorization:`Bearer ${token}`}})}catch{}}localStorage.removeItem('boostr_auth_token');localStorage.removeItem('boostr_session');status.textContent=isEs()?'Sesión cerrada.':'Session cleared.';email.value='';password.value='';});
+    paint();document.addEventListener('boostrLangChanged',paint);
   </script>
 </body>
 </html>
