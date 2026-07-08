@@ -1,22 +1,22 @@
 # BOOSTR Labs Language System
 
-Status: ACTIVE PRODUCT STANDARD + FIRST FRONTEND IMPLEMENTATION
+Status: ACTIVE PRODUCT STANDARD
 Last updated: 2026-07-08
 
 ## Core rule
 
 No spanglish in product UI.
 
-BOOSTR can be English or Spanish, but a visible screen should not mix both unless the element is a proper noun, brand name, route name, OS name, or user-generated content.
+BOOSTR can be English or Spanish, but a visible screen should not mix both unless the element is a proper noun, brand name, route name, product name or user-generated content.
 
 ## Default language behavior
 
-1. Detect the user's browser/system language.
-2. If the language starts with `es`, show Spanish.
-3. If the language starts with `en`, show English.
-4. If the language is unsupported, fall back to English.
-5. Store the user's selected language in `localStorage`.
-6. The stored preference overrides browser detection.
+1. Detect browser/system language.
+2. If language starts with `es`, show Spanish.
+3. If language starts with `en`, show English.
+4. Unsupported languages fall back to English.
+5. Store selection in `localStorage` as `boostr_lang`.
+6. Stored preference overrides browser detection.
 
 ## Supported languages
 
@@ -25,41 +25,55 @@ BOOSTR can be English or Spanish, but a visible screen should not mix both unles
 
 ## Implemented files
 
-The first frontend i18n layer is implemented through:
-
 - `public/assets/boostr-mother/i18n.js`
 - `public/assets/boostr-mother/i18n/en.json`
 - `public/assets/boostr-mother/i18n/es.json`
-- `public/assets/boostr-mother/console.js` auto-loads `i18n.js` on BOOSTR OS pages that already use the shared console layer
-- `public/audit/index.html` loads `i18n.js` directly because Audit has its own standalone shell
+- `public/assets/boostr-mother/console.js`
 
 ## EN / ES toggle
 
-Every page loading `i18n.js` receives a compact `EN / ES` toggle.
+Pages loading `i18n.js` or `console.js` should show a compact `EN / ES` toggle.
 
 Behavior:
 
 - `EN` switches UI copy to English
 - `ES` switches UI copy to Spanish
-- selection is saved in `localStorage` under `boostr_lang`
-- unsupported languages fall back to English
-- missing translation files use an embedded fallback dictionary
-- missing translation keys leave the current visible text instead of showing raw keys
+- selection persists after refresh
+- missing keys should not show raw keys
 
-## How implementation works
+## Current naming standard
 
-Current implementation uses a lightweight phrase replacement layer.
+Use names people understand.
 
-It translates:
+| Route | English visible name | Spanish visible name |
+|---|---|---|
+| `/home` | BOOSTR CORE | BOOSTR CORE |
+| `/login` | Login | Login |
+| `/manager` | Manager | Manager |
+| `/manager/leads` | Leads | Leads |
+| `/modules` | Module Deck | Module Deck |
+| `/app` | Dashboard | Dashboard |
+| `/partner-dashboard` | Partners | Partners |
+| `/admin` | BOOSTR CORE / Admin | BOOSTR CORE / Admin |
+| `/audit` | BOOSTR Audit | BOOSTR Audit |
+| `/portfolio` | Proof | Proof |
+| `/jankodiorr` | JANKO / WESTDETRO Link OS | JANKO / WESTDETRO Link OS |
+| `/82ngel` | 82NGEL OS | 82NGEL OS |
+| `/smart-payment-link` | Smart Payment Link | Smart Payment Link |
 
-- exact text nodes
-- placeholders
-- title attributes
-- aria-label attributes
+## Deprecated names
 
-It protects fixed BOOSTR system names and does not translate user-generated content.
+Do not use these in visible UI:
 
-Future deeper implementation can move pages to explicit `data-i18n` keys, but the current layer gives immediate EN/ES behavior without a full frontend rewrite.
+| Deprecated | Replace with |
+|---|---|
+| Mother OS | BOOSTR CORE |
+| Signal Inbox | Leads |
+| Workspace Core | Dashboard |
+| Partner Grid | Partners |
+| System Core | BOOSTR CORE / Admin |
+| BOOSTR Intake | BOOSTR Audit |
+| Proof Vault | Proof |
 
 ## What gets translated
 
@@ -70,14 +84,11 @@ Translate:
 - helper text
 - form labels
 - placeholders
-- error messages
-- success messages
+- errors
+- success states
 - status labels
-- tooltips
-- onboarding copy
-- empty states
 - table headers
-- modal copy
+- onboarding copy
 - CTA text
 
 ## What does not get translated
@@ -85,39 +96,18 @@ Translate:
 Do not translate:
 
 - BOOSTR Labs
+- BOOSTR CORE
+- Module Deck
+- BOOSTR Audit
+- Smart Payment Link
+- Smart Link OS
+- JANKO / WESTDETRO Link OS
+- 82NGEL OS
 - client/artist names
 - partner names
-- brand names
 - route slugs
 - email addresses
-- file names
-- proper nouns
 - user-generated content
-- product/system names listed below
-
-## BOOSTR system names that stay fixed
-
-These names stay exactly the same in EN and ES:
-
-- BOOSTR Labs
-- Mother OS
-- Identity OS
-- Manager OS
-- Signal Inbox
-- Module Deck
-- Workspace Core
-- Partner Grid
-- System Core
-- BOOSTR Intake
-- Proof Vault
-- 82NGEL OS
-- WESTDETRO OS
-- 82 Command
-- Signal Engine
-- Revenue Pulse
-- Fan Radar
-- Action Queue
-- Route Map
 
 ## UI tone
 
@@ -125,7 +115,6 @@ These names stay exactly the same in EN and ES:
 
 Use:
 
-- global SaaS tone
 - short labels
 - premium product language
 - direct verbs
@@ -133,7 +122,6 @@ Use:
 
 Avoid:
 
-- hype paragraphs
 - startup buzzword overload
 - technical implementation notes
 - casual slang
@@ -149,7 +137,6 @@ Use:
 
 Avoid:
 
-- literal English translation
 - Spanglish
 - regional slang in core app UI
 - long explanatory paragraphs
@@ -169,19 +156,12 @@ Avoid:
 | Status | Status | Estado |
 | Active | Active | Activo |
 | New | New | Nuevo |
-| Qualified | Qualified | Calificado |
-| Lost | Lost | Perdido |
-| Won | Won | Ganado |
 | Lead | Lead | Lead |
-| Application | Application | Aplicación |
 | Audit | Audit | Audit |
-| Workspace | Workspace | Workspace |
+| Dashboard | Dashboard | Dashboard |
 | Module | Module | Módulo |
 | Route | Route | Ruta |
-| Signal | Signal | Señal |
-| Queue | Queue | Cola |
 | Owner | Owner | Responsable |
-| Note | Note | Nota |
 | File | File | Archivo |
 | Invoice | Invoice | Factura |
 | Order | Order | Orden |
@@ -203,90 +183,31 @@ Do not show these in user-facing UI:
 - ready for leads
 - preview systems
 - user login shell
-- implementation contract, except inside Admin OS
-- temporary access token, except inside internal Manager-only testing surfaces
+- temporary access token, except inside internal testing surfaces
 - auth next
-- shell, except in docs or internal admin language
-- demo, except in docs
+- shell, except in docs/internal admin language
 - placeholder
 - TODO
 - lorem ipsum
 
-## Preferred short UI words
-
-Use short system language:
-
-- Open
-- Live
-- Access
-- Intake
-- Review
-- Signal
-- Queue
-- Core
-- Map
-- Route
-- Active
-- New
-- Save
-- Send
-- Sync
-- Claim
-- Convert
-- Assign
-- Files
-- Orders
-- Pulse
-- Radar
-- Deck
-- Grid
-
-## How to add a translation phrase
-
-1. Open `public/assets/boostr-mother/i18n/en.json` and `public/assets/boostr-mother/i18n/es.json`.
-2. Add the exact visible phrase under `phrases`.
-3. Add placeholder copy under `placeholders` if the text is inside an input or textarea placeholder.
-4. Keep BOOSTR system names fixed.
-5. Test both languages.
-
-Example:
-
-```json
-{
-  "phrases": {
-    "Open": "Abrir"
-  }
-}
-```
-
 ## How to test EN/ES manually
 
 1. Open `/home`.
-2. Confirm the `EN / ES` toggle appears.
+2. Confirm `EN / ES` appears.
 3. Click `ES`.
-4. Refresh the page.
+4. Refresh.
 5. Confirm Spanish persists.
 6. Click `EN`.
 7. Confirm English persists.
-8. Repeat on:
-   - `/login`
-   - `/manager`
-   - `/manager/leads`
-   - `/app`
-   - `/partner-dashboard`
-   - `/admin`
-   - `/modules`
-   - `/audit`
+8. Repeat page-by-page.
 
 ## Pass/fail language rule
 
-A screen passes language QA only if:
+A screen passes only if:
 
 - it is fully English or fully Spanish
-- system names stay fixed
+- product names stay fixed
 - no internal build language appears
 - no spanglish appears in core UI
 - buttons and states are short
-- text does not fight the visual system
-- the EN/ES toggle is visible and works
 - selected language persists after refresh
