@@ -39,6 +39,8 @@
 /app/82ngel/*  /app/82ngel/index.html       200
 /app/gemese    /app/gemese/index.html       200
 /app/gemese/*  /app/gemese/index.html       200
+/admin/readiness /admin/readiness/index.html 200
+/admin/readiness/* /admin/readiness/index.html 200
 /admin         /admin/index.html            200
 /admin/*       /admin/index.html            200
 /partner-dashboard   /partner-dashboard/index.html 200
