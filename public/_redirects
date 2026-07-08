@@ -32,6 +32,8 @@
 /app/files/*   /app/files/index.html        200
 /app/invoices  /app/invoices/index.html     200
 /app/invoices/* /app/invoices/index.html    200
+/app/products  /app/products/index.html     200
+/app/products/* /app/products/index.html    200
 /app           /app/index.html              200
 /client        /app/index.html              200
 /client-os     /app/index.html              200
