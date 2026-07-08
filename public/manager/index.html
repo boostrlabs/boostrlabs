@@ -1,1 +1,240 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BOOSTR Manager OS</title><meta name="description" content="BOOSTR Manager OS."><link rel="icon" href="/assets/icons/09.-b-star-favicon.png"><link rel="stylesheet" href="/assets/boostr-mother/mother.css"><style>.manager-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:18px}.signal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.signal{border:1px solid var(--line2);background:rgba(0,0,0,.16);border-radius:23px;padding:16px}.signal b{display:block;font-size:34px;letter-spacing:-.08em}.signal span{display:block;color:var(--soft);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:900}.contract{display:grid;gap:10px}.admin-note{border:1px solid rgba(255,211,110,.22);background:rgba(255,211,110,.07);border-radius:22px;padding:14px;color:var(--muted);font-size:13px;line-height:1.45}@media(max-width:900px){.manager-grid{grid-template-columns:1fr}.signal-row,.metrics{grid-template-columns:1fr 1fr}}@media(max-width:620px){.signal-row,.metrics,.network-grid{grid-template-columns:1fr}}</style></head><body><div class="ambient"></div><div class="os"><aside class="sidebar glass"><a class="logo-mark" href="/home"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))"></a><nav class="icon-nav"><a class="active" href="/manager" title="Manager">⌘</a><a href="/app" title="Client">◫</a><a href="/partner-dashboard" title="Partner">◇</a><a href="/audit" title="Audit">↯</a><a href="/modules" title="Modules">◌</a></nav><div class="utility"><a href="/login" title="Role Login">◎</a><a href="/ecosystem" title="Ecosystem Map">?</a></div></aside><main class="main"><header class="topbar glass"><div class="greeting"><span>BOOSTR Manager OS</span><strong>Control Room</strong></div><div class="search">Search leads, modules, workspaces, routes...</div><a class="bell" href="/api/health" title="API health">●</a><a class="role-pill" href="/login"><div class="avatar"></div><div><b id="roleLabel">Admin Access</b><div class="micro">Manager workspace</div></div></a></header><section class="manager-grid"><div class="left-col"><section class="card glass"><div class="section-head"><div><span class="eyebrow">BOOSTR Command</span><h1>Leads. Modules. Workspaces.</h1><p class="micro">The Manager OS is where incoming applications become workspaces, modules and client actions.</p></div><a class="btn primary" href="/manager/leads">Open Lead Inbox</a></div><div class="signal-row"><a class="signal" href="/manager/leads"><span>Applications</span><b>Inbox</b><small class="micro">Audit + manual leads</small></a><a class="signal" href="/modules"><span>Registry</span><b>Modules</b><small class="micro">Active OS surfaces</small></a><a class="signal" href="/app"><span>Workspaces</span><b>Client</b><small class="micro">Account surfaces</small></a></div></section><section class="card glass"><div class="section-head"><div><h2>BOOSTR Flow</h2><div class="micro">The operating path for every application.</div></div><a class="chip live" href="/audit">Audit</a></div><div class="flow"><a class="flow-row" href="/audit"><b>01 · Application</b><span>Public audit captures the opportunity.</span><span class="chip live">Entry</span></a><a class="flow-row" href="/manager/leads"><b>02 · Review</b><span>Manager qualifies, assigns and prioritizes.</span><span class="chip gold">Inbox</span></a><a class="flow-row" href="/app"><b>03 · Workspace</b><span>Approved work becomes a BOOSTR workspace.</span><span class="chip">OS</span></a></div></section><section class="card glass"><div class="section-head"><div><h2>OS Modules</h2><div class="micro">Drag cards to organize your view. Use search to isolate a module.</div></div><a class="chip" href="/modules">Registry</a></div><div class="metrics"><a class="metric" href="/manager/leads"><span>BOOSTR</span><b>Inbox</b><small>Live</small></a><a class="metric" href="/app"><span>BOOSTR</span><b>Workspace</b><small>Shell</small></a><a class="metric" href="/partner-dashboard"><span>BOOSTR</span><b>Partner</b><small>Shell</small></a><a class="metric" href="/modules"><span>BOOSTR</span><b>Modules</b><small>Map</small></a></div></section></div><div class="right-col"><section class="card glass"><h3>Admin Queue</h3><p class="admin-note" id="sessionBox">Choose the next object to review. Backend auth and payments stay out of this frontend pass.</p><div class="actions"><a class="btn primary" href="/manager/leads">Applications</a><a class="btn" href="/admin">System</a></div></section><section class="card glass"><h3>Build Queue</h3><div class="contract"><a class="task" href="/manager/leads"><span class="dot gold"></span><div><b>Lead Inbox</b><span>Review and qualify applications.</span></div><span>01</span></a><a class="task" href="/modules"><span class="dot blue"></span><div><b>Module Registry</b><span>Keep OS surfaces clean.</span></div><span>02</span></a><a class="task" href="/admin"><span class="dot"></span><div><b>Admin OS</b><span>System requirements and implementation map.</span></div><span>03</span></a></div></section><section class="card glass"><h3>Quick Paths</h3><div class="timeline"><a class="task" href="/82ngel"><span class="dot"></span><div><b>82NGEL OS</b><span>Artist front door.</span></div><span>Open</span></a><a class="task" href="/jankodiorr"><span class="dot gold"></span><div><b>WESTDETRO OS</b><span>Artist route.</span></div><span>Open</span></a><a class="task" href="/app/82ngel"><span class="dot blue"></span><div><b>82 Command</b><span>Artist dashboard.</span></div><span>Open</span></a></div></section></div></section><nav class="bottom-tabs glass"><a class="active" href="/manager">Manager</a><a href="/partner-dashboard">Partner</a><a href="/app">Client</a><a href="/audit">Audit</a><a href="/modules">Modules</a><a class="plus" href="/login">+</a></nav><footer class="footer">POWERED BY BOOSTR LABS · Manager OS</footer></main></div><nav class="mobile-tabs"><a class="active" href="/manager">Manager</a><a href="/app">Client</a><a href="/partner-dashboard">Partner</a><a href="/audit">Audit</a><a href="/login">Login</a></nav><script>const s=JSON.parse(localStorage.getItem('boostr_session')||'null');if(s){roleLabel.textContent=s.role+' preview'}</script><script src="/assets/boostr-mother/console.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n="manager_greeting_span">BOOSTR Manager OS</title>
+  <meta name="description" content="BOOSTR Manager OS.">
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="stylesheet" href="/assets/boostr-mother/mother.css">
+  <style>
+    .manager-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:18px}
+    .signal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .signal{border:1px solid var(--line2);background:rgba(0,0,0,.16);border-radius:23px;padding:16px}
+    .signal b{display:block;font-size:34px;letter-spacing:-.08em}
+    .signal span{display:block;color:var(--soft);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:900}
+    .contract{display:grid;gap:10px}
+    .admin-note{border:1px solid rgba(255,211,110,.22);background:rgba(255,211,110,.07);border-radius:22px;padding:14px;color:var(--muted);font-size:13px;line-height:1.45}
+    @media(max-width:900px){.manager-grid{grid-template-columns:1fr}.signal-row,.metrics{grid-template-columns:1fr 1fr}}
+    @media(max-width:620px){.signal-row,.metrics,.network-grid{grid-template-columns:1fr}}
+  </style>
+  <script src="/assets/boostr-mother/i18n.js"></script>
+</head>
+<body>
+  <div class="ambient"></div>
+  <div class="os">
+    <aside class="sidebar glass">
+      <a class="logo-mark" href="/home">
+        <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))">
+      </a>
+      <nav class="icon-nav">
+        <a class="active" href="/manager" title="Manager">⌘</a>
+        <a href="/app" title="Client">◫</a>
+        <a href="/partner-dashboard" title="Partner">◇</a>
+        <a href="/audit" title="Audit">↯</a>
+        <a href="/modules" title="Modules">◌</a>
+      </nav>
+      <div class="utility">
+        <a href="/login" title="Role Login">◎</a>
+        <a href="/ecosystem" title="Ecosystem Map">?</a>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar glass">
+        <div class="greeting">
+          <span data-i18n="manager_greeting_span">BOOSTR Manager OS</span>
+          <strong data-i18n="manager_greeting_val">Control Room</strong>
+        </div>
+        <div class="search" data-i18n="search_placeholder">Search leads, modules, workspaces, routes...</div>
+        <a class="bell" href="/api/health" title="API health">●</a>
+        <a class="role-pill" href="/login">
+          <div class="avatar"></div>
+          <div>
+            <b id="roleLabel">Admin Access</b>
+            <div class="micro" data-i18n="home_switch_access_desc">Manager workspace</div>
+          </div>
+        </a>
+      </header>
+      <section class="manager-grid">
+        <div class="left-col">
+          <section class="card glass">
+            <div class="section-head">
+              <div>
+                <span class="eyebrow" data-i18n="manager_greeting_span">BOOSTR Command</span>
+                <h1 data-i18n="manager_h1">Leads. Modules. Workspaces.</h1>
+                <p class="micro" data-i18n="manager_desc">The Manager OS is where incoming applications become workspaces, modules and client actions.</p>
+              </div>
+              <a class="btn primary" href="/manager/leads" data-i18n="manager_cta_inbox">Open Lead Inbox</a>
+            </div>
+            <div class="signal-row">
+              <a class="signal" href="/manager/leads">
+                <span data-i18n="manager_signal_apps_span">Applications</span>
+                <b data-i18n="manager_signal_apps_val">Inbox</b>
+                <small class="micro" data-i18n="manager_signal_apps_micro">Audit + manual leads</small>
+              </a>
+              <a class="signal" href="/modules">
+                <span data-i18n="manager_signal_reg_span">Registry</span>
+                <b data-i18n="manager_signal_reg_val">Modules</b>
+                <small class="micro" data-i18n="manager_signal_reg_micro">Active OS surfaces</small>
+              </a>
+              <a class="signal" href="/app">
+                <span data-i18n="manager_signal_work_span">Workspaces</span>
+                <b data-i18n="manager_signal_work_val">Client</b>
+                <small class="micro" data-i18n="manager_signal_work_micro">Account surfaces</small>
+              </a>
+            </div>
+          </section>
+          <section class="card glass">
+            <div class="section-head">
+              <div>
+                <h2 data-i18n="manager_flow_title">BOOSTR Flow</h2>
+                <div class="micro" data-i18n="manager_flow_micro">The operating path for every application.</div>
+              </div>
+              <a class="chip live" href="/audit" data-i18n="home_pulse_val">Audit</a>
+            </div>
+            <div class="flow">
+              <a class="flow-row" href="/audit">
+                <b data-i18n="manager_flow_step1_title">01 · Application</b>
+                <span data-i18n="manager_flow_step1_desc">Public audit captures the opportunity.</span>
+                <span class="chip live" data-i18n="manager_flow_step1_chip">Entry</span>
+              </a>
+              <a class="flow-row" href="/manager/leads">
+                <b data-i18n="manager_flow_step2_title">02 · Review</b>
+                <span data-i18n="manager_flow_step2_desc">Manager qualifies, assigns and prioritizes.</span>
+                <span class="chip gold" data-i18n="manager_flow_step2_chip">Inbox</span>
+              </a>
+              <a class="flow-row" href="/app">
+                <b data-i18n="manager_flow_step3_title">03 · Workspace</b>
+                <span data-i18n="manager_flow_step3_desc">Approved work becomes a BOOSTR workspace.</span>
+                <span class="chip" data-i18n="manager_flow_step3_chip">OS</span>
+              </a>
+            </div>
+          </section>
+          <section class="card glass">
+            <div class="section-head">
+              <div>
+                <h2 data-i18n="manager_modules_title">OS Modules</h2>
+                <div class="micro" data-i18n="manager_modules_micro">Drag cards to organize your view. Use search to isolate a module.</div>
+              </div>
+              <a class="chip" href="/modules" data-i18n="manager_signal_reg_span">Registry</a>
+            </div>
+            <div class="metrics">
+              <a class="metric" href="/manager/leads">
+                <span>BOOSTR</span>
+                <b data-i18n="manager_signal_apps_val">Inbox</b>
+                <small data-i18n="manager_metric_inbox_status">Live</small>
+              </a>
+              <a class="metric" href="/app">
+                <span>BOOSTR</span>
+                <b data-i18n="manager_metric_work_val">Workspace</b>
+                <small data-i18n="manager_metric_work_status">Shell</small>
+              </a>
+              <a class="metric" href="/partner-dashboard">
+                <span>BOOSTR</span>
+                <b data-i18n="login_option_partner">Partner</b>
+                <small data-i18n="manager_metric_partner_status">Shell</small>
+              </a>
+              <a class="metric" href="/modules">
+                <span>BOOSTR</span>
+                <b data-i18n="manager_signal_reg_val">Modules</b>
+                <small data-i18n="manager_metric_modules_status">Map</small>
+              </a>
+            </div>
+          </section>
+        </div>
+        <div class="right-col">
+          <section class="card glass">
+            <h3 data-i18n="manager_queue_title">Admin Queue</h3>
+            <p class="admin-note" id="sessionBox" data-i18n="manager_queue_desc">Choose the next object to review. Backend auth and payments stay out of this frontend pass.</p>
+            <div class="actions">
+              <a class="btn primary" href="/manager/leads" data-i18n="manager_queue_btn_apps">Applications</a>
+              <a class="btn" href="/admin" data-i18n="manager_queue_btn_sys">System</a>
+            </div>
+          </section>
+          <section class="card glass">
+            <h3 data-i18n="manager_build_title">Build Queue</h3>
+            <div class="contract">
+              <a class="task" href="/manager/leads">
+                <span class="dot gold"></span>
+                <div>
+                  <b data-i18n="manager_build_task1_title">Lead Inbox</b>
+                  <span data-i18n="manager_build_task1_desc">Review and qualify applications.</span>
+                </div>
+                <span>01</span>
+              </a>
+              <a class="task" href="/modules">
+                <span class="dot blue"></span>
+                <div>
+                  <b data-i18n="manager_build_task2_title">Module Registry</b>
+                  <span data-i18n="manager_build_task2_desc">Keep OS surfaces clean.</span>
+                </div>
+                <span>02</span>
+              </a>
+              <a class="task" href="/admin">
+                <span class="dot"></span>
+                <div>
+                  <b data-i18n="manager_build_task3_title">Admin OS</b>
+                  <span data-i18n="manager_build_task3_desc">System requirements and implementation map.</span>
+                </div>
+                <span>03</span>
+              </a>
+            </div>
+          </section>
+          <section class="card glass">
+            <h3 data-i18n="manager_paths_title">Quick Paths</h3>
+            <div class="timeline">
+              <a class="task" href="/82ngel">
+                <span class="dot"></span>
+                <div>
+                  <b data-i18n="manager_paths_task1_title">82NGEL OS</b>
+                  <span data-i18n="manager_paths_task1_desc">Artist front door.</span>
+                </div>
+                <span>Open</span>
+              </a>
+              <a class="task" href="/jankodiorr">
+                <span class="dot gold"></span>
+                <div>
+                  <b data-i18n="manager_paths_task2_title">WESTDETRO OS</b>
+                  <span data-i18n="manager_paths_task2_desc">Artist route.</span>
+                </div>
+                <span>Open</span>
+              </a>
+              <a class="task" href="/app/82ngel">
+                <span class="dot blue"></span>
+                <div>
+                  <b data-i18n="manager_paths_task3_title">82 Command</b>
+                  <span data-i18n="manager_paths_task3_desc">Artist dashboard.</span>
+                </div>
+                <span>Open</span>
+              </a>
+            </div>
+          </section>
+        </div>
+      </section>
+      <nav class="bottom-tabs glass">
+        <a href="/manager" data-i18n="login_option_manager">Manager</a>
+        <a href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
+        <a href="/app" data-i18n="login_option_client">Client</a>
+        <a href="/audit" data-i18n="home_pulse_val">Audit</a>
+        <a href="/modules" data-i18n="home_switch_modules_title">Modules</a>
+        <a class="plus" href="/login">+</a>
+      </nav>
+      <footer class="footer">POWERED BY BOOSTR LABS · Manager OS</footer>
+    </main>
+  </div>
+  <nav class="mobile-tabs">
+    <a class="active" href="/manager" data-i18n="login_option_manager">Manager</a>
+    <a href="/app" data-i18n="login_option_client">Client</a>
+    <a href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
+    <a href="/audit" data-i18n="home_pulse_val">Audit</a>
+    <a href="/login">Login</a>
+  </nav>
+  <script>
+    const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
+    if(s){
+      roleLabel.textContent=s.role+' preview';
+    }
+  </script>
+  <script src="/assets/boostr-mother/console.js"></script>
+</body>
+</html>

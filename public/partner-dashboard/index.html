@@ -1,1 +1,191 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BOOSTR Partner OS</title><meta name="description" content="BOOSTR Partner OS."><link rel="icon" href="/assets/icons/09.-b-star-favicon.png"><link rel="stylesheet" href="/assets/boostr-mother/mother.css"><style>.partner-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.partner-note{border:1px solid rgba(255,211,110,.22);background:rgba(255,211,110,.07);border-radius:22px;padding:14px;color:var(--muted);font-size:13px;line-height:1.45}@media(max-width:900px){.partner-grid{grid-template-columns:1fr}.network-grid{grid-template-columns:1fr 1fr}}@media(max-width:620px){.network-grid,.metrics{grid-template-columns:1fr}}</style></head><body><div class="ambient"></div><div class="os"><aside class="sidebar glass"><a class="logo-mark" href="/home"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))"></a><nav class="icon-nav"><a href="/manager" title="Manager">⌘</a><a href="/app" title="Client">◫</a><a class="active" href="/partner-dashboard" title="Partner">◇</a><a href="/audit" title="Audit">↯</a><a href="/modules" title="Modules">◌</a></nav><div class="utility"><a href="/login" title="Role Login">◎</a><a href="/ecosystem" title="Ecosystem Map">?</a></div></aside><main class="main"><header class="topbar glass"><div class="greeting"><span>Partner OS</span><strong>Workspace Hub</strong></div><div class="search">Search routes, referrals, clients, status...</div><a class="bell" href="/admin" title="Admin">♟</a><a class="role-pill" href="/login"><div class="avatar"></div><div><b id="roleLabel">Role Access</b><div class="micro">Partner workspace</div></div></a></header><section class="partner-grid"><div class="left-col"><section class="card glass"><div class="section-head"><div><span class="eyebrow">BOOSTR Partner OS</span><h1>Routes, referrals and status.</h1><p class="micro">A clean partner workspace for applications, assigned accounts, referral links and next actions.</p></div><a class="btn primary" href="/audit">New Application</a></div><p class="partner-note" id="sessionBox">Partner access will show assigned leads, active routes and status only.</p></section><section class="card glass"><div class="section-head"><div><h2>Partner Workspace</h2><div class="micro">Drag cards to prioritize. Search to isolate a route or module.</div></div><a class="chip" href="/modules">Modules</a></div><div class="network-grid"><a class="module" href="/partner/gemese"><b>GEMESE Route</b><p class="micro">Partner intake path.</p><span>Open →</span></a><a class="module" href="/partner/janko"><b>WESTDETRO Route</b><p class="micro">Creative partner path.</p><span>Open →</span></a><a class="module" href="/partner/omgbeauty"><b>OMG Beauty</b><p class="micro">Beauty client route.</p><span>Open →</span></a><a class="module" href="/app/gemese"><b>GEMESE OS</b><p class="micro">Workspace dashboard.</p><span>Open →</span></a><a class="module" href="/audit"><b>BOOSTR Audit</b><p class="micro">New application.</p><span>Open →</span></a><a class="module" href="/manager/leads"><b>Lead Inbox</b><p class="micro">Manager review.</p><span>Open →</span></a></div></section></div><div class="right-col"><section class="card glass"><h3>Partner Stack</h3><div class="timeline"><a class="task" href="/audit"><span class="dot gold"></span><div><b>Application Link</b><span>Send prospects to the audit route.</span></div><span>01</span></a><a class="task" href="/partner-dashboard"><span class="dot"></span><div><b>Status Board</b><span>Track submitted and approved accounts.</span></div><span>02</span></a><a class="task" href="/app"><span class="dot blue"></span><div><b>Workspace Access</b><span>Open active client or artist systems.</span></div><span>03</span></a></div></section><section class="card glass"><h3>Active Network</h3><div class="metrics"><a class="metric" href="/82ngel"><span>Artist OS</span><b>82</b><small>Live</small></a><a class="metric" href="/jankodiorr"><span>WESTDETRO</span><b>Janko</b><small>Live</small></a><a class="metric" href="/app/gemese"><span>Partner OS</span><b>GEMESE</b><small>Shell</small></a><a class="metric" href="/audit"><span>BOOSTR</span><b>Audit</b><small>Open</small></a></div></section></div></section><nav class="bottom-tabs glass"><a href="/manager">Manager</a><a class="active" href="/partner-dashboard">Partner</a><a href="/app">Client</a><a href="/audit">Audit</a><a href="/modules">Modules</a><a class="plus" href="/login">+</a></nav><footer class="footer">POWERED BY BOOSTR LABS · Partner OS</footer></main></div><nav class="mobile-tabs"><a href="/manager">Manager</a><a href="/app">Client</a><a class="active" href="/partner-dashboard">Partner</a><a href="/audit">Audit</a><a href="/login">Login</a></nav><script>const s=JSON.parse(localStorage.getItem('boostr_session')||'null');if(s){roleLabel.textContent=s.role+' preview'}</script><script src="/assets/boostr-mother/console.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n="partner_greeting_span">BOOSTR Partner OS</title>
+  <meta name="description" content="BOOSTR Partner OS.">
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="stylesheet" href="/assets/boostr-mother/mother.css">
+  <style>
+    .partner-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+    .partner-note{border:1px solid rgba(255,211,110,.22);background:rgba(255,211,110,.07);border-radius:22px;padding:14px;color:var(--muted);font-size:13px;line-height:1.45}
+    @media(max-width:900px){.partner-grid{grid-template-columns:1fr}.network-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:620px){.network-grid,.metrics{grid-template-columns:1fr}}
+  </style>
+  <script src="/assets/boostr-mother/i18n.js"></script>
+</head>
+<body>
+  <div class="ambient"></div>
+  <div class="os">
+    <aside class="sidebar glass">
+      <a class="logo-mark" href="/home">
+        <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))">
+      </a>
+      <nav class="icon-nav">
+        <a href="/manager" title="Manager">⌘</a>
+        <a href="/app" title="Client">◫</a>
+        <a class="active" href="/partner-dashboard" title="Partner">◇</a>
+        <a href="/audit" title="Audit">↯</a>
+        <a href="/modules" title="Modules">◌</a>
+      </nav>
+      <div class="utility">
+        <a href="/login" title="Role Login">◎</a>
+        <a href="/ecosystem" title="Ecosystem Map">?</a>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar glass">
+        <div class="greeting">
+          <span data-i18n="partner_greeting_span">Partner OS</span>
+          <strong data-i18n="partner_greeting_val">Workspace Hub</strong>
+        </div>
+        <div class="search" data-i18n="search_placeholder">Search routes, referrals, clients, status...</div>
+        <a class="bell" href="/admin" title="Admin">♟</a>
+        <a class="role-pill" href="/login">
+          <div class="avatar"></div>
+          <div>
+            <b id="roleLabel">Role Access</b>
+            <div class="micro" data-i18n="login_desc">Partner workspace</div>
+          </div>
+        </a>
+      </header>
+      <section class="partner-grid">
+        <div class="left-col">
+          <section class="card glass">
+            <div class="section-head">
+              <div>
+                <span class="eyebrow" data-i18n="partner_greeting_span">BOOSTR Partner OS</span>
+                <h1 data-i18n="partner_h1">Routes, referrals and status.</h1>
+                <p class="micro" data-i18n="partner_desc">A clean partner workspace for applications, assigned accounts, referral links and next actions.</p>
+              </div>
+              <a class="btn primary" href="/audit" data-i18n="partner_cta_app">New Application</a>
+            </div>
+            <p class="partner-note" id="sessionBox" data-i18n="partner_note_default">Partner access will show assigned leads, active routes and status only.</p>
+          </section>
+          <section class="card glass">
+            <div class="section-head">
+              <div>
+                <h2 data-i18n="partner_sec_title">Partner Workspace</h2>
+                <div class="micro" data-i18n="partner_sec_micro">Drag cards to prioritize. Search to isolate a route or module.</div>
+              </div>
+              <a class="chip" href="/modules" data-i18n="home_switch_modules_title">Modules</a>
+            </div>
+            <div class="network-grid">
+              <a class="module" href="/partner/gemese">
+                <b>GEMESE Route</b>
+                <p class="micro" data-i18n="partner_module_gemese_desc">Partner intake path.</p>
+                <span>Open →</span>
+              </a>
+              <a class="module" href="/partner/janko">
+                <b>WESTDETRO Route</b>
+                <p class="micro" data-i18n="partner_module_westdetro_desc">Creative partner path.</p>
+                <span>Open →</span>
+              </a>
+              <a class="module" href="/partner/omgbeauty">
+                <b>OMG Beauty</b>
+                <p class="micro" data-i18n="partner_module_omg_desc">Beauty client route.</p>
+                <span>Open →</span>
+              </a>
+              <a class="module" href="/app/gemese">
+                <b>GEMESE OS</b>
+                <p class="micro" data-i18n="partner_module_gemese_os_desc">Workspace dashboard.</p>
+                <span>Open →</span>
+              </a>
+              <a class="module" href="/audit">
+                <b>BOOSTR Audit</b>
+                <p class="micro" data-i18n="partner_module_audit_desc">New application.</p>
+                <span>Open →</span>
+              </a>
+              <a class="module" href="/manager/leads">
+                <b>Lead Inbox</b>
+                <p class="micro" data-i18n="partner_module_inbox_desc">Manager review.</p>
+                <span>Open →</span>
+              </a>
+            </div>
+          </section>
+        </div>
+        <div class="right-col">
+          <section class="card glass">
+            <h3 data-i18n="partner_stack_title">Partner Stack</h3>
+            <div class="timeline">
+              <a class="task" href="/audit">
+                <span class="dot gold"></span>
+                <div>
+                  <b data-i18n="partner_stack_task1_title">Application Link</b>
+                  <span data-i18n="partner_stack_task1_desc">Send prospects to the audit route.</span>
+                </div>
+                <span>01</span>
+              </a>
+              <a class="task" href="/partner-dashboard">
+                <span class="dot"></span>
+                <div>
+                  <b data-i18n="partner_stack_task2_title">Status Board</b>
+                  <span data-i18n="partner_stack_task2_desc">Track submitted and approved accounts.</span>
+                </div>
+                <span>02</span>
+              </a>
+              <a class="task" href="/app">
+                <span class="dot blue"></span>
+                <div>
+                  <b data-i18n="partner_stack_task3_title">Workspace Access</b>
+                  <span data-i18n="partner_stack_task3_desc">Open active client or artist systems.</span>
+                </div>
+                <span>03</span>
+              </a>
+            </div>
+          </section>
+          <section class="card glass">
+            <h3 data-i18n="partner_net_title">Active Network</h3>
+            <div class="metrics">
+              <a class="metric" href="/82ngel">
+                <span>Artist OS</span>
+                <b>82</b>
+                <small data-i18n="manager_metric_inbox_status">Live</small>
+              </a>
+              <a class="metric" href="/jankodiorr">
+                <span>WESTDETRO</span>
+                <b>Janko</b>
+                <small data-i18n="manager_metric_inbox_status">Live</small>
+              </a>
+              <a class="metric" href="/app/gemese">
+                <span>Partner OS</span>
+                <b>GEMESE</b>
+                <small data-i18n="manager_metric_work_status">Shell</small>
+              </a>
+              <a class="metric" href="/audit">
+                <span>BOOSTR</span>
+                <b>Audit</b>
+                <small data-i18n="home_metric_audit_status">Open</small>
+              </a>
+            </div>
+          </section>
+        </div>
+      </section>
+      <nav class="bottom-tabs glass">
+        <a href="/manager" data-i18n="login_option_manager">Manager</a>
+        <a class="active" href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
+        <a href="/app" data-i18n="login_option_client">Client</a>
+        <a href="/audit" data-i18n="home_pulse_val">Audit</a>
+        <a href="/modules" data-i18n="home_switch_modules_title">Modules</a>
+        <a class="plus" href="/login">+</a>
+      </nav>
+      <footer class="footer">POWERED BY BOOSTR LABS · Partner OS</footer>
+    </main>
+  </div>
+  <nav class="mobile-tabs">
+    <a href="/manager" data-i18n="login_option_manager">Manager</a>
+    <a href="/app" data-i18n="login_option_client">Client</a>
+    <a class="active" href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
+    <a href="/audit" data-i18n="home_pulse_val">Audit</a>
+    <a href="/login">Login</a>
+  </nav>
+  <script>
+    const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
+    if(s){
+      roleLabel.textContent=s.role+' preview';
+    }
+  </script>
+  <script src="/assets/boostr-mother/console.js"></script>
+</body>
+</html>
