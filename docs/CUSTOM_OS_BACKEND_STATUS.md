@@ -10,7 +10,7 @@ Last updated: 2026-07-08
 - Migration `0010_invite_codes.sql` adds `invite_codes` and `invite_code_events`.
 - Migration `0011_seed_initial_invite_codes.sql` seeds three founder-approved Secret BOOSTR Codes as salted hashes only.
 - Migration `0012_signup_workspace_bootstrap.sql` adds username, phone, signup source, invite-code linkage and onboarding fields to users.
-- `GET /api/readiness` checks D1 binding, critical tables, critical user columns, invite-code seeding, admin existence and bootstrap-key availability without exposing secrets.
+- `GET /api/readiness` checks D1 binding, critical tables, critical user columns, product columns, invite-code seeding, admin existence and bootstrap-key availability without exposing secrets.
 - `POST /api/admin/bootstrap` safely creates the first admin only when `BOOSTR_ADMIN_BOOTSTRAP_KEY` is configured and no active admin exists.
 - `/admin/readiness` provides an internal readiness console for launch QA and first-admin bootstrap.
 - `scripts/launch-smoke-test.mjs` provides configurable PASS/FAIL/SKIPPED launch smoke testing.
@@ -23,6 +23,11 @@ Last updated: 2026-07-08
 - `GET /api/signup/check-username` validates reserved/available usernames.
 - `GET /api/dashboard` returns active workspace, persona, preferences, first-run cards and recent activity.
 - `MANAGER_PIN` is a development fallback only when `ENVIRONMENT=development` or `ALLOW_MANAGER_PIN_FALLBACK=true`.
+- `GET/POST /api/products` lists and creates real workspace products/services.
+- `GET/PATCH/DELETE /api/products/:id` reads, updates and archives workspace products with workspace access control.
+- `/app/products` provides a first real product workspace UI for creating services, digital products, physical products, bookings, licenses, memberships and auction-later products.
+- Product health scoring flags missing price, missing description, missing fulfillment and account-rule conflicts.
+- `/api/health` now reports product metrics and product endpoints.
 - `GET/POST /api/cards` requires auth and workspace scope.
 - `GET/PATCH /api/cards/:id` requires auth, workspace access, and card visibility.
 - `POST /api/cards/:id/action` requires auth, workspace access, allowed action type, and logs `card.action`.
@@ -45,7 +50,6 @@ Last updated: 2026-07-08
 - `GET/PATCH /api/notifications` and `GET/POST /api/activity` exist.
 - `POST /api/cards/:id/action` writes `activity_events` and can create safe notifications for follow-up/asset actions.
 - HTML pages without `i18n.js` or `console.js` receive the minimal `language-engine.js` through Pages middleware.
-- `/api/health` lists signup, dashboard, readiness, admin bootstrap and invite-code endpoints.
 
 ## Partially Implemented
 
@@ -53,7 +57,8 @@ Last updated: 2026-07-08
 - Cards can be created, filtered, patched and acted on, but there is no full workflow engine.
 - Human need logic creates priority cards for cash, manage, feel_artist, feel_business, boost_product, boost_music and boost_partners.
 - Audit generates lead, asset_request, next_to_boost, payment readiness and module insight cards.
-- Product/payment tables exist, but write/read endpoints are pending.
+- Products now have CRUD APIs and a workspace UI, but they are not yet connected to payment-link creation or order history.
+- Payment link and order reservation tables exist, but write/read endpoints are pending.
 - Secret BOOSTR Code validation and usage increment exist; admin creation/revocation UI for invite codes is pending.
 - Production readiness can report environment status, but migrations/env vars must still be applied in Cloudflare manually.
 - Launch smoke tests can verify live endpoints, but must run against the deployed Cloudflare URL with test env vars.
@@ -64,10 +69,10 @@ Last updated: 2026-07-08
 - Email verification.
 - Password reset flow.
 - Claim flow from audit lead into a real client workspace.
-- Product write/read APIs.
 - Payment link write/read APIs.
 - Public payment-link offer endpoint.
 - Real Stripe checkout, webhooks, payouts, refunds, or paid orders.
+- Product-to-payment-link conversion.
 - Card assignment notifications.
 - Notification delivery is in-app only; no email/push delivery exists.
 - Files and invoices.
@@ -76,12 +81,13 @@ Last updated: 2026-07-08
 ## Risks
 
 - Remote D1 must apply migrations `0010`, `0011`, and `0012` before Secret Code + Signup are fully operational.
+- Product APIs also require the earlier `0008_custom_os_card_engine.sql` migration because that migration creates `products`.
 - `BOOSTR_ADMIN_BOOTSTRAP_KEY` must be configured in Cloudflare before first-admin bootstrap.
 - Smoke tests create real test users when full test env vars are supplied.
 - Existing `cards.status` CHECK does not include `follow_up`; action logs preserve `follow_up` while status uses an allowed value.
 - Demo data is static and must not be treated as real sales or private records.
 - Admin/manager can see operational cards across workspaces by design.
-- Product/payment tables are readiness models only until APIs and Stripe rules are added.
+- Product APIs are real workspace CRUD, but payment processing is still not implemented.
 - Public Audit writes into internal intake workspace; claim/move logic is not built yet.
 - API token creation is intentionally blocked until secure token hashing/storage is implemented.
 - Environment fallback `BOOSTR_SECRET_CODE`/`BOOSTR_INVITE_CODE` can unlock a single code without committed secrets if configured in Cloudflare.
@@ -94,5 +100,6 @@ Last updated: 2026-07-08
 3. Bootstrap first admin through `/admin/readiness`.
 4. Run `npm run smoke:launch` against the deployed URL.
 5. Test `/audit` Secret BOOSTR Code → `/signup` → `/app` end-to-end.
-6. Add audit lead claim into workspace.
-7. Add product/payment-link APIs without Stripe.
+6. Test `/app/products` with create, update, archive and filters.
+7. Add payment-link APIs and connect products to Smart Links.
+8. Add audit lead claim into workspace.
