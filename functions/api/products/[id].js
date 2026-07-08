@@ -10,29 +10,28 @@ async function loadProduct(env, auth, id) {
   return { ok: true, product };
 }
 
+async function productGraph(env, product) {
+  const [smartLinks, reservations, files, invoices] = await Promise.all([
+    env.DB.prepare("SELECT id, title, status, amount_cents, currency, checkout_mode, created_at FROM payment_links WHERE product_id = ? AND status != 'archived' ORDER BY created_at DESC LIMIT 25").bind(product.id).all().then((r) => r.results || []).catch(() => []),
+    env.DB.prepare("SELECT id, payment_link_id, guest_email, status, reservation_type, created_at FROM order_reservations WHERE product_id = ? ORDER BY created_at DESC LIMIT 25").bind(product.id).all().then((r) => r.results || []).catch(() => []),
+    env.DB.prepare("SELECT id, title, file_url, file_type, visibility, created_at FROM workspace_files WHERE related_type = 'product' AND related_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 25").bind(product.id).all().then((r) => r.results || []).catch(() => []),
+    env.DB.prepare("SELECT id, invoice_number, customer_name, status, amount_cents, currency, created_at FROM invoices WHERE related_type = 'product' AND related_id = ? AND status != 'archived' ORDER BY created_at DESC LIMIT 25").bind(product.id).all().then((r) => r.results || []).catch(() => [])
+  ]);
+  return { smart_links: smartLinks, reservations, files, invoices };
+}
+
 async function writeActivity(env, auth, product, eventType, title) {
   try {
     await env.DB.prepare(
       `INSERT INTO activity_events (id, workspace_id, user_id, event_type, title, body, metadata_json, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
-      .bind(
-        crypto.randomUUID(),
-        product.workspace_id,
-        auth.user?.id || null,
-        eventType,
-        title,
-        product.title,
-        JSON.stringify({ product_id: product.id, status: product.status, product_type: product.product_type }),
-        now()
-      )
+      .bind(crypto.randomUUID(), product.workspace_id, auth.user?.id || null, eventType, title, product.title, JSON.stringify({ product_id: product.id, status: product.status, product_type: product.product_type }), now())
       .run();
   } catch {}
 }
 
-export async function onRequestOptions() {
-  return json({ ok: true });
-}
+export async function onRequestOptions() { return json({ ok: true }); }
 
 export async function onRequestGet({ request, env, params }) {
   const db = requireDb(env);
@@ -41,7 +40,8 @@ export async function onRequestGet({ request, env, params }) {
   if (!auth.ok) return auth.response;
   const loaded = await loadProduct(env, auth, clean(params.id, 120));
   if (!loaded.ok) return loaded.response;
-  return json({ ok: true, product: { ...loaded.product, health: productHealth(loaded.product) } });
+  const graph = await productGraph(env, loaded.product);
+  return json({ ok: true, product: { ...loaded.product, health: productHealth(loaded.product), graph } });
 }
 
 export async function onRequestPatch({ request, env, params }) {
@@ -63,25 +63,11 @@ export async function onRequestPatch({ request, env, params }) {
          allow_guest_checkout = ?, metadata_json = ?, updated_at = ?
      WHERE id = ?`
   )
-    .bind(
-      product.title,
-      product.product_type,
-      product.status,
-      product.price_amount,
-      product.currency,
-      product.description,
-      product.asset_status,
-      product.fulfillment_type,
-      product.requires_account,
-      product.allow_guest_checkout,
-      product.metadata_json,
-      now(),
-      loaded.product.id
-    )
+    .bind(product.title, product.product_type, product.status, product.price_amount, product.currency, product.description, product.asset_status, product.fulfillment_type, product.requires_account, product.allow_guest_checkout, product.metadata_json, now(), loaded.product.id)
     .run();
   const refreshed = await env.DB.prepare(`SELECT ${productColumns} FROM products WHERE id = ? LIMIT 1`).bind(loaded.product.id).first();
   await writeActivity(env, auth, refreshed, "product.updated", "Product updated");
-  return json({ ok: true, product: { ...refreshed, health: productHealth(refreshed) } });
+  return json({ ok: true, product: { ...refreshed, health: productHealth(refreshed), graph: await productGraph(env, refreshed) } });
 }
 
 export async function onRequestDelete({ request, env, params }) {
