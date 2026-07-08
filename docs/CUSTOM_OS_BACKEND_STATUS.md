@@ -10,6 +10,10 @@ Last updated: 2026-07-08
 - Migration `0010_invite_codes.sql` adds `invite_codes` and `invite_code_events`.
 - Migration `0011_seed_initial_invite_codes.sql` seeds three founder-approved Secret BOOSTR Codes as salted hashes only.
 - Migration `0012_signup_workspace_bootstrap.sql` adds username, phone, signup source, invite-code linkage and onboarding fields to users.
+- `GET /api/readiness` checks D1 binding, critical tables, critical user columns, invite-code seeding, admin existence and bootstrap-key availability without exposing secrets.
+- `POST /api/admin/bootstrap` safely creates the first admin only when `BOOSTR_ADMIN_BOOTSTRAP_KEY` is configured and no active admin exists.
+- `/admin/readiness` provides an internal readiness console for launch QA and first-admin bootstrap.
+- `docs/PRODUCTION_LAUNCH_CHECKLIST.md` defines manual live launch steps.
 - Session auth exists through `sessions`, `users`, `workspace_members`, `/api/session`, `/api/session/dev`, `/api/me`, and `/api/workspaces`.
 - `POST /api/session` accepts email, username, or phone as `identifier`.
 - `POST /api/signup` creates a user, workspace, workspace member, persona, preferences, first-run cards, activity event and session.
@@ -36,23 +40,23 @@ Last updated: 2026-07-08
 - `GET /api/security`, `POST /api/security/change-password`, `GET /api/security/sessions`, `DELETE /api/security/sessions/:id`, and `POST /api/security/logout-all` exist.
 - `GET /api/integrations/api-tokens` returns metadata only; create/delete return `501`.
 - `GET/PATCH /api/notifications` and `GET/POST /api/activity` exist.
-- `POST /api/cards/:id/action` now writes `activity_events` and can create safe notifications for follow-up/asset actions.
+- `POST /api/cards/:id/action` writes `activity_events` and can create safe notifications for follow-up/asset actions.
 - HTML pages without `i18n.js` or `console.js` receive the minimal `language-engine.js` through Pages middleware.
-- `/api/health` lists signup, dashboard and invite-code endpoints.
+- `/api/health` lists signup, dashboard, readiness, admin bootstrap and invite-code endpoints.
 
 ## Partially Implemented
 
-- Personas exist, can be created by signup, bootstrapped through dev session, listed, updated and switched.
+- Personas exist, can be created by signup/admin bootstrap, bootstrapped through dev session, listed, updated and switched.
 - Cards can be created, filtered, patched and acted on, but there is no full workflow engine.
 - Human need logic creates priority cards for cash, manage, feel_artist, feel_business, boost_product, boost_music and boost_partners.
 - Audit generates lead, asset_request, next_to_boost, payment readiness and module insight cards.
 - Product/payment tables exist, but write/read endpoints are pending.
-- Secret BOOSTR Code validation and usage increment exist; admin creation/revocation UI is pending.
+- Secret BOOSTR Code validation and usage increment exist; admin creation/revocation UI for invite codes is pending.
+- Production readiness can report environment status, but migrations/env vars must still be applied in Cloudflare manually.
 - `follow_up` is an action type; card status maps to existing DB status vocabulary.
 
 ## Missing
 
-- Production admin bootstrap flow.
 - Email verification.
 - Password reset flow.
 - Claim flow from audit lead into a real client workspace.
@@ -68,6 +72,7 @@ Last updated: 2026-07-08
 ## Risks
 
 - Remote D1 must apply migrations `0010`, `0011`, and `0012` before Secret Code + Signup are fully operational.
+- `BOOSTR_ADMIN_BOOTSTRAP_KEY` must be configured in Cloudflare before first-admin bootstrap.
 - Existing `cards.status` CHECK does not include `follow_up`; action logs preserve `follow_up` while status uses an allowed value.
 - Demo data is static and must not be treated as real sales or private records.
 - Admin/manager can see operational cards across workspaces by design.
@@ -79,9 +84,9 @@ Last updated: 2026-07-08
 
 ## Next Steps
 
-1. Apply D1 migrations remotely and test `/api/signup` end-to-end.
-2. Add production admin bootstrap without committing credentials.
-3. Add audit lead claim into workspace.
-4. Add product/payment-link APIs without Stripe.
-5. Add payment-link public read endpoint with guest/account rules.
-6. Add card assignment and product readiness events.
+1. Apply D1 migrations remotely and test `/api/readiness`.
+2. Configure `BOOSTR_ADMIN_BOOTSTRAP_KEY` in Cloudflare.
+3. Bootstrap first admin through `/admin/readiness`.
+4. Test `/audit` Secret BOOSTR Code → `/signup` → `/app` end-to-end.
+5. Add audit lead claim into workspace.
+6. Add product/payment-link APIs without Stripe.
