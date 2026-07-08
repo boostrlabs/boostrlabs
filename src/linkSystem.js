@@ -724,7 +724,7 @@ const renderPreview = (config, referralCode) => `
         <div>
           <span>Preview Request</span>
           <h2>Want this built for your brand?</h2>
-          <p>Send the project details. BOOSTR can turn this preview into a live system path.</p>
+          <p>Send the project details. BOOSTR can turn this preview into a scoped system path.</p>
         </div>
         <form class="link-form" data-link-form data-form-kind="client-preview">
           <input name="name" placeholder="Name" required />

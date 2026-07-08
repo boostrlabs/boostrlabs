@@ -54,7 +54,6 @@ const intakeModules = [
   'Landing page',
   'CRM',
   'Dashboard',
-  'AI Agent',
   'Automation',
   'Booking system',
   'Ecommerce',
@@ -159,7 +158,7 @@ const copy = {
       ['Landing Pages', 'Focused pages for offers, campaigns, bookings, launches and quote requests.'],
       ['Custom Web Apps', 'Client-facing or internal tools shaped around the real workflow.'],
       ['Mobile Apps', 'App experiences for teams, clients, creators or service operations.'],
-      ['AI Automation', 'Useful automation for follow-up, intake, content, support and repetitive tasks.'],
+      ['Automation', 'Useful automation for follow-up, intake, content, support and repetitive tasks.'],
       ['CRM & Business Systems', 'Pipelines, records, dashboards and workflows that keep the operation organized.'],
       ['UI/UX Design', 'Cleaner interfaces, flows and product direction for websites, apps and portals.'],
       ['Ecommerce Systems', 'Stores, product flows, checkout paths and post-purchase structure.'],
@@ -208,7 +207,7 @@ const copy = {
           'For businesses that need a system built around their own process, data, users, tools, workflows and operations.',
         ideal: 'Businesses with custom logic, internal teams, client portals, dashboards, integrations or advanced workflows.',
         includes: ['Custom CRM', 'Dashboards', 'Client portals', 'User roles', 'Automations', 'Reports / PDF generation'],
-        custom: ['Business logic', 'Existing tools', 'API integrations', 'Inventory', 'Notifications', 'AI-powered features if useful'],
+        custom: ['Business logic', 'Existing tools', 'API integrations', 'Inventory', 'Notifications'],
         cta: 'Request Custom OS Quote',
         note: 'Quoted after we study the business, scope, modules and integrations needed.'
       }
@@ -416,7 +415,7 @@ const copy = {
       ['Landing Pages', 'Paginas enfocadas para ofertas, campanas, bookings, lanzamientos y quotes.'],
       ['Custom Web Apps', 'Herramientas internas o publicas construidas alrededor del workflow real.'],
       ['Mobile Apps', 'Experiencias app para equipos, clientes, creators u operaciones de servicio.'],
-      ['AI Automation', 'Automatizacion util para follow-up, intake, contenido, soporte y tareas repetidas.'],
+      ['Automation', 'Automatizacion util para follow-up, intake, contenido, soporte y tareas repetidas.'],
       ['CRM & Business Systems', 'Pipelines, records, dashboards y workflows para organizar la operacion.'],
       ['UI/UX Design', 'Interfaces, flujos y direccion de producto mas clara para websites, apps y portals.'],
       ['Ecommerce Systems', 'Tiendas, product flows, checkout paths y estructura post-compra.'],
@@ -465,7 +464,7 @@ const copy = {
           'Para negocios que necesitan un sistema construido alrededor de su propio proceso, data, usuarios, herramientas, workflows y operacion.',
         ideal: 'Negocios con logica propia, equipos internos, client portals, dashboards, integraciones o workflows avanzados.',
         includes: ['Custom CRM', 'Dashboards', 'Client portals', 'Roles de usuario', 'Automatizaciones', 'Reportes / PDF generation'],
-        custom: ['Logica del negocio', 'Herramientas existentes', 'API integrations', 'Inventario', 'Notificaciones', 'AI features si aportan valor'],
+        custom: ['Logica del negocio', 'Herramientas existentes', 'API integrations', 'Inventario', 'Notificaciones'],
         cta: 'Cotizar Custom OS',
         note: 'Se cotiza despues de estudiar el negocio, el alcance, los modulos y las integraciones necesarias.'
       }
@@ -1026,7 +1025,7 @@ const renderDashboardPlaceholder = (type) => {
   const cards = isAdmin
     ? [
         ['Lead inbox', 'New intake requests, qualification status and source tracking.'],
-        ['Project pipeline', 'Discovery, quoted, active, review and delivered builds.'],
+        ['Project pipeline', 'Discovery, quoted, preview, review and delivered builds.'],
         ['Businesses', 'Client business records connected to leads and projects.'],
         ['Partners', 'Referral codes, referred leads and payout readiness.']
       ]
@@ -1068,7 +1067,7 @@ const renderLoginPage = () => {
     <main id="top">
       <section class="section-shell login-shell">
         <div class="section-copy reveal">
-          <p class="eyebrow">Auth-ready</p>
+          <p class="eyebrow">Auth preview</p>
           <h1>LOGIN WILL UNLOCK THE OS.</h1>
           <p>This route is reserved for client, partner, operator and admin access once auth is connected.</p>
         </div>
