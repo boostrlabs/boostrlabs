@@ -7,9 +7,63 @@ Last updated: 2026-07-08
 
 - Private endpoints require a valid session cookie, `Authorization: Bearer <token>`, or `X-BOOSTR-Session`.
 - `X-Manager-Pin` is development fallback only when explicitly enabled.
-- Public endpoints: `POST /api/audit`, `GET /api/audit`, `GET /api/health`, `GET /api/demo/janko-os`, `POST /api/invite-codes/validate`, `POST /api/signup`, `GET /api/signup/check-username`.
+- Public-safe endpoints include `GET /api/health`, `GET /api/readiness`, `POST /api/invite-codes/validate`, `POST /api/signup`, `GET /api/signup/check-username`, `POST /api/session`, `POST /api/audit`, and `GET /api/demo/janko-os`.
+- `POST /api/admin/bootstrap` is public-routed but protected by `BOOSTR_ADMIN_BOOTSTRAP_KEY` and first-admin-only rules.
 - Errors return `{ ok: false, error, message }` with stable snake_case `error`.
-- Password hashes, full API tokens and plaintext invite codes are never returned.
+- Password hashes, full API tokens, plaintext invite codes and env var values are never returned.
+
+## Production Readiness
+
+`GET /api/readiness`
+
+Public-safe. Does not expose secrets.
+
+Returns:
+
+- environment status: `ready`, `missing_migrations`, `needs_config`, or `degraded`
+- D1 binding state
+- critical table checks
+- critical user column checks
+- seeded invite-code readiness
+- admin existence
+- whether admin bootstrap key is configured, without returning the value
+- required migrations
+- next steps
+
+Critical migrations for current launch:
+
+- `0010_invite_codes.sql`
+- `0011_seed_initial_invite_codes.sql`
+- `0012_signup_workspace_bootstrap.sql`
+
+## Admin Bootstrap
+
+`POST /api/admin/bootstrap`
+
+Creates the first BOOSTR admin safely.
+
+Request:
+
+```json
+{
+  "bootstrap_key": "from-founder",
+  "display_name": "Founder",
+  "username": "admin",
+  "email": "founder@email.com",
+  "password": "secure-password-12-plus",
+  "workspace_name": "BOOSTR Labs CORE"
+}
+```
+
+Rules:
+
+- Requires env var `BOOSTR_ADMIN_BOOTSTRAP_KEY`.
+- Compares key server-side only.
+- Never returns or logs the env var value.
+- Fails with `admin_already_exists` if an active admin exists.
+- Creates admin user, CORE workspace, admin workspace member, admin persona, workspace preferences, admin first-run cards, activity event and session.
+- Password is hashed.
+- Does not commit or assume default credentials.
 
 ## Signup / Registration
 
@@ -35,17 +89,6 @@ Optional fields:
 - `source`
 - `timezone`
 
-Response includes:
-
-- safe `user`
-- `workspace`
-- `persona`
-- `default_cards`
-- `invite_unlocked`
-- `token`
-- `expires_at`
-- `redirect: /app`
-
 Rules:
 
 - email is unique
@@ -59,15 +102,7 @@ Rules:
 
 `GET /api/signup/check-username?username=...`
 
-Public. Returns:
-
-```json
-{
-  "ok": true,
-  "available": true,
-  "normalized": "username"
-}
-```
+Public. Returns username availability and normalized username.
 
 Reserved usernames include `admin`, `root`, `boostr`, `boostrlabs`, `api`, `support`, `login`, `signup`, `audit`, `manager`, `app`, `dashboard`, `jankodiorr`, and `82ngel`.
 
@@ -84,13 +119,7 @@ Public. Accepts:
 }
 ```
 
-`identifier` can be:
-
-- email
-- username
-- phone
-
-Returns safe user/session/workspace payload and sets `boostr_session` cookie.
+`identifier` can be email, username, or phone.
 
 `GET /api/session` / `GET /api/me`
 
@@ -104,48 +133,13 @@ Private. Revokes the current session.
 
 `GET /api/dashboard`
 
-Private. Returns the active workspace, active persona, workspace preferences, first-run/default cards and recent activity.
-
-Used by the default dashboard after signup.
+Private. Returns active workspace, active persona, workspace preferences, first-run/default cards and recent activity.
 
 ## Secret BOOSTR Code
 
 `POST /api/invite-codes/validate`
 
 Public. Safe validation only.
-
-Request:
-
-```json
-{
-  "code": "secret-code",
-  "source": "audit_entry"
-}
-```
-
-Valid response:
-
-```json
-{
-  "ok": true,
-  "valid": true,
-  "label": "BOOSTR private access",
-  "bypass_audit": true,
-  "allowed_role": "client",
-  "allowed_persona": "client",
-  "allowed_workspace_type": "onboarding",
-  "message": "Cheat BOOSTR Code unlocked"
-}
-```
-
-Invalid response:
-
-```json
-{
-  "ok": true,
-  "valid": false
-}
-```
 
 Rules:
 
@@ -155,29 +149,15 @@ Rules:
 - Validation does not increment usage.
 - Signup increments usage only after successful account/workspace creation.
 
-## Current User
+## Current User / Profile
 
 `GET /api/me`
 
 Alias of session GET. Returns current user, active workspace, memberships, roles, and active workspace personas.
 
-## Profile
+`GET /api/profile` and `PATCH /api/profile`
 
-`GET /api/profile`
-
-Auth required. Returns profile/account metadata.
-
-`PATCH /api/profile`
-
-Auth required. Supported fields:
-
-- `display_name`
-- `avatar_url`
-- `default_workspace_id`
-- `default_persona_id`
-- `language`
-- `timezone`
-- `theme`
+Auth required. Profile supports display name, avatar URL, default workspace/persona, language, timezone and theme.
 
 ## Contact Methods
 
@@ -187,70 +167,25 @@ Auth required. Optional `workspace_id`.
 
 `POST /api/profile/contacts`
 
-Auth required.
+Auth required. Supports artist/business email, personal/business phone, WhatsApp, Instagram, website and smart link.
 
-Contact types:
-
-- `artist_email`
-- `business_email`
-- `personal_phone`
-- `business_phone`
-- `whatsapp`
-- `instagram`
-- `website`
-- `smart_link`
-
-Visibility values:
-
-- `private`
-- `workspace`
-- `public_profile`
-
-`PATCH /api/profile/contacts/:id`
+`PATCH /api/profile/contacts/:id` / `DELETE /api/profile/contacts/:id`
 
 Auth required. User-owned contact only.
 
-`DELETE /api/profile/contacts/:id`
-
-Auth required. User-owned contact only.
-
-## Workspaces
+## Workspaces / Personas / Preferences
 
 `GET /api/workspaces`
 
 Returns workspaces visible to the current session.
 
-## Personas
+`GET /api/personas`, `PATCH /api/personas/:id`, `POST /api/personas/switch`
 
-`GET /api/personas`
+Auth required and workspace scoped.
 
-Auth required. Workspace scoped.
+`GET /api/workspace-preferences`, `PATCH /api/workspace-preferences`
 
-`PATCH /api/personas/:id`
-
-Auth required. Workspace and owner scoped. Supports `display_name`, `status`, and `metadata`.
-
-`POST /api/personas/switch`
-
-Auth required. Stores the preferred persona on the profile and returns active persona, visible modules, and persona-relevant cards.
-
-## Workspace Preferences
-
-`GET /api/workspace-preferences`
-
-Auth required. Workspace scoped.
-
-`PATCH /api/workspace-preferences`
-
-Auth required. Workspace scoped. Supports:
-
-- `default_mode`
-- `default_persona_id`
-- `default_language`
-- `card_density`
-- `show_demo_labels`
-- `reduce_motion`
-- `notification_preferences`
+Auth required and workspace scoped.
 
 ## Security
 
@@ -260,198 +195,57 @@ Auth required. Returns safe account security metadata.
 
 `POST /api/security/change-password`
 
-Auth required. Requires `current_password` and `new_password`. Never returns password hashes.
+Auth required. Requires current password and new password.
 
-`GET /api/security/sessions`
+`GET /api/security/sessions`, `DELETE /api/security/sessions/:id`, `POST /api/security/logout-all`
 
-Auth required. Returns session metadata only: id, masked IP, user agent summary, created_at, last_seen_at.
-
-`DELETE /api/security/sessions/:id`
-
-Auth required. Revokes a user-owned session.
-
-`POST /api/security/logout-all`
-
-Auth required. Revokes other sessions and keeps the current session active.
+Auth required. Session metadata only.
 
 ## Integrations
 
 `GET /api/integrations/api-tokens`
 
-Auth required. Returns token metadata only. No plaintext token is returned.
+Auth required. Returns token metadata only.
 
-`POST /api/integrations/api-tokens`
+`POST /api/integrations/api-tokens` and `DELETE /api/integrations/api-tokens/:id`
 
-Auth required. Returns `501 api_token_creation_not_implemented`.
-
-`DELETE /api/integrations/api-tokens/:id`
-
-Auth required. Returns `501 api_token_delete_not_implemented`.
+Auth required. Currently return `501` until secure token creation/deletion is implemented.
 
 ## Notifications And Activity
 
-`GET /api/notifications`
+`GET /api/notifications`, `PATCH /api/notifications/:id`, `GET /api/activity`, `POST /api/activity`
 
-Auth required. Workspace scoped.
-
-`PATCH /api/notifications/:id`
-
-Auth required. Marks notification `read`, `unread`, or `archived`.
-
-`GET /api/activity`
-
-Auth required. Workspace scoped.
-
-`POST /api/activity`
-
-Auth required. Workspace scoped. Creates a manual activity event.
+Auth required and workspace scoped.
 
 ## Cards
 
-`GET /api/cards`
-
-Auth required.
-
-Query filters:
-
-- `workspace_id`
-- `persona_id`
-- `mode`
-- `card_type`
-- `status`
-- `priority`
-- `source_type`
-- `limit`
-
-Priority filter values:
-
-- `urgent`: `priority >= 90`
-- `high`: `75 <= priority < 90`
-- `medium`: `50 <= priority < 75`
-- `low`: `25 <= priority < 50`
-- `later`: `priority < 25`
-- numeric value: exact priority
-
-`POST /api/cards`
-
-Auth required. Workspace scope required.
-
-`GET /api/cards/:id`
+`GET /api/cards`, `POST /api/cards`, `GET /api/cards/:id`, `PATCH /api/cards/:id`, `POST /api/cards/:id/action`, `GET /api/workspaces/:workspace_id/cards`
 
 Auth required. Card workspace and visibility checked.
 
-`PATCH /api/cards/:id`
-
-Auth required. Supported updates:
-
-- `status`
-- `priority`
-- `owner_user_id`
-- `owner_role`
-- `action_label`
-- `action_url`
-
-`POST /api/cards/:id/action`
-
-Auth required. Card workspace and visibility checked.
-
-Allowed `action_type` values:
-
-- `approve`
-- `reject`
-- `later`
-- `follow_up`
-- `done`
-- `pin`
-- `archive`
-- `create_payment_link_later`
-- `request_asset`
-- `open_module`
-
-Behavior:
-
-- validates action
-- maps to allowed card status unless `status` is supplied
-- updates card
-- writes `lead_events.event_type = card.action`
-- writes `activity_events.event_type = card.action`
-- may create a safe in-app notification for follow-up or asset requests
-- returns updated card plus event metadata
-
-`GET /api/workspaces/:workspace_id/cards`
-
-Same filters as `GET /api/cards`, but workspace is fixed by route.
+Allowed action types include approve, reject, later, follow_up, done, pin, archive, create_payment_link_later, request_asset and open_module.
 
 ## Human Needs
 
-`GET /api/human-needs`
+`GET /api/human-needs`, `GET /api/human-needs/latest`, `POST /api/human-needs`
 
-Auth required. Workspace scoped.
-
-`GET /api/human-needs/latest`
-
-Auth required. Returns the latest visible need.
-
-`POST /api/human-needs`
-
-Auth required. Workspace scoped. Stores need, resolves persona when available, creates cards, and returns created cards.
-
-Need behavior:
-
-- `cash` + artist/producer/creator/seller prioritizes payment, product, music, and order cards.
-- `manage` + admin/manager prioritizes leads, partner actions, and health.
-- `feel_artist` prioritizes music/project cards.
-- `feel_business` prioritizes catalog and payment readiness.
-- `boost_product`, `boost_music`, and `boost_partners` create scoped next-action cards.
+Auth required and workspace scoped. Stores need, resolves persona when available, creates cards, and returns created cards.
 
 ## Audit
 
 `POST /api/audit`
 
-Public. Safe for guest submissions.
-
-Behavior:
-
-- validates contact
-- stores `audit_submissions`
-- creates `leads`
-- attaches records to internal `BOOSTR Intake` workspace
-- logs `audit.submitted`
-- creates cards
-
-Audit card generation:
-
-- lead card
-- missing website/system route card
-- missing brand asset card
-- next_to_boost cards from friction
-- Smart Payment Link card when payment friction appears
-- recommended module insight cards
+Public. Safe for guest submissions. Stores audit submission, creates lead, attaches records to internal `BOOSTR Intake` workspace, logs `audit.submitted`, and creates cards.
 
 ## JANKO Demo
 
 `GET /api/demo/janko-os`
 
-Public. Static safe demo payload.
-
-Rules:
-
-- no D1 reads
-- no private records
-- no real sales
-- no fake paid orders
-- no Stripe
-
-Response includes profile, personas, needs, modules, cards, products, health, actions, contact methods, preferences, security, API tokens, notifications and activity.
+Public. Static safe demo payload. No D1 reads, private records, real sales, fake paid orders or Stripe.
 
 ## Language Runtime
 
-The ecosystem supports `en` and `es`.
-
-- Pages using `i18n.js` use keyed dictionaries.
-- Pages using `console.js` use the shared BOOSTR runtime.
-- Pages without either runtime receive `language-engine.js` through Pages middleware.
-- The selected language persists in `localStorage.boostr_lang`.
+The ecosystem supports `en` and `es`. Selected language persists in `localStorage.boostr_lang`.
 
 ## Product And Payment Readiness
 
@@ -460,14 +254,6 @@ Current tables:
 - `products`
 - `payment_links`
 - `order_reservations`
-
-Rules:
-
-- digital beats require license/disclosure metadata.
-- physical one-of-one products can support buy now now and auction later.
-- services require deposit/booking scope.
-- account required for licenses, private access, high-ticket, and history.
-- guest checkout allowed only for simple low-risk purchases.
 
 Not implemented:
 
