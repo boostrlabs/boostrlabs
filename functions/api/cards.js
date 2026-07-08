@@ -1,5 +1,6 @@
 import { authCanSeeAll, clean, json, jsonError, readJson, requireDb, requireRole } from "../_lib/api.js";
 import {
+  applyCardQueryFilters,
   cardStatuses,
   cardTypes,
   customOsRoles,
@@ -28,23 +29,9 @@ export async function onRequestGet({ request, env }) {
   if (!workspace.ok) return workspace.response;
 
   const { filters, binds } = scopedCardFilters(auth, workspace.workspace_id);
-  const cardType = clean(url.searchParams.get("card_type"), 60);
-  const status = clean(url.searchParams.get("status"), 40);
-  const sourceType = clean(url.searchParams.get("source_type"), 80);
   const limit = clampLimit(url.searchParams.get("limit"));
-
-  if (cardType) {
-    filters.push("card_type = ?");
-    binds.push(cardType);
-  }
-  if (status) {
-    filters.push("status = ?");
-    binds.push(status);
-  }
-  if (sourceType) {
-    filters.push("source_type = ?");
-    binds.push(sourceType);
-  }
+  const queryFilters = applyCardQueryFilters(filters, binds, url.searchParams);
+  if (!queryFilters.ok) return queryFilters.response;
 
   const where = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
   const result = await env.DB.prepare(

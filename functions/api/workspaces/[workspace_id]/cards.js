@@ -1,5 +1,5 @@
 import { clean, json, requireDb, requireRole, requireWorkspaceAccess } from "../../../_lib/api.js";
-import { customOsRoles, scopedCardFilters } from "../../../_lib/custom-os.js";
+import { applyCardQueryFilters, customOsRoles, scopedCardFilters } from "../../../_lib/custom-os.js";
 
 const clampLimit = (value) => Math.min(Math.max(Number(value || 50) || 50, 1), 100);
 
@@ -20,18 +20,9 @@ export async function onRequestGet({ request, env, params }) {
 
   const url = new URL(request.url);
   const { filters, binds } = scopedCardFilters(auth, workspaceId);
-  const status = clean(url.searchParams.get("status"), 40);
-  const cardType = clean(url.searchParams.get("card_type"), 60);
   const limit = clampLimit(url.searchParams.get("limit"));
-
-  if (status) {
-    filters.push("status = ?");
-    binds.push(status);
-  }
-  if (cardType) {
-    filters.push("card_type = ?");
-    binds.push(cardType);
-  }
+  const queryFilters = applyCardQueryFilters(filters, binds, url.searchParams);
+  if (!queryFilters.ok) return queryFilters.response;
 
   const result = await env.DB.prepare(
     `SELECT id, workspace_id, user_id, persona_id, source_type, source_id, card_type,

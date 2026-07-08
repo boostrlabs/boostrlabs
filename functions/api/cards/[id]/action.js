@@ -1,5 +1,5 @@
 import { addLeadEvent, clean, json, jsonError, now, readJson, requireDb, requireRole, requireWorkspaceAccess } from "../../../_lib/api.js";
-import { customOsRoles, updateCard } from "../../../_lib/custom-os.js";
+import { actionTypes, cardStatuses, customOsRoles, statusForAction, updateCard } from "../../../_lib/custom-os.js";
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -29,8 +29,12 @@ export async function onRequestPost({ request, env, params }) {
   if (!parsed.ok) return parsed.response;
 
   const payload = parsed.payload || {};
-  const action = clean(payload.action || "complete", 80);
-  const status = clean(payload.status || (action === "archive" ? "archived" : "done"), 40);
+  const action = clean(payload.action_type || payload.action || "done", 80);
+  if (!actionTypes.has(action)) return jsonError("invalid_card_action", "Card action is not supported.", 400);
+
+  const status = statusForAction(action, payload.status);
+  if (!cardStatuses.has(status)) return jsonError("invalid_card_status", "Card status is not supported.", 400);
+
   const updated = await updateCard(env, id, { status });
   if (!updated.ok) return updated.response;
 
@@ -47,5 +51,16 @@ export async function onRequestPost({ request, env, params }) {
     created_at: now()
   });
 
-  return json({ ok: true, id, action, status });
+  const next = await env.DB.prepare(
+    `SELECT id, workspace_id, user_id, persona_id, source_type, source_id, card_type,
+            title, summary, priority, status, owner_user_id, owner_role,
+            action_label, action_url, metadata_json, created_at, updated_at
+     FROM cards
+     WHERE id = ?
+     LIMIT 1`
+  )
+    .bind(id)
+    .first();
+
+  return json({ ok: true, action_type: action, card: next });
 }

@@ -90,6 +90,7 @@ export async function onRequestGet({ env }) {
       "/api/workspaces",
       "/api/db-init",
       "/api/audit",
+      "/api/demo/janko-os",
       "/api/intake",
       "/api/leads",
       "/api/leads?type=summary",

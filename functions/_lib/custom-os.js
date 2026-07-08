@@ -58,6 +58,28 @@ export const humanNeedTypes = new Set([
 
 export const customOsRoles = ["admin", "manager", "partner", "client", "artist", "producer", "creator", "seller", "agent_later"];
 
+export const actionTypes = new Set([
+  "approve",
+  "reject",
+  "later",
+  "follow_up",
+  "done",
+  "create_payment_link_later",
+  "request_asset",
+  "open_module"
+]);
+
+export const statusForAction = (action, suppliedStatus) => {
+  const requested = clean(suppliedStatus, 40);
+  if (requested) return requested;
+  if (action === "approve") return "approved";
+  if (action === "reject") return "rejected";
+  if (action === "later" || action === "follow_up" || action === "create_payment_link_later") return "later";
+  if (action === "request_asset") return "unread";
+  if (action === "open_module") return "read";
+  return "done";
+};
+
 export const resolveWorkspaceForRequest = (auth, requestedWorkspaceId) => {
   const workspaceId = clean(requestedWorkspaceId, 120) || (authCanSeeAll(auth) ? null : defaultWorkspaceId(auth));
   const access = requireWorkspaceAccess(auth, workspaceId);
@@ -90,6 +112,64 @@ export function scopedCardFilters(auth, workspaceId) {
   }
 
   return { filters, binds };
+}
+
+export function applyCardQueryFilters(filters, binds, searchParams) {
+  const personaId = clean(searchParams.get("persona_id"), 120);
+  const mode = clean(searchParams.get("mode"), 80);
+  const cardType = clean(searchParams.get("card_type"), 60);
+  const status = clean(searchParams.get("status"), 40);
+  const sourceType = clean(searchParams.get("source_type"), 80);
+  const priority = clean(searchParams.get("priority"), 40).toLowerCase();
+
+  if (personaId) {
+    filters.push("persona_id = ?");
+    binds.push(personaId);
+  }
+  if (mode) {
+    filters.push("(json_extract(metadata_json, '$.mode') = ? OR json_extract(metadata_json, '$.need_type') = ?)");
+    binds.push(mode, mode);
+  }
+  if (cardType) {
+    if (!cardTypes.has(cardType)) return { ok: false, response: jsonError("invalid_card_type", "Card type is not supported.", 400) };
+    filters.push("card_type = ?");
+    binds.push(cardType);
+  }
+  if (status) {
+    if (!cardStatuses.has(status)) return { ok: false, response: jsonError("invalid_card_status", "Card status is not supported.", 400) };
+    filters.push("status = ?");
+    binds.push(status);
+  }
+  if (sourceType) {
+    filters.push("source_type = ?");
+    binds.push(sourceType);
+  }
+  if (priority) {
+    const numeric = Number(priority);
+    if (Number.isFinite(numeric)) {
+      filters.push("priority = ?");
+      binds.push(Math.min(Math.max(numeric, 0), 100));
+    } else if (priority === "urgent") {
+      filters.push("priority >= ?");
+      binds.push(90);
+    } else if (priority === "high") {
+      filters.push("priority >= ? AND priority < ?");
+      binds.push(75, 90);
+    } else if (priority === "medium") {
+      filters.push("priority >= ? AND priority < ?");
+      binds.push(50, 75);
+    } else if (priority === "low") {
+      filters.push("priority >= ? AND priority < ?");
+      binds.push(25, 50);
+    } else if (priority === "later") {
+      filters.push("priority < ?");
+      binds.push(25);
+    } else {
+      return { ok: false, response: jsonError("invalid_priority", "Priority filter is not supported.", 400) };
+    }
+  }
+
+  return { ok: true };
 }
 
 export async function getPersona(env, personaId, workspaceId) {
@@ -229,7 +309,43 @@ export async function createAuditCards(env, record) {
     }));
   }
 
+  const hasBrandAsset = assets.some((item) => {
+    const value = item.toLowerCase();
+    return value.includes("logo") || value.includes("brand") || value.includes("photo") || value.includes("asset") || value.includes("press");
+  });
+  if (!hasBrandAsset) {
+    created.push(await insertCard(env, {
+      ...base,
+      card_type: "asset_request",
+      title: "Missing brand asset",
+      summary: "Audit did not confirm usable brand assets.",
+      priority: 55,
+      status: "unread",
+      owner_role: "manager",
+      action_label: "Request asset",
+      metadata: auditCardMetadata(record, { missing_asset: "brand_asset", mode: "review" })
+    }));
+  }
+
   const frictions = normalizeArray(record.audit?.frictions || record.audit?.raw?.friction || record.audit?.raw?.frictions);
+  const paymentFriction = frictions.some((item) => {
+    const value = item.toLowerCase();
+    return value.includes("cobrar") || value.includes("payment") || value.includes("checkout") || value.includes("pago") || value.includes("limpio");
+  });
+  if (paymentFriction) {
+    created.push(await insertCard(env, {
+      ...base,
+      card_type: "next_to_boost",
+      title: "Smart Payment Link needed",
+      summary: "Audit friction suggests checkout or collection is not clean enough yet.",
+      priority: 86,
+      status: "unread",
+      owner_role: "manager",
+      action_label: "Prepare payment link",
+      metadata: auditCardMetadata(record, { recommended_action: "smart_payment_link", mode: "cash" })
+    }));
+  }
+
   for (const friction of frictions.slice(0, 3)) {
     created.push(await insertCard(env, {
       ...base,
@@ -240,7 +356,7 @@ export async function createAuditCards(env, record) {
       status: "normal",
       owner_role: "manager",
       action_label: "Turn into action",
-      metadata: auditCardMetadata(record, { friction })
+      metadata: auditCardMetadata(record, { friction, mode: "review" })
     }));
   }
 
@@ -278,7 +394,7 @@ export async function createHumanNeedCards(env, need, personaType) {
       ...base,
       status: "unread",
       priority: 80,
-      metadata: { need_type: need.need_type, persona_type: personaType, note: need.note },
+      metadata: { mode: need.need_type, need_type: need.need_type, persona_type: personaType, note: need.note },
       ...card
     }));
   };
@@ -292,6 +408,18 @@ export async function createHumanNeedCards(env, need, personaType) {
     await add({ card_type: "lead", title: "Review unread leads", summary: "Start with new or high-potential lead cards.", action_label: "Open leads" });
     await add({ card_type: "partner_action", title: "High-potential partner action", summary: "Check partner-related cards waiting for a next step.", action_label: "Review partners" });
     await add({ card_type: "health", title: "Ecosystem health scan", summary: "Look for blocked cards, stale orders and missing owners.", action_label: "Check health" });
+  } else if (need.need_type === "feel_artist") {
+    await add({ card_type: "music", title: "Return to the project", summary: "Prioritize music or creative work before sales cleanup.", action_label: "Open project" });
+    await add({ card_type: "insight", title: "Protect creative energy", summary: "Pick one unfinished creative asset and move it forward.", action_label: "Choose next move" });
+  } else if (need.need_type === "feel_business") {
+    await add({ card_type: "product", title: "Organize catalog", summary: "Prioritize pricing, offer structure and product readiness.", action_label: "Review catalog" });
+    await add({ card_type: "payment", title: "Payment readiness check", summary: "Confirm what can sell as guest checkout and what needs account access.", action_label: "Check payment path" });
+  } else if (need.need_type === "boost_product") {
+    await add({ card_type: "product", title: "Boost product path", summary: "Move the strongest product toward a clear CTA.", action_label: "Review product" });
+  } else if (need.need_type === "boost_music") {
+    await add({ card_type: "music", title: "Boost music path", summary: "Prioritize the song, beat or pack closest to release.", action_label: "Review music" });
+  } else if (need.need_type === "boost_partners") {
+    await add({ card_type: "partner_action", title: "Boost partner action", summary: "Prioritize partner cards that can become business movement.", action_label: "Review partners" });
   } else {
     await add({ card_type: "human_need", title: "Human need captured", summary: need.note || `Need type: ${need.need_type}`, action_label: "Review need" });
   }

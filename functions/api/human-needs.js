@@ -67,7 +67,7 @@ export async function onRequestPost({ request, env }) {
   const needType = clean(payload.need_type, 80);
   if (!humanNeedTypes.has(needType)) return jsonError("invalid_need_type", "Need type is not supported.", 400);
 
-  const personaId = clean(payload.persona_id, 120) || null;
+  let personaId = clean(payload.persona_id, 120) || null;
   let personaType = auth.roles?.[0] || auth.user.role || "client";
   if (personaId) {
     const persona = await getPersona(env, personaId, workspace.workspace_id);
@@ -76,6 +76,20 @@ export async function onRequestPost({ request, env }) {
       return jsonError("persona_access_denied", "Persona access denied.", 403);
     }
     personaType = persona.persona_type;
+  } else {
+    const persona = await env.DB.prepare(
+      `SELECT id, persona_type
+       FROM personas
+       WHERE workspace_id = ? AND user_id = ? AND status = 'active'
+       ORDER BY updated_at DESC
+       LIMIT 1`
+    )
+      .bind(workspace.workspace_id, auth.user.id)
+      .first();
+    if (persona?.id) {
+      personaId = persona.id;
+      personaType = persona.persona_type;
+    }
   }
 
   const timestamp = now();
@@ -98,5 +112,5 @@ export async function onRequestPost({ request, env }) {
     created_at: timestamp
   }, personaType);
 
-  return json({ ok: true, id, workspace_id: workspace.workspace_id, need_type: needType, cards_created: cards.length }, 201);
+  return json({ ok: true, id, workspace_id: workspace.workspace_id, need_type: needType, cards_created: cards.length, cards }, 201);
 }
