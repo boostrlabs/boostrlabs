@@ -37,6 +37,7 @@ export async function onRequestGet({ env }) {
     invite_codes_total: null,
     users_total: null,
     workspaces_total: null,
+    admins_total: null,
     last_lead: null,
     last_audit: null
   };
@@ -83,8 +84,12 @@ export async function onRequestGet({ env }) {
         metrics.invite_codes_total = inviteCodesTotal?.total ?? 0;
       }
       if (db.tables.includes("users")) {
-        const usersTotal = await env.DB.prepare("SELECT COUNT(*) AS total FROM users").first();
+        const [usersTotal, adminsTotal] = await Promise.all([
+          env.DB.prepare("SELECT COUNT(*) AS total FROM users").first(),
+          env.DB.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin' AND status = 'active'").first()
+        ]);
         metrics.users_total = usersTotal?.total ?? 0;
+        metrics.admins_total = adminsTotal?.total ?? 0;
       }
       if (db.tables.includes("workspaces")) {
         const workspacesTotal = await env.DB.prepare("SELECT COUNT(*) AS total FROM workspaces").first();
@@ -98,12 +103,18 @@ export async function onRequestGet({ env }) {
   return json({
     ok: true,
     service: "BOOSTR Labs API",
-    version: "0.3.2-signup-bootstrap",
+    version: "0.3.3-production-readiness",
     db,
     metrics,
     manager: {
       pin_configured: Boolean(env.MANAGER_PIN || env.ADMIN_PIN),
       pin_fallback_enabled: env.ENVIRONMENT === "development" || env.ALLOW_MANAGER_PIN_FALLBACK === "true"
+    },
+    readiness: {
+      endpoint: "/api/readiness",
+      admin_bootstrap: "/api/admin/bootstrap",
+      admin_readiness_ui: "/admin/readiness",
+      admin_bootstrap_key_configured: Boolean(env.BOOSTR_ADMIN_BOOTSTRAP_KEY)
     },
     signup: {
       endpoint: "/api/signup",
@@ -121,6 +132,8 @@ export async function onRequestGet({ env }) {
     },
     endpoints: [
       "/api/health",
+      "/api/readiness",
+      "/api/admin/bootstrap",
       "/api/me",
       "/api/profile",
       "/api/profile/contacts",
