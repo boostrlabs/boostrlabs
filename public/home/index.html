@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title data-i18n="home_hero_title">BOOSTR Labs — Home</title>
+  <title data-i18n="home_hero_title">BOOSTR Labs — BOOSTR CORE</title>
   <meta name="description" content="BOOSTR Labs Custom Operating Systems.">
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="stylesheet" href="/assets/boostr-mother/mother.css">
@@ -12,35 +12,35 @@
 <body>
   <div class="ambient"></div>
   <div class="os">
-    <aside class="sidebar glass" aria-label="BOOSTR OS navigation">
+    <aside class="sidebar glass" aria-label="BOOSTR navigation">
       <a class="logo-mark" href="/home">
         <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))">
       </a>
       <nav class="icon-nav">
         <a href="/manager" title="Manager">⌘</a>
-        <a href="/app" title="Client">◫</a>
-        <a href="/partner-dashboard" title="Partner">◇</a>
+        <a href="/app" title="Dashboard">◫</a>
+        <a href="/partner-dashboard" title="Partners">◇</a>
         <a href="/audit" title="Audit">↯</a>
         <a href="/modules" title="Modules">◌</a>
       </nav>
       <div class="utility">
-        <a href="/login" title="Role Login">◎</a>
+        <a href="/login" title="Login">◎</a>
         <a href="/ecosystem" title="Ecosystem Map">?</a>
       </div>
     </aside>
     <main class="main">
       <header class="topbar glass">
         <div class="greeting">
-          <span>BOOSTR Labs</span>
-          <strong>BOOSTR Labs</strong>
+          <span data-i18n="home_core_span">BOOSTR Labs</span>
+          <strong>BOOSTR CORE</strong>
         </div>
         <div class="search" data-i18n="search_placeholder">Search systems, modules, partners, routes...</div>
         <a class="bell" href="/admin" title="Admin">♟</a>
         <a class="role-pill" href="/login">
           <div class="avatar"></div>
           <div>
-            <b data-i18n="login_topbar_val">Role Access</b>
-            <div class="micro" data-i18n="login_desc">Manager / Partner / Client</div>
+            <b data-i18n="login_topbar_val">Account Access</b>
+            <div class="micro" data-i18n="login_desc">Manager / Partner / Client / Artist</div>
           </div>
         </a>
       </header>
@@ -50,20 +50,20 @@
             <div class="hero-grid">
               <div class="hero-copy">
                 <div class="chip gold" data-i18n="home_hero_chip">Custom Operating Systems</div>
-                <h1 data-i18n="home_hero_title">The system layer behind modern businesses.</h1>
-                <p data-i18n="home_hero_desc">BOOSTR Labs builds the operating layer around each business: intake, dashboards, stores, partner routes, client workspaces and the modules that connect them.</p>
+                <h1 data-i18n="home_hero_title">BOOSTR CORE for modern businesses.</h1>
+                <p data-i18n="home_hero_desc">Build the operating layer around a business: Audit, Dashboard, payments, partners, stores and the modules that connect them.</p>
                 <div class="actions">
                   <a class="btn primary" href="/audit" data-i18n="home_hero_cta_audit">Start BOOSTR Audit</a>
-                  <a class="btn" href="/modules" data-i18n="home_hero_cta_modules">Explore modules</a>
-                  <a class="btn" href="/login" data-i18n="home_hero_cta_login">Role access</a>
+                  <a class="btn" href="/modules" data-i18n="home_hero_cta_modules">Explore Module Deck</a>
+                  <a class="btn" href="/login" data-i18n="home_hero_cta_login">Login</a>
                 </div>
               </div>
               <div class="visual-card">
                 <div class="orbital">
                   <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR">
-                  <span class="orbit-node o1">Intake</span>
-                  <span class="orbit-node o2">Signals</span>
-                  <span class="orbit-node o3">Store</span>
+                  <span class="orbit-node o1">Audit</span>
+                  <span class="orbit-node o2">Leads</span>
+                  <span class="orbit-node o3">Pay</span>
                   <span class="orbit-node o4">Dashboard</span>
                   <span class="orbit-node o5">AI</span>
                 </div>
@@ -73,116 +73,64 @@
           <section class="card glass">
             <div class="section-head">
               <div>
-                <h2 data-i18n="home_section_os_title">Core OS surfaces</h2>
+                <h2 data-i18n="home_section_os_title">BOOSTR CORE surfaces</h2>
                 <div class="micro" data-i18n="home_section_os_micro">Drag cards to reorganize. Search filters visible modules.</div>
               </div>
             </div>
             <div class="metrics">
-              <a class="metric" href="/audit">
-                <span>BOOSTR</span>
-                <b>Audit</b>
-                <small data-i18n="home_metric_audit_status">Open</small>
-              </a>
-              <a class="metric" href="/manager">
-                <span>BOOSTR</span>
-                <b>Manager</b>
-                <small data-i18n="home_metric_manager_status">Internal</small>
-              </a>
-              <a class="metric" href="/app">
-                <span>BOOSTR</span>
-                <b>Client</b>
-                <small data-i18n="home_metric_client_status">Access</small>
-              </a>
-              <a class="metric" href="/partner-dashboard">
-                <span>BOOSTR</span>
-                <b>Partner</b>
-                <small data-i18n="home_metric_partner_status">Access</small>
-              </a>
+              <a class="metric" href="/audit"><span>BOOSTR</span><b>Audit</b><small data-i18n="home_metric_audit_status">Open</small></a>
+              <a class="metric" href="/manager"><span>BOOSTR</span><b>Manager</b><small data-i18n="home_metric_manager_status">Internal</small></a>
+              <a class="metric" href="/app"><span>BOOSTR</span><b>Dashboard</b><small data-i18n="home_metric_client_status">Access</small></a>
+              <a class="metric" href="/partner-dashboard"><span>BOOSTR</span><b>Partners</b><small data-i18n="home_metric_partner_status">Access</small></a>
             </div>
           </section>
           <section class="card glass">
             <div class="section-head">
               <div>
-                <h2 data-i18n="home_section_network_title">Network entry points</h2>
+                <h2 data-i18n="home_section_network_title">Branded worlds</h2>
                 <div class="micro" data-i18n="home_section_network_micro">Public routes stay custom-branded. BOOSTR powers the system behind them.</div>
               </div>
             </div>
             <div class="network-grid">
-              <div class="module">
-                <b data-i18n="home_module_audit">BOOSTR Audit</b>
-                <p class="micro" data-i18n="home_module_audit_desc">Application and diagnosis.</p>
-                <a href="/audit">Open →</a>
-              </div>
-              <div class="module">
-                <b data-i18n="home_module_82ngel">82NGEL OS</b>
-                <p class="micro" data-i18n="home_module_82ngel_desc">Artist route.</p>
-                <a href="/82ngel">Open →</a>
-              </div>
-              <div class="module">
-                <b data-i18n="home_module_westdetro">WESTDETRO OS</b>
-                <p class="micro" data-i18n="home_module_westdetro_desc">Janko Diorr route.</p>
-                <a href="/jankodiorr">Open →</a>
-              </div>
-              <div class="module">
-                <b data-i18n="home_module_omg">OMG Beauty OS</b>
-                <p class="micro" data-i18n="home_module_omg_desc">Beauty client route.</p>
-                <a href="/omgbeauty">Open →</a>
-              </div>
-              <div class="module">
-                <b data-i18n="home_module_gemese">GEMESE OS</b>
-                <p class="micro" data-i18n="home_module_gemese_desc">Workspace route.</p>
-                <a href="/app/gemese">Open →</a>
-              </div>
-              <div class="module">
-                <b data-i18n="home_module_82store">82 Storefront</b>
-                <p class="micro" data-i18n="home_module_82store_desc">Commerce reference route.</p>
-                <a href="/82store">Open →</a>
-              </div>
+              <div class="module"><b data-i18n="home_module_audit">BOOSTR Audit</b><p class="micro" data-i18n="home_module_audit_desc">Interactive diagnosis.</p><a href="/audit">Open →</a></div>
+              <div class="module"><b data-i18n="home_module_82ngel">82NGEL OS</b><p class="micro" data-i18n="home_module_82ngel_desc">Artist route.</p><a href="/82ngel">Open →</a></div>
+              <div class="module"><b data-i18n="home_module_westdetro">JANKO / WESTDETRO Link OS</b><p class="micro" data-i18n="home_module_westdetro_desc">Music route.</p><a href="/jankodiorr">Open →</a></div>
+              <div class="module"><b data-i18n="home_module_omg">OMG Beauty OS</b><p class="micro" data-i18n="home_module_omg_desc">Beauty client route.</p><a href="/omgbeauty">Open →</a></div>
+              <div class="module"><b data-i18n="home_module_gemese">GEMESE Dashboard</b><p class="micro" data-i18n="home_module_gemese_desc">Workspace route.</p><a href="/app/gemese">Open →</a></div>
+              <div class="module"><b data-i18n="home_module_82store">82 Storefront</b><p class="micro" data-i18n="home_module_82store_desc">Commerce reference route.</p><a href="/82store">Open →</a></div>
             </div>
           </section>
         </div>
         <div class="right-col">
           <section class="card glass">
             <div class="pulse">
-              <span class="chip live" data-i18n="home_pulse_title">BOOSTR Intake</span>
-              <strong data-i18n="home_pulse_val">Audit</strong>
-              <div class="micro" data-i18n="home_pulse_micro">Public application route. Opens separately from internal dashboards.</div>
+              <span class="chip live" data-i18n="home_pulse_title">BOOSTR Audit</span>
+              <strong data-i18n="home_pulse_val">Live</strong>
+              <div class="micro" data-i18n="home_pulse_micro">Public diagnosis route. Opens separately from internal dashboards.</div>
             </div>
           </section>
           <section class="mini-switches">
-            <a class="switch-card on glass" href="/login">
-              <div class="switch-top">
-                <b data-i18n="home_switch_access_title">Role Access</b>
-                <span class="toggle"></span>
-              </div>
-              <p class="micro" data-i18n="home_switch_access_desc">Manager, Partner, Client and Artist workspace entry.</p>
-            </a>
-            <a class="switch-card off glass" href="/modules">
-              <div class="switch-top">
-                <b data-i18n="home_switch_modules_title">Modules</b>
-                <span class="toggle"></span>
-              </div>
-              <p class="micro" data-i18n="home_switch_modules_desc">Official source of BOOSTR surfaces.</p>
-            </a>
+            <a class="switch-card on glass" href="/login"><div class="switch-top"><b data-i18n="home_switch_access_title">Account Access</b><span class="toggle"></span></div><p class="micro" data-i18n="home_switch_access_desc">Manager, Partner, Client and Artist entry.</p></a>
+            <a class="switch-card off glass" href="/modules"><div class="switch-top"><b data-i18n="home_switch_modules_title">Module Deck</b><span class="toggle"></span></div><p class="micro" data-i18n="home_switch_modules_desc">Official source of BOOSTR surfaces.</p></a>
           </section>
         </div>
       </section>
-      <nav class="bottom-tabs glass" aria-label="BOOSTR OS quick switcher">
+      <nav class="bottom-tabs glass" aria-label="BOOSTR quick switcher">
         <a href="/manager" data-i18n="login_option_manager">Manager</a>
-        <a href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
-        <a href="/app" data-i18n="login_option_client">Client</a>
-        <a href="/audit" data-i18n="home_pulse_val">Audit</a>
-        <a href="/modules" data-i18n="home_switch_modules_title">Modules</a>
+        <a href="/partner-dashboard" data-i18n="login_option_partner">Partners</a>
+        <a href="/app" data-i18n="login_option_client">Dashboard</a>
+        <a href="/audit" data-i18n="home_module_audit">Audit</a>
+        <a href="/modules" data-i18n="home_switch_modules_title">Module Deck</a>
         <a class="plus" href="/login">+</a>
       </nav>
-      <footer class="footer">POWERED BY BOOSTR LABS · Mother OS</footer>
+      <footer class="footer">POWERED BY BOOSTR LABS · BOOSTR CORE</footer>
     </main>
   </div>
   <nav class="mobile-tabs">
     <a href="/manager" data-i18n="login_option_manager">Manager</a>
-    <a href="/app" data-i18n="login_option_client">Client</a>
-    <a href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
-    <a href="/audit" data-i18n="home_pulse_val">Audit</a>
+    <a href="/app" data-i18n="login_option_client">Dashboard</a>
+    <a href="/partner-dashboard" data-i18n="login_option_partner">Partners</a>
+    <a href="/audit" data-i18n="home_module_audit">Audit</a>
     <a href="/login">Login</a>
   </nav>
   <script src="/assets/boostr-mother/console.js"></script>
