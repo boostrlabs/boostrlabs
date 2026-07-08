@@ -52,4 +52,10 @@
   document.querySelectorAll('a[href="/audit"],a[href="/audit/"]').forEach(a => { if (location.pathname.startsWith('/audit')) return; a.target = '_blank'; a.rel = 'noopener noreferrer'; });
   const footer = document.querySelector('.footer');
   if (footer && !/powered by/i.test(footer.textContent)) { const os = document.querySelector('.greeting strong')?.textContent?.trim() || 'OS'; footer.innerHTML = `POWERED BY <strong>BOOSTR LABS</strong> · ${os}`; }
+  if (!window.BOOSTRI18N && !document.querySelector('script[src="/assets/boostr-mother/i18n.js"]')) {
+    const i18n = document.createElement('script');
+    i18n.src = '/assets/boostr-mother/i18n.js';
+    i18n.defer = true;
+    document.body.appendChild(i18n);
+  }
 })();
