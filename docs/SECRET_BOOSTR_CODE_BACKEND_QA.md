@@ -1,11 +1,11 @@
 # Secret BOOSTR Code Backend QA
 
-Status: PART 2 COMPLETE
+Status: PART 2 COMPLETE / SEEDED
 Last updated: 2026-07-08
 
 ## Scope
 
-This pass implements the backend validation foundation for Secret BOOSTR Codes and upgrades the Audit unlock screen.
+This pass implements the backend validation foundation for Secret BOOSTR Codes, upgrades the Audit unlock screen, and seeds the initial founder-approved codes as salted hashes.
 
 No signup/workspace bootstrap was implemented in this pass.
 No Stripe, payment credentials, OAuth providers, password reset, or paid-order logic was added.
@@ -13,6 +13,7 @@ No Stripe, payment credentials, OAuth providers, password reset, or paid-order l
 ## Files changed
 
 - `migrations/0010_invite_codes.sql`
+- `migrations/0011_seed_initial_invite_codes.sql`
 - `functions/api/invite-codes/validate.js`
 - `functions/api/health.js`
 - `public/audit/index.html`
@@ -54,6 +55,19 @@ Statuses:
 ### `invite_code_events`
 
 Used for safe validation events.
+
+## Seeded initial codes
+
+Migration `0011_seed_initial_invite_codes.sql` seeds three founder-approved Secret BOOSTR Codes as salted hashes only.
+
+Rules:
+
+- plaintext codes are not committed in repo
+- each seed has `max_uses = 100`
+- each seed has `bypass_audit = 1`
+- campaign is `founder_seed`
+- source is `manual_seed`
+- usage increment still waits for signup completion in the next backend pass
 
 ## Endpoint
 
@@ -102,6 +116,7 @@ Invalid response:
 - DB codes are matched through SHA-256 hash using `code_salt` when present.
 - Environment fallback can use `BOOSTR_SECRET_CODE` or `BOOSTR_INVITE_CODE` without committing secrets.
 - Invalid responses remain generic.
+- Two-character codes are allowed because one founder-approved code is intentionally short.
 - Validation does not increment usage yet.
 - Usage should increment only after successful signup completion in the next backend pass.
 - Public validation logs safe metadata only.
@@ -127,7 +142,7 @@ Secondary action:
 
 ## What is still pending
 
-- Remote D1 must receive migration `0010_invite_codes.sql` for DB-backed invite codes.
+- Remote D1 must receive migrations `0010_invite_codes.sql` and `0011_seed_initial_invite_codes.sql` for DB-backed invite codes.
 - Code creation/admin UI is pending.
 - Signup backend is pending.
 - Usage increment after signup completion is pending.
@@ -138,4 +153,4 @@ Secondary action:
 
 Target score: 92–93.
 
-Expected score after this pass: 93, assuming `/api/invite-codes/validate` deploys and the Audit unlock screen renders correctly.
+Expected score after this pass: 93.5, assuming `/api/invite-codes/validate` deploys and D1 receives migrations `0010` and `0011`.
