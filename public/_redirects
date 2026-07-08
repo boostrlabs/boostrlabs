@@ -8,6 +8,12 @@
 /modules/*     /modules/index.html          200
 /login         /login/index.html            200
 /login/*       /login/index.html            200
+/demo/janko-os /demo/janko-os/index.html    200
+/demo/janko-os/* /demo/janko-os/index.html  200
+/janko-os-demo /demo/janko-os/index.html    200
+/janko-os-demo/* /demo/janko-os/index.html  200
+/demo/janko    /demo/janko-os/index.html    200
+/demo/janko/*  /demo/janko-os/index.html    200
 /manager/leads /manager/leads/index.html    200
 /manager/leads/* /manager/leads/index.html  200
 /manager/payment-links   /manager/payment-links/index.html 200
