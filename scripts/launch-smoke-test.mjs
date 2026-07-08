@@ -7,208 +7,35 @@ let authToken = "";
 let createdUser = null;
 let createdProductId = "";
 let createdPaymentLinkId = "";
+let createdReservationId = "";
 
 const env = (name) => String(process.env[name] || "").trim();
-const mark = (name, status, detail = "") => {
-  results.push({ name, status, detail });
-  const icon = status === "PASS" ? "PASS" : status === "FAIL" ? "FAIL" : "SKIP";
-  console.log(`${icon} ${name}${detail ? ` — ${detail}` : ""}`);
-};
-
+const mark = (name, status, detail = "") => { results.push({ name, status, detail }); console.log(`${status} ${name}${detail ? ` — ${detail}` : ""}`); };
 const withRun = (value) => value.includes("{run}") ? value.replaceAll("{run}", runId) : value;
-const testEmail = () => {
-  const email = env("BOOSTR_TEST_EMAIL");
-  if (!email) return "";
-  if (email.includes("{run}")) return withRun(email);
-  const at = email.indexOf("@");
-  return at === -1 ? email : `${email.slice(0, at)}+${runId}${email.slice(at)}`;
-};
+const testEmail = () => { const email = env("BOOSTR_TEST_EMAIL"); if (!email) return ""; if (email.includes("{run}")) return withRun(email); const at = email.indexOf("@"); return at === -1 ? email : `${email.slice(0, at)}+${runId}${email.slice(at)}`; };
+const data = { email: testEmail(), username: withRun(env("BOOSTR_TEST_USERNAME") || `boostrtest{run}`).toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 31), phone: env("BOOSTR_TEST_PHONE") ? withRun(env("BOOSTR_TEST_PHONE")) : "", password: env("BOOSTR_TEST_PASSWORD"), workspace: withRun(env("BOOSTR_TEST_WORKSPACE") || `BOOSTR Smoke Test {run}`), code: env("BOOSTR_TEST_SECRET_CODE") };
+async function call(path, options = {}) { const headers = { ...(options.body ? { "Content-Type": "application/json" } : {}), ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) }; const res = await fetch(`${baseUrl}${path}`, { ...options, headers, body: options.body ? JSON.stringify(options.body) : undefined }); const text = await res.text(); let json = {}; try { json = text ? JSON.parse(text) : {}; } catch { json = { raw: text }; } return { res, json }; }
+async function check(name, fn) { try { await fn(); } catch (error) { mark(name, "FAIL", error?.message || String(error)); } }
 
-const data = {
-  email: testEmail(),
-  username: withRun(env("BOOSTR_TEST_USERNAME") || `boostrtest{run}`).toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 31),
-  phone: env("BOOSTR_TEST_PHONE") ? withRun(env("BOOSTR_TEST_PHONE")) : "",
-  password: env("BOOSTR_TEST_PASSWORD"),
-  workspace: withRun(env("BOOSTR_TEST_WORKSPACE") || `BOOSTR Smoke Test {run}`),
-  code: env("BOOSTR_TEST_SECRET_CODE")
-};
-
-async function call(path, options = {}) {
-  const headers = { ...(options.body ? { "Content-Type": "application/json" } : {}), ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) };
-  const res = await fetch(`${baseUrl}${path}`, { ...options, headers, body: options.body ? JSON.stringify(options.body) : undefined });
-  const text = await res.text();
-  let json = {};
-  try { json = text ? JSON.parse(text) : {}; } catch { json = { raw: text }; }
-  return { res, json };
-}
-
-async function check(name, fn) {
-  try { await fn(); } catch (error) { mark(name, "FAIL", error?.message || String(error)); }
-}
-
-await check("GET /api/health", async () => {
-  const { res, json } = await call("/api/health");
-  if (!res.ok || json.ok === false) throw new Error(`HTTP ${res.status}`);
-  mark("GET /api/health", "PASS", json.version || "ok");
-});
-
-await check("GET /api/readiness", async () => {
-  const { res, json } = await call("/api/readiness");
-  if (!res.ok || json.ok === false) throw new Error(`HTTP ${res.status}`);
-  mark("GET /api/readiness", "PASS", json.status || "ok");
-});
-
-await check("POST /api/invite-codes/validate", async () => {
-  if (!data.code) return mark("POST /api/invite-codes/validate", "SKIPPED", "BOOSTR_TEST_SECRET_CODE missing");
-  const { res, json } = await call("/api/invite-codes/validate", { method: "POST", body: { code: data.code, source: "launch_smoke_test" } });
-  if (!res.ok || json.ok === false) throw new Error(`HTTP ${res.status}`);
-  if (!json.valid) throw new Error("code invalid");
-  mark("POST /api/invite-codes/validate", "PASS", "valid");
-});
-
-await check("GET /api/signup/check-username", async () => {
-  const { res, json } = await call(`/api/signup/check-username?username=${encodeURIComponent(data.username)}`);
-  if (!res.ok || json.ok === false) throw new Error(`HTTP ${res.status}`);
-  mark("GET /api/signup/check-username", "PASS", json.available ? "available" : "unavailable");
-});
-
-await check("POST /api/signup", async () => {
-  const missing = ["BOOSTR_TEST_EMAIL", "BOOSTR_TEST_PASSWORD"].filter((key) => !env(key));
-  if (missing.length) return mark("POST /api/signup", "SKIPPED", `missing ${missing.join(", ")}`);
-  const { res, json } = await call("/api/signup", { method: "POST", body: {
-    display_name: "BOOSTR Smoke Test",
-    username: data.username,
-    email: data.email,
-    phone: data.phone,
-    password: data.password,
-    language: "en",
-    workspace_name: data.workspace,
-    business_type: "client",
-    default_persona: "client",
-    secret_boostr_code: data.code,
-    source: "launch_smoke_test"
-  }});
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (!json.token || !json.workspace?.id || !json.persona?.id) throw new Error("missing token/workspace/persona");
-  authToken = json.token;
-  createdUser = json.user;
-  mark("POST /api/signup", "PASS", `${createdUser?.username || data.username}`);
-});
-
-for (const [label, identifier] of [["email", data.email], ["username", data.username], ["phone", data.phone]]) {
-  await check(`POST /api/session by ${label}`, async () => {
-    if (!createdUser || !identifier || !data.password) return mark(`POST /api/session by ${label}`, "SKIPPED", "signup skipped or identifier missing");
-    const { res, json } = await call("/api/session", { method: "POST", body: { identifier, password: data.password } });
-    if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-    if (!json.token) throw new Error("missing token");
-    authToken = json.token;
-    mark(`POST /api/session by ${label}`, "PASS", "session");
-  });
-}
-
-await check("GET /api/dashboard", async () => {
-  if (!authToken) return mark("GET /api/dashboard", "SKIPPED", "no auth token");
-  const { res, json } = await call("/api/dashboard");
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (!json.workspace?.id || !Array.isArray(json.cards)) throw new Error("missing workspace/cards");
-  mark("GET /api/dashboard", "PASS", `${json.cards.length} cards`);
-});
-
-await check("GET /api/products", async () => {
-  if (!authToken) return mark("GET /api/products", "SKIPPED", "no auth token");
-  const { res, json } = await call("/api/products");
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (!Array.isArray(json.products)) throw new Error("missing products array");
-  mark("GET /api/products", "PASS", `${json.products.length} products`);
-});
-
-await check("POST /api/products", async () => {
-  if (!authToken) return mark("POST /api/products", "SKIPPED", "no auth token");
-  const { res, json } = await call("/api/products", { method: "POST", body: {
-    title: `Smoke Test Service ${runId}`,
-    product_type: "service",
-    status: "active",
-    price_amount: 15000,
-    currency: "USD",
-    description: "Launch smoke test product.",
-    fulfillment_type: "manual_service_delivery",
-    asset_status: "ready",
-    requires_account: 0,
-    allow_guest_checkout: 1,
-    metadata: { source: "launch_smoke_test" }
-  }});
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (!json.product?.id) throw new Error("missing product id");
-  createdProductId = json.product.id;
-  mark("POST /api/products", "PASS", json.product.title || createdProductId);
-});
-
-await check("PATCH /api/products/:id", async () => {
-  if (!createdProductId) return mark("PATCH /api/products/:id", "SKIPPED", "product not created");
-  const { res, json } = await call(`/api/products/${createdProductId}`, { method: "PATCH", body: { status: "active" } });
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (json.product?.status !== "active") throw new Error("product did not become active");
-  mark("PATCH /api/products/:id", "PASS", "active");
-});
-
-await check("POST /api/payment-links", async () => {
-  if (!createdProductId) return mark("POST /api/payment-links", "SKIPPED", "product not created");
-  const { res, json } = await call("/api/payment-links", { method: "POST", body: {
-    product_id: createdProductId,
-    title: `Smoke Smart Link ${runId}`,
-    status: "active",
-    checkout_mode: "reservation",
-    metadata: { source: "launch_smoke_test" }
-  }});
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (!json.payment_link?.id) throw new Error("missing payment link id");
-  createdPaymentLinkId = json.payment_link.id;
-  mark("POST /api/payment-links", "PASS", json.payment_link.public_url || createdPaymentLinkId);
-});
-
-await check("GET /api/public/payment-links/:id", async () => {
-  if (!createdPaymentLinkId) return mark("GET /api/public/payment-links/:id", "SKIPPED", "payment link not created");
-  const previousToken = authToken;
-  authToken = "";
-  const { res, json } = await call(`/api/public/payment-links/${createdPaymentLinkId}`);
-  authToken = previousToken;
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (!json.payment_link?.id) throw new Error("missing public payment link");
-  mark("GET /api/public/payment-links/:id", "PASS", json.payment_link.title || createdPaymentLinkId);
-});
-
-await check("POST /api/order-reservations", async () => {
-  if (!createdPaymentLinkId) return mark("POST /api/order-reservations", "SKIPPED", "payment link not created");
-  const previousToken = authToken;
-  authToken = "";
-  const { res, json } = await call("/api/order-reservations", { method: "POST", body: {
-    payment_link_id: createdPaymentLinkId,
-    customer_name: "BOOSTR Smoke Buyer",
-    guest_email: `buyer+${runId}@example.com`,
-    customer_contact: "smoke-test",
-    note: "Smoke test reservation",
-    source: "launch_smoke_test"
-  }});
-  authToken = previousToken;
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (!json.reservation?.id) throw new Error("missing reservation id");
-  mark("POST /api/order-reservations", "PASS", json.reservation.status || "reserved");
-});
-
-await check("GET /api/order-reservations", async () => {
-  if (!authToken) return mark("GET /api/order-reservations", "SKIPPED", "no auth token");
-  const { res, json } = await call("/api/order-reservations");
-  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-  if (!Array.isArray(json.reservations)) throw new Error("missing reservations array");
-  mark("GET /api/order-reservations", "PASS", `${json.reservations.length} reservations`);
-});
-
-const failed = results.filter((item) => item.status === "FAIL");
-const passed = results.filter((item) => item.status === "PASS");
-const skipped = results.filter((item) => item.status === "SKIPPED");
-console.log("\nBOOSTR Launch Smoke Test Summary");
-console.log(`Base URL: ${baseUrl}`);
-console.log(`PASS: ${passed.length}`);
-console.log(`FAIL: ${failed.length}`);
-console.log(`SKIPPED: ${skipped.length}`);
-if (failed.length) process.exit(1);
+await check("GET /api/health", async () => { const { res, json } = await call("/api/health"); if (!res.ok || json.ok === false) throw new Error(`HTTP ${res.status}`); mark("GET /api/health", "PASS", json.version || "ok"); });
+await check("GET /api/readiness", async () => { const { res, json } = await call("/api/readiness"); if (!res.ok || json.ok === false) throw new Error(`HTTP ${res.status}`); mark("GET /api/readiness", "PASS", json.status || "ok"); });
+await check("POST /api/invite-codes/validate", async () => { if (!data.code) return mark("POST /api/invite-codes/validate", "SKIPPED", "BOOSTR_TEST_SECRET_CODE missing"); const { res, json } = await call("/api/invite-codes/validate", { method: "POST", body: { code: data.code, source: "launch_smoke_test" } }); if (!res.ok || json.ok === false) throw new Error(`HTTP ${res.status}`); if (!json.valid) throw new Error("code invalid"); mark("POST /api/invite-codes/validate", "PASS", "valid"); });
+await check("GET /api/signup/check-username", async () => { const { res, json } = await call(`/api/signup/check-username?username=${encodeURIComponent(data.username)}`); if (!res.ok || json.ok === false) throw new Error(`HTTP ${res.status}`); mark("GET /api/signup/check-username", "PASS", json.available ? "available" : "unavailable"); });
+await check("POST /api/signup", async () => { const missing = ["BOOSTR_TEST_EMAIL", "BOOSTR_TEST_PASSWORD"].filter((key) => !env(key)); if (missing.length) return mark("POST /api/signup", "SKIPPED", `missing ${missing.join(", ")}`); const { res, json } = await call("/api/signup", { method: "POST", body: { display_name: "BOOSTR Smoke Test", username: data.username, email: data.email, phone: data.phone, password: data.password, language: "en", workspace_name: data.workspace, business_type: "client", default_persona: "client", secret_boostr_code: data.code, source: "launch_smoke_test" }}); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.token || !json.workspace?.id || !json.persona?.id) throw new Error("missing token/workspace/persona"); authToken = json.token; createdUser = json.user; mark("POST /api/signup", "PASS", `${createdUser?.username || data.username}`); });
+for (const [label, identifier] of [["email", data.email], ["username", data.username], ["phone", data.phone]]) await check(`POST /api/session by ${label}`, async () => { if (!createdUser || !identifier || !data.password) return mark(`POST /api/session by ${label}`, "SKIPPED", "signup skipped or identifier missing"); const { res, json } = await call("/api/session", { method: "POST", body: { identifier, password: data.password } }); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.token) throw new Error("missing token"); authToken = json.token; mark(`POST /api/session by ${label}`, "PASS", "session"); });
+await check("GET /api/dashboard", async () => { if (!authToken) return mark("GET /api/dashboard", "SKIPPED", "no auth token"); const { res, json } = await call("/api/dashboard"); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.workspace?.id || !Array.isArray(json.cards)) throw new Error("missing workspace/cards"); mark("GET /api/dashboard", "PASS", `${json.cards.length} cards`); });
+await check("POST /api/email-verification/request", async () => { if (!authToken) return mark("POST /api/email-verification/request", "SKIPPED", "no auth token"); const { res, json } = await call("/api/email-verification/request", { method: "POST" }); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); mark("POST /api/email-verification/request", "PASS", json.already_verified ? "already verified" : "prepared"); });
+await check("POST /api/password-reset/request", async () => { if (!data.email) return mark("POST /api/password-reset/request", "SKIPPED", "no test email"); const { res, json } = await call("/api/password-reset/request", { method: "POST", body: { email: data.email } }); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); mark("POST /api/password-reset/request", "PASS", "generic response"); });
+await check("POST /api/products", async () => { if (!authToken) return mark("POST /api/products", "SKIPPED", "no auth token"); const { res, json } = await call("/api/products", { method: "POST", body: { title: `Smoke Test Service ${runId}`, product_type: "service", status: "active", price_amount: 15000, currency: "USD", description: "Launch smoke test product.", fulfillment_type: "manual_service_delivery", asset_status: "ready", requires_account: 0, allow_guest_checkout: 1, metadata: { source: "launch_smoke_test" } }}); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.product?.id) throw new Error("missing product id"); createdProductId = json.product.id; mark("POST /api/products", "PASS", json.product.title || createdProductId); });
+await check("GET /api/products/:id graph", async () => { if (!createdProductId) return mark("GET /api/products/:id graph", "SKIPPED", "product not created"); const { res, json } = await call(`/api/products/${createdProductId}`); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.product?.graph) throw new Error("missing product graph"); mark("GET /api/products/:id graph", "PASS", "graph"); });
+await check("POST /api/payment-links", async () => { if (!createdProductId) return mark("POST /api/payment-links", "SKIPPED", "product not created"); const { res, json } = await call("/api/payment-links", { method: "POST", body: { product_id: createdProductId, title: `Smoke Smart Link ${runId}`, status: "active", checkout_mode: "reservation", metadata: { source: "launch_smoke_test" } }}); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.payment_link?.id) throw new Error("missing payment link id"); createdPaymentLinkId = json.payment_link.id; mark("POST /api/payment-links", "PASS", json.payment_link.public_url || createdPaymentLinkId); });
+await check("PATCH /api/payment-links/:id", async () => { if (!createdPaymentLinkId) return mark("PATCH /api/payment-links/:id", "SKIPPED", "payment link not created"); const { res, json } = await call(`/api/payment-links/${createdPaymentLinkId}`, { method: "PATCH", body: { status: "active" } }); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); mark("PATCH /api/payment-links/:id", "PASS", json.payment_link?.status || "updated"); });
+await check("GET /api/public/payment-links/:id", async () => { if (!createdPaymentLinkId) return mark("GET /api/public/payment-links/:id", "SKIPPED", "payment link not created"); const previousToken = authToken; authToken = ""; const { res, json } = await call(`/api/public/payment-links/${createdPaymentLinkId}`); authToken = previousToken; if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.payment_link?.id) throw new Error("missing public payment link"); mark("GET /api/public/payment-links/:id", "PASS", json.payment_link.title || createdPaymentLinkId); });
+await check("POST /api/order-reservations", async () => { if (!createdPaymentLinkId) return mark("POST /api/order-reservations", "SKIPPED", "payment link not created"); const previousToken = authToken; authToken = ""; const { res, json } = await call("/api/order-reservations", { method: "POST", body: { payment_link_id: createdPaymentLinkId, customer_name: "BOOSTR Smoke Buyer", guest_email: `buyer+${runId}@example.com`, customer_contact: "smoke-test", note: "Smoke test reservation", source: "launch_smoke_test" }}); authToken = previousToken; if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.reservation?.id) throw new Error("missing reservation id"); createdReservationId = json.reservation.id; mark("POST /api/order-reservations", "PASS", json.reservation.status || "reserved"); });
+await check("POST /api/order-reservations/:id/invoice", async () => { if (!createdReservationId) return mark("POST /api/order-reservations/:id/invoice", "SKIPPED", "reservation not created"); const { res, json } = await call(`/api/order-reservations/${createdReservationId}/invoice`, { method: "POST" }); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.invoice?.id) throw new Error("missing invoice id"); mark("POST /api/order-reservations/:id/invoice", "PASS", json.invoice.invoice_number || json.invoice.id); });
+await check("POST /api/files", async () => { if (!authToken) return mark("POST /api/files", "SKIPPED", "no auth token"); const { res, json } = await call("/api/files", { method: "POST", body: { title: `Smoke File ${runId}`, file_url: "https://example.com/proof", file_type: "proof", related_type: "product", related_id: createdProductId, visibility: "workspace" } }); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.file?.id) throw new Error("missing file id"); mark("POST /api/files", "PASS", json.file.title); });
+await check("GET /api/invoices", async () => { if (!authToken) return mark("GET /api/invoices", "SKIPPED", "no auth token"); const { res, json } = await call("/api/invoices"); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!Array.isArray(json.invoices)) throw new Error("missing invoices array"); mark("GET /api/invoices", "PASS", `${json.invoices.length} invoices`); });
+await check("GET /api/insights/summary", async () => { if (!authToken) return mark("GET /api/insights/summary", "SKIPPED", "no auth token"); const { res, json } = await call("/api/insights/summary"); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); if (!json.intelligence?.totals) throw new Error("missing intelligence totals"); mark("GET /api/insights/summary", "PASS", `score ${json.intelligence.score}`); });
+await check("POST /api/insights/run", async () => { if (!authToken) return mark("POST /api/insights/run", "SKIPPED", "no auth token"); const { res, json } = await call("/api/insights/run", { method: "POST" }); if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`); mark("POST /api/insights/run", "PASS", `${json.cards_created} created / ${json.skipped_duplicates || 0} skipped`); });
+const failed = results.filter((item) => item.status === "FAIL"); const passed = results.filter((item) => item.status === "PASS"); const skipped = results.filter((item) => item.status === "SKIPPED");
+console.log("\nBOOSTR Launch Smoke Test Summary"); console.log(`Base URL: ${baseUrl}`); console.log(`PASS: ${passed.length}`); console.log(`FAIL: ${failed.length}`); console.log(`SKIPPED: ${skipped.length}`); if (failed.length) process.exit(1);
