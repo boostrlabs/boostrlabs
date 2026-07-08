@@ -43,6 +43,7 @@ export async function onRequestGet({ env }) {
     users_total: null,
     workspaces_total: null,
     admins_total: null,
+    claimed_audits_total: null,
     last_lead: null,
     last_audit: null,
     last_product: null,
@@ -59,11 +60,12 @@ export async function onRequestGet({ env }) {
       db.missing_tables = expectedTables.filter((name) => !db.tables.includes(name));
 
       if (["leads", "audit_submissions", "orders", "lead_events"].every((name) => db.tables.includes(name))) {
-        const [leadsTotal, auditsTotal, ordersTotal, eventsTotal, lastLead, lastAudit] = await Promise.all([
+        const [leadsTotal, auditsTotal, ordersTotal, eventsTotal, claimedAuditsTotal, lastLead, lastAudit] = await Promise.all([
           env.DB.prepare("SELECT COUNT(*) AS total FROM leads").first(),
           env.DB.prepare("SELECT COUNT(*) AS total FROM audit_submissions").first(),
           env.DB.prepare("SELECT COUNT(*) AS total FROM orders").first(),
           env.DB.prepare("SELECT COUNT(*) AS total FROM lead_events").first(),
+          env.DB.prepare("SELECT COUNT(*) AS total FROM audit_submissions WHERE status = 'claimed'").first(),
           env.DB.prepare(`SELECT id, source, contact_name, contact_email, business_name, status, created_at FROM leads ORDER BY created_at DESC LIMIT 1`).first(),
           env.DB.prepare(`SELECT id, source, contact_name, contact_email, business_name, status, created_at FROM audit_submissions ORDER BY created_at DESC LIMIT 1`).first()
         ]);
@@ -71,6 +73,7 @@ export async function onRequestGet({ env }) {
         metrics.audits_total = auditsTotal?.total ?? 0;
         metrics.orders_total = ordersTotal?.total ?? 0;
         metrics.events_total = eventsTotal?.total ?? 0;
+        metrics.claimed_audits_total = claimedAuditsTotal?.total ?? 0;
         metrics.last_lead = lastLead || null;
         metrics.last_audit = lastAudit || null;
       }
@@ -126,7 +129,7 @@ export async function onRequestGet({ env }) {
   return json({
     ok: true,
     service: "BOOSTR Labs API",
-    version: "0.3.5-smart-link-reservations",
+    version: "0.3.6-audit-claim",
     db,
     metrics,
     manager: {
@@ -146,6 +149,13 @@ export async function onRequestGet({ env }) {
       creates_workspace: true,
       creates_default_cards: true,
       increments_invite_usage_after_signup: true
+    },
+    audit_claim: {
+      endpoint: "/api/audit/:id/claim",
+      manager_ui: "/manager/leads",
+      creates_workspace: true,
+      creates_client_invite_when_email_exists: true,
+      creates_action_cards: true
     },
     products: {
       endpoint: "/api/products",
@@ -178,6 +188,7 @@ export async function onRequestGet({ env }) {
       "/api/signup/check-username",
       "/api/dashboard",
       "/api/audit",
+      "/api/audit/:id/claim",
       "/api/invite-codes/validate",
       "/api/products",
       "/api/products/:id",
