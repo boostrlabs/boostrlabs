@@ -3,9 +3,9 @@ import {
   clean,
   clearSessionCookie,
   createSession,
-  isValidEmail,
   json,
   jsonError,
+  normalizePhone,
   readJson,
   requireDb,
   requireSession,
@@ -92,26 +92,26 @@ export async function onRequestPost({ request, env }) {
   if (!parsed.ok) return parsed.response;
 
   const payload = parsed.payload || {};
-  const email = clean(payload.email, 180).toLowerCase();
+  const identifier = clean(payload.identifier || payload.email, 180).toLowerCase();
   const password = clean(payload.password, 500);
-  if (!email || !password) {
-    return jsonError("credentials_required", "Email and password are required.", 400, { fields: ["email", "password"] });
-  }
-  if (!isValidEmail(email)) {
-    return jsonError("invalid_email", "Use a valid email address.", 400, { fields: ["email"] });
+  if (!identifier || !password) {
+    return jsonError("credentials_required", "Identifier and password are required.", 400, { fields: ["identifier", "password"] });
   }
 
+  const phone = normalizePhone(identifier);
   const user = await env.DB.prepare(
-    `SELECT id, email, name, role, workspace_id, status, password_hash
+    `SELECT id, email, username, phone, name, role, workspace_id, status, password_hash
      FROM users
      WHERE lower(email) = ?
+        OR username = ?
+        OR (? != '' AND normalized_phone = ?)
      LIMIT 1`
   )
-    .bind(email)
+    .bind(identifier, identifier, phone, phone)
     .first();
 
   if (!user?.id || !user.password_hash || !(await verifyPassword(password, user.password_hash))) {
-    return jsonError("invalid_credentials", "Invalid email or password.", 401);
+    return jsonError("invalid_credentials", "Invalid identifier or password.", 401);
   }
   if (user.status && !["active", "invited"].includes(user.status)) {
     return jsonError("user_inactive", "User is not active.", 403);
@@ -156,6 +156,8 @@ export async function onRequestPost({ request, env }) {
       ok: true,
       token: session.token,
       expires_at: session.expires_at,
+      username: user.username || null,
+      phone: user.phone || null,
       ...(await sessionPayload(env, auth))
     },
     201,
