@@ -1,4 +1,4 @@
-import { addLeadEvent, clean, json, managerAuth, normalizeStatus, now, readJson, requireDb } from "../_lib/api.js";
+import { addLeadEvent, clean, isValidEmail, isValidPhone, json, managerAuth, normalizePhone, normalizeStatus, now, readJson, requireDb } from "../_lib/api.js";
 
 const leadColumns = `
   id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
@@ -62,8 +62,8 @@ export async function onRequestGet({ request, env }) {
       binds.push(source);
     }
     if (q) {
-      filters.push("(business_name LIKE ? OR contact_name LIKE ? OR contact_email LIKE ? OR industry LIKE ?)");
-      binds.push(like(q), like(q), like(q), like(q));
+      filters.push("(business_name LIKE ? OR contact_name LIKE ? OR contact_email LIKE ? OR contact_phone LIKE ? OR industry LIKE ?)");
+      binds.push(like(q), like(q), like(q), like(q), like(q));
     }
 
     const where = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
@@ -91,8 +91,8 @@ export async function onRequestGet({ request, env }) {
     binds.push(source);
   }
   if (q) {
-    filters.push("(business_name LIKE ? OR contact_name LIKE ? OR contact_email LIKE ? OR contact_raw LIKE ? OR industry LIKE ?)");
-    binds.push(like(q), like(q), like(q), like(q), like(q));
+    filters.push("(business_name LIKE ? OR contact_name LIKE ? OR contact_email LIKE ? OR contact_phone LIKE ? OR contact_raw LIKE ? OR industry LIKE ?)");
+    binds.push(like(q), like(q), like(q), like(q), like(q), like(q));
   }
 
   const where = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
@@ -124,12 +124,18 @@ export async function onRequestPost({ request, env }) {
   const id = crypto.randomUUID();
   const contactName = clean(payload.contact_name || payload.name, 160);
   const contactEmail = clean(payload.contact_email || payload.email, 180).toLowerCase();
-  const contactPhone = clean(payload.contact_phone || payload.phone, 80);
+  const contactPhone = normalizePhone(payload.contact_phone || payload.phone);
   const businessName = clean(payload.business_name || payload.business, 180);
   const projectGoal = clean(payload.project_goal || payload.goal || payload.message, 2000);
 
   if (!contactEmail && !contactPhone) {
-    return json({ ok: false, error: "Manual lead needs email or phone." }, 400);
+    return json({ ok: false, error: "Manual lead needs email or phone.", fields: ["contact_email", "contact_phone"] }, 400);
+  }
+  if (contactEmail && !isValidEmail(contactEmail)) {
+    return json({ ok: false, error: "Invalid email format.", fields: ["contact_email"] }, 400);
+  }
+  if (contactPhone && !isValidPhone(contactPhone)) {
+    return json({ ok: false, error: "Invalid phone format.", fields: ["contact_phone"] }, 400);
   }
 
   await env.DB.prepare(
@@ -163,7 +169,7 @@ export async function onRequestPost({ request, env }) {
   await addLeadEvent(env, {
     lead_id: id,
     event_type: "lead.created",
-    payload: { source: "manager", business_name: businessName, contact_email: contactEmail },
+    payload: { source: "manager", business_name: businessName, contact_email: contactEmail, contact_phone: contactPhone },
     created_at: createdAt
   });
 
