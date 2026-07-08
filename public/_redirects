@@ -58,6 +58,8 @@
 /partner/omgbeauty/* /partner/omgbeauty/index.html   200
 /smart-payment-link   /smart-payment-link/index.html 200
 /smart-payment-link/* /smart-payment-link/index.html 200
+/pay                  /pay/index.html 200
+/pay/*                /pay/index.html 200
 /pay-demo             /smart-payment-link/index.html 200
 /pay-demo/*           /smart-payment-link/index.html 200
 /portfolio           /portfolio/index.html           200
