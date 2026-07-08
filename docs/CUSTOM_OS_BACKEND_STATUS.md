@@ -23,6 +23,9 @@ Last updated: 2026-07-08
 - `GET /api/signup/check-username` validates reserved/available usernames.
 - `GET /api/dashboard` returns active workspace, persona, preferences, first-run cards and recent activity.
 - `MANAGER_PIN` is a development fallback only when `ENVIRONMENT=development` or `ALLOW_MANAGER_PIN_FALLBACK=true`.
+- `POST /api/audit/:id/claim` lets admin/manager claim an audit into a real workspace, create or attach an invited client user when email exists, create persona/preferences, move audit/lead/cards/events, and generate first action cards.
+- `/manager/leads` can load audits and claim them into workspaces from the detail panel.
+- `/api/health` exposes audit claim readiness and claimed audit metrics under version `0.3.6-audit-claim`.
 - `GET/POST /api/products` lists and creates real workspace products/services.
 - `GET/PATCH/DELETE /api/products/:id` reads, updates and archives workspace products with workspace access control.
 - `/app/products` provides a first real product workspace UI for creating services, digital products, physical products, bookings, licenses, memberships and auction-later products.
@@ -35,7 +38,6 @@ Last updated: 2026-07-08
 - `/pay/:id` provides a real public Smart Link reservation page. It does not charge cards or store payment credentials.
 - `/manager/payment-links` now loads products and Smart Links from backend APIs and can create shareable Smart Links.
 - `/app/orders` now displays Smart Link reservations from `/api/order-reservations`.
-- `/api/health` reports product, Smart Link and reservation metrics and exposes version `0.3.5-smart-link-reservations`.
 - `GET/POST /api/cards` requires auth and workspace scope.
 - `GET/PATCH /api/cards/:id` requires auth, workspace access, and card visibility.
 - `POST /api/cards/:id/action` requires auth, workspace access, allowed action type, and logs `card.action`.
@@ -60,10 +62,10 @@ Last updated: 2026-07-08
 
 ## Partially Implemented
 
-- Personas exist, can be created by signup/admin bootstrap, bootstrapped through dev session, listed, updated and switched.
-- Cards can be created, filtered, patched and acted on, but there is no full workflow engine.
+- Personas exist, can be created by signup/admin bootstrap, bootstrapped through dev session, listed, updated, switched, and now created by audit claim.
+- Cards can be created, filtered, patched, acted on, and generated from audit claim, but there is no full workflow engine.
 - Human need logic creates priority cards for cash, manage, feel_artist, feel_business, boost_product, boost_music and boost_partners.
-- Audit generates lead, asset_request, next_to_boost, payment readiness and module insight cards.
+- Audit generates lead, asset_request, next_to_boost, payment readiness and module insight cards, and can now be claimed into a workspace.
 - Products now have CRUD APIs and a workspace UI, and they can be connected to Smart Links.
 - Smart Links now create real pre-Stripe reservations, but they do not process payments.
 - Secret BOOSTR Code validation and usage increment exist; admin creation/revocation UI for invite codes is pending.
@@ -75,9 +77,9 @@ Last updated: 2026-07-08
 
 - Email verification.
 - Password reset flow.
-- Claim flow from audit lead into a real client workspace.
 - Real Stripe checkout, webhooks, payouts, refunds, or paid orders.
 - Paid order conversion from reservation to completed order.
+- Client invite acceptance / password setup from claimed audit user.
 - Card assignment notifications.
 - Notification delivery is in-app only; no email/push delivery exists.
 - Files and invoices.
@@ -86,14 +88,14 @@ Last updated: 2026-07-08
 ## Risks
 
 - Remote D1 must apply migrations `0010`, `0011`, and `0012` before Secret Code + Signup are fully operational.
-- Product and Smart Link APIs also require the earlier `0008_custom_os_card_engine.sql` migration because that migration creates `products`, `payment_links` and `order_reservations`.
+- Product, Smart Link and audit claim APIs also require earlier migrations `0006`, `0008` and `0009`.
 - `BOOSTR_ADMIN_BOOTSTRAP_KEY` must be configured in Cloudflare before first-admin bootstrap.
 - Smoke tests create real test users/products/links/reservations when full test env vars are supplied.
 - Existing `cards.status` CHECK does not include `follow_up`; action logs preserve `follow_up` while status uses an allowed value.
 - Demo data is static and must not be treated as real sales or private records.
 - Admin/manager can see operational cards across workspaces by design.
 - Smart Links are real reservation records, but payment processing is still not implemented.
-- Public Audit writes into internal intake workspace; claim/move logic is not built yet.
+- Claimed audit users are invited records until invite acceptance/password setup exists.
 - API token creation is intentionally blocked until secure token hashing/storage is implemented.
 - Environment fallback `BOOSTR_SECRET_CODE`/`BOOSTR_INVITE_CODE` can unlock a single code without committed secrets if configured in Cloudflare.
 - Language middleware injects only the minimal ES/EN runtime; branded pages are not manually edited.
@@ -105,7 +107,8 @@ Last updated: 2026-07-08
 3. Bootstrap first admin through `/admin/readiness`.
 4. Run `npm run smoke:launch` against the deployed URL.
 5. Test `/audit` Secret BOOSTR Code → `/signup` → `/app` end-to-end.
-6. Test `/app/products` with create, update, archive and filters.
-7. Test `/manager/payment-links` → `/pay/:id` → `/app/orders`.
-8. Add audit lead claim into workspace.
-9. Add paid order conversion once Stripe/business setup is ready.
+6. Test `/manager/leads` audit claim → workspace/cards.
+7. Test `/app/products` with create, update, archive and filters.
+8. Test `/manager/payment-links` → `/pay/:id` → `/app/orders`.
+9. Add client invite acceptance/password setup.
+10. Add paid order conversion once Stripe/business setup is ready.
