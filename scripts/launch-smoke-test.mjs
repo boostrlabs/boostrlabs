@@ -5,6 +5,7 @@ const runId = (process.env.BOOSTR_TEST_RUN_ID || Date.now().toString(36)).toLowe
 const results = [];
 let authToken = "";
 let createdUser = null;
+let createdProductId = "";
 
 const env = (name) => String(process.env[name] || "").trim();
 const mark = (name, status, detail = "") => {
@@ -110,6 +111,43 @@ await check("GET /api/dashboard", async () => {
   if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
   if (!json.workspace?.id || !Array.isArray(json.cards)) throw new Error("missing workspace/cards");
   mark("GET /api/dashboard", "PASS", `${json.cards.length} cards`);
+});
+
+await check("GET /api/products", async () => {
+  if (!authToken) return mark("GET /api/products", "SKIPPED", "no auth token");
+  const { res, json } = await call("/api/products");
+  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
+  if (!Array.isArray(json.products)) throw new Error("missing products array");
+  mark("GET /api/products", "PASS", `${json.products.length} products`);
+});
+
+await check("POST /api/products", async () => {
+  if (!authToken) return mark("POST /api/products", "SKIPPED", "no auth token");
+  const { res, json } = await call("/api/products", { method: "POST", body: {
+    title: `Smoke Test Service ${runId}`,
+    product_type: "service",
+    status: "draft",
+    price_amount: 15000,
+    currency: "USD",
+    description: "Launch smoke test product.",
+    fulfillment_type: "manual_service_delivery",
+    asset_status: "ready",
+    requires_account: 0,
+    allow_guest_checkout: 1,
+    metadata: { source: "launch_smoke_test" }
+  }});
+  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
+  if (!json.product?.id) throw new Error("missing product id");
+  createdProductId = json.product.id;
+  mark("POST /api/products", "PASS", json.product.title || createdProductId);
+});
+
+await check("PATCH /api/products/:id", async () => {
+  if (!createdProductId) return mark("PATCH /api/products/:id", "SKIPPED", "product not created");
+  const { res, json } = await call(`/api/products/${createdProductId}`, { method: "PATCH", body: { status: "active" } });
+  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
+  if (json.product?.status !== "active") throw new Error("product did not become active");
+  mark("PATCH /api/products/:id", "PASS", "active");
 });
 
 const failed = results.filter((item) => item.status === "FAIL");
