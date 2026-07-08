@@ -30,7 +30,8 @@ Last updated: 2026-07-08
 - `POST /api/cards/:id/action` now writes `activity_events` and can create safe notifications for follow-up/asset actions.
 - HTML pages without `i18n.js` or `console.js` receive the minimal `language-engine.js` through Pages middleware.
 - Migration `0010_invite_codes.sql` adds `invite_codes` and `invite_code_events`.
-- Public `POST /api/invite-codes/validate` validates Secret BOOSTR Codes safely and returns generic invalid responses.
+- Migration `0011_seed_initial_invite_codes.sql` seeds three founder-approved Secret BOOSTR Codes as salted hashes only.
+- Public `POST /api/invite-codes/validate` validates Secret BOOSTR Codes safely, supports short founder-approved codes, and returns generic invalid responses.
 - `/api/health` lists invite-code tables and the validation endpoint.
 
 ## Partially Implemented
@@ -67,8 +68,8 @@ Last updated: 2026-07-08
 - Product/payment tables are readiness models only until APIs and Stripe rules are added.
 - Public Audit writes into internal intake workspace; claim/move logic is not built yet.
 - API token creation is intentionally blocked until secure token hashing/storage is implemented.
-- Secret BOOSTR Code validation does not expose plaintext codes, but D1 migration `0010` must be applied remotely before DB-backed codes work.
-- Environment fallback `BOOSTR_SECRET_CODE`/`BOOSTR_INVITE_CODE` can unlock codes without committed secrets if configured in Cloudflare.
+- Secret BOOSTR Code validation does not expose plaintext codes, but D1 migrations `0010` and `0011` must be applied remotely before DB-backed codes work.
+- Environment fallback `BOOSTR_SECRET_CODE`/`BOOSTR_INVITE_CODE` can unlock a single code without committed secrets if configured in Cloudflare.
 - Language middleware injects only the minimal ES/EN runtime; branded pages are not manually edited.
 
 ## Next Steps
