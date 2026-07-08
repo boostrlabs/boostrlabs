@@ -42,6 +42,10 @@
           <input name="email" type="email" autocomplete="email" placeholder="you@company.com" required data-i18n="login_label_email">
         </label>
         <label>
+          <span data-i18n="login_label_password">Password</span>
+          <input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+        </label>
+        <label>
           <span data-i18n="login_label_role">Workspace role</span>
           <select name="role" id="roleSelect">
             <option value="manager" data-i18n="login_option_manager">Manager</option>
@@ -51,8 +55,8 @@
           </select>
         </label>
         <button class="btn primary" type="submit" data-i18n="login_btn_continue">Continue</button>
-        <button class="btn" type="button" id="clearSession" data-i18n="login_btn_clear">Clear local session</button>
-        <div class="login-note" id="authStatus" data-i18n="login_note_preview">Frontend preview only. Real authentication will be connected by backend.</div>
+        <button class="btn" type="button" id="clearSession" data-i18n="login_btn_clear">Clear session</button>
+        <div class="login-note" id="authStatus" data-i18n="login_note_preview">Use your BOOSTR account email and password.</div>
       </form>
       <div class="login-foot">
         <a class="ghost-link" href="/home" data-i18n="login_foot_home">← Home</a>
@@ -63,30 +67,56 @@
   </main>
   <script>
     const routes={manager:'/manager',partner:'/partner-dashboard',client:'/app',artist:'/app/82ngel'};
+    const loginForm=document.getElementById('loginForm');
+    const clearSession=document.getElementById('clearSession');
     const roleSelect=document.getElementById('roleSelect');
     const email=document.querySelector('[name=email]');
+    const password=document.querySelector('[name=password]');
     const status=document.getElementById('authStatus');
+    const isEs=()=>localStorage.getItem('boostr_lang')==='es';
     
     function paint(){
       const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
       if(s){
         email.value=s.email||'';
         roleSelect.value=s.role||'manager';
-        status.textContent=`Local preview session active: ${s.email||'no email'} · ${s.role}.`;
+        status.textContent=isEs()
+          ? `Sesión activa: ${s.email||'sin correo'} · ${s.role}.`
+          : `Session active: ${s.email||'no email'} · ${s.role}.`;
       }
     }
     
-    loginForm.addEventListener('submit',e=>{
+    loginForm.addEventListener('submit',async e=>{
       e.preventDefault();
-      const s={email:email.value.trim(),role:roleSelect.value,createdAt:new Date().toISOString()};
-      localStorage.setItem('boostr_session',JSON.stringify(s));
-      location.href=routes[s.role]||'/app';
+      status.textContent=isEs()?'Entrando...':'Signing in...';
+      try{
+        const res=await fetch('/api/session',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:email.value.trim(),password:password.value})
+        });
+        const data=await res.json();
+        if(!res.ok||!data.ok) throw data;
+        const s={email:data.user.email,role:data.role,token:data.token,createdAt:new Date().toISOString()};
+        localStorage.setItem('boostr_auth_token',data.token);
+        localStorage.setItem('boostr_session',JSON.stringify(s));
+        status.textContent=isEs()?'Sesión iniciada.':'Signed in.';
+        location.href=routes[data.role]||routes[roleSelect.value]||'/app';
+      }catch(err){
+        status.textContent=err?.message||err?.error||(isEs()?'No se pudo iniciar sesión.':'Sign-in failed.');
+      }
     });
     
-    clearSession.addEventListener('click',()=>{
+    clearSession.addEventListener('click',async()=>{
+      const token=localStorage.getItem('boostr_auth_token');
+      if(token){
+        try{await fetch('/api/session',{method:'DELETE',headers:{Authorization:`Bearer ${token}`}});}catch{}
+      }
+      localStorage.removeItem('boostr_auth_token');
       localStorage.removeItem('boostr_session');
-      status.textContent='Local session cleared.';
+      status.textContent=isEs()?'Sesión cerrada.':'Session cleared.';
       email.value='';
+      password.value='';
     });
     
     paint();
@@ -95,10 +125,9 @@
     document.addEventListener('boostrLangChanged', () => {
       const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
       if(s){
-        const isEs = localStorage.getItem('boostr_lang') === 'es';
-        status.textContent = isEs 
-          ? `Sesión de prueba local activa: ${s.email||'sin correo'} · ${s.role}.`
-          : `Local preview session active: ${s.email||'no email'} · ${s.role}.`;
+        status.textContent = isEs()
+          ? `Sesión activa: ${s.email||'sin correo'} · ${s.role}.`
+          : `Session active: ${s.email||'no email'} · ${s.role}.`;
       }
     });
   </script>

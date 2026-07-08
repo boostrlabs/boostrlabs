@@ -52,14 +52,15 @@
       "login_h1": "Sign in.",
       "login_desc": "Access Manager OS, Partner OS, Client OS or Artist OS.",
       "login_label_email": "Email",
+      "login_label_password": "Password",
       "login_label_role": "Workspace role",
       "login_option_manager": "Manager",
       "login_option_partner": "Partner",
       "login_option_client": "Client",
       "login_option_artist": "Artist",
       "login_btn_continue": "Continue",
-      "login_btn_clear": "Clear local session",
-      "login_note_preview": "Frontend preview only. Real authentication will be connected by backend.",
+      "login_btn_clear": "Clear session",
+      "login_note_preview": "Use your BOOSTR account email and password.",
       "login_foot_home": "← Home",
       "login_foot_audit": "Start Audit ↗",
       "manager_greeting_span": "BOOSTR Manager OS",
@@ -301,14 +302,15 @@
       "login_h1": "Iniciar sesión.",
       "login_desc": "Acceso a Manager OS, Partner OS, Client OS o Artist OS.",
       "login_label_email": "Correo electrónico",
+      "login_label_password": "Contraseña",
       "login_label_role": "Rol del espacio",
       "login_option_manager": "Manager",
       "login_option_partner": "Partner",
       "login_option_client": "Cliente",
       "login_option_artist": "Artista",
       "login_btn_continue": "Continuar",
-      "login_btn_clear": "Limpiar sesión local",
-      "login_note_preview": "Vista previa únicamente. La autenticación real será conectada por el backend.",
+      "login_btn_clear": "Cerrar sesión",
+      "login_note_preview": "Usa tu correo y contraseña de BOOSTR.",
       "login_foot_home": "← Inicio",
       "login_foot_audit": "Iniciar Auditoría ↗",
       "manager_greeting_span": "BOOSTR Manager OS",
@@ -557,10 +559,7 @@
     localStorage.setItem(STORAGE_KEY, lang);
     currentLang = lang;
     
-    // Toggle active classes on buttons
-    document.querySelectorAll('.language-toggle .lang-btn').forEach(btn => {
-      btn.classList.toggle('is-active', btn.dataset.lang === lang);
-    });
+    updateToggleState();
 
     loadTranslations(lang);
     
@@ -621,8 +620,32 @@
   }
 
   // 7. INJECT LANGUAGE SWITCHER TOGGLE
+  function getButtonLang(button) {
+    return button.dataset.lang || button.dataset.language || "";
+  }
+
+  function updateToggleState() {
+    document.querySelectorAll('.language-toggle button, [data-language], [data-lang]').forEach(btn => {
+      const lang = getButtonLang(btn);
+      if (SUPPORTED_LANGS.includes(lang)) btn.classList.toggle('is-active', lang === currentLang);
+    });
+  }
+
+  function bindToggleButtons() {
+    document.querySelectorAll('.language-toggle button, [data-language], [data-lang]').forEach(btn => {
+      const lang = getButtonLang(btn);
+      if (!SUPPORTED_LANGS.includes(lang) || btn.dataset.i18nBound === "true") return;
+      btn.dataset.i18nBound = "true";
+      btn.addEventListener('click', () => setLanguage(lang));
+    });
+    updateToggleState();
+  }
+
   function injectToggle() {
-    if (document.querySelector('.language-toggle')) return;
+    if (document.querySelector('.language-toggle')) {
+      bindToggleButtons();
+      return;
+    }
 
     const toggleHtml = `
       <div class="language-toggle">
@@ -657,12 +680,7 @@
       compactSide.appendChild(toggleEl);
     }
 
-    // Add event listeners to toggle buttons
-    document.querySelectorAll('.language-toggle .lang-btn').forEach(btn => {
-      const l = btn.dataset.lang;
-      btn.classList.toggle('is-active', l === currentLang);
-      btn.addEventListener('click', () => setLanguage(l));
-    });
+    bindToggleButtons();
   }
 
   // RUNTIME INITIATION

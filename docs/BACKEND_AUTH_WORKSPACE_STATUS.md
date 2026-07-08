@@ -8,7 +8,7 @@ Status: VERIFIED / UPDATED 2026-07-08
 - Local `main` is ahead of `origin/main` and behind `origin/main`; the auth work is not verified as pushed or merged.
 - Current worktree has unresolved frontend/i18n merge conflicts outside this backend pass.
 - Remote D1 database: `boostr_labs_core`.
-- Remote migrations were applied through `0006_auth_workspace_foundation.sql`; no pending remote migrations were reported in the last check.
+- Remote migrations were applied through `0007_user_password_sessions.sql`; no pending remote migrations were reported in the last check.
 
 ## Implemented
 
@@ -17,8 +17,12 @@ Status: VERIFIED / UPDATED 2026-07-08
 - `orders.workspace_id` exists in `migrations/0001_boostr_core.sql`.
 - `workspace_modules` exists in `migrations/0003_workspace_modules.sql`.
 - `workspace_members` and `sessions` exist in `migrations/0006_auth_workspace_foundation.sql`.
+- `users.password_hash`, `users.password_set_at`, and `users.last_login_at` exist in `migrations/0007_user_password_sessions.sql`.
 - `functions/_lib/api.js` includes `requireSession()`, `requireRole()`, `requireWorkspaceAccess()`, `jsonOk()`, and `jsonError()`.
 - `requireSession()` accepts bearer token, `X-BOOSTR-Session`, or `boostr_session` cookie and checks `sessions.session_token_hash`.
+- `POST /api/session` logs in users with email/password and issues a D1-backed session token.
+- `DELETE /api/session` revokes the current session.
+- `POST /api/session/dev` creates or updates a dev/admin user when explicitly enabled.
 - `GET /api/session` returns current user, role, roles, workspaces, active workspace, and visible modules.
 - `GET /api/me` aliases the session response.
 - `GET /api/workspaces` returns scoped workspaces for the current session.
@@ -39,14 +43,10 @@ Status: VERIFIED / UPDATED 2026-07-08
 
 ## Not Implemented
 
-- Real login endpoint.
-- Session issuance endpoint.
-- Logout endpoint.
-- Password, magic-link, OAuth, or identity-provider flow.
+- Password reset, magic-link, OAuth, or identity-provider flow.
 - Partner referral scoping beyond workspace membership.
 - Permission policy table.
 - Files, invoices, Stripe, and payment auth scope.
-- Frontend login wired to real backend session creation.
 - Real production seed for first admin/manager user and session.
 
 ## Manager PIN Status
@@ -63,12 +63,13 @@ Status: VERIFIED / UPDATED 2026-07-08
 - `ALLOW_MANAGER_PIN_FALLBACK=true`: enables manager PIN fallback outside development if explicitly needed.
 - `MANAGER_PIN` or `ADMIN_PIN`: temporary legacy/development PIN.
 - `ALLOW_DB_INIT=true`: enables `/api/db-init`; keep disabled in production unless intentionally running schema init.
+- `ALLOW_DEV_SESSION=true`: enables `/api/session/dev`; keep disabled in production except controlled bootstrap.
 
 ## Production Requirements
 
 - Apply all D1 migrations before deploy.
 - Create at least one real admin/manager user.
-- Create a real session issuance path.
+- Bootstrap the first admin/manager user with `/api/session/dev` or a controlled SQL/admin process.
 - Keep `ALLOW_MANAGER_PIN_FALLBACK` unset or false in production.
 - Keep `ALLOW_DB_INIT` unset or false except during controlled setup.
 - Configure frontend login to consume the real session endpoint.
@@ -77,34 +78,35 @@ Status: VERIFIED / UPDATED 2026-07-08
 
 1. Run `npm install`.
 2. Run `npx wrangler d1 migrations apply boostr_labs_core --local`.
-3. Insert a local `users` row.
-4. Insert a local `workspaces` row.
-5. Insert a local `workspace_members` row for that user/workspace.
-6. Insert a local `sessions` row with `session_token_hash` set to the SHA-256 hex hash of a test token.
-7. Run the Pages dev server.
-8. Call `GET /api/session` or `GET /api/me` with `Authorization: Bearer <test-token>`.
-9. Call `GET /api/workspaces` with the same token.
-10. Call `GET /api/leads?workspace_id=<workspace-id>` with the same token.
-11. Call `POST /api/audit` without auth and confirm it still stores a public audit.
+3. Run the Pages dev server.
+4. Use `POST /api/session/dev` with `X-Manager-Pin` to create a dev user.
+5. Call `POST /api/session` with email/password.
+6. Call `GET /api/session` or `GET /api/me` with `Authorization: Bearer <token>`.
+7. Call `GET /api/workspaces` with the same token.
+8. Call `GET /api/leads?workspace_id=<workspace-id>` with the same token.
+9. Call `POST /api/audit` without auth and confirm it still stores a public audit.
 
 Development bridge test:
 
 1. Set `ENVIRONMENT=development`.
 2. Set `MANAGER_PIN`.
-3. Call migrated endpoints with `X-Manager-Pin`.
+3. Set `ALLOW_DEV_SESSION=true`.
+4. Call `POST /api/session/dev` with `X-Manager-Pin`, `email`, `password`, and `role`.
+5. Call `POST /api/session` with the same email/password.
 
 ## Temporary Fallbacks
 
 - Manager PIN fallback remains only as a development bridge for `requireSession()`.
 - `managerAuth()` remains only as compatibility code.
 - `/api/session` and `/api/me` return the current identity payload.
+- `/api/session/dev` is a controlled bootstrap bridge, not production login.
 
 ## D1 Migration Status
 
-- Migration files present: `0001_boostr_core.sql` through `0006_auth_workspace_foundation.sql`.
+- Migration files present: `0001_boostr_core.sql` through `0007_user_password_sessions.sql`.
 - Remote database name: `boostr_labs_core`.
 - Last remote check reported no pending migrations.
 
 ## Next Backend Step
 
-Add minimal login/session issuance and logout, then seed the first production admin/manager account.
+Seed the first production admin/manager account, then add invite/password reset flow.

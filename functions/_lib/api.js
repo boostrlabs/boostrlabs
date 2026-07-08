@@ -5,7 +5,7 @@ export const json = (body, status = 200, extraHeaders = {}) =>
       "Cache-Control": "no-store",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, X-BOOSTR-Session, X-Manager-Pin",
-      "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
       ...extraHeaders
     }
   });
@@ -77,10 +77,109 @@ const parseCookies = (request) => {
 const toHex = (buffer) =>
   [...new Uint8Array(buffer)].map((value) => value.toString(16).padStart(2, "0")).join("");
 
+const fromHex = (value) => {
+  const cleanHex = clean(value, 1000);
+  const bytes = new Uint8Array(cleanHex.length / 2);
+  for (let index = 0; index < bytes.length; index += 1) {
+    bytes[index] = Number.parseInt(cleanHex.slice(index * 2, index * 2 + 2), 16);
+  }
+  return bytes;
+};
+
+export const randomHex = (bytes = 32) => {
+  const values = new Uint8Array(bytes);
+  crypto.getRandomValues(values);
+  return [...values].map((value) => value.toString(16).padStart(2, "0")).join("");
+};
+
 export async function hashSessionToken(token) {
   const bytes = new TextEncoder().encode(token);
   return toHex(await crypto.subtle.digest("SHA-256", bytes));
 }
+
+const passwordAlgorithm = "pbkdf2_sha256";
+const passwordIterations = 120000;
+
+const constantTimeEqual = (left, right) => {
+  const a = fromHex(left);
+  const b = fromHex(right);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let index = 0; index < a.length; index += 1) diff |= a[index] ^ b[index];
+  return diff === 0;
+};
+
+async function derivePasswordHash(password, salt, iterations) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      hash: "SHA-256",
+      salt: new TextEncoder().encode(salt),
+      iterations
+    },
+    key,
+    256
+  );
+  return toHex(bits);
+}
+
+export async function hashPassword(password) {
+  const salt = randomHex(16);
+  const digest = await derivePasswordHash(password, salt, passwordIterations);
+  return `${passwordAlgorithm}$${passwordIterations}$${salt}$${digest}`;
+}
+
+export async function verifyPassword(password, storedHash) {
+  const [algorithm, iterationsText, salt, digest] = clean(storedHash, 1000).split("$");
+  const iterations = Number(iterationsText);
+  if (algorithm !== passwordAlgorithm || !iterations || !salt || !digest) return false;
+  const candidate = await derivePasswordHash(password, salt, iterations);
+  return constantTimeEqual(candidate, digest);
+}
+
+export async function createSession(env, request, userId, activeWorkspaceId = null) {
+  const token = randomHex(32);
+  const timestamp = now();
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  await env.DB.prepare(
+    `INSERT INTO sessions (
+      id, user_id, session_token_hash, active_workspace_id, status, expires_at,
+      created_at, updated_at, last_seen_at, ip, user_agent
+    ) VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?)`
+  )
+    .bind(
+      crypto.randomUUID(),
+      userId,
+      await hashSessionToken(token),
+      activeWorkspaceId || null,
+      expiresAt,
+      timestamp,
+      timestamp,
+      timestamp,
+      getIp(request),
+      getUa(request)
+    )
+    .run();
+
+  return { token, expires_at: expiresAt };
+}
+
+export const sessionCookie = (token, request) => {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return `boostr_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000${secure}`;
+};
+
+export const clearSessionCookie = (request) => {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return `boostr_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
+};
 
 export const getSessionToken = (request) => {
   const authorization = clean(request.headers.get("Authorization"), 1000);
