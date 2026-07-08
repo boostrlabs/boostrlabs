@@ -1,6 +1,6 @@
-import { addLeadEvent, clean, json, normalizeArray, readJson } from "../_lib/api.js";
+import { addLeadEvent, clean, isValidEmail, isValidPhone, json, normalizeArray, normalizePhone, readJson } from "../_lib/api.js";
 
-const requiredFields = ["contact_name", "contact_email", "business_name", "industry", "project_goal", "current_status"];
+const requiredFields = ["contact_name", "business_name", "industry", "project_goal", "current_status"];
 
 const escapeHtml = (value) =>
   String(value || "")
@@ -15,7 +15,7 @@ const leadFromPayload = (payload) => ({
   source: clean(payload.source || "website", 80),
   contact_name: clean(payload.contact_name, 140),
   contact_email: clean(payload.contact_email, 180).toLowerCase(),
-  contact_phone: clean(payload.contact_phone, 60),
+  contact_phone: normalizePhone(payload.contact_phone),
   preferred_contact_method: clean(payload.preferred_contact_method || "email", 40),
   business_name: clean(payload.business_name, 180),
   industry: clean(payload.industry, 120),
@@ -71,6 +71,18 @@ export async function onRequestPost({ request, env }) {
   const missingFields = requiredFields.filter((field) => !clean(payload[field]));
   if (missingFields.length) {
     return json({ ok: false, error: "Missing required fields.", fields: missingFields }, 400);
+  }
+
+  const suppliedEmail = clean(payload.contact_email, 180);
+  const suppliedPhone = clean(payload.contact_phone, 80);
+  if (!suppliedEmail && !suppliedPhone) {
+    return json({ ok: false, error: "Provide at least one contact channel: email or phone.", fields: ["contact_email", "contact_phone"] }, 400);
+  }
+  if (suppliedEmail && !isValidEmail(suppliedEmail)) {
+    return json({ ok: false, error: "Invalid email format.", fields: ["contact_email"] }, 400);
+  }
+  if (suppliedPhone && !isValidPhone(suppliedPhone)) {
+    return json({ ok: false, error: "Invalid phone format.", fields: ["contact_phone"] }, 400);
   }
 
   const lead = leadFromPayload(payload);
