@@ -7,32 +7,165 @@ Last updated: 2026-07-08
 
 - Private endpoints require a valid session cookie, `Authorization: Bearer <token>`, or `X-BOOSTR-Session`.
 - `X-Manager-Pin` is development fallback only when explicitly enabled.
-- Public endpoints: `POST /api/audit`, `GET /api/audit`, `GET /api/health`, `GET /api/demo/janko-os`.
+- Public endpoints: `POST /api/audit`, `GET /api/audit`, `GET /api/health`, `GET /api/demo/janko-os`, `POST /api/invite-codes/validate`, `POST /api/signup`, `GET /api/signup/check-username`.
 - Errors return `{ ok: false, error, message }` with stable snake_case `error`.
+- Password hashes, full API tokens and plaintext invite codes are never returned.
+
+## Signup / Registration
+
+`POST /api/signup`
+
+Public. Creates a real user account, active workspace, workspace membership, persona, workspace preferences, first-run cards, activity event and session.
+
+Required fields:
+
+- `display_name`
+- `username`
+- `email`
+- `password`
+- `workspace_name`
+- `language`
+
+Optional fields:
+
+- `phone`
+- `business_type`
+- `default_persona`
+- `secret_boostr_code`
+- `source`
+- `timezone`
+
+Response includes:
+
+- safe `user`
+- `workspace`
+- `persona`
+- `default_cards`
+- `invite_unlocked`
+- `token`
+- `expires_at`
+- `redirect: /app`
+
+Rules:
+
+- email is unique
+- username is unique
+- normalized phone is unique when provided
+- username is normalized lowercase
+- password is hashed through PBKDF2-SHA256
+- secret code usage increments only after signup completion
+- no admin role is granted through public signup
+- public signup may create normal roles only: `client`, `artist`, or `partner` when server-side invite rules permit it
+
+`GET /api/signup/check-username?username=...`
+
+Public. Returns:
+
+```json
+{
+  "ok": true,
+  "available": true,
+  "normalized": "username"
+}
+```
+
+Reserved usernames include `admin`, `root`, `boostr`, `boostrlabs`, `api`, `support`, `login`, `signup`, `audit`, `manager`, `app`, `dashboard`, `jankodiorr`, and `82ngel`.
+
+## Session / Login
+
+`POST /api/session`
+
+Public. Accepts:
+
+```json
+{
+  "identifier": "email_or_username_or_phone",
+  "password": "password"
+}
+```
+
+`identifier` can be:
+
+- email
+- username
+- phone
+
+Returns safe user/session/workspace payload and sets `boostr_session` cookie.
+
+`GET /api/session` / `GET /api/me`
+
+Private. Returns current user, active workspace, memberships, roles, personas and visible modules.
+
+`DELETE /api/session`
+
+Private. Revokes the current session.
+
+## Dashboard
+
+`GET /api/dashboard`
+
+Private. Returns the active workspace, active persona, workspace preferences, first-run/default cards and recent activity.
+
+Used by the default dashboard after signup.
+
+## Secret BOOSTR Code
+
+`POST /api/invite-codes/validate`
+
+Public. Safe validation only.
+
+Request:
+
+```json
+{
+  "code": "secret-code",
+  "source": "audit_entry"
+}
+```
+
+Valid response:
+
+```json
+{
+  "ok": true,
+  "valid": true,
+  "label": "BOOSTR private access",
+  "bypass_audit": true,
+  "allowed_role": "client",
+  "allowed_persona": "client",
+  "allowed_workspace_type": "onboarding",
+  "message": "Cheat BOOSTR Code unlocked"
+}
+```
+
+Invalid response:
+
+```json
+{
+  "ok": true,
+  "valid": false
+}
+```
+
+Rules:
+
+- DB codes are stored as salted hashes only.
+- Env fallback can use `BOOSTR_SECRET_CODE` or `BOOSTR_INVITE_CODE` without committing secrets.
+- Invalid responses are generic.
+- Validation does not increment usage.
+- Signup increments usage only after successful account/workspace creation.
 
 ## Current User
 
 `GET /api/me`
 
-Returns current user, active workspace, memberships, roles, and active workspace personas.
+Alias of session GET. Returns current user, active workspace, memberships, roles, and active workspace personas.
 
 ## Profile
 
 `GET /api/profile`
 
-Auth required. Returns:
-
-- user id
-- display name
-- email
-- avatar_url
-- default_workspace_id
-- default_persona_id
-- language
-- timezone
-- theme
-- created_at
-- updated_at
+Auth required. Returns profile/account metadata.
 
 `PATCH /api/profile`
 
@@ -45,8 +178,6 @@ Auth required. Supported fields:
 - `language`
 - `timezone`
 - `theme`
-
-Password hashes and secrets are never returned.
 
 ## Contact Methods
 
@@ -201,43 +332,9 @@ Priority filter values:
 - `later`: `priority < 25`
 - numeric value: exact priority
 
-Example:
-
-```http
-GET /api/cards?workspace_id=WORKSPACE_ID&mode=cash&priority=high
-```
-
-Response:
-
-```json
-{
-  "ok": true,
-  "cards": []
-}
-```
-
 `POST /api/cards`
 
 Auth required. Workspace scope required.
-
-Request:
-
-```json
-{
-  "workspace_id": "workspace-id",
-  "persona_id": "persona-id",
-  "card_type": "lead",
-  "title": "Review lead",
-  "summary": "Lead needs review.",
-  "priority": 80,
-  "status": "unread",
-  "owner_role": "manager",
-  "action_label": "Review",
-  "metadata": {
-    "mode": "manage"
-  }
-}
-```
 
 `GET /api/cards/:id`
 
@@ -257,15 +354,6 @@ Auth required. Supported updates:
 `POST /api/cards/:id/action`
 
 Auth required. Card workspace and visibility checked.
-
-Request:
-
-```json
-{
-  "action_type": "follow_up",
-  "note": "Call tomorrow."
-}
-```
 
 Allowed `action_type` values:
 
@@ -306,25 +394,7 @@ Auth required. Returns the latest visible need.
 
 `POST /api/human-needs`
 
-Auth required. Workspace scoped.
-
-Request:
-
-```json
-{
-  "workspace_id": "workspace-id",
-  "persona_id": "persona-id",
-  "need_type": "cash",
-  "note": "I need the fastest clean revenue path."
-}
-```
-
-Behavior:
-
-- stores the need
-- resolves persona if available
-- creates cards
-- returns created cards
+Auth required. Workspace scoped. Stores need, resolves persona when available, creates cards, and returns created cards.
 
 Need behavior:
 
@@ -372,22 +442,7 @@ Rules:
 - no fake paid orders
 - no Stripe
 
-Response includes:
-
-- `profile`
-- `personas`
-- `needs`
-- `modules`
-- `cards`
-- `products`
-- `health`
-- `actions`
-- `contact_methods`
-- `preferences`
-- `security`
-- `api_tokens`
-- `notifications`
-- `activity`
+Response includes profile, personas, needs, modules, cards, products, health, actions, contact methods, preferences, security, API tokens, notifications and activity.
 
 ## Language Runtime
 
