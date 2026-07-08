@@ -36,21 +36,24 @@ export async function onRequestGet({ env }) {
     events_total: null,
     products_total: null,
     active_products_total: null,
+    payment_links_total: null,
+    active_payment_links_total: null,
+    reservations_total: null,
     invite_codes_total: null,
     users_total: null,
     workspaces_total: null,
     admins_total: null,
     last_lead: null,
     last_audit: null,
-    last_product: null
+    last_product: null,
+    last_payment_link: null,
+    last_reservation: null
   };
 
   if (env.DB) {
     try {
       await env.DB.prepare("SELECT 1 AS ok").first();
-      const tableResult = await env.DB.prepare(
-        "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
-      ).all();
+      const tableResult = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all();
       db.writable = true;
       db.tables = (tableResult.results || []).map((row) => row.name);
       db.missing_tables = expectedTables.filter((name) => !db.tables.includes(name));
@@ -61,20 +64,9 @@ export async function onRequestGet({ env }) {
           env.DB.prepare("SELECT COUNT(*) AS total FROM audit_submissions").first(),
           env.DB.prepare("SELECT COUNT(*) AS total FROM orders").first(),
           env.DB.prepare("SELECT COUNT(*) AS total FROM lead_events").first(),
-          env.DB.prepare(
-            `SELECT id, source, contact_name, contact_email, business_name, status, created_at
-             FROM leads
-             ORDER BY created_at DESC
-             LIMIT 1`
-          ).first(),
-          env.DB.prepare(
-            `SELECT id, source, contact_name, contact_email, business_name, status, created_at
-             FROM audit_submissions
-             ORDER BY created_at DESC
-             LIMIT 1`
-          ).first()
+          env.DB.prepare(`SELECT id, source, contact_name, contact_email, business_name, status, created_at FROM leads ORDER BY created_at DESC LIMIT 1`).first(),
+          env.DB.prepare(`SELECT id, source, contact_name, contact_email, business_name, status, created_at FROM audit_submissions ORDER BY created_at DESC LIMIT 1`).first()
         ]);
-
         metrics.leads_total = leadsTotal?.total ?? 0;
         metrics.audits_total = auditsTotal?.total ?? 0;
         metrics.orders_total = ordersTotal?.total ?? 0;
@@ -86,17 +78,29 @@ export async function onRequestGet({ env }) {
         const [productsTotal, activeProductsTotal, lastProduct] = await Promise.all([
           env.DB.prepare("SELECT COUNT(*) AS total FROM products WHERE status != 'archived'").first(),
           env.DB.prepare("SELECT COUNT(*) AS total FROM products WHERE status = 'active'").first(),
-          env.DB.prepare(
-            `SELECT id, workspace_id, title, product_type, status, price_amount, currency, created_at
-             FROM products
-             WHERE status != 'archived'
-             ORDER BY created_at DESC
-             LIMIT 1`
-          ).first()
+          env.DB.prepare(`SELECT id, workspace_id, title, product_type, status, price_amount, currency, created_at FROM products WHERE status != 'archived' ORDER BY created_at DESC LIMIT 1`).first()
         ]);
         metrics.products_total = productsTotal?.total ?? 0;
         metrics.active_products_total = activeProductsTotal?.total ?? 0;
         metrics.last_product = lastProduct || null;
+      }
+      if (db.tables.includes("payment_links")) {
+        const [linksTotal, activeLinksTotal, lastLink] = await Promise.all([
+          env.DB.prepare("SELECT COUNT(*) AS total FROM payment_links WHERE status != 'archived'").first(),
+          env.DB.prepare("SELECT COUNT(*) AS total FROM payment_links WHERE status = 'active'").first(),
+          env.DB.prepare(`SELECT id, workspace_id, product_id, title, status, amount_cents, currency, created_at FROM payment_links WHERE status != 'archived' ORDER BY created_at DESC LIMIT 1`).first()
+        ]);
+        metrics.payment_links_total = linksTotal?.total ?? 0;
+        metrics.active_payment_links_total = activeLinksTotal?.total ?? 0;
+        metrics.last_payment_link = lastLink || null;
+      }
+      if (db.tables.includes("order_reservations")) {
+        const [reservationsTotal, lastReservation] = await Promise.all([
+          env.DB.prepare("SELECT COUNT(*) AS total FROM order_reservations").first(),
+          env.DB.prepare(`SELECT id, workspace_id, payment_link_id, product_id, status, reservation_type, created_at FROM order_reservations ORDER BY created_at DESC LIMIT 1`).first()
+        ]);
+        metrics.reservations_total = reservationsTotal?.total ?? 0;
+        metrics.last_reservation = lastReservation || null;
       }
       if (db.tables.includes("invite_codes")) {
         const inviteCodesTotal = await env.DB.prepare("SELECT COUNT(*) AS total FROM invite_codes").first();
@@ -122,7 +126,7 @@ export async function onRequestGet({ env }) {
   return json({
     ok: true,
     service: "BOOSTR Labs API",
-    version: "0.3.4-product-foundation",
+    version: "0.3.5-smart-link-reservations",
     db,
     metrics,
     manager: {
@@ -150,6 +154,15 @@ export async function onRequestGet({ env }) {
       creates_real_workspace_products: true,
       stripe_required: false
     },
+    smart_links: {
+      endpoint: "/api/payment-links",
+      item_endpoint: "/api/payment-links/:id",
+      public_offer_endpoint: "/api/public/payment-links/:id",
+      public_route: "/pay/:id",
+      reservations_endpoint: "/api/order-reservations",
+      creates_real_reservations: true,
+      stripe_required: false
+    },
     secret_code: {
       endpoint: "/api/invite-codes/validate",
       env_fallback_configured: Boolean(env.BOOSTR_SECRET_CODE || env.BOOSTR_INVITE_CODE),
@@ -160,42 +173,19 @@ export async function onRequestGet({ env }) {
       "/api/health",
       "/api/readiness",
       "/api/admin/bootstrap",
-      "/api/me",
-      "/api/profile",
-      "/api/profile/contacts",
-      "/api/profile/contacts/:id",
-      "/api/personas",
-      "/api/personas/:id",
-      "/api/personas/switch",
-      "/api/workspace-preferences",
-      "/api/security",
-      "/api/security/change-password",
-      "/api/security/sessions",
-      "/api/security/sessions/:id",
-      "/api/security/logout-all",
-      "/api/integrations/api-tokens",
-      "/api/integrations/api-tokens/:id",
-      "/api/notifications",
-      "/api/notifications/:id",
-      "/api/activity",
       "/api/session",
       "/api/signup",
       "/api/signup/check-username",
       "/api/dashboard",
-      "/api/workspaces",
-      "/api/db-init",
       "/api/audit",
       "/api/invite-codes/validate",
-      "/api/demo/janko-os",
-      "/api/intake",
-      "/api/leads",
-      "/api/leads?type=summary",
-      "/api/leads/:id",
-      "/api/events",
-      "/api/modules",
-      "/api/orders",
       "/api/products",
       "/api/products/:id",
+      "/api/payment-links",
+      "/api/payment-links/:id",
+      "/api/public/payment-links/:id",
+      "/api/order-reservations",
+      "/api/orders",
       "/api/cards",
       "/api/cards/:id",
       "/api/cards/:id/action",
