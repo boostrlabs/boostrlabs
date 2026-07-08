@@ -4,6 +4,17 @@ import { getWorkspaceIntelligence } from "../../_lib/intelligence.js";
 
 export async function onRequestOptions() { return json({ ok: true }); }
 
+async function existingOpenCard(env, workspaceId, reason) {
+  return env.DB.prepare(
+    `SELECT id FROM cards
+     WHERE workspace_id = ?
+       AND source_type = 'intelligence'
+       AND source_id = ?
+       AND status NOT IN ('done','archived')
+     LIMIT 1`
+  ).bind(workspaceId, reason).first();
+}
+
 export async function onRequestPost({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
@@ -15,8 +26,12 @@ export async function onRequestPost({ request, env }) {
   if (!access.ok) return access.response;
   const intelligence = await getWorkspaceIntelligence(env, workspaceId);
   let created = 0;
+  let skipped_duplicates = 0;
+  const cards = [];
   for (const rec of intelligence.recommendations.slice(0, 8)) {
-    await insertCard(env, {
+    const duplicate = await existingOpenCard(env, workspaceId, rec.reason);
+    if (duplicate?.id) { skipped_duplicates += 1; continue; }
+    const card = await insertCard(env, {
       workspace_id: workspaceId,
       user_id: auth.user?.id || null,
       source_type: "intelligence",
@@ -32,7 +47,8 @@ export async function onRequestPost({ request, env }) {
       action_url: rec.action_url,
       metadata: { recommendation_id: rec.id, reason: rec.reason, totals: intelligence.totals }
     });
+    cards.push(card);
     created += 1;
   }
-  return json({ ok: true, cards_created: created, intelligence });
+  return json({ ok: true, cards_created: created, skipped_duplicates, cards, intelligence });
 }
