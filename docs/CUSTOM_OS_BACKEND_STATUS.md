@@ -14,7 +14,7 @@ Last updated: 2026-07-08
 - `POST /api/admin/bootstrap` safely creates the first admin only when `BOOSTR_ADMIN_BOOTSTRAP_KEY` is configured and no active admin exists.
 - `/admin/readiness` provides an internal readiness console for launch QA and first-admin bootstrap.
 - `scripts/launch-smoke-test.mjs` provides configurable PASS/FAIL/SKIPPED launch smoke testing.
-- `npm run smoke:launch` runs the launch smoke test.
+- `npm run smoke:launch` runs the launch smoke test and now covers products, Smart Links and reservations.
 - `docs/PRODUCTION_LAUNCH_CHECKLIST.md` defines manual live launch steps.
 - `docs/LAUNCH_READINESS_REPORT.md` classifies current status as `READY_FOR_LIVE_CONFIG`.
 - Session auth exists through `sessions`, `users`, `workspace_members`, `/api/session`, `/api/session/dev`, `/api/me`, and `/api/workspaces`.
@@ -27,7 +27,15 @@ Last updated: 2026-07-08
 - `GET/PATCH/DELETE /api/products/:id` reads, updates and archives workspace products with workspace access control.
 - `/app/products` provides a first real product workspace UI for creating services, digital products, physical products, bookings, licenses, memberships and auction-later products.
 - Product health scoring flags missing price, missing description, missing fulfillment and account-rule conflicts.
-- `/api/health` now reports product metrics and product endpoints.
+- `GET/POST /api/payment-links` lists and creates real workspace Smart Links from products.
+- `GET/PATCH/DELETE /api/payment-links/:id` reads, updates and archives Smart Links.
+- `GET /api/public/payment-links/:id` returns a public active Smart Link offer without exposing private workspace data.
+- `POST /api/order-reservations` creates a real pre-Stripe reservation/intention record from a public Smart Link.
+- `GET /api/order-reservations` lists reservations for the authenticated workspace.
+- `/pay/:id` provides a real public Smart Link reservation page. It does not charge cards or store payment credentials.
+- `/manager/payment-links` now loads products and Smart Links from backend APIs and can create shareable Smart Links.
+- `/app/orders` now displays Smart Link reservations from `/api/order-reservations`.
+- `/api/health` reports product, Smart Link and reservation metrics and exposes version `0.3.5-smart-link-reservations`.
 - `GET/POST /api/cards` requires auth and workspace scope.
 - `GET/PATCH /api/cards/:id` requires auth, workspace access, and card visibility.
 - `POST /api/cards/:id/action` requires auth, workspace access, allowed action type, and logs `card.action`.
@@ -40,7 +48,6 @@ Last updated: 2026-07-08
 - Public `POST /api/invite-codes/validate` validates Secret BOOSTR Codes safely, supports short founder-approved codes, and returns generic invalid responses.
 - Signup with a valid DB-backed Secret BOOSTR Code increments usage only after user/workspace creation succeeds.
 - Public `GET /api/demo/janko-os` returns static safe demo data only.
-- Product/payment readiness tables exist without Stripe or paid-order logic.
 - `GET/PATCH /api/profile` exists.
 - `GET/POST /api/profile/contacts`, `PATCH/DELETE /api/profile/contacts/:id` exist.
 - `GET /api/personas`, `PATCH /api/personas/:id`, and `POST /api/personas/switch` exist.
@@ -57,8 +64,8 @@ Last updated: 2026-07-08
 - Cards can be created, filtered, patched and acted on, but there is no full workflow engine.
 - Human need logic creates priority cards for cash, manage, feel_artist, feel_business, boost_product, boost_music and boost_partners.
 - Audit generates lead, asset_request, next_to_boost, payment readiness and module insight cards.
-- Products now have CRUD APIs and a workspace UI, but they are not yet connected to payment-link creation or order history.
-- Payment link and order reservation tables exist, but write/read endpoints are pending.
+- Products now have CRUD APIs and a workspace UI, and they can be connected to Smart Links.
+- Smart Links now create real pre-Stripe reservations, but they do not process payments.
 - Secret BOOSTR Code validation and usage increment exist; admin creation/revocation UI for invite codes is pending.
 - Production readiness can report environment status, but migrations/env vars must still be applied in Cloudflare manually.
 - Launch smoke tests can verify live endpoints, but must run against the deployed Cloudflare URL with test env vars.
@@ -69,10 +76,8 @@ Last updated: 2026-07-08
 - Email verification.
 - Password reset flow.
 - Claim flow from audit lead into a real client workspace.
-- Payment link write/read APIs.
-- Public payment-link offer endpoint.
 - Real Stripe checkout, webhooks, payouts, refunds, or paid orders.
-- Product-to-payment-link conversion.
+- Paid order conversion from reservation to completed order.
 - Card assignment notifications.
 - Notification delivery is in-app only; no email/push delivery exists.
 - Files and invoices.
@@ -81,13 +86,13 @@ Last updated: 2026-07-08
 ## Risks
 
 - Remote D1 must apply migrations `0010`, `0011`, and `0012` before Secret Code + Signup are fully operational.
-- Product APIs also require the earlier `0008_custom_os_card_engine.sql` migration because that migration creates `products`.
+- Product and Smart Link APIs also require the earlier `0008_custom_os_card_engine.sql` migration because that migration creates `products`, `payment_links` and `order_reservations`.
 - `BOOSTR_ADMIN_BOOTSTRAP_KEY` must be configured in Cloudflare before first-admin bootstrap.
-- Smoke tests create real test users when full test env vars are supplied.
+- Smoke tests create real test users/products/links/reservations when full test env vars are supplied.
 - Existing `cards.status` CHECK does not include `follow_up`; action logs preserve `follow_up` while status uses an allowed value.
 - Demo data is static and must not be treated as real sales or private records.
 - Admin/manager can see operational cards across workspaces by design.
-- Product APIs are real workspace CRUD, but payment processing is still not implemented.
+- Smart Links are real reservation records, but payment processing is still not implemented.
 - Public Audit writes into internal intake workspace; claim/move logic is not built yet.
 - API token creation is intentionally blocked until secure token hashing/storage is implemented.
 - Environment fallback `BOOSTR_SECRET_CODE`/`BOOSTR_INVITE_CODE` can unlock a single code without committed secrets if configured in Cloudflare.
@@ -101,5 +106,6 @@ Last updated: 2026-07-08
 4. Run `npm run smoke:launch` against the deployed URL.
 5. Test `/audit` Secret BOOSTR Code → `/signup` → `/app` end-to-end.
 6. Test `/app/products` with create, update, archive and filters.
-7. Add payment-link APIs and connect products to Smart Links.
+7. Test `/manager/payment-links` → `/pay/:id` → `/app/orders`.
 8. Add audit lead claim into workspace.
+9. Add paid order conversion once Stripe/business setup is ready.
