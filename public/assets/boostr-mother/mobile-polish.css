@@ -1,0 +1,33 @@
+@media (max-width: 860px) {
+  html, body { max-width: 100%; overflow-x: hidden; }
+  body { -webkit-text-size-adjust: 100%; }
+  .os { width: 100%; max-width: 100%; }
+  .main { width: 100%; max-width: 100%; padding-left: 10px !important; padding-right: 10px !important; padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important; }
+  .sidebar { display: none !important; }
+  .topbar { position: sticky !important; top: max(8px, env(safe-area-inset-top)) !important; z-index: 30 !important; min-height: auto !important; gap: 8px !important; padding: 10px !important; border-radius: 24px !important; }
+  .topbar .greeting strong { font-size: 16px !important; }
+  .topbar .search { display: none !important; }
+  .bell, .role-pill { min-width: 42px !important; min-height: 42px !important; }
+  .dashboard, .manager-layout, .product-shell, .pay-shell, .intel, .vault, .billing, .workspace-list, .network-grid, .metrics { grid-template-columns: 1fr !important; width: 100% !important; }
+  .left-col, .right-col, .card, .glass, .panel { width: 100% !important; max-width: 100% !important; }
+  .card, .glass { border-radius: 28px !important; padding: 15px !important; }
+  h1 { font-size: clamp(34px, 12vw, 56px) !important; line-height: .9 !important; letter-spacing: -.07em !important; }
+  h2 { font-size: clamp(22px, 7vw, 34px) !important; }
+  input, select, textarea, button, .btn { font-size: 16px !important; min-height: 46px !important; }
+  .btn { display: inline-flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; }
+  .actions, .toolbar, .bridge-box, .detail-actions { gap: 8px !important; }
+  .actions .btn, .toolbar .btn, .bridge-box .btn, .detail-actions .btn { flex: 1 1 130px !important; }
+  table, .lead-table { min-width: 740px !important; }
+  .table-card { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+  .boostr-dock, .bottom-tabs { left: 10px !important; right: 10px !important; bottom: calc(10px + env(safe-area-inset-bottom)) !important; width: auto !important; max-width: none !important; justify-content: space-around !important; }
+  .boostr-dock a, .boostr-dock button, .bottom-tabs a { min-width: 42px !important; min-height: 42px !important; }
+  .boostr-lang-toggle { right: 12px !important; bottom: calc(68px + env(safe-area-inset-bottom)) !important; }
+  .boostr-command-hint { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .main { padding-left: 7px !important; padding-right: 7px !important; }
+  .card, .glass { border-radius: 24px !important; padding: 13px !important; }
+  .metric-grid, .two { grid-template-columns: 1fr !important; }
+  .pill, .mini-pill { max-width: 100%; white-space: normal !important; }
+}
