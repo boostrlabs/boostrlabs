@@ -1,4 +1,4 @@
-# BOOSTR Labs v0.2.9 Mother UI + D1 routes
+# BOOSTR Labs v0.3.1 Mother UI route repair
 /              /home/index.html             200
 /home          /home/index.html             200
 /home/*        /home/index.html             200
@@ -45,4 +45,14 @@
 /82store/*    /82store/index.html     200
 /82-store     /82store/index.html     200
 /82-store/*   /82store/index.html     200
-/*            /index.html             200
+/82ngel       /82ngel/index.html      200
+/82ngel/*     /82ngel/index.html      200
+/johanka      /82ngel/index.html      200
+/johanka/*    /82ngel/index.html      200
+/jankodiorr   /jankodiorr/index.html  200
+/jankodiorr/* /jankodiorr/index.html  200
+/janko        /jankodiorr/index.html  200
+/janko/*      /jankodiorr/index.html  200
+/westdetro    /jankodiorr/index.html  200
+/westdetro/*  /jankodiorr/index.html  200
+/*            /home/index.html        200
