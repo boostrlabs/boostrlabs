@@ -1,4 +1,14 @@
-import { addLeadEvent, canAccessModule, clean, json, managerAuth, now, requireDb } from "../../../../../_lib/api.js";
+import {
+  addLeadEvent,
+  canAccessModule,
+  clean,
+  json,
+  jsonError,
+  now,
+  requireDb,
+  requireRole,
+  requireWorkspaceAccess
+} from "../../../../../_lib/api.js";
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -8,21 +18,23 @@ export async function onRequestPost({ request, env, params }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, ["admin", "manager"]);
   if (!auth.ok) return auth.response;
 
   const workspaceId = clean(params.workspace_id, 120);
   if (!workspaceId) {
-    return json({ ok: false, error: "workspace_id is required." }, 400);
+    return jsonError("workspace_id_required", "workspace_id is required.", 400);
   }
+  const workspaceAccess = requireWorkspaceAccess(auth, workspaceId);
+  if (!workspaceAccess.ok) return workspaceAccess.response;
 
   if (!(await canAccessModule(env, workspaceId, "smart-links"))) {
-    return json({ error: "module_locked", module: "smart-links" }, 403);
+    return jsonError("module_locked", "Module is locked.", 403, { module: "smart-links" });
   }
 
   const slug = clean(params.slug, 120);
   if (!slug) {
-    return json({ ok: false, error: "slug is required." }, 400);
+    return jsonError("slug_required", "slug is required.", 400);
   }
 
   const existing = await env.DB.prepare(
@@ -32,7 +44,7 @@ export async function onRequestPost({ request, env, params }) {
     .first();
 
   if (!existing?.id) {
-    return json({ ok: false, error: "Smart link not found." }, 404);
+    return jsonError("smart_link_not_found", "Smart link not found.", 404);
   }
 
   const timestamp = now();
@@ -45,6 +57,7 @@ export async function onRequestPost({ request, env, params }) {
     .run();
 
   await addLeadEvent(env, {
+    workspace_id: workspaceId,
     event_type: "smart_link.deactivated",
     payload: {
       workspace_id: workspaceId,

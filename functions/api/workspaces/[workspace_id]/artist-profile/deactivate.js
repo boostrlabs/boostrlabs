@@ -1,4 +1,14 @@
-import { addLeadEvent, canAccessModule, clean, json, managerAuth, now, requireDb } from "../../../../_lib/api.js";
+import {
+  addLeadEvent,
+  canAccessModule,
+  clean,
+  json,
+  jsonError,
+  now,
+  requireDb,
+  requireRole,
+  requireWorkspaceAccess
+} from "../../../../_lib/api.js";
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -8,16 +18,18 @@ export async function onRequestPost({ request, env, params }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, ["admin", "manager"]);
   if (!auth.ok) return auth.response;
 
   const workspaceId = clean(params.workspace_id, 120);
   if (!workspaceId) {
-    return json({ ok: false, error: "workspace_id is required." }, 400);
+    return jsonError("workspace_id_required", "workspace_id is required.", 400);
   }
+  const workspaceAccess = requireWorkspaceAccess(auth, workspaceId);
+  if (!workspaceAccess.ok) return workspaceAccess.response;
 
   if (!(await canAccessModule(env, workspaceId, "artist-os"))) {
-    return json({ error: "module_locked", module: "artist-os" }, 403);
+    return jsonError("module_locked", "Module is locked.", 403, { module: "artist-os" });
   }
 
   const existing = await env.DB.prepare(
@@ -27,7 +39,7 @@ export async function onRequestPost({ request, env, params }) {
     .first();
 
   if (!existing?.id) {
-    return json({ ok: false, error: "Artist profile not found." }, 404);
+    return jsonError("artist_profile_not_found", "Artist profile not found.", 404);
   }
 
   const timestamp = now();
@@ -40,6 +52,7 @@ export async function onRequestPost({ request, env, params }) {
     .run();
 
   await addLeadEvent(env, {
+    workspace_id: workspaceId,
     event_type: "artist_profile.deactivated",
     payload: {
       workspace_id: workspaceId,

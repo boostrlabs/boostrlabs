@@ -6,6 +6,7 @@ import {
   isValidEmail,
   isValidPhone,
   json,
+  jsonError,
   normalizePhone,
   normalizeStatus,
   now,
@@ -169,13 +170,13 @@ export async function onRequestPost({ request, env }) {
   const workspaceId = clean(payload.workspace_id, 120) || defaultWorkspaceId(auth);
 
   if (!contactEmail && !contactPhone) {
-    return json({ ok: false, error: "Manual lead needs email or phone.", fields: ["contact_email", "contact_phone"] }, 400);
+    return jsonError("contact_required", "Manual lead needs email or phone.", 400, { fields: ["contact_email", "contact_phone"] });
   }
   if (contactEmail && !isValidEmail(contactEmail)) {
-    return json({ ok: false, error: "Invalid email format.", fields: ["contact_email"] }, 400);
+    return jsonError("invalid_contact_email", "Invalid email format.", 400, { fields: ["contact_email"] });
   }
   if (contactPhone && !isValidPhone(contactPhone)) {
-    return json({ ok: false, error: "Invalid phone format.", fields: ["contact_phone"] }, 400);
+    return jsonError("invalid_contact_phone", "Invalid phone format.", 400, { fields: ["contact_phone"] });
   }
 
   await env.DB.prepare(

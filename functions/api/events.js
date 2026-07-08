@@ -1,7 +1,16 @@
-import { clean, json, managerAuth, requireDb } from "../_lib/api.js";
+import {
+  authCanSeeAll,
+  clean,
+  defaultWorkspaceId,
+  json,
+  requireDb,
+  requireRole,
+  requireWorkspaceAccess
+} from "../_lib/api.js";
 
 const clampLimit = (value) => Math.min(Math.max(Number(value || 50) || 50, 1), 100);
 const like = (value) => `%${clean(value, 160)}%`;
+const allRoles = ["admin", "manager", "partner", "client", "artist"];
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -11,18 +20,26 @@ export async function onRequestGet({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, allRoles);
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
   const limit = clampLimit(url.searchParams.get("limit"));
+  const workspaceId = clean(url.searchParams.get("workspace_id"), 120) || (authCanSeeAll(auth) ? null : defaultWorkspaceId(auth));
   const leadId = clean(url.searchParams.get("lead_id"), 120);
   const auditId = clean(url.searchParams.get("audit_submission_id"), 120);
   const eventType = clean(url.searchParams.get("event_type"), 80);
   const q = clean(url.searchParams.get("q"), 160);
+  const workspaceAccess = requireWorkspaceAccess(auth, workspaceId);
+  if (!workspaceAccess.ok) return workspaceAccess.response;
+
   const filters = [];
   const binds = [];
 
+  if (workspaceId) {
+    filters.push("workspace_id = ?");
+    binds.push(workspaceId);
+  }
   if (leadId) {
     filters.push("lead_id = ?");
     binds.push(leadId);
@@ -42,7 +59,7 @@ export async function onRequestGet({ request, env }) {
 
   const where = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
   const result = await env.DB.prepare(
-    `SELECT id, lead_id, audit_submission_id, event_type, payload_json, created_at
+    `SELECT id, workspace_id, lead_id, audit_submission_id, event_type, payload_json, created_at
      FROM lead_events
      ${where}
      ORDER BY created_at DESC

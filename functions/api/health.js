@@ -1,6 +1,17 @@
 import { json } from "../_lib/api.js";
 
-const expectedTables = ["leads", "audit_submissions", "lead_events", "workspaces", "users", "modules", "orders"];
+const expectedTables = [
+  "leads",
+  "audit_submissions",
+  "lead_events",
+  "workspaces",
+  "users",
+  "workspace_members",
+  "sessions",
+  "modules",
+  "workspace_modules",
+  "orders"
+];
 
 export async function onRequestGet({ env }) {
   const db = { bound: Boolean(env.DB), writable: false, tables: [], missing_tables: expectedTables };
@@ -62,10 +73,14 @@ export async function onRequestGet({ env }) {
     db,
     metrics,
     manager: {
-      pin_configured: Boolean(env.MANAGER_PIN || env.ADMIN_PIN)
+      pin_configured: Boolean(env.MANAGER_PIN || env.ADMIN_PIN),
+      pin_fallback_enabled: env.ENVIRONMENT === "development" || env.ALLOW_MANAGER_PIN_FALLBACK === "true"
     },
     endpoints: [
       "/api/health",
+      "/api/me",
+      "/api/session",
+      "/api/workspaces",
       "/api/db-init",
       "/api/audit",
       "/api/intake",

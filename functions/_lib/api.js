@@ -4,11 +4,17 @@ export const json = (body, status = 200, extraHeaders = {}) =>
     headers: {
       "Cache-Control": "no-store",
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, X-Manager-Pin",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-BOOSTR-Session, X-Manager-Pin",
       "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
       ...extraHeaders
     }
   });
+
+export const jsonOk = (body = {}, status = 200, extraHeaders = {}) =>
+  json({ ok: true, ...body }, status, extraHeaders);
+
+export const jsonError = (error, message, status = 400, extra = {}, extraHeaders = {}) =>
+  json({ ok: false, error, message, ...extra }, status, extraHeaders);
 
 export const clean = (value, max = 2000) => String(value ?? "").trim().slice(0, max);
 
@@ -42,12 +48,12 @@ export async function readJson(request) {
   try {
     return { ok: true, payload: await request.json() };
   } catch {
-    return { ok: false, response: json({ ok: false, error: "Invalid JSON body." }, 400) };
+    return { ok: false, response: jsonError("invalid_json", "Invalid JSON body.", 400) };
   }
 }
 
 export const requireDb = (env) => {
-  if (!env.DB) return { ok: false, response: json({ ok: false, error: "D1 DB binding missing." }, 503) };
+  if (!env.DB) return { ok: false, response: jsonError("d1_binding_missing", "D1 DB binding missing.", 503) };
   return { ok: true };
 };
 
@@ -108,13 +114,13 @@ const managerPinFallback = (request, env) => {
 };
 
 export async function requireSession(request, env) {
-  if (!env.DB) return { ok: false, response: json({ ok: false, error: "D1 DB binding missing." }, 503) };
+  if (!env.DB) return { ok: false, response: jsonError("d1_binding_missing", "D1 DB binding missing.", 503) };
 
   const fallback = managerPinFallback(request, env);
   if (fallback) return fallback;
 
   const token = getSessionToken(request);
-  if (!token) return { ok: false, response: json({ ok: false, error: "Missing session." }, 401) };
+  if (!token) return { ok: false, response: jsonError("missing_session", "Missing session.", 401) };
 
   const tokenHash = await hashSessionToken(token);
   const current = now();
@@ -140,9 +146,9 @@ export async function requireSession(request, env) {
     .bind(tokenHash, current)
     .first();
 
-  if (!row?.user_id) return { ok: false, response: json({ ok: false, error: "Invalid session." }, 401) };
+  if (!row?.user_id) return { ok: false, response: jsonError("invalid_session", "Invalid session.", 401) };
   if (row.status && !["active", "invited"].includes(row.status)) {
-    return { ok: false, response: json({ ok: false, error: "User is not active." }, 403) };
+    return { ok: false, response: jsonError("user_inactive", "User is not active.", 403) };
   }
 
   await env.DB.prepare("UPDATE sessions SET last_seen_at = ?, updated_at = ? WHERE id = ?")
@@ -190,7 +196,7 @@ export async function requireRole(request, env, roles) {
 
   const allowed = new Set(Array.isArray(roles) ? roles : [roles]);
   if (!auth.roles.some((role) => allowed.has(role))) {
-    return { ok: false, response: json({ ok: false, error: "Forbidden." }, 403) };
+    return { ok: false, response: jsonError("forbidden", "Forbidden.", 403) };
   }
 
   return auth;
@@ -202,11 +208,11 @@ export const authCanSeeAll = (auth) =>
 export function requireWorkspaceAccess(auth, workspaceId) {
   const workspace = clean(workspaceId, 120);
   if (authCanSeeAll(auth)) return { ok: true };
-  if (!workspace) return { ok: false, response: json({ ok: false, error: "workspace_id is required." }, 400) };
+  if (!workspace) return { ok: false, response: jsonError("workspace_id_required", "workspace_id is required.", 400) };
   if (auth.memberships?.some((member) => member.workspace_id === workspace && member.status === "active")) {
     return { ok: true };
   }
-  return { ok: false, response: json({ ok: false, error: "Workspace access denied." }, 403) };
+  return { ok: false, response: jsonError("workspace_access_denied", "Workspace access denied.", 403) };
 }
 
 export const defaultWorkspaceId = (auth) =>
@@ -214,11 +220,11 @@ export const defaultWorkspaceId = (auth) =>
 
 export const managerAuth = (request, env) => {
   const configured = clean(env.MANAGER_PIN || env.ADMIN_PIN || "", 120);
-  if (!configured) return { ok: false, response: json({ ok: false, error: "MANAGER_PIN is not configured." }, 503) };
+  if (!configured) return { ok: false, response: jsonError("manager_pin_not_configured", "MANAGER_PIN is not configured.", 503) };
 
   const supplied = clean(request.headers.get("X-Manager-Pin") || "", 120);
-  if (!supplied) return { ok: false, response: json({ ok: false, error: "Missing PIN." }, 401) };
-  if (supplied !== configured) return { ok: false, response: json({ ok: false, error: "Invalid PIN." }, 401) };
+  if (!supplied) return { ok: false, response: jsonError("missing_pin", "Missing PIN.", 401) };
+  if (supplied !== configured) return { ok: false, response: jsonError("invalid_pin", "Invalid PIN.", 401) };
   return { ok: true };
 };
 

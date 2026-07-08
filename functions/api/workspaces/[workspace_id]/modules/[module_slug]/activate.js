@@ -1,6 +1,4 @@
-import { addLeadEvent, clean, json, managerAuth, now, requireDb } from "../../../../../_lib/api.js";
-
-const managerActor = "manager";
+import { addLeadEvent, clean, json, jsonError, now, requireDb, requireRole, requireWorkspaceAccess } from "../../../../../_lib/api.js";
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -10,19 +8,22 @@ export async function onRequestPost({ request, env, params }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, ["admin", "manager"]);
   if (!auth.ok) return auth.response;
 
   const workspaceId = clean(params.workspace_id, 120);
   const moduleSlug = clean(params.module_slug, 120);
   if (!workspaceId || !moduleSlug) {
-    return json({ ok: false, error: "Missing workspace_id or module_slug." }, 400);
+    return jsonError("workspace_module_params_required", "Missing workspace_id or module_slug.", 400);
   }
+  const workspaceAccess = requireWorkspaceAccess(auth, workspaceId);
+  if (!workspaceAccess.ok) return workspaceAccess.response;
 
   const module = await env.DB.prepare("SELECT id, slug FROM modules WHERE slug = ? LIMIT 1").bind(moduleSlug).first();
-  if (!module?.id) return json({ ok: false, error: "Module not found." }, 404);
+  if (!module?.id) return jsonError("module_not_found", "Module not found.", 404);
 
   const timestamp = now();
+  const managerActor = auth.user?.email || auth.user?.id || "manager";
   const existing = await env.DB.prepare(
     "SELECT id FROM workspace_modules WHERE workspace_id = ? AND module_id = ? LIMIT 1"
   )

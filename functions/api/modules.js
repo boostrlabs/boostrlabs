@@ -1,4 +1,6 @@
-import { clean, json, managerAuth, requireDb } from "../_lib/api.js";
+import { clean, json, requireDb, requireRole, requireWorkspaceAccess } from "../_lib/api.js";
+
+const allRoles = ["admin", "manager", "partner", "client", "artist"];
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -10,14 +12,21 @@ export async function onRequestGet({ request, env }) {
 
   const url = new URL(request.url);
   const manager = url.searchParams.get("manager") === "1";
+  const workspaceId = clean(url.searchParams.get("workspace_id"), 120);
+
   if (manager) {
-    const auth = managerAuth(request, env);
+    const auth = await requireRole(request, env, ["admin", "manager"]);
     if (!auth.ok) return auth.response;
+  }
+  if (workspaceId) {
+    const auth = await requireRole(request, env, allRoles);
+    if (!auth.ok) return auth.response;
+    const workspaceAccess = requireWorkspaceAccess(auth, workspaceId);
+    if (!workspaceAccess.ok) return workspaceAccess.response;
   }
 
   const status = clean(url.searchParams.get("status"), 40);
   const category = clean(url.searchParams.get("category"), 80);
-  const workspaceId = clean(url.searchParams.get("workspace_id"), 120);
   const filters = [];
   const binds = [];
 

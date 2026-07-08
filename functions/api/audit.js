@@ -1,4 +1,4 @@
-import { addLeadEvent, clean, getIp, getUa, isValidEmail, isValidPhone, json, normalizeArray, readJson } from "../_lib/api.js";
+import { addLeadEvent, clean, getIp, getUa, isValidEmail, isValidPhone, json, jsonError, normalizeArray, readJson } from "../_lib/api.js";
 
 const inferContact = (payload) => {
   const free = clean(payload.contact || payload.contact_info || payload.free || payload.link || payload.website || payload.social || payload.business_link, 500);
@@ -90,7 +90,7 @@ const buildAuditRecord = (payload, request) => {
 };
 
 async function storeAudit(env, record) {
-  if (!env.DB) return { stored: false, reason: "D1 DB binding missing" };
+  if (!env.DB) return { stored: false, error: "d1_binding_missing" };
 
   try {
     await env.DB.prepare(
@@ -170,7 +170,7 @@ async function storeAudit(env, record) {
     return { stored: true };
   } catch (error) {
     console.error("BOOSTR Audit storage error", error);
-    return { stored: false, reason: error.message || "Database storage failed" };
+    return { stored: false, error: "audit_storage_failed" };
   }
 }
 
@@ -185,39 +185,35 @@ export async function onRequestPost({ request, env }) {
   const record = buildAuditRecord(parsed.payload || {}, request);
 
   if (!record.contact_email && !record.contact_phone && !record.contact_raw) {
-    return json({
-      ok: false,
-      error: "Missing contact channel.",
-      message: "Audit needs at least email, phone, Instagram, WhatsApp, website or another contact link."
-    }, 400);
+    return jsonError(
+      "contact_required",
+      "Audit needs at least email, phone, Instagram, WhatsApp, website or another contact link.",
+      400
+    );
   }
 
   if (record.contact_email && !isValidEmail(record.contact_email)) {
-    return json({
-      ok: false,
-      error: "Invalid contact_email.",
-      message: "Use a valid email address or leave email empty and provide a valid phone/contact link."
-    }, 400);
+    return jsonError(
+      "invalid_contact_email",
+      "Use a valid email address or leave email empty and provide a valid phone/contact link.",
+      400
+    );
   }
 
   if (record.contact_phone && !isValidPhone(record.contact_phone)) {
-    return json({
-      ok: false,
-      error: "Invalid contact_phone.",
-      message: "Use a valid phone number or leave phone empty and provide a valid email/contact link."
-    }, 400);
+    return jsonError(
+      "invalid_contact_phone",
+      "Use a valid phone number or leave phone empty and provide a valid email/contact link.",
+      400
+    );
   }
 
   try {
     const storage = await storeAudit(env, record);
     
     if (!storage.stored) {
-      console.error("BOOSTR Audit storage failed", { id: record.id, reason: storage.reason });
-      return json({
-        ok: false,
-        error: "Audit storage failed.",
-        reason: storage.reason
-      }, 503);
+      console.error("BOOSTR Audit storage failed", { id: record.id, error: storage.error });
+      return jsonError("audit_storage_failed", "Audit storage failed.", 503);
     }
 
     console.info("BOOSTR Audit received and stored", {
@@ -234,7 +230,7 @@ export async function onRequestPost({ request, env }) {
     });
   } catch (error) {
     console.error("BOOSTR Audit endpoint error", error);
-    return json({ ok: false, error: "Audit processing failed." }, 500);
+    return jsonError("audit_processing_failed", "Audit processing failed.", 500);
   }
 }
 

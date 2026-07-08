@@ -1,4 +1,4 @@
-import { addLeadEvent, clean, json, now, readJson, requireDb, requireRole } from "../../../_lib/api.js";
+import { addLeadEvent, clean, json, jsonError, now, readJson, requireDb, requireRole } from "../../../_lib/api.js";
 
 const roleForWorkspace = (type) => {
   if (type === "artist") return "artist";
@@ -26,7 +26,7 @@ export async function onRequestPost({ request, env, params }) {
   )
     .bind(id)
     .first();
-  if (!audit?.id) return json({ ok: false, error: "Audit submission not found." }, 404);
+  if (!audit?.id) return jsonError("audit_not_found", "Audit submission not found.", 404);
 
   const payload = parsed.payload || {};
   const timestamp = now();
@@ -36,7 +36,7 @@ export async function onRequestPost({ request, env, params }) {
 
   if (workspaceId) {
     const workspace = await env.DB.prepare("SELECT id FROM workspaces WHERE id = ?").bind(workspaceId).first();
-    if (!workspace?.id) return json({ ok: false, error: "Workspace not found." }, 404);
+    if (!workspace?.id) return jsonError("workspace_not_found", "Workspace not found.", 404);
   } else {
     workspaceId = crypto.randomUUID();
     await env.DB.prepare(

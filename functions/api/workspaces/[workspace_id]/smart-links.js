@@ -1,4 +1,17 @@
-import { addLeadEvent, canAccessModule, clean, json, managerAuth, now, readJson, requireDb } from "../../../_lib/api.js";
+import {
+  addLeadEvent,
+  canAccessModule,
+  clean,
+  json,
+  jsonError,
+  now,
+  readJson,
+  requireDb,
+  requireRole,
+  requireWorkspaceAccess
+} from "../../../_lib/api.js";
+
+const allRoles = ["admin", "manager", "partner", "client", "artist"];
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -8,16 +21,18 @@ export async function onRequestGet({ request, env, params }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, allRoles);
   if (!auth.ok) return auth.response;
 
   const workspaceId = clean(params.workspace_id, 120);
   if (!workspaceId) {
-    return json({ ok: false, error: "workspace_id is required." }, 400);
+    return jsonError("workspace_id_required", "workspace_id is required.", 400);
   }
+  const workspaceAccess = requireWorkspaceAccess(auth, workspaceId);
+  if (!workspaceAccess.ok) return workspaceAccess.response;
 
   if (!(await canAccessModule(env, workspaceId, "smart-links"))) {
-    return json({ error: "module_locked", module: "smart-links" }, 403);
+    return jsonError("module_locked", "Module is locked.", 403, { module: "smart-links" });
   }
 
   const result = await env.DB.prepare(
@@ -36,16 +51,18 @@ export async function onRequestPost({ request, env, params }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, ["admin", "manager"]);
   if (!auth.ok) return auth.response;
 
   const workspaceId = clean(params.workspace_id, 120);
   if (!workspaceId) {
-    return json({ ok: false, error: "workspace_id is required." }, 400);
+    return jsonError("workspace_id_required", "workspace_id is required.", 400);
   }
+  const workspaceAccess = requireWorkspaceAccess(auth, workspaceId);
+  if (!workspaceAccess.ok) return workspaceAccess.response;
 
   if (!(await canAccessModule(env, workspaceId, "smart-links"))) {
-    return json({ error: "module_locked", module: "smart-links" }, 403);
+    return jsonError("module_locked", "Module is locked.", 403, { module: "smart-links" });
   }
 
   const parsed = await readJson(request);
@@ -55,7 +72,7 @@ export async function onRequestPost({ request, env, params }) {
   const slug = clean(payload.slug, 120);
   const targetUrl = clean(payload.target_url, 1000);
   if (!slug || !targetUrl) {
-    return json({ ok: false, error: "slug and target_url are required." }, 400);
+    return jsonError("smart_link_fields_required", "slug and target_url are required.", 400);
   }
 
   const existing = await env.DB.prepare(
@@ -65,7 +82,7 @@ export async function onRequestPost({ request, env, params }) {
     .first();
 
   if (existing?.id) {
-    return json({ ok: false, error: "Smart link slug already exists for this workspace." }, 409);
+    return jsonError("smart_link_slug_exists", "Smart link slug already exists for this workspace.", 409);
   }
 
   const id = crypto.randomUUID();
@@ -79,6 +96,7 @@ export async function onRequestPost({ request, env, params }) {
     .run();
 
   await addLeadEvent(env, {
+    workspace_id: workspaceId,
     event_type: "smart_link.created",
     payload: {
       workspace_id: workspaceId,

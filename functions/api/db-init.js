@@ -1,4 +1,4 @@
-import { json, managerAuth } from "../_lib/api.js";
+import { json, jsonError, requireRole } from "../_lib/api.js";
 
 const expectedTables = [
   "leads",
@@ -181,16 +181,16 @@ const schemaStatements = [
 ];
 
 async function initDb(request, env) {
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, ["admin", "manager"]);
   if (!auth.ok) return auth.response;
 
   const allowDbInit = env.ENVIRONMENT === "development" || env.ALLOW_DB_INIT === "true";
   if (!allowDbInit) {
-    return json({ ok: false, error: "Database initialization is disabled." }, 403);
+    return jsonError("db_init_disabled", "Database initialization is disabled.", 403);
   }
 
   if (!env.DB) {
-    return json({ ok: false, error: "D1 DB binding missing." }, 503);
+    return jsonError("d1_binding_missing", "D1 DB binding missing.", 503);
   }
 
   try {
@@ -208,7 +208,7 @@ async function initDb(request, env) {
     return json({ ok: true, tables_present: tables, ready });
   } catch (error) {
     console.error("Database init failed:", error);
-    return json({ ok: false, error: error?.message || "Database initialization failed." }, 500);
+    return jsonError("db_init_failed", "Database initialization failed.", 500);
   }
 }
 

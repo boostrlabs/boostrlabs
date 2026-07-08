@@ -1,4 +1,4 @@
-import { clean, json, managerAuth, requireDb } from "../../_lib/api.js";
+import { clean, json, jsonError, requireDb, requireRole, requireWorkspaceAccess } from "../../_lib/api.js";
 
 const countValue = (row) => Number(row?.total || 0);
 
@@ -10,14 +10,16 @@ export async function onRequestGet({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = managerAuth(request, env);
+  const auth = await requireRole(request, env, ["admin", "manager"]);
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
   const workspaceId = clean(url.searchParams.get("workspace_id"), 120);
   if (!workspaceId) {
-    return json({ ok: false, error: "workspace_id is required." }, 400);
+    return jsonError("workspace_id_required", "workspace_id is required.", 400);
   }
+  const workspaceAccess = requireWorkspaceAccess(auth, workspaceId);
+  if (!workspaceAccess.ok) return workspaceAccess.response;
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 

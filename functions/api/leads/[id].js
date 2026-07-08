@@ -1,4 +1,4 @@
-import { addLeadEvent, clean, json, normalizeStatus, now, readJson, requireDb, requireRole, requireWorkspaceAccess } from "../../_lib/api.js";
+import { addLeadEvent, clean, json, jsonError, normalizeStatus, now, readJson, requireDb, requireRole, requireWorkspaceAccess } from "../../_lib/api.js";
 
 const leadColumns = `
   id, workspace_id, created_by_user_id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
@@ -19,7 +19,7 @@ export async function onRequestGet({ request, env, params }) {
 
   const id = clean(params.id, 120);
   const lead = await env.DB.prepare(`SELECT ${leadColumns} FROM leads WHERE id = ?`).bind(id).first();
-  if (!lead) return json({ ok: false, error: "Lead not found." }, 404);
+  if (!lead) return jsonError("lead_not_found", "Lead not found.", 404);
 
   const workspaceAccess = requireWorkspaceAccess(auth, lead.workspace_id);
   if (!workspaceAccess.ok) return workspaceAccess.response;
@@ -49,7 +49,7 @@ export async function onRequestPatch({ request, env, params }) {
 
   const id = clean(params.id, 120);
   const existing = await env.DB.prepare("SELECT id, workspace_id, status, assigned_to FROM leads WHERE id = ?").bind(id).first();
-  if (!existing) return json({ ok: false, error: "Lead not found." }, 404);
+  if (!existing) return jsonError("lead_not_found", "Lead not found.", 404);
 
   const payload = parsed.payload || {};
   const updatedAt = now();
