@@ -1,207 +1,37 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title data-i18n="client_greeting_span">BOOSTR Client OS</title>
-  <meta name="description" content="BOOSTR Client OS.">
-  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
-  <link rel="stylesheet" href="/assets/boostr-mother/mother.css">
-  <style>
-    .workspace-note{border:1px solid rgba(119,255,172,.2);background:rgba(119,255,172,.06);border-radius:22px;padding:14px;color:var(--muted);font-size:13px;line-height:1.45}
-    .workspace-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
-    @media(max-width:900px){.workspace-grid{grid-template-columns:1fr}.network-grid{grid-template-columns:1fr 1fr}}
-    @media(max-width:620px){.network-grid,.metrics{grid-template-columns:1fr}}
-  </style>
-  <script src="/assets/boostr-mother/i18n.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BOOSTR Dashboard</title>
+<meta name="description" content="BOOSTR Dashboard first-run workspace.">
+<link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+<link rel="stylesheet" href="/assets/boostr-mother/mother.css">
+<style>
+.first-note{border:1px solid rgba(125,255,158,.2);background:rgba(125,255,158,.055);border-radius:24px;padding:14px;color:var(--muted);font-size:13px;line-height:1.45}.start-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.start-card{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);border-radius:24px;padding:15px;min-height:138px;text-decoration:none;display:flex;flex-direction:column}.start-card b{font-size:16px}.start-card p{color:var(--muted);font-size:12px;line-height:1.35}.start-card span{margin-top:auto;color:var(--champagne,#feedb9);font-weight:950;font-size:12px}.workspace-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.profile-strip{display:flex;gap:8px;flex-wrap:wrap}.profile-strip span{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.24);border-radius:999px;padding:8px 10px;font-size:11px;font-weight:950;color:rgba(255,255,255,.68)}@media(max-width:900px){.workspace-grid{grid-template-columns:1fr}.start-grid{grid-template-columns:1fr 1fr}}@media(max-width:620px){.start-grid,.metrics{grid-template-columns:1fr}}
+</style>
+<script src="/assets/boostr-mother/i18n.js"></script>
 </head>
 <body>
-  <div class="ambient"></div>
-  <div class="os">
-    <aside class="sidebar glass">
-      <a class="logo-mark" href="/home">
-        <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))">
-      </a>
-      <nav class="icon-nav">
-        <a href="/manager" title="Manager">⌘</a>
-        <a class="active" href="/app" title="Client">◫</a>
-        <a href="/partner-dashboard" title="Partner">◇</a>
-        <a href="/audit" title="Audit">↯</a>
-        <a href="/modules" title="Modules">◌</a>
-      </nav>
-      <div class="utility">
-        <a href="/login" title="Role Login">◎</a>
-        <a href="/ecosystem" title="Ecosystem Map">?</a>
-      </div>
-    </aside>
-    <main class="main">
-      <header class="topbar glass">
-        <div class="greeting">
-          <span data-i18n="client_greeting_span">Client OS</span>
-          <strong data-i18n="client_greeting_val">Workspace Hub</strong>
-        </div>
-        <div class="search" data-i18n="search_placeholder">Search projects, files, invoices, modules...</div>
-        <a class="bell" href="/admin" title="Admin">♟</a>
-        <a class="role-pill" href="/login">
-          <div class="avatar"></div>
-          <div>
-            <b id="roleLabel">Role Access</b>
-            <div class="micro" data-i18n="login_desc">Client / Artist / Partner</div>
-          </div>
-        </a>
-      </header>
-      <section class="workspace-grid">
-        <div class="left-col">
-          <section class="card glass">
-            <div class="section-head">
-              <div>
-                <span class="eyebrow" data-i18n="client_greeting_span">BOOSTR Client OS</span>
-                <h1 data-i18n="client_h1">One workspace. All active modules.</h1>
-                <p class="micro" data-i18n="client_desc">Client OS groups projects, files, invoices, stores, links and status into one workspace.</p>
-              </div>
-              <a class="btn primary" href="/login" data-i18n="client_cta_access">Access</a>
-            </div>
-            <p class="workspace-note" id="sessionBox" data-i18n="client_note_default">Workspace modules become visible after account access.</p>
-          </section>
-          <section class="card glass">
-            <div class="section-head">
-              <div>
-                <h2 data-i18n="client_sec_title">Workspace Modules</h2>
-                <div class="micro" data-i18n="client_sec_micro">Drag cards to reorganize. Search filters the workspace.</div>
-              </div>
-              <a class="chip live" href="/audit" data-i18n="modules_sec_cta">New Audit</a>
-            </div>
-            <div class="network-grid">
-              <div class="module">
-                <b>82NGEL OS</b>
-                <p class="micro" data-i18n="client_module_82ngel_desc">Artist dashboard.</p>
-                <a href="/app/82ngel">Open →</a>
-              </div>
-              <div class="module">
-                <b>GEMESE OS</b>
-                <p class="micro" data-i18n="client_module_gemese_desc">Partner/client dashboard.</p>
-                <a href="/app/gemese">Open →</a>
-              </div>
-              <div class="module">
-                <b>82 Storefront</b>
-                <p class="micro" data-i18n="client_module_82store_desc">Commerce reference route.</p>
-                <a href="/82store">Open →</a>
-              </div>
-              <div class="module">
-                <b data-i18n="client_module_audit_title">Audit History</b>
-                <p class="micro" data-i18n="client_module_audit_desc">Application records.</p>
-                <a href="/audit" data-i18n="client_module_audit_link">Start audit →</a>
-              </div>
-              <div class="module">
-                <b data-i18n="client_module_files_title">Files</b>
-                <p class="micro" data-i18n="client_module_files_desc">Deliverables and assets.</p>
-                <a href="/admin" data-i18n="client_module_files_link">System map →</a>
-              </div>
-              <div class="module">
-                <b data-i18n="client_module_invoices_title">Invoices</b>
-                <p class="micro" data-i18n="client_module_invoices_desc">Orders and receipts.</p>
-                <a href="/admin" data-i18n="client_module_invoices_link">System map →</a>
-              </div>
-            </div>
-          </section>
-        </div>
-        <div class="right-col">
-          <section class="card glass">
-            <h3 data-i18n="client_stack_title">Workspace Stack</h3>
-            <div class="timeline">
-              <div class="task">
-                <span class="dot"></span>
-                <div>
-                  <b data-i18n="client_stack_task1_title">Projects</b>
-                  <span data-i18n="client_stack_task1_desc">Active builds and deliverables.</span>
-                </div>
-                <span>01</span>
-              </div>
-              <div class="task">
-                <span class="dot gold"></span>
-                <div>
-                  <b data-i18n="client_stack_task2_title">Modules</b>
-                  <span data-i18n="client_stack_task2_desc">Visible by workspace access.</span>
-                </div>
-                <span>02</span>
-              </div>
-              <div class="task">
-                <span class="dot blue"></span>
-                <div>
-                  <b data-i18n="client_stack_task3_title">History</b>
-                  <span data-i18n="client_stack_task3_desc">Audits, files, orders and notes.</span>
-                </div>
-                <span>03</span>
-              </div>
-            </div>
-          </section>
-          <section class="card glass">
-            <h3 data-i18n="client_routes_title">Public Routes</h3>
-            <div class="timeline">
-              <a class="task" href="/82ngel">
-                <span class="dot"></span>
-                <div>
-                  <b>82NGEL OS</b>
-                  <span data-i18n="manager_paths_task1_desc">Artist front door.</span>
-                </div>
-                <span>Open</span>
-              </a>
-              <a class="task" href="/82store">
-                <span class="dot gold"></span>
-                <div>
-                  <b>82 Storefront</b>
-                  <span data-i18n="client_module_82store_desc">Commerce reference.</span>
-                </div>
-                <span>Open</span>
-              </a>
-              <a class="task" href="/jankodiorr">
-                <span class="dot blue"></span>
-                <div>
-                  <b>WESTDETRO OS</b>
-                  <span data-i18n="manager_paths_task2_desc">Artist route.</span>
-                </div>
-                <span>Open</span>
-              </a>
-            </div>
-          </section>
-        </div>
-      </section>
-      <nav class="bottom-tabs glass">
-        <a href="/manager" data-i18n="login_option_manager">Manager</a>
-        <a href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
-        <a class="active" href="/app" data-i18n="login_option_client">Client</a>
-        <a href="/audit" data-i18n="home_pulse_val">Audit</a>
-        <a href="/modules" data-i18n="home_switch_modules_title">Modules</a>
-        <a class="plus" href="/login">+</a>
-      </nav>
-      <footer class="footer">POWERED BY BOOSTR LABS · Client OS</footer>
-    </main>
-  </div>
-  <nav class="mobile-tabs">
-    <a href="/manager" data-i18n="login_option_manager">Manager</a>
-    <a class="active" href="/app" data-i18n="login_option_client">Client</a>
-    <a href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
-    <a href="/audit" data-i18n="home_pulse_val">Audit</a>
-    <a href="/login">Login</a>
-  </nav>
-  <script>
-    const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
-    if(s){
-      roleLabel.textContent=s.role+' preview';
-      const isEs = localStorage.getItem('boostr_lang') === 'es';
-      sessionBox.textContent = isEs
-        ? `Sesión de prueba local: ${s.email||'sin correo'} · ${s.role}.`
-        : `Local preview session: ${s.email||'no email'} · ${s.role}.`;
-    }
-    document.addEventListener('boostrLangChanged', () => {
-      if(s){
-        const isEs = localStorage.getItem('boostr_lang') === 'es';
-        sessionBox.textContent = isEs
-          ? `Sesión de prueba local: ${s.email||'sin correo'} · ${s.role}.`
-          : `Local preview session: ${s.email||'no email'} · ${s.role}.`;
-      }
-    });
-  </script>
-  <script src="/assets/boostr-mother/console.js"></script>
+<div class="ambient"></div>
+<div class="os">
+<aside class="sidebar glass"><a class="logo-mark" href="/home"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"></a><nav class="icon-nav"><a href="/home" title="BOOSTR CORE">⌂</a><a class="active" href="/app" title="Dashboard">◫</a><a href="/audit" title="Audit">↯</a><a href="/smart-payment-link" title="Payment Link">$</a><a href="/modules" title="Modules">◌</a></nav><div class="utility"><a href="/login" title="Login">◎</a><a href="/signup" title="Signup">+</a></div></aside>
+<main class="main">
+<header class="topbar glass"><div class="greeting"><span id="topSpan">Dashboard</span><strong id="topStrong">Your Custom OS</strong></div><div class="search">Search cards, modules, orders, files...</div><a class="bell" href="/admin" title="Admin">♟</a><a class="role-pill" href="/login"><div class="avatar"></div><div><b id="roleLabel">Account</b><div class="micro" id="roleMicro">Client / Artist / Partner</div></div></a></header>
+<section class="workspace-grid">
+<div class="left-col">
+<section class="card glass"><div class="section-head"><div><span class="eyebrow">FIRST RUN DASHBOARD</span><h1 id="heroTitle">Your Custom OS starts here.</h1><p class="micro" id="heroCopy">This is your default workspace. It is not custom yet. BOOSTR will shape it with Audit signals, products, cards and manager setup.</p></div><a class="btn primary" href="/audit" id="auditCta">Start BOOSTR Audit</a></div><p class="first-note" id="sessionBox">Create an account or sign in to make this workspace real.</p><div class="profile-strip" id="profileStrip"><span>Default Dashboard</span><span>Pre-custom</span><span>Cards ready</span></div></section>
+<section class="card glass"><div class="section-head"><div><h2 id="nextTitle">Next to BOOST</h2><div class="micro" id="nextMicro">These cards become your first setup path.</div></div><a class="chip live" href="/signup" id="signupCta">Create account</a></div><div class="start-grid" id="startGrid"></div></section>
+</div>
+<div class="right-col">
+<section class="card glass"><span class="chip live">CUSTOM OS</span><h2 id="stateTitle">Not custom yet.</h2><p class="micro" id="stateCopy">Your dashboard becomes custom when BOOSTR learns what you sell, where it gets stuck, what assets exist and what actions matter first.</p><div class="metrics"><a class="metric" href="/audit"><span>BOOSTR</span><b>Audit</b><small>Signal source</small></a><a class="metric" href="/smart-payment-link"><span>BOOSTR</span><b>Pay</b><small>Later</small></a></div></section>
+<section class="card glass"><h2 id="pathsTitle">Useful routes</h2><div class="timeline"><a class="task" href="/signup"><span class="dot"></span><div><b>Signup</b><span>Create base account.</span></div><span>Open</span></a><a class="task" href="/login"><span class="dot gold"></span><div><b>Login</b><span>Email, username or phone.</span></div><span>Open</span></a><a class="task" href="/demo/janko-os"><span class="dot blue"></span><div><b>JANKO Demo</b><span>Custom OS pilot.</span></div><span>Open</span></a></div></section>
+</div>
+</section>
+<footer class="footer">POWERED BY BOOSTR LABS · Dashboard</footer>
+</main></div>
+<script>
+const s=JSON.parse(localStorage.getItem('boostr_session')||'null'),isEs=()=>localStorage.getItem('boostr_lang')==='es';const cards={en:[['Complete profile','Add contact, persona and basic account info.','Open profile later'],['Add business details','Tell BOOSTR what this workspace is for.','Prepare workspace'],['Upload logo/assets','Logo, images, proof, offers and brand files.','Files later'],['Add first product/service','Create the first thing this business can sell.','Product setup'],['Start BOOSTR Audit','Generate signals for cards and modules.','Start now'],['Smart Payment Link later','Prepare offer/payment route before Stripe.','Preview'],['Choose persona','Client, artist, partner, seller or manager.','Select role'],['Request BOOSTR Manager setup','Ask BOOSTR to help build the custom dashboard.','Request later']],es:[['Completa perfil','Agrega contacto, persona y cuenta base.','Abrir luego'],['Agrega datos del negocio','Dile a BOOSTR para qué es este workspace.','Preparar workspace'],['Sube logo/assets','Logo, imágenes, proof, ofertas y brand files.','Files luego'],['Agrega producto/servicio','Crea lo primero que este negocio puede vender.','Setup producto'],['Haz BOOSTR Audit','Genera señales para cards y módulos.','Iniciar'],['Smart Payment Link luego','Prepara ruta de oferta/pago antes de Stripe.','Preview'],['Elige persona','Client, artist, partner, seller o manager.','Elegir rol'],['Pide setup BOOSTR Manager','Pide ayuda para armar el dashboard custom.','Pedir luego']]};function render(){const l=isEs()?'es':'en';startGrid.innerHTML=cards[l].map((c,i)=>`<a class="start-card" href="${i===4?'/audit':i===5?'/smart-payment-link':i===0?'/signup':'#'}"><b>${c[0]}</b><p>${c[1]}</p><span>${c[2]} →</span></a>`).join('');if(l==='es'){heroTitle.textContent='Tu Custom OS empieza aquí.';heroCopy.textContent='Este es tu workspace default. Todavía no está customizado. BOOSTR lo moldea con Audit, productos, cards y setup manager.';auditCta.textContent='Hacer BOOSTR Audit';sessionBox.textContent=s?`Sesión local: ${s.email||s.username||'usuario'} · ${s.role||'client'}.`:'Crea una cuenta o entra para hacer real este workspace.';nextTitle.textContent='Next to BOOST';nextMicro.textContent='Estas cards se convierten en tu primera ruta de setup.';signupCta.textContent='Crear cuenta';stateTitle.textContent='Todavía no está custom.';stateCopy.textContent='Tu dashboard se vuelve custom cuando BOOSTR aprende qué vendes, dónde se tranca, qué assets existen y qué acciones importan primero.';pathsTitle.textContent='Rutas útiles'}else{sessionBox.textContent=s?`Local session: ${s.email||s.username||'user'} · ${s.role||'client'}.`:'Create an account or sign in to make this workspace real.'}if(s){roleLabel.textContent=s.username||s.email||'Account';roleMicro.textContent=s.role||'client';profileStrip.innerHTML=`<span>${s.email||s.username}</span><span>${s.role||'client'}</span><span>First-run</span>`}}render();document.addEventListener('boostrLangChanged',render);
+</script><script src="/assets/boostr-mother/console.js"></script>
 </body>
 </html>
