@@ -2,6 +2,8 @@
 
 Last updated: 2026-07-07
 
+Architecture note: current production runtime is the root Vite app with Cloudflare Pages Functions and Cloudflare D1. `apps/ecosystem` exists in the repository but is not the current deploy target.
+
 ## Current Goal
 
 Prepare the local BOOSTR Labs folder to become the GitHub source of truth, with the newest text direction, roadmap, manifests, and strategic documentation applied before more coding.

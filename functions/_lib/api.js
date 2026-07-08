@@ -55,8 +55,7 @@ export const managerAuth = (request, env) => {
   const configured = clean(env.MANAGER_PIN || env.ADMIN_PIN || "", 120);
   if (!configured) return { ok: false, response: json({ ok: false, error: "MANAGER_PIN is not configured." }, 503) };
 
-  const url = new URL(request.url);
-  const supplied = clean(request.headers.get("X-Manager-Pin") || url.searchParams.get("pin") || "", 120);
+  const supplied = clean(request.headers.get("X-Manager-Pin") || "", 120);
   if (!supplied) return { ok: false, response: json({ ok: false, error: "Missing PIN." }, 401) };
   if (supplied !== configured) return { ok: false, response: json({ ok: false, error: "Invalid PIN." }, 401) };
   return { ok: true };
@@ -76,6 +75,23 @@ export const allowedStatus = new Set([
 export function normalizeStatus(value, fallback = "new") {
   const status = clean(value, 40).toLowerCase();
   return allowedStatus.has(status) ? status : fallback;
+}
+
+export async function canAccessModule(env, workspaceId, moduleSlug) {
+  const workspace = clean(workspaceId, 120);
+  const slug = clean(moduleSlug, 120);
+  if (!env.DB || !workspace || !slug) return false;
+
+  const module = await env.DB.prepare("SELECT id FROM modules WHERE slug = ? LIMIT 1").bind(slug).first();
+  if (!module?.id) return false;
+
+  const access = await env.DB.prepare(
+    "SELECT status FROM workspace_modules WHERE workspace_id = ? AND module_id = ? LIMIT 1"
+  )
+    .bind(workspace, module.id)
+    .first();
+
+  return access?.status === "active";
 }
 
 export async function addLeadEvent(env, event) {

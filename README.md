@@ -2,6 +2,8 @@
 
 Local working folder for the BOOSTR Labs ecosystem, strategy, prototypes, assets, and implementation foundation.
 
+Architecture note: current production runtime is the root Vite app with Cloudflare Pages Functions and Cloudflare D1. `apps/ecosystem` exists in the repository but is not the current deploy target.
+
 ## Current Direction
 
 BOOSTR Labs is technology infrastructure and intelligence for partners.
@@ -44,10 +46,10 @@ The current text direction layer lives in:
 
 Important docs:
 
-- [Product Architecture](./docs/02_PRODUCT_ARCHITECTURE.md)
-- [Auth, Workspaces, Identity](./docs/03_AUTH_WORKSPACES_IDENTITY.md)
-- [Data Intelligence Engine](./docs/04_DATA_INTELLIGENCE_ENGINE.md)
-- [Modules and Features](./docs/05_MODULES_AND_FEATURES.md)
+- [Product Architecture](./text_direction_update_v1_0/docs/02_PRODUCT_ARCHITECTURE.md)
+- [Auth, Workspaces, Identity](./text_direction_update_v1_0/docs/03_AUTH_WORKSPACES_IDENTITY.md)
+- [Data Intelligence Engine](./text_direction_update_v1_0/docs/04_DATA_INTELLIGENCE_ENGINE.md)
+- [Modules and Features](./text_direction_update_v1_0/docs/05_MODULES_AND_FEATURES.md)
 - [Checkout, Orders, Payments](./docs/06_CHECKOUT_ORDERS_PAYMENTS.md)
 - [Verticals and Pilots](./docs/07_VERTICALS_AND_PILOTS.md)
 - [BOOSTR for Artists](./docs/08_BOOSTR_FOR_ARTISTS.md)

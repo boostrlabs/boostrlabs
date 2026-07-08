@@ -13,6 +13,8 @@ const expectedTables = [
 const schemaStatements = [
   `CREATE TABLE IF NOT EXISTS leads (
     id TEXT PRIMARY KEY,
+    workspace_id TEXT,
+    created_by_user_id TEXT,
     source TEXT NOT NULL DEFAULT 'website',
     contact_name TEXT,
     contact_email TEXT,
@@ -38,6 +40,7 @@ const schemaStatements = [
   "CREATE INDEX IF NOT EXISTS idx_leads_business ON leads(business_name)",
   `CREATE TABLE IF NOT EXISTS audit_submissions (
     id TEXT PRIMARY KEY,
+    workspace_id TEXT,
     source TEXT NOT NULL DEFAULT 'boostr-audit',
     page_url TEXT,
     language TEXT,
@@ -64,6 +67,7 @@ const schemaStatements = [
   "CREATE INDEX IF NOT EXISTS idx_audit_source ON audit_submissions(source)",
   `CREATE TABLE IF NOT EXISTS lead_events (
     id TEXT PRIMARY KEY,
+    workspace_id TEXT,
     lead_id TEXT,
     audit_submission_id TEXT,
     event_type TEXT NOT NULL,
@@ -147,6 +151,11 @@ const schemaStatements = [
 async function initDb(request, env) {
   const auth = managerAuth(request, env);
   if (!auth.ok) return auth.response;
+
+  const allowDbInit = env.ENVIRONMENT === "development" || env.ALLOW_DB_INIT === "true";
+  if (!allowDbInit) {
+    return json({ ok: false, error: "Database initialization is disabled." }, 403);
+  }
 
   if (!env.DB) {
     return json({ ok: false, error: "D1 DB binding missing." }, 503);
