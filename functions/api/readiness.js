@@ -13,6 +13,7 @@ const criticalTables = [
   "sessions",
   "personas",
   "cards",
+  "products",
   "workspace_preferences",
   "activity_events",
   "invite_codes",
@@ -30,6 +31,20 @@ const criticalUserColumns = [
   "signup_source",
   "invite_code_id",
   "onboarding_status"
+];
+
+const criticalProductColumns = [
+  "workspace_id",
+  "title",
+  "product_type",
+  "status",
+  "price_amount",
+  "currency",
+  "description",
+  "asset_status",
+  "fulfillment_type",
+  "requires_account",
+  "allow_guest_checkout"
 ];
 
 async function tableExists(env, table) {
@@ -52,10 +67,11 @@ export async function onRequestGet({ env }) {
   const checks = {
     db_bound: Boolean(env.DB),
     critical_tables: {},
-    critical_columns: { users: {} },
+    critical_columns: { users: {}, products: {} },
     signup_endpoint: true,
     session_endpoint: true,
     dashboard_endpoint: true,
+    product_endpoints: true,
     invite_codes_table: false,
     seeded_invite_codes: false,
     admin_exists: false,
@@ -71,7 +87,7 @@ export async function onRequestGet({ env }) {
       service: "BOOSTR Labs",
       checks,
       required_migrations: requiredMigrations,
-      next_steps: ["Bind Cloudflare D1 as DB before production signup/login QA."]
+      next_steps: ["Bind Cloudflare D1 as DB before production signup/login/product QA."]
     });
   }
 
@@ -98,6 +114,13 @@ export async function onRequestGet({ env }) {
       checks.admin_exists = Boolean(admin?.id);
     }
 
+    if (checks.critical_tables.products) {
+      const productColumns = await columnsFor(env, "products");
+      for (const column of criticalProductColumns) {
+        checks.critical_columns.products[column] = productColumns.includes(column);
+      }
+    }
+
     if (checks.critical_tables.invite_codes) {
       const inviteCount = await env.DB.prepare(
         "SELECT COUNT(*) AS total FROM invite_codes WHERE status = 'active'"
@@ -108,13 +131,17 @@ export async function onRequestGet({ env }) {
     const missingTables = Object.entries(checks.critical_tables)
       .filter(([, exists]) => !exists)
       .map(([name]) => name);
-    const missingColumns = Object.entries(checks.critical_columns.users)
+    const missingUserColumns = Object.entries(checks.critical_columns.users)
       .filter(([, exists]) => !exists)
       .map(([name]) => `users.${name}`);
+    const missingProductColumns = Object.entries(checks.critical_columns.products)
+      .filter(([, exists]) => !exists)
+      .map(([name]) => `products.${name}`);
+    const missingColumns = [...missingUserColumns, ...missingProductColumns];
 
     if (missingTables.length || missingColumns.length) {
       status = "missing_migrations";
-      nextSteps.push("Apply D1 migrations 0010, 0011, and 0012.");
+      nextSteps.push("Apply D1 migrations, including 0008 and 0010-0012.");
       if (missingTables.length) nextSteps.push(`Missing tables: ${missingTables.join(", ")}.`);
       if (missingColumns.length) nextSteps.push(`Missing columns: ${missingColumns.join(", ")}.`);
     }
