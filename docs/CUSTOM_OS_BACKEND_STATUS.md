@@ -11,10 +11,16 @@ Last updated: 2026-07-08
 - Migration `0011_seed_initial_invite_codes.sql` seeds three founder-approved Secret BOOSTR Codes as salted hashes only.
 - Migration `0012_signup_workspace_bootstrap.sql` adds username, phone, signup source, invite-code linkage and onboarding fields to users.
 - Migration `0013_operational_80_foundation.sql` adds invite-token acceptance fields, `workspace_files`, and `invoices`.
-- `GET /api/readiness` checks D1 binding, migrations through 0013, critical tables/columns, admin existence and bootstrap-key availability.
+- Migration `0014_auth_recovery_verification.sql` adds password reset and email verification token fields.
+- `GET /api/readiness` checks D1 binding, migrations through 0014, critical tables/columns, admin existence and bootstrap-key availability.
 - `POST /api/admin/bootstrap` safely creates the first admin only when `BOOSTR_ADMIN_BOOTSTRAP_KEY` is configured and no active admin exists.
 - `/admin/readiness` provides an internal readiness console for launch QA and first-admin bootstrap.
-- `scripts/launch-smoke-test.mjs` provides configurable PASS/FAIL/SKIPPED launch smoke testing.
+- `POST /api/password-reset/request` prepares a password reset token without leaking whether the email exists.
+- `POST /api/password-reset/confirm` validates reset token, sets password, revokes old sessions and creates a new session.
+- `/forgot-password` is the public password reset UI.
+- `POST /api/email-verification/request` prepares an email verification token for the current session.
+- `POST /api/email-verification/confirm` verifies the email and clears the verification token.
+- `/verify-email` is the public email verification UI.
 - `POST /api/invitations/accept` accepts claimed-audit client invites, sets password, activates the invited user and creates a session.
 - `/accept-invite` is the public invite acceptance UI.
 - `POST /api/audit/:id/claim` lets admin/manager claim an audit into a real workspace, create an invited client user with invite token when email exists, create persona/preferences, move audit/lead/cards/events, and generate first action cards.
@@ -25,7 +31,6 @@ Last updated: 2026-07-08
 - `GET/POST /api/products` lists and creates real workspace products/services.
 - `GET/PATCH/DELETE /api/products/:id` reads, updates and archives workspace products with workspace access control.
 - `/app/products` provides a first real product workspace UI for creating services, digital products, physical products, bookings, licenses, memberships and auction-later products.
-- Product health scoring flags missing price, missing description, missing fulfillment and account-rule conflicts.
 - `GET/POST /api/payment-links` lists and creates real workspace Smart Links from products.
 - `GET/PATCH/DELETE /api/payment-links/:id` reads, updates and archives Smart Links.
 - `GET /api/public/payment-links/:id` returns a public active Smart Link offer without exposing private workspace data.
@@ -40,7 +45,7 @@ Last updated: 2026-07-08
 - `GET/POST /api/invoices` lists and creates manual pre-Stripe invoice records.
 - `GET/PATCH/DELETE /api/invoices/:id` reads, updates and archives invoices.
 - `/app/invoices` is now a real manual invoice view.
-- `/api/health` reports invite acceptance, intelligence, files and invoice surfaces under version `0.3.7-operational-80-foundation`.
+- `/api/health` reports invite acceptance, auth recovery, email verification, intelligence, files and invoice surfaces under version `0.3.8-auth-recovery-verification`.
 - Session auth exists through `sessions`, `users`, `workspace_members`, `/api/session`, `/api/session/dev`, `/api/me`, and `/api/workspaces`.
 - `POST /api/session` accepts email, username, or phone as `identifier`.
 - `POST /api/signup` creates a user, workspace, workspace member, persona, preferences, first-run cards, activity event and session.
@@ -53,7 +58,9 @@ Last updated: 2026-07-08
 
 ## Partially Implemented
 
-- Invite acceptance works through token links returned by manager claim, but email delivery is not implemented.
+- Invite acceptance, password reset and email verification work through token links, but email delivery is not implemented.
+- Password reset request returns a debug link only when `ENVIRONMENT=development` or `ALLOW_DEBUG_AUTH_LINKS=true`.
+- Email verification request returns a debug link only when `ENVIRONMENT=development` or `ALLOW_DEBUG_AUTH_LINKS=true`.
 - Intelligence Engine V1 is rule-based. It reads real workspace state and creates action cards; it does not use an LLM yet.
 - Files store metadata/URLs, not binary uploads.
 - Invoices are manual pre-Stripe records, not paid invoice/payment processor records.
@@ -63,9 +70,7 @@ Last updated: 2026-07-08
 
 ## Missing
 
-- Email verification.
-- Password reset flow.
-- Email delivery for invite links.
+- Email delivery for invite, reset and verification links.
 - Real Stripe checkout, webhooks, payouts, refunds, or paid orders.
 - Paid order conversion from reservation to completed order.
 - Binary file upload/storage.
@@ -74,9 +79,10 @@ Last updated: 2026-07-08
 
 ## Risks
 
-- Remote D1 must apply migrations through `0013_operational_80_foundation.sql` before invite acceptance/files/invoices are operational.
-- Product, Smart Link, audit claim, intelligence, files and invoices require earlier migrations `0006`, `0008`, `0009`, `0010`, `0011`, `0012`, and `0013`.
+- Remote D1 must apply migrations through `0014_auth_recovery_verification.sql` before auth recovery/email verification are operational.
+- Product, Smart Link, audit claim, intelligence, files, invoices and auth recovery require earlier migrations `0006`, `0008`, `0009`, `0010`, `0011`, `0012`, `0013`, and `0014`.
 - `BOOSTR_ADMIN_BOOTSTRAP_KEY` must be configured in Cloudflare before first-admin bootstrap.
+- Debug auth links must stay disabled in production unless intentionally used for controlled QA.
 - Smoke tests create real test users/products/links/reservations when full test env vars are supplied.
 - Existing `cards.status` CHECK does not include `follow_up`; action logs preserve `follow_up` while status uses an allowed value.
 - Smart Links and invoices are real records, but payment processing is still not implemented.
@@ -86,13 +92,15 @@ Last updated: 2026-07-08
 
 ## Next Steps
 
-1. Apply D1 migrations remotely through `0013_operational_80_foundation.sql` and test `/api/readiness`.
+1. Apply D1 migrations remotely through `0014_auth_recovery_verification.sql` and test `/api/readiness`.
 2. Configure `BOOSTR_ADMIN_BOOTSTRAP_KEY` in Cloudflare.
 3. Bootstrap first admin through `/admin/readiness`.
 4. Test `/manager/leads` audit claim → invite link → `/accept-invite` → `/app`.
-5. Test `/app/intelligence` summary and card generation.
-6. Test `/app/files` create/list/archive.
-7. Test `/app/invoices` create/list/archive.
-8. Test `/app/products` → `/manager/payment-links` → `/pay/:id` → `/app/orders`.
-9. Add email delivery for invite/password flows.
-10. Add paid order conversion once Stripe/business setup is ready.
+5. Test `/forgot-password` with debug links enabled only for QA.
+6. Test `/verify-email` with debug links enabled only for QA.
+7. Test `/app/intelligence` summary and card generation.
+8. Test `/app/files` create/list/archive.
+9. Test `/app/invoices` create/list/archive.
+10. Test `/app/products` → `/manager/payment-links` → `/pay/:id` → `/app/orders`.
+11. Add email delivery provider for invite/password/verification flows.
+12. Add paid order conversion once Stripe/business setup is ready.
