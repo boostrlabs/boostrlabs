@@ -111,7 +111,7 @@ export async function onRequestPost({ request, env }) {
   const code = normalizeCode(parsed.payload?.code);
   const source = clean(parsed.payload?.source || "audit_entry", 80);
   if (!code) return jsonError("code_required", "Secret BOOSTR code is required.", 400);
-  if (code.length < 4) return jsonOk({ valid: false }, 200);
+  if (code.length < 2) return jsonOk({ valid: false }, 200);
 
   const ip = getIp(request);
   const userAgent = getUa(request);
