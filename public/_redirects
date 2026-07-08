@@ -8,6 +8,8 @@
 /modules/*     /modules/index.html          200
 /login         /login/index.html            200
 /login/*       /login/index.html            200
+/signup        /signup/index.html           200
+/signup/*      /signup/index.html           200
 /demo/janko-os /demo/janko-os/index.html    200
 /demo/janko-os/* /demo/janko-os/index.html  200
 /janko-os-demo /demo/janko-os/index.html    200
