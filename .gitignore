@@ -9,3 +9,4 @@ apps/*/tsconfig.tsbuildinfo
 .env.local
 apps/*/.env
 apps/*/.env.local
+.aider*
