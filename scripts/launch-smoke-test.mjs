@@ -6,6 +6,7 @@ const results = [];
 let authToken = "";
 let createdUser = null;
 let createdProductId = "";
+let createdPaymentLinkId = "";
 
 const env = (name) => String(process.env[name] || "").trim();
 const mark = (name, status, detail = "") => {
@@ -126,7 +127,7 @@ await check("POST /api/products", async () => {
   const { res, json } = await call("/api/products", { method: "POST", body: {
     title: `Smoke Test Service ${runId}`,
     product_type: "service",
-    status: "draft",
+    status: "active",
     price_amount: 15000,
     currency: "USD",
     description: "Launch smoke test product.",
@@ -148,6 +149,58 @@ await check("PATCH /api/products/:id", async () => {
   if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
   if (json.product?.status !== "active") throw new Error("product did not become active");
   mark("PATCH /api/products/:id", "PASS", "active");
+});
+
+await check("POST /api/payment-links", async () => {
+  if (!createdProductId) return mark("POST /api/payment-links", "SKIPPED", "product not created");
+  const { res, json } = await call("/api/payment-links", { method: "POST", body: {
+    product_id: createdProductId,
+    title: `Smoke Smart Link ${runId}`,
+    status: "active",
+    checkout_mode: "reservation",
+    metadata: { source: "launch_smoke_test" }
+  }});
+  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
+  if (!json.payment_link?.id) throw new Error("missing payment link id");
+  createdPaymentLinkId = json.payment_link.id;
+  mark("POST /api/payment-links", "PASS", json.payment_link.public_url || createdPaymentLinkId);
+});
+
+await check("GET /api/public/payment-links/:id", async () => {
+  if (!createdPaymentLinkId) return mark("GET /api/public/payment-links/:id", "SKIPPED", "payment link not created");
+  const previousToken = authToken;
+  authToken = "";
+  const { res, json } = await call(`/api/public/payment-links/${createdPaymentLinkId}`);
+  authToken = previousToken;
+  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
+  if (!json.payment_link?.id) throw new Error("missing public payment link");
+  mark("GET /api/public/payment-links/:id", "PASS", json.payment_link.title || createdPaymentLinkId);
+});
+
+await check("POST /api/order-reservations", async () => {
+  if (!createdPaymentLinkId) return mark("POST /api/order-reservations", "SKIPPED", "payment link not created");
+  const previousToken = authToken;
+  authToken = "";
+  const { res, json } = await call("/api/order-reservations", { method: "POST", body: {
+    payment_link_id: createdPaymentLinkId,
+    customer_name: "BOOSTR Smoke Buyer",
+    guest_email: `buyer+${runId}@example.com`,
+    customer_contact: "smoke-test",
+    note: "Smoke test reservation",
+    source: "launch_smoke_test"
+  }});
+  authToken = previousToken;
+  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
+  if (!json.reservation?.id) throw new Error("missing reservation id");
+  mark("POST /api/order-reservations", "PASS", json.reservation.status || "reserved");
+});
+
+await check("GET /api/order-reservations", async () => {
+  if (!authToken) return mark("GET /api/order-reservations", "SKIPPED", "no auth token");
+  const { res, json } = await call("/api/order-reservations");
+  if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
+  if (!Array.isArray(json.reservations)) throw new Error("missing reservations array");
+  mark("GET /api/order-reservations", "PASS", `${json.reservations.length} reservations`);
 });
 
 const failed = results.filter((item) => item.status === "FAIL");
