@@ -38,6 +38,17 @@ async function sessionPayload(env, auth) {
       );
 
   const modules = await moduleQuery.all();
+  const personas = activeWorkspaceId
+    ? await env.DB.prepare(
+        `SELECT id, workspace_id, user_id, persona_type, display_name, status, metadata_json, created_at, updated_at
+         FROM personas
+         WHERE workspace_id = ?
+           AND (user_id = ? OR ? IN ('admin', 'manager'))
+         ORDER BY created_at ASC`
+      )
+        .bind(activeWorkspaceId, auth.user.id, activeMembership?.role || auth.roles[0] || auth.user.role)
+        .all()
+    : { results: [] };
 
   return {
     user: auth.user,
@@ -58,6 +69,7 @@ async function sessionPayload(env, auth) {
           slug: activeMembership?.workspace_slug || null
         }
       : null,
+    personas: personas.results || [],
     visible_modules: modules.results || []
   };
 }

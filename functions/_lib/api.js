@@ -57,7 +57,17 @@ export const requireDb = (env) => {
   return { ok: true };
 };
 
-export const authRoles = new Set(["admin", "manager", "partner", "client", "artist"]);
+export const authRoles = new Set([
+  "admin",
+  "manager",
+  "partner",
+  "client",
+  "artist",
+  "producer",
+  "creator",
+  "seller",
+  "agent_later"
+]);
 
 const parseCookies = (request) => {
   const header = request.headers.get("Cookie") || "";

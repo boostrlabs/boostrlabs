@@ -1,4 +1,5 @@
 import { addLeadEvent, clean, getIp, getUa, isValidEmail, isValidPhone, json, jsonError, normalizeArray, readJson } from "../_lib/api.js";
+import { createAuditCards } from "../_lib/custom-os.js";
 
 const inferContact = (payload) => {
   const free = clean(payload.contact || payload.contact_info || payload.free || payload.link || payload.website || payload.social || payload.business_link, 500);
@@ -72,6 +73,17 @@ const buildAuditRecord = (payload, request) => {
     traffic,
     signals,
     recommended_modules: [...modules],
+    audit: {
+      identity,
+      futureIdentity,
+      currentMoney,
+      futureMoney,
+      assets,
+      frictions,
+      traffic,
+      stage,
+      raw: answers
+    },
     answers_json: JSON.stringify({
       identity,
       futureIdentity,
@@ -93,15 +105,19 @@ async function storeAudit(env, record) {
   if (!env.DB) return { stored: false, error: "d1_binding_missing" };
 
   try {
+    const workspaceId = await ensureIntakeWorkspace(env, record.created_at);
+    record.workspace_id = workspaceId;
+
     await env.DB.prepare(
       `INSERT INTO audit_submissions (
-        id, source, page_url, language, contact_name, contact_email, contact_phone, contact_raw,
+        id, workspace_id, source, page_url, language, contact_name, contact_email, contact_phone, contact_raw,
         business_name, industry, stage, traffic, signals, recommended_modules, answers_json,
         ip, user_agent, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
     )
       .bind(
         record.id,
+        workspaceId,
         record.source,
         record.page_url,
         record.language,
@@ -125,13 +141,14 @@ async function storeAudit(env, record) {
 
     await env.DB.prepare(
       `INSERT INTO leads (
-        id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
+        id, workspace_id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
         business_name, industry, project_goal, budget_range, timeline, current_status,
         message, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
     )
       .bind(
         record.id,
+        workspaceId,
         "boostr-audit",
         record.contact_name || "Audit Lead",
         record.contact_email,
@@ -155,6 +172,7 @@ async function storeAudit(env, record) {
       .run();
 
     await addLeadEvent(env, {
+      workspace_id: workspaceId,
       lead_id: record.id,
       audit_submission_id: record.id,
       event_type: "audit.submitted",
@@ -167,11 +185,29 @@ async function storeAudit(env, record) {
       created_at: record.created_at
     });
 
-    return { stored: true };
+    const cards = await createAuditCards(env, record);
+
+    return { stored: true, cards_created: cards.length };
   } catch (error) {
     console.error("BOOSTR Audit storage error", error);
     return { stored: false, error: "audit_storage_failed" };
   }
+}
+
+async function ensureIntakeWorkspace(env, timestamp) {
+  const existing = await env.DB.prepare("SELECT id FROM workspaces WHERE slug = 'boostr-intake' LIMIT 1").first();
+  if (existing?.id) return existing.id;
+
+  const id = crypto.randomUUID();
+  await env.DB.prepare(
+    `INSERT INTO workspaces (
+      id, type, name, slug, owner_email, status, created_at, updated_at
+    ) VALUES (?, 'internal', 'BOOSTR Intake', 'boostr-intake', 'boostrlabs@gmail.com', 'active', ?, ?)`
+  )
+    .bind(id, timestamp, timestamp)
+    .run();
+
+  return id;
 }
 
 export async function onRequestOptions() {
@@ -226,6 +262,7 @@ export async function onRequestPost({ request, env }) {
       ok: true,
       id: record.id,
       stored: storage.stored,
+      cards_created: storage.cards_created || 0,
       recommended_modules: record.recommended_modules
     });
   } catch (error) {

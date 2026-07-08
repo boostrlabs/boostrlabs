@@ -41,6 +41,7 @@ export async function onRequestPost({ request, env }) {
   if (!authRoles.has(role)) return jsonError("invalid_role", "Role is not supported.", 400, { fields: ["role"] });
 
   const timestamp = now();
+  const membershipRole = ["admin", "manager", "partner", "client", "artist"].includes(role) ? role : "client";
   let workspaceId = clean(payload.workspace_id, 120);
   const workspaceSlug = clean(payload.workspace_slug || "boostr-internal", 120);
   let workspace = workspaceId
@@ -109,8 +110,46 @@ export async function onRequestPost({ request, env }) {
       status = 'active',
       updated_at = excluded.updated_at`
   )
-    .bind(crypto.randomUUID(), workspaceId, userId, role, timestamp, timestamp)
+    .bind(crypto.randomUUID(), workspaceId, userId, membershipRole, timestamp, timestamp)
     .run();
+
+  const existingPersona = await env.DB.prepare(
+    "SELECT id FROM personas WHERE workspace_id = ? AND user_id = ? AND persona_type = ? LIMIT 1"
+  )
+    .bind(workspaceId, userId, role)
+    .first();
+
+  if (existingPersona?.id) {
+    await env.DB.prepare(
+      `UPDATE personas
+       SET display_name = ?, status = 'active', metadata_json = ?, updated_at = ?
+       WHERE id = ?`
+    )
+      .bind(
+        clean(payload.display_name || payload.name || email, 160),
+        JSON.stringify({ bootstrap: true, membership_role: membershipRole }),
+        timestamp,
+        existingPersona.id
+      )
+      .run();
+  } else {
+    await env.DB.prepare(
+      `INSERT INTO personas (
+        id, workspace_id, user_id, persona_type, display_name, status, metadata_json, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)`
+    )
+      .bind(
+        crypto.randomUUID(),
+        workspaceId,
+        userId,
+        role,
+        clean(payload.display_name || payload.name || email, 160),
+        JSON.stringify({ bootstrap: true, membership_role: membershipRole }),
+        timestamp,
+        timestamp
+      )
+      .run();
+  }
 
   const session = await createSession(env, request, userId, workspaceId);
   return json(
@@ -120,7 +159,8 @@ export async function onRequestPost({ request, env }) {
       expires_at: session.expires_at,
       user_id: userId,
       workspace_id: workspaceId,
-      role
+      role,
+      membership_role: membershipRole
     },
     201,
     { "Set-Cookie": sessionCookie(session.token, request) }

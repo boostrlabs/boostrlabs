@@ -8,7 +8,7 @@ Status: VERIFIED / UPDATED 2026-07-08
 - Local `main` is ahead of `origin/main` and behind `origin/main`; the auth work is not verified as pushed or merged.
 - Current worktree has unresolved frontend/i18n merge conflicts outside this backend pass.
 - Remote D1 database: `boostr_labs_core`.
-- Remote migrations were applied through `0007_user_password_sessions.sql`; no pending remote migrations were reported in the last check.
+- Remote migrations were applied through `0008_custom_os_card_engine.sql`; no pending remote migrations were reported in the last check.
 
 ## Implemented
 
@@ -18,6 +18,7 @@ Status: VERIFIED / UPDATED 2026-07-08
 - `workspace_modules` exists in `migrations/0003_workspace_modules.sql`.
 - `workspace_members` and `sessions` exist in `migrations/0006_auth_workspace_foundation.sql`.
 - `users.password_hash`, `users.password_set_at`, and `users.last_login_at` exist in `migrations/0007_user_password_sessions.sql`.
+- Custom OS tables exist in `migrations/0008_custom_os_card_engine.sql`: `personas`, `cards`, `human_needs`, `products`, `pilot_profiles`, `payment_links`, and `order_reservations`.
 - `functions/_lib/api.js` includes `requireSession()`, `requireRole()`, `requireWorkspaceAccess()`, `jsonOk()`, and `jsonError()`.
 - `requireSession()` accepts bearer token, `X-BOOSTR-Session`, or `boostr_session` cookie and checks `sessions.session_token_hash`.
 - `POST /api/session` logs in users with email/password and issues a D1-backed session token.
@@ -40,6 +41,9 @@ Status: VERIFIED / UPDATED 2026-07-08
 - Workspace smart-links and artist-profile read endpoints require session and workspace access.
 - Workspace smart-links and artist-profile write/deactivate endpoints require admin/manager role.
 - Active API errors now use stable snake_case codes through `jsonError()`.
+- `GET/POST /api/cards`, `GET/PATCH /api/cards/:id`, `POST /api/cards/:id/action`, and `GET /api/workspaces/:workspace_id/cards` exist.
+- `GET/POST /api/human-needs` and `GET /api/human-needs/latest` exist.
+- `POST /api/audit` now creates scoped cards in the internal BOOSTR Intake workspace.
 
 ## Not Implemented
 
@@ -47,6 +51,8 @@ Status: VERIFIED / UPDATED 2026-07-08
 - Partner referral scoping beyond workspace membership.
 - Permission policy table.
 - Files, invoices, Stripe, and payment auth scope.
+- Product/payment-link write APIs.
+- Public demo workspace access contract.
 - Real production seed for first admin/manager user and session.
 
 ## Manager PIN Status
@@ -103,10 +109,10 @@ Development bridge test:
 
 ## D1 Migration Status
 
-- Migration files present: `0001_boostr_core.sql` through `0007_user_password_sessions.sql`.
+- Migration files present: `0001_boostr_core.sql` through `0008_custom_os_card_engine.sql`.
 - Remote database name: `boostr_labs_core`.
 - Last remote check reported no pending migrations.
 
 ## Next Backend Step
 
-Seed the first production admin/manager account, then add invite/password reset flow.
+Seed the first production admin/manager account, then add product/payment-link write APIs and invite/password reset flow.

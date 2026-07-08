@@ -10,7 +10,14 @@ const expectedTables = [
   "sessions",
   "modules",
   "workspace_modules",
-  "orders"
+  "orders",
+  "personas",
+  "cards",
+  "human_needs",
+  "products",
+  "pilot_profiles",
+  "payment_links",
+  "order_reservations"
 ];
 
 export async function onRequestGet({ env }) {
@@ -89,7 +96,13 @@ export async function onRequestGet({ env }) {
       "/api/leads/:id",
       "/api/events",
       "/api/modules",
-      "/api/orders"
+      "/api/orders",
+      "/api/cards",
+      "/api/cards/:id",
+      "/api/cards/:id/action",
+      "/api/human-needs",
+      "/api/human-needs/latest",
+      "/api/workspaces/:workspace_id/cards"
     ]
   });
 }
