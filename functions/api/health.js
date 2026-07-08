@@ -35,6 +35,8 @@ export async function onRequestGet({ env }) {
     orders_total: null,
     events_total: null,
     invite_codes_total: null,
+    users_total: null,
+    workspaces_total: null,
     last_lead: null,
     last_audit: null
   };
@@ -80,6 +82,14 @@ export async function onRequestGet({ env }) {
         const inviteCodesTotal = await env.DB.prepare("SELECT COUNT(*) AS total FROM invite_codes").first();
         metrics.invite_codes_total = inviteCodesTotal?.total ?? 0;
       }
+      if (db.tables.includes("users")) {
+        const usersTotal = await env.DB.prepare("SELECT COUNT(*) AS total FROM users").first();
+        metrics.users_total = usersTotal?.total ?? 0;
+      }
+      if (db.tables.includes("workspaces")) {
+        const workspacesTotal = await env.DB.prepare("SELECT COUNT(*) AS total FROM workspaces").first();
+        metrics.workspaces_total = workspacesTotal?.total ?? 0;
+      }
     } catch (error) {
       db.error = "D1 binding exists but query failed. Run migrations.";
     }
@@ -88,12 +98,20 @@ export async function onRequestGet({ env }) {
   return json({
     ok: true,
     service: "BOOSTR Labs API",
-    version: "0.3.1-secret-code",
+    version: "0.3.2-signup-bootstrap",
     db,
     metrics,
     manager: {
       pin_configured: Boolean(env.MANAGER_PIN || env.ADMIN_PIN),
       pin_fallback_enabled: env.ENVIRONMENT === "development" || env.ALLOW_MANAGER_PIN_FALLBACK === "true"
+    },
+    signup: {
+      endpoint: "/api/signup",
+      username_check: "/api/signup/check-username",
+      dashboard: "/api/dashboard",
+      creates_workspace: true,
+      creates_default_cards: true,
+      increments_invite_usage_after_signup: true
     },
     secret_code: {
       endpoint: "/api/invite-codes/validate",
@@ -122,6 +140,9 @@ export async function onRequestGet({ env }) {
       "/api/notifications/:id",
       "/api/activity",
       "/api/session",
+      "/api/signup",
+      "/api/signup/check-username",
+      "/api/dashboard",
       "/api/workspaces",
       "/api/db-init",
       "/api/audit",
