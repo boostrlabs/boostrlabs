@@ -20,10 +20,20 @@ Last updated: 2026-07-08
 - Public `POST /api/audit` remains public, stores audit and lead rows, attaches the internal `BOOSTR Intake` workspace, and creates cards.
 - Public `GET /api/demo/janko-os` returns static safe demo data only.
 - Product/payment readiness tables exist without Stripe or paid-order logic.
+- Migration `0009_app_normal_surfaces.sql` adds profile fields, contact methods, workspace preferences, API token metadata, notifications, and activity events.
+- `GET/PATCH /api/profile` exists.
+- `GET/POST /api/profile/contacts`, `PATCH/DELETE /api/profile/contacts/:id` exist.
+- `GET /api/personas`, `PATCH /api/personas/:id`, and `POST /api/personas/switch` exist.
+- `GET/PATCH /api/workspace-preferences` exists.
+- `GET /api/security`, `POST /api/security/change-password`, `GET /api/security/sessions`, `DELETE /api/security/sessions/:id`, and `POST /api/security/logout-all` exist.
+- `GET /api/integrations/api-tokens` returns metadata only; create/delete return `501`.
+- `GET/PATCH /api/notifications` and `GET/POST /api/activity` exist.
+- `POST /api/cards/:id/action` now writes `activity_events` and can create safe notifications for follow-up/asset actions.
+- HTML pages without `i18n.js` or `console.js` receive the minimal `language-engine.js` through Pages middleware.
 
 ## Partially Implemented
 
-- Personas exist and can be bootstrapped through dev session, but production persona management endpoints do not exist.
+- Personas exist, can be bootstrapped through dev session, and can be listed, updated, and switched. Production persona creation is still pending.
 - Cards can be created, filtered, patched, and acted on, but there is no full workflow engine.
 - Human need logic creates priority cards for cash, manage, feel_artist, feel_business, boost_product, boost_music, and boost_partners.
 - Audit generates lead, asset_request, next_to_boost, payment readiness, and module insight cards.
@@ -40,6 +50,7 @@ Last updated: 2026-07-08
 - Public payment-link offer endpoint.
 - Real Stripe checkout, webhooks, payouts, refunds, or paid orders.
 - Card assignment notifications.
+- Notification delivery is in-app only; no email/push delivery exists.
 - Files and invoices.
 - Cross-workspace reporting.
 
@@ -50,6 +61,8 @@ Last updated: 2026-07-08
 - Admin/manager can see operational cards across workspaces by design.
 - Product/payment tables are readiness models only until APIs and Stripe rules are added.
 - Public Audit writes into internal intake workspace; claim/move logic is not built yet.
+- API token creation is intentionally blocked until secure token hashing/storage is implemented.
+- Language middleware injects only the minimal ES/EN runtime; branded pages are not manually edited.
 
 ## Next Steps
 

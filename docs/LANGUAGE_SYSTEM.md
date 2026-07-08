@@ -26,13 +26,17 @@ BOOSTR can be English or Spanish, but a visible screen should not mix both unles
 ## Implemented files
 
 - `public/assets/boostr-mother/i18n.js`
+- `public/assets/boostr-mother/language-engine.js`
 - `public/assets/boostr-mother/i18n/en.json`
 - `public/assets/boostr-mother/i18n/es.json`
 - `public/assets/boostr-mother/console.js`
+- `functions/_middleware.js`
 
 ## EN / ES toggle
 
 Pages loading `i18n.js` or `console.js` should show a compact `EN / ES` toggle.
+
+Pages that do not load either runtime receive `language-engine.js` through Pages middleware. This is language-only coverage; it does not add the full console effects.
 
 Behavior:
 

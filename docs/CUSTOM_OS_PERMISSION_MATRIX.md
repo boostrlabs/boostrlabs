@@ -34,12 +34,21 @@ No private workspace data is returned without session auth and workspace access.
 | `POST /api/human-needs` | Required | Workspace scoped; creates cards. |
 | `GET /api/human-needs` | Required | Admin/manager see operational needs; others see own needs. |
 | `GET /api/human-needs/latest` | Required | Same as human-needs list. |
+| `GET/PATCH /api/profile` | Required | Own profile only. |
+| `/api/profile/contacts*` | Required | Own contacts; workspace access required for scoped contacts. |
+| `/api/personas*` | Required | Workspace access; non-admin users see own personas. |
+| `GET/PATCH /api/workspace-preferences` | Required | Workspace scoped. |
+| `/api/security*` | Required | Own account/session metadata only. |
+| `GET /api/integrations/api-tokens` | Required | Own token metadata only. |
+| `/api/notifications*` | Required | Workspace scoped; non-admin users see own or broadcast notifications. |
+| `/api/activity*` | Required | Workspace scoped; non-admin users see own or broadcast events. |
 | `POST /api/audit` | Public | Stores audit/lead/cards in internal intake workspace. |
+| `GET /api/demo/janko-os` | Public | Static safe demo data only. |
 
 ## Current Limits
 
 - `workspace_members.role` still supports the original account roles.
 - Expanded roles are supported as `personas.persona_type`.
-- Public demo access is not enabled.
+- Public demo access is static and safe only.
 - Payment-link tables do not imply paid status.
 - No Stripe live credentials or payment processing exists in this layer.

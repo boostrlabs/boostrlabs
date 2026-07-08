@@ -17,7 +17,12 @@ const expectedTables = [
   "products",
   "pilot_profiles",
   "payment_links",
-  "order_reservations"
+  "order_reservations",
+  "user_contact_methods",
+  "workspace_preferences",
+  "api_tokens",
+  "notifications",
+  "activity_events"
 ];
 
 export async function onRequestGet({ env }) {
@@ -86,6 +91,23 @@ export async function onRequestGet({ env }) {
     endpoints: [
       "/api/health",
       "/api/me",
+      "/api/profile",
+      "/api/profile/contacts",
+      "/api/profile/contacts/:id",
+      "/api/personas",
+      "/api/personas/:id",
+      "/api/personas/switch",
+      "/api/workspace-preferences",
+      "/api/security",
+      "/api/security/change-password",
+      "/api/security/sessions",
+      "/api/security/sessions/:id",
+      "/api/security/logout-all",
+      "/api/integrations/api-tokens",
+      "/api/integrations/api-tokens/:id",
+      "/api/notifications",
+      "/api/notifications/:id",
+      "/api/activity",
       "/api/session",
       "/api/workspaces",
       "/api/db-init",

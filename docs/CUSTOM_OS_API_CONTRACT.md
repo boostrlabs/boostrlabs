@@ -16,11 +16,164 @@ Last updated: 2026-07-08
 
 Returns current user, active workspace, memberships, roles, and active workspace personas.
 
+## Profile
+
+`GET /api/profile`
+
+Auth required. Returns:
+
+- user id
+- display name
+- email
+- avatar_url
+- default_workspace_id
+- default_persona_id
+- language
+- timezone
+- theme
+- created_at
+- updated_at
+
+`PATCH /api/profile`
+
+Auth required. Supported fields:
+
+- `display_name`
+- `avatar_url`
+- `default_workspace_id`
+- `default_persona_id`
+- `language`
+- `timezone`
+- `theme`
+
+Password hashes and secrets are never returned.
+
+## Contact Methods
+
+`GET /api/profile/contacts`
+
+Auth required. Optional `workspace_id`.
+
+`POST /api/profile/contacts`
+
+Auth required.
+
+Contact types:
+
+- `artist_email`
+- `business_email`
+- `personal_phone`
+- `business_phone`
+- `whatsapp`
+- `instagram`
+- `website`
+- `smart_link`
+
+Visibility values:
+
+- `private`
+- `workspace`
+- `public_profile`
+
+`PATCH /api/profile/contacts/:id`
+
+Auth required. User-owned contact only.
+
+`DELETE /api/profile/contacts/:id`
+
+Auth required. User-owned contact only.
+
 ## Workspaces
 
 `GET /api/workspaces`
 
 Returns workspaces visible to the current session.
+
+## Personas
+
+`GET /api/personas`
+
+Auth required. Workspace scoped.
+
+`PATCH /api/personas/:id`
+
+Auth required. Workspace and owner scoped. Supports `display_name`, `status`, and `metadata`.
+
+`POST /api/personas/switch`
+
+Auth required. Stores the preferred persona on the profile and returns active persona, visible modules, and persona-relevant cards.
+
+## Workspace Preferences
+
+`GET /api/workspace-preferences`
+
+Auth required. Workspace scoped.
+
+`PATCH /api/workspace-preferences`
+
+Auth required. Workspace scoped. Supports:
+
+- `default_mode`
+- `default_persona_id`
+- `default_language`
+- `card_density`
+- `show_demo_labels`
+- `reduce_motion`
+- `notification_preferences`
+
+## Security
+
+`GET /api/security`
+
+Auth required. Returns safe account security metadata.
+
+`POST /api/security/change-password`
+
+Auth required. Requires `current_password` and `new_password`. Never returns password hashes.
+
+`GET /api/security/sessions`
+
+Auth required. Returns session metadata only: id, masked IP, user agent summary, created_at, last_seen_at.
+
+`DELETE /api/security/sessions/:id`
+
+Auth required. Revokes a user-owned session.
+
+`POST /api/security/logout-all`
+
+Auth required. Revokes other sessions and keeps the current session active.
+
+## Integrations
+
+`GET /api/integrations/api-tokens`
+
+Auth required. Returns token metadata only. No plaintext token is returned.
+
+`POST /api/integrations/api-tokens`
+
+Auth required. Returns `501 api_token_creation_not_implemented`.
+
+`DELETE /api/integrations/api-tokens/:id`
+
+Auth required. Returns `501 api_token_delete_not_implemented`.
+
+## Notifications And Activity
+
+`GET /api/notifications`
+
+Auth required. Workspace scoped.
+
+`PATCH /api/notifications/:id`
+
+Auth required. Marks notification `read`, `unread`, or `archived`.
+
+`GET /api/activity`
+
+Auth required. Workspace scoped.
+
+`POST /api/activity`
+
+Auth required. Workspace scoped. Creates a manual activity event.
 
 ## Cards
 
@@ -121,6 +274,8 @@ Allowed `action_type` values:
 - `later`
 - `follow_up`
 - `done`
+- `pin`
+- `archive`
 - `create_payment_link_later`
 - `request_asset`
 - `open_module`
@@ -131,7 +286,9 @@ Behavior:
 - maps to allowed card status unless `status` is supplied
 - updates card
 - writes `lead_events.event_type = card.action`
-- returns updated card
+- writes `activity_events.event_type = card.action`
+- may create a safe in-app notification for follow-up or asset requests
+- returns updated card plus event metadata
 
 `GET /api/workspaces/:workspace_id/cards`
 
@@ -225,6 +382,21 @@ Response includes:
 - `products`
 - `health`
 - `actions`
+- `contact_methods`
+- `preferences`
+- `security`
+- `api_tokens`
+- `notifications`
+- `activity`
+
+## Language Runtime
+
+The ecosystem supports `en` and `es`.
+
+- Pages using `i18n.js` use keyed dictionaries.
+- Pages using `console.js` use the shared BOOSTR runtime.
+- Pages without either runtime receive `language-engine.js` through Pages middleware.
+- The selected language persists in `localStorage.boostr_lang`.
 
 ## Product And Payment Readiness
 

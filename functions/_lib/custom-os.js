@@ -64,6 +64,8 @@ export const actionTypes = new Set([
   "later",
   "follow_up",
   "done",
+  "pin",
+  "archive",
   "create_payment_link_later",
   "request_asset",
   "open_module"
@@ -74,7 +76,9 @@ export const statusForAction = (action, suppliedStatus) => {
   if (requested) return requested;
   if (action === "approve") return "approved";
   if (action === "reject") return "rejected";
+  if (action === "archive") return "archived";
   if (action === "later" || action === "follow_up" || action === "create_payment_link_later") return "later";
+  if (action === "pin") return "read";
   if (action === "request_asset") return "unread";
   if (action === "open_module") return "read";
   return "done";

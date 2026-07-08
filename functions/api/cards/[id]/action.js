@@ -1,4 +1,5 @@
 import { addLeadEvent, clean, json, jsonError, now, readJson, requireDb, requireRole, requireWorkspaceAccess } from "../../../_lib/api.js";
+import { recordActivity } from "../../../_lib/app-normal.js";
 import { actionTypes, cardStatuses, customOsRoles, statusForAction, updateCard } from "../../../_lib/custom-os.js";
 
 export async function onRequestOptions() {
@@ -13,7 +14,7 @@ export async function onRequestPost({ request, env, params }) {
   if (!auth.ok) return auth.response;
 
   const id = clean(params.id, 120);
-  const card = await env.DB.prepare("SELECT id, workspace_id, user_id, owner_user_id, owner_role, status FROM cards WHERE id = ? LIMIT 1")
+  const card = await env.DB.prepare("SELECT id, workspace_id, user_id, persona_id, owner_user_id, owner_role, status, title FROM cards WHERE id = ? LIMIT 1")
     .bind(id)
     .first();
   if (!card?.id) return jsonError("card_not_found", "Card not found.", 404);
@@ -51,6 +52,45 @@ export async function onRequestPost({ request, env, params }) {
     created_at: now()
   });
 
+  const activity = await recordActivity(env, {
+    workspace_id: card.workspace_id,
+    user_id: auth.user.id,
+    persona_id: card.persona_id || null,
+    card_id: id,
+    event_type: "card.action",
+    title: `Card ${action}`,
+    body: clean(payload.note, 1000) || card.title || null,
+    metadata: {
+      action_type: action,
+      status,
+      previous_status: card.status,
+      actor_user_id: auth.user.id
+    }
+  });
+
+  let notification = null;
+  if (["follow_up", "request_asset"].includes(action) && (card.owner_user_id || card.user_id)) {
+    const notificationId = crypto.randomUUID();
+    await env.DB.prepare(
+      `INSERT INTO notifications (
+        id, user_id, workspace_id, card_id, type, title, body, status, priority, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'unread', ?, ?)`
+    )
+      .bind(
+        notificationId,
+        card.owner_user_id || card.user_id,
+        card.workspace_id,
+        id,
+        action,
+        action === "request_asset" ? "Asset requested" : "Follow up needed",
+        clean(payload.note, 1000) || card.title || null,
+        action === "request_asset" ? 75 : 65,
+        now()
+      )
+      .run();
+    notification = { id: notificationId };
+  }
+
   const next = await env.DB.prepare(
     `SELECT id, workspace_id, user_id, persona_id, source_type, source_id, card_type,
             title, summary, priority, status, owner_user_id, owner_role,
@@ -62,5 +102,5 @@ export async function onRequestPost({ request, env, params }) {
     .bind(id)
     .first();
 
-  return json({ ok: true, action_type: action, card: next });
+  return json({ ok: true, action_type: action, card: next, event: activity, notification });
 }

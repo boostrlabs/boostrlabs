@@ -275,8 +275,13 @@ export async function onRequestGet() {
     demo_mode: true,
     profile: {
       name: "JANKO",
+      display_name: "JANKO",
+      workspace: "JANKO / WESTDETRO",
       type: "artist/founder/manager demo",
-      demo_mode: true
+      demo_mode: true,
+      language: "en",
+      theme: "platinum_dark",
+      api_status: "future"
     },
     personas: [
       { id: "founder", label: "Founder" },
@@ -299,6 +304,79 @@ export async function onRequestGet() {
       { id: "artist-os", status: "demo", label: "Artist OS" },
       { id: "smart-payment-link", status: "model_ready", label: "Smart Payment Link" },
       { id: "ecosystem-health", status: "demo", label: "Ecosystem Health" }
+    ],
+    contact_methods: [
+      {
+        contact_type: "artist_email",
+        label: "Artist email",
+        value: "artist@email.demo",
+        visibility: "public_profile",
+        verified: false
+      },
+      {
+        contact_type: "business_email",
+        label: "Business email",
+        value: "business@email.demo",
+        visibility: "workspace",
+        verified: false
+      },
+      {
+        contact_type: "business_phone",
+        label: "Demo phone",
+        value: "+1 demo phone",
+        visibility: "workspace",
+        verified: false
+      },
+      {
+        contact_type: "instagram",
+        label: "Instagram",
+        value: "@janko.demo",
+        visibility: "public_profile",
+        verified: false
+      }
+    ],
+    preferences: {
+      default_mode: "cash",
+      default_persona_id: "producer",
+      default_language: "en",
+      card_density: "comfortable",
+      show_demo_labels: true,
+      reduce_motion: false,
+      notification_preferences: {
+        product_readiness: true,
+        partner_actions: true,
+        system_health: true
+      }
+    },
+    security: {
+      two_factor_status: "not_enabled_demo",
+      sessions_count: 1
+    },
+    api_tokens: [
+      {
+        label: "BOOSTR API Token",
+        prefix: "bst_demo",
+        masked: "bst_demo_••••••••••••",
+        status: "future"
+      }
+    ],
+    notifications: [
+      {
+        id: "janko-demo-notification-payment-readiness",
+        type: "payment_readiness",
+        title: "Smart Payment Link needs review",
+        status: "unread",
+        priority: 75,
+        demo_mode: true
+      }
+    ],
+    activity: [
+      {
+        id: "janko-demo-activity-card-engine",
+        event_type: "card.demo.loaded",
+        title: "JANKO card engine demo loaded",
+        demo_mode: true
+      }
     ],
     cards,
     products: [
