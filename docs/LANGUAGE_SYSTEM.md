@@ -1,6 +1,6 @@
 # BOOSTR Labs Language System
 
-Status: ACTIVE PRODUCT STANDARD
+Status: ACTIVE PRODUCT STANDARD + FIRST FRONTEND IMPLEMENTATION
 Last updated: 2026-07-08
 
 ## Core rule
@@ -23,35 +23,43 @@ BOOSTR can be English or Spanish, but a visible screen should not mix both unles
 - English: `en`
 - Spanish: `es`
 
-Future languages can be added later, but EN/ES must be clean first.
+## Implemented files
+
+The first frontend i18n layer is implemented through:
+
+- `public/assets/boostr-mother/i18n.js`
+- `public/assets/boostr-mother/i18n/en.json`
+- `public/assets/boostr-mother/i18n/es.json`
+- `public/assets/boostr-mother/console.js` auto-loads `i18n.js` on BOOSTR OS pages that already use the shared console layer
+- `public/audit/index.html` loads `i18n.js` directly because Audit has its own standalone shell
 
 ## EN / ES toggle
 
-Every BOOSTR OS surface should eventually include a small language toggle:
-
-- `EN / ES`
-- compact
-- non-invasive
-- preferably in the topbar, login footer, or compact sidebar
-- never larger than primary product actions
+Every page loading `i18n.js` receives a compact `EN / ES` toggle.
 
 Behavior:
 
-- clicking `EN` switches all marked UI copy to English
-- clicking `ES` switches all marked UI copy to Spanish
-- selected language persists locally
-- toggle should not reload the whole page unless needed
+- `EN` switches UI copy to English
+- `ES` switches UI copy to Spanish
+- selection is saved in `localStorage` under `boostr_lang`
+- unsupported languages fall back to English
+- missing translation files use an embedded fallback dictionary
+- missing translation keys leave the current visible text instead of showing raw keys
 
-## English fallback
+## How implementation works
 
-English is the fallback language for:
+Current implementation uses a lightweight phrase replacement layer.
 
-- unsupported browser languages
-- missing translation keys
-- malformed translation files
-- first-time users where browser language cannot be detected
+It translates:
 
-If a translation key is missing, show the English value, not a blank string.
+- exact text nodes
+- placeholders
+- title attributes
+- aria-label attributes
+
+It protects fixed BOOSTR system names and does not translate user-generated content.
+
+Future deeper implementation can move pages to explicit `data-i18n` keys, but the current layer gives immediate EN/ES behavior without a full frontend rewrite.
 
 ## What gets translated
 
@@ -91,6 +99,7 @@ Do not translate:
 
 These names stay exactly the same in EN and ES:
 
+- BOOSTR Labs
 - Mother OS
 - Identity OS
 - Manager OS
@@ -109,8 +118,6 @@ These names stay exactly the same in EN and ES:
 - Fan Radar
 - Action Queue
 - Route Map
-
-Reason: these names are part of the BOOSTR product language and should feel proprietary.
 
 ## UI tone
 
@@ -146,8 +153,6 @@ Avoid:
 - Spanglish
 - regional slang in core app UI
 - long explanatory paragraphs
-
-Spanish can have personality in artist/client-specific content, but core BOOSTR OS should stay clean.
 
 ## English / Spanish glossary
 
@@ -185,8 +190,6 @@ Spanish can have personality in artist/client-specific content, but core BOOSTR 
 | Client | Client | Cliente |
 | Artist | Artist | Artista |
 | Admin | Admin | Admin |
-
-Note: some product nouns can stay in English when they are part of BOOSTR's product language, such as Lead, Audit, Workspace, Partner, OS.
 
 ## Forbidden UI words
 
@@ -238,42 +241,42 @@ Use short system language:
 - Deck
 - Grid
 
-## Copy density rule
+## How to add a translation phrase
 
-Visible UI should prefer:
+1. Open `public/assets/boostr-mother/i18n/en.json` and `public/assets/boostr-mother/i18n/es.json`.
+2. Add the exact visible phrase under `phrases`.
+3. Add placeholder copy under `placeholders` if the text is inside an input or textarea placeholder.
+4. Keep BOOSTR system names fixed.
+5. Test both languages.
 
-- one short title
-- one short label
-- one number or state
-- one action
+Example:
 
-Avoid explanatory paragraphs. If something needs deeper explanation, use:
+```json
+{
+  "phrases": {
+    "Open": "Abrir"
+  }
+}
+```
 
-- tooltip
-- details panel
-- Admin OS note
-- docs
+## How to test EN/ES manually
 
-## Implementation expectation
-
-A future frontend pass should add:
-
-- `public/assets/boostr-mother/i18n.js`
-- `public/assets/boostr-mother/i18n/en.json`
-- `public/assets/boostr-mother/i18n/es.json`
-- `data-i18n` keys on visible UI text
-- small `EN / ES` toggle
-
-The first i18n pass should cover:
-
-- `/home`
-- `/login`
-- `/manager`
-- `/manager/leads`
-- `/app`
-- `/partner-dashboard`
-- `/admin`
-- `/modules`
+1. Open `/home`.
+2. Confirm the `EN / ES` toggle appears.
+3. Click `ES`.
+4. Refresh the page.
+5. Confirm Spanish persists.
+6. Click `EN`.
+7. Confirm English persists.
+8. Repeat on:
+   - `/login`
+   - `/manager`
+   - `/manager/leads`
+   - `/app`
+   - `/partner-dashboard`
+   - `/admin`
+   - `/modules`
+   - `/audit`
 
 ## Pass/fail language rule
 
@@ -285,3 +288,5 @@ A screen passes language QA only if:
 - no spanglish appears in core UI
 - buttons and states are short
 - text does not fight the visual system
+- the EN/ES toggle is visible and works
+- selected language persists after refresh
