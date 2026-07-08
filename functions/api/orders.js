@@ -1,4 +1,4 @@
-import { addLeadEvent, clean, json, managerAuth, now, readJson, requireDb } from "../_lib/api.js";
+import { addLeadEvent, clean, isValidEmail, isValidPhone, json, managerAuth, now, readJson, requireDb } from "../_lib/api.js";
 
 const clampLimit = (value) => Math.min(Math.max(Number(value || 50) || 50, 1), 100);
 
@@ -63,6 +63,25 @@ export async function onRequestPost({ request, env }) {
   const id = crypto.randomUUID();
   const leadId = clean(payload.lead_id, 120) || null;
   const amount = Math.max(Number(payload.amount_cents || 0) || 0, 0);
+  const customerEmail = clean(payload.customer_email, 180).toLowerCase();
+  const customerPhone = clean(payload.customer_phone, 80);
+
+  if (leadId) {
+    const lead = await env.DB.prepare("SELECT id FROM leads WHERE id = ?").bind(leadId).first();
+    if (!lead) return json({ ok: false, error: "Linked lead_id was not found." }, 404);
+  }
+
+  if (!leadId && !customerEmail && !customerPhone) {
+    return json({ ok: false, error: "Order needs lead_id, customer_email, or customer_phone." }, 400);
+  }
+
+  if (customerEmail && !isValidEmail(customerEmail)) {
+    return json({ ok: false, error: "Invalid customer_email." }, 400);
+  }
+
+  if (customerPhone && !isValidPhone(customerPhone)) {
+    return json({ ok: false, error: "Invalid customer_phone." }, 400);
+  }
 
   await env.DB.prepare(
     `INSERT INTO orders (
@@ -77,8 +96,8 @@ export async function onRequestPost({ request, env }) {
       clean(payload.workspace_id, 120) || null,
       clean(payload.source || "manager", 80),
       clean(payload.customer_name, 160),
-      clean(payload.customer_email, 180).toLowerCase(),
-      clean(payload.customer_phone, 80),
+      customerEmail,
+      customerPhone,
       itemName,
       clean(payload.item_type || "service", 80),
       amount,

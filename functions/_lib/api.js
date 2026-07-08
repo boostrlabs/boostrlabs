@@ -27,6 +27,17 @@ export const normalizeArray = (value, maxItem = 180) => {
   return [clean(value, maxItem)].filter(Boolean);
 };
 
+export const isValidEmail = (value) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(clean(value, 180));
+
+export const normalizePhone = (value) => clean(value, 80).replace(/[^\d+]/g, "");
+
+export const isValidPhone = (value) => {
+  const phone = normalizePhone(value);
+  const digits = phone.replace(/\D/g, "");
+  return digits.length >= 7 && digits.length <= 15;
+};
+
 export async function readJson(request) {
   try {
     return { ok: true, payload: await request.json() };

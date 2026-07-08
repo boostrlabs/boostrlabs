@@ -63,9 +63,15 @@ export async function onRequestPatch({ request, env, params }) {
     .run();
 
   const changed = status !== existing.status || assignedTo !== (existing.assigned_to || "");
+  const eventType = status !== existing.status
+    ? "status.changed"
+    : changed
+      ? "lead.updated"
+      : "lead.note";
+
   await addLeadEvent(env, {
     lead_id: id,
-    event_type: changed ? "lead.updated" : "lead.note",
+    event_type: eventType,
     payload: {
       status,
       assigned_to: assignedTo,

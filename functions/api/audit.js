@@ -1,4 +1,4 @@
-import { addLeadEvent, clean, getIp, getUa, json, normalizeArray, readJson } from "../_lib/api.js";
+import { addLeadEvent, clean, getIp, getUa, isValidEmail, isValidPhone, json, normalizeArray, readJson } from "../_lib/api.js";
 
 const inferContact = (payload) => {
   const free = clean(payload.contact || payload.contact_info || payload.free || payload.link || payload.website || payload.social || payload.business_link, 500);
@@ -189,6 +189,22 @@ export async function onRequestPost({ request, env }) {
       ok: false,
       error: "Missing contact channel.",
       message: "Audit needs at least email, phone, Instagram, WhatsApp, website or another contact link."
+    }, 400);
+  }
+
+  if (record.contact_email && !isValidEmail(record.contact_email)) {
+    return json({
+      ok: false,
+      error: "Invalid contact_email.",
+      message: "Use a valid email address or leave email empty and provide a valid phone/contact link."
+    }, 400);
+  }
+
+  if (record.contact_phone && !isValidPhone(record.contact_phone)) {
+    return json({
+      ok: false,
+      error: "Invalid contact_phone.",
+      message: "Use a valid phone number or leave phone empty and provide a valid email/contact link."
     }, 400);
   }
 
