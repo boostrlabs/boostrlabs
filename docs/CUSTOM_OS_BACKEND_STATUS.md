@@ -13,7 +13,10 @@ Last updated: 2026-07-08
 - `GET /api/readiness` checks D1 binding, critical tables, critical user columns, invite-code seeding, admin existence and bootstrap-key availability without exposing secrets.
 - `POST /api/admin/bootstrap` safely creates the first admin only when `BOOSTR_ADMIN_BOOTSTRAP_KEY` is configured and no active admin exists.
 - `/admin/readiness` provides an internal readiness console for launch QA and first-admin bootstrap.
+- `scripts/launch-smoke-test.mjs` provides configurable PASS/FAIL/SKIPPED launch smoke testing.
+- `npm run smoke:launch` runs the launch smoke test.
 - `docs/PRODUCTION_LAUNCH_CHECKLIST.md` defines manual live launch steps.
+- `docs/LAUNCH_READINESS_REPORT.md` classifies current status as `READY_FOR_LIVE_CONFIG`.
 - Session auth exists through `sessions`, `users`, `workspace_members`, `/api/session`, `/api/session/dev`, `/api/me`, and `/api/workspaces`.
 - `POST /api/session` accepts email, username, or phone as `identifier`.
 - `POST /api/signup` creates a user, workspace, workspace member, persona, preferences, first-run cards, activity event and session.
@@ -53,6 +56,7 @@ Last updated: 2026-07-08
 - Product/payment tables exist, but write/read endpoints are pending.
 - Secret BOOSTR Code validation and usage increment exist; admin creation/revocation UI for invite codes is pending.
 - Production readiness can report environment status, but migrations/env vars must still be applied in Cloudflare manually.
+- Launch smoke tests can verify live endpoints, but must run against the deployed Cloudflare URL with test env vars.
 - `follow_up` is an action type; card status maps to existing DB status vocabulary.
 
 ## Missing
@@ -73,6 +77,7 @@ Last updated: 2026-07-08
 
 - Remote D1 must apply migrations `0010`, `0011`, and `0012` before Secret Code + Signup are fully operational.
 - `BOOSTR_ADMIN_BOOTSTRAP_KEY` must be configured in Cloudflare before first-admin bootstrap.
+- Smoke tests create real test users when full test env vars are supplied.
 - Existing `cards.status` CHECK does not include `follow_up`; action logs preserve `follow_up` while status uses an allowed value.
 - Demo data is static and must not be treated as real sales or private records.
 - Admin/manager can see operational cards across workspaces by design.
@@ -87,6 +92,7 @@ Last updated: 2026-07-08
 1. Apply D1 migrations remotely and test `/api/readiness`.
 2. Configure `BOOSTR_ADMIN_BOOTSTRAP_KEY` in Cloudflare.
 3. Bootstrap first admin through `/admin/readiness`.
-4. Test `/audit` Secret BOOSTR Code → `/signup` → `/app` end-to-end.
-5. Add audit lead claim into workspace.
-6. Add product/payment-link APIs without Stripe.
+4. Run `npm run smoke:launch` against the deployed URL.
+5. Test `/audit` Secret BOOSTR Code → `/signup` → `/app` end-to-end.
+6. Add audit lead claim into workspace.
+7. Add product/payment-link APIs without Stripe.
