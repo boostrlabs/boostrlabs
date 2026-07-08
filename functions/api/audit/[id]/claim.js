@@ -1,4 +1,4 @@
-import { addLeadEvent, clean, isValidEmail, json, jsonError, now, readJson, requireDb, requireRole } from "../../../_lib/api.js";
+import { addLeadEvent, clean, hashSessionToken, isValidEmail, json, jsonError, now, randomHex, readJson, requireDb, requireRole } from "../../../_lib/api.js";
 import { insertCard } from "../../../_lib/custom-os.js";
 
 const roleForWorkspace = (type) => type === "artist" ? "artist" : type === "partner" ? "partner" : "client";
@@ -26,29 +26,34 @@ function personaFor(audit, payload) {
 
 async function ensureUser(env, audit, payload, workspaceId, personaId, persona, timestamp) {
   const email = clean(payload.client_email || payload.owner_email || audit.contact_email, 180).toLowerCase();
-  if (!email || !isValidEmail(email)) return null;
+  if (!email || !isValidEmail(email)) return { user: null, invite_token: null };
+  const role = roleForWorkspace(persona);
   const existing = await env.DB.prepare("SELECT id, email, name, role, status FROM users WHERE lower(email) = ? LIMIT 1").bind(email).first();
   if (existing?.id) {
     await env.DB.prepare(
       `INSERT OR IGNORE INTO workspace_members (id, workspace_id, user_id, role, status, created_at, updated_at)
        VALUES (?, ?, ?, ?, 'active', ?, ?)`
-    ).bind(crypto.randomUUID(), workspaceId, existing.id, roleForWorkspace(persona), timestamp, timestamp).run();
+    ).bind(crypto.randomUUID(), workspaceId, existing.id, role, timestamp, timestamp).run();
     await env.DB.prepare("UPDATE users SET default_workspace_id = COALESCE(default_workspace_id, ?), default_persona_id = COALESCE(default_persona_id, ?), updated_at = ? WHERE id = ?")
       .bind(workspaceId, personaId, timestamp, existing.id).run();
-    return existing;
+    return { user: existing, invite_token: null };
   }
   const userId = crypto.randomUUID();
+  const inviteToken = randomHex(32);
+  const inviteHash = await hashSessionToken(inviteToken);
+  const inviteExpiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
   const name = clean(payload.client_name || payload.owner_name || audit.contact_name || audit.business_name || "BOOSTR Client", 140);
   await env.DB.prepare(
     `INSERT INTO users (id, email, name, role, workspace_id, status, created_at, updated_at,
-      default_workspace_id, default_persona_id, language, theme, signup_source, onboarding_status)
-     VALUES (?, ?, ?, ?, ?, 'invited', ?, ?, ?, ?, ?, 'platinum_dark', 'audit_claim', 'claimed_from_audit')`
-  ).bind(userId, email, name, roleForWorkspace(persona), workspaceId, timestamp, timestamp, workspaceId, personaId, clean(audit.language, 8).toLowerCase() === "es" ? "es" : "en").run();
+      default_workspace_id, default_persona_id, language, theme, signup_source, onboarding_status,
+      invite_token_hash, invite_token_expires_at)
+     VALUES (?, ?, ?, ?, ?, 'invited', ?, ?, ?, ?, ?, 'platinum_dark', 'audit_claim', 'claimed_from_audit', ?, ?)`
+  ).bind(userId, email, name, role, workspaceId, timestamp, timestamp, workspaceId, personaId, clean(audit.language, 8).toLowerCase() === "es" ? "es" : "en", inviteHash, inviteExpiresAt).run();
   await env.DB.prepare(
     `INSERT INTO workspace_members (id, workspace_id, user_id, role, status, created_at, updated_at)
      VALUES (?, ?, ?, ?, 'active', ?, ?)`
-  ).bind(crypto.randomUUID(), workspaceId, userId, roleForWorkspace(persona), timestamp, timestamp).run();
-  return { id: userId, email, name, role: roleForWorkspace(persona), status: "invited" };
+  ).bind(crypto.randomUUID(), workspaceId, userId, role, timestamp, timestamp).run();
+  return { user: { id: userId, email, name, role, status: "invited" }, invite_token: inviteToken, invite_expires_at: inviteExpiresAt };
 }
 
 async function addClaimCards(env, audit, workspaceId, userId, personaId, persona, modules, timestamp) {
@@ -96,7 +101,8 @@ export async function onRequestPost({ request, env, params }) {
 
   await env.DB.prepare("INSERT INTO workspaces (id, type, name, slug, owner_email, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'active', ?, ?)")
     .bind(workspaceId, role, workspaceName, slug, ownerEmail, timestamp, timestamp).run();
-  const user = await ensureUser(env, audit, payload, workspaceId, personaId, persona, timestamp);
+  const client = await ensureUser(env, audit, payload, workspaceId, personaId, persona, timestamp);
+  const user = client.user;
   const userId = user?.id || null;
   if (userId) {
     await env.DB.prepare("INSERT INTO personas (id, user_id, workspace_id, persona_type, display_name, status, metadata_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)")
@@ -113,7 +119,9 @@ export async function onRequestPost({ request, env, params }) {
   await env.DB.prepare("UPDATE lead_events SET workspace_id = ? WHERE audit_submission_id = ? OR lead_id = ?").bind(workspaceId, id, id).run();
 
   const cardsCreated = await addClaimCards(env, audit, workspaceId, userId, userId ? personaId : null, persona, modules, timestamp);
-  await addLeadEvent(env, { workspace_id: workspaceId, lead_id: id, audit_submission_id: id, event_type: "audit.claimed", payload: { workspace_id: workspaceId, workspace_name: workspaceName, user_id: userId, claimed_by: auth.user.id, cards_created: cardsCreated }, created_at: timestamp });
+  await addLeadEvent(env, { workspace_id: workspaceId, lead_id: id, audit_submission_id: id, event_type: "audit.claimed", payload: { workspace_id: workspaceId, workspace_name: workspaceName, user_id: userId, invite_ready: Boolean(client.invite_token), claimed_by: auth.user.id, cards_created: cardsCreated }, created_at: timestamp });
 
-  return json({ ok: true, audit_id: id, lead_id: id, workspace: { id: workspaceId, name: workspaceName, slug, type: role }, client_user: user, persona: userId ? { id: personaId, type: persona } : null, cards_created: cardsCreated, status: "claimed" }, 201);
+  const origin = new URL(request.url).origin;
+  const inviteUrl = client.invite_token ? `${origin}/accept-invite?token=${encodeURIComponent(client.invite_token)}&email=${encodeURIComponent(user.email)}` : null;
+  return json({ ok: true, audit_id: id, lead_id: id, workspace: { id: workspaceId, name: workspaceName, slug, type: role }, client_user: user, invite_url: inviteUrl, invite_expires_at: client.invite_expires_at || null, persona: userId ? { id: personaId, type: persona } : null, cards_created: cardsCreated, status: "claimed" }, 201);
 }
