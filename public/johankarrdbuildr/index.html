@@ -5,20 +5,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Johankarrd BUILDR — JohankaOS</title>
   <meta name="theme-color" content="#050505">
-  <link rel="stylesheet" href="./styles.css?v=1">
+  <link rel="stylesheet" href="./styles.css?v=30">
 </head>
 <body>
   <main class="app" data-app>
     <header class="topbar">
       <div class="brand">
-        <div class="mark">J</div>
+        <div class="mark">82</div>
         <div>
           <small>JOHANKA OS</small>
           <strong>Johankarrd BUILDR</strong>
         </div>
       </div>
       <div class="actions">
-        <button class="btn" type="button" data-action="new-site">New</button>
+        <button class="btn" type="button" data-action="new-site">Nuevo</button>
         <button class="btn" type="button" data-action="save-draft">Save Draft</button>
         <button class="btn" type="button" data-action="publish-draft">Publish Draft</button>
         <button class="btn gold" type="button" data-action="export-html">Export HTML</button>
@@ -40,12 +40,12 @@
         <h3>Sections</h3>
         <div class="list" data-section-list></div>
         <button class="wide-btn" type="button" data-action="add-section">+ Add section</button>
-        <p class="hint">Internal builder for Johanka. Edits are stored locally first. Publish Draft saves the current data through the BOOSTR backend when D1 is available.</p>
+        <p class="hint">JohankaOS internal Carrd-style builder. No Vvveb UI. Edits work locally first, then Publish Draft sends to BOOSTR backend when available.</p>
       </aside>
 
       <section class="preview-panel">
         <div class="device">
-          <iframe data-preview title="Johankarrd preview"></iframe>
+          <div class="preview-stage" data-preview></div>
         </div>
       </section>
 
@@ -62,10 +62,10 @@
       </aside>
     </section>
 
-    <div class="status" data-status>Ready</div>
+    <div class="status" data-status>Loading…</div>
   </main>
 
-  <script src="./johankarrd-data.js?v=1" defer></script>
-  <script src="./app.js?v=1" defer></script>
+  <script src="./johankarrd-data.js?v=30" defer></script>
+  <script src="./app.js?v=30" defer></script>
 </body>
 </html>
