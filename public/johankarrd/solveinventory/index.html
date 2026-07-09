@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SOLVE Inventory — Powered by BOOSTR Labs</title><meta name="theme-color" content="#000">
+<style>
+*{box-sizing:border-box}html{scroll-behavior:smooth;background:#000}body{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif;overflow-x:hidden}
+.page{min-height:100svh;display:grid;place-items:center;background:#000;padding:20px}
+.stack{width:min(92vw,580px);display:grid;place-items:center;gap:10px;animation:in 1.5s ease both}
+img{max-width:100%;height:auto;display:block}.home-title{width:min(62vw,320px)}.hero-car{width:min(72vw,360px)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(84vw,420px)}.tile{display:grid;place-items:center;text-decoration:none}.tile-car{height:92px;object-fit:contain}.tile-logo{width:145px}
+.brand{width:min(65vw,330px)}.model{width:min(58vw,270px)}.detail-car{width:min(74vw,380px)}
+.nav{position:fixed;right:16px;bottom:16px;z-index:5;display:flex;gap:8px;opacity:.32}.nav a{width:9px;height:9px;border-radius:50%;background:#fff;display:block}
+.powered{position:fixed;left:0;right:0;bottom:10px;text-align:center;font:10px/1 Arial,sans-serif;color:rgba(255,255,255,.35);pointer-events:none;z-index:4}
+@keyframes in{0%{opacity:0;filter:blur(14px);transform:translateY(14px) scale(.985)}100%{opacity:1;filter:blur(0);transform:none}}
+@media(max-width:620px){.grid{width:88vw}.tile-car{height:76px}.tile-logo{width:128px}.hero-car{width:78vw}.home-title{width:70vw}.detail-car{width:84vw}}
+</style></head>
+<body>
+<section class="page" id="MORE"><div class="stack">
+<a href="#inter"><img class="hero-car" src="/assets/johankarrd/solveinventory/camaro.png" alt="Camaro"></a>
+<img class="home-title" src="/assets/johankarrd/solveinventory/inventory.jpg" alt="Inventory">
+<div class="grid">
+<a class="tile" href="#toyota"><img class="tile-car" src="/assets/johankarrd/solveinventory/supra.png"><img class="tile-logo" src="/assets/johankarrd/solveinventory/toyota.jpg"></a>
+<a class="tile" href="#honda"><img class="tile-car" src="/assets/johankarrd/solveinventory/typer.png"><img class="tile-logo" src="/assets/johankarrd/solveinventory/honda.jpg"></a>
+<a class="tile" href="#cdjr"><img class="tile-car" src="/assets/johankarrd/solveinventory/challengersrt.png"><img class="tile-logo" src="/assets/johankarrd/solveinventory/cdjr.jpg"></a>
+<a class="tile" href="#hyundai"><img class="tile-car" src="/assets/johankarrd/solveinventory/elantra.png"><img class="tile-logo" src="/assets/johankarrd/solveinventory/hyundai.jpg"></a>
+</div></div></section>
+
+<section class="page" id="inter"><a class="stack" href="#MORE"><img class="brand" src="/assets/johankarrd/solveinventory/internationalcars.jpg"><img class="model" src="/assets/johankarrd/solveinventory/camarotitle.jpg"><img class="detail-car" src="/assets/johankarrd/solveinventory/camaro.png"></a></section>
+<section class="page" id="toyota"><a class="stack" href="#MORE"><img class="brand" src="/assets/johankarrd/solveinventory/toyota.jpg"><img class="model" src="/assets/johankarrd/solveinventory/GR86TITLE.jpg"><img class="detail-car" src="/assets/johankarrd/solveinventory/supra.png"></a></section>
+<section class="page" id="honda"><a class="stack" href="#MORE"><img class="brand" src="/assets/johankarrd/solveinventory/honda.jpg"><img class="model" src="/assets/johankarrd/solveinventory/typertitle.jpg"><img class="detail-car" src="/assets/johankarrd/solveinventory/typer.png"></a></section>
+<section class="page" id="cdjr"><a class="stack" href="#MORE"><img class="brand" src="/assets/johankarrd/solveinventory/cdjr.jpg"><img class="model" src="/assets/johankarrd/solveinventory/challengersrttitle.jpg"><img class="detail-car" src="/assets/johankarrd/solveinventory/challengersrt.png"></a></section>
+<section class="page" id="hyundai"><a class="stack" href="#MORE"><img class="brand" src="/assets/johankarrd/solveinventory/hyundai.jpg"><img class="model" src="/assets/johankarrd/solveinventory/elantratitle.jpg"><img class="detail-car" src="/assets/johankarrd/solveinventory/elantra.png"></a></section>
+
+<nav class="nav"><a href="#MORE"></a><a href="#inter"></a><a href="#toyota"></a><a href="#honda"></a><a href="#cdjr"></a><a href="#hyundai"></a></nav>
+<div class="powered">Powered by BOOSTR Labs</div>
+</body></html>
