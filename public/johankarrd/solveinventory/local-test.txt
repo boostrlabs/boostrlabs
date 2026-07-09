@@ -1,0 +1,1 @@
+Johanka SOLVE Inventory route marker. This route should be replaced with full static local assets; no external Carrd dependency.

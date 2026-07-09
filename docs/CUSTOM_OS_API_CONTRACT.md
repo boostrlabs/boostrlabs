@@ -24,6 +24,7 @@ Returns:
 - D1 binding state
 - critical table checks
 - critical user column checks
+- critical product column checks
 - seeded invite-code readiness
 - admin existence
 - whether admin bootstrap key is configured, without returning the value
@@ -35,6 +36,8 @@ Critical migrations for current launch:
 - `0010_invite_codes.sql`
 - `0011_seed_initial_invite_codes.sql`
 - `0012_signup_workspace_bootstrap.sql`
+
+Product APIs also require the earlier `0008_custom_os_card_engine.sql` migration because it creates the `products` table.
 
 ## Admin Bootstrap
 
@@ -134,6 +137,79 @@ Private. Revokes the current session.
 `GET /api/dashboard`
 
 Private. Returns active workspace, active persona, workspace preferences, first-run/default cards and recent activity.
+
+## Products
+
+Products are real workspace records. They do not process payments and do not require Stripe.
+
+`GET /api/products`
+
+Auth required. Workspace scoped. Optional query params:
+
+- `workspace_id`
+- `status`
+- `product_type`
+- `q`
+- `limit`
+
+Returns products with calculated `health.score` and `health.gaps`.
+
+`POST /api/products`
+
+Auth required. Creates a product/service in the active workspace.
+
+Request:
+
+```json
+{
+  "title": "Creative Service Deposit",
+  "product_type": "service",
+  "status": "draft",
+  "price_amount": 15000,
+  "currency": "USD",
+  "description": "Reserve a project slot.",
+  "asset_status": "ready",
+  "fulfillment_type": "manual_service_delivery",
+  "requires_account": 0,
+  "allow_guest_checkout": 1,
+  "metadata": {}
+}
+```
+
+Allowed `product_type` values:
+
+- `digital`
+- `physical`
+- `service`
+- `booking`
+- `license`
+- `membership`
+- `auction_later`
+
+Allowed `status` values:
+
+- `draft`
+- `active`
+- `paused`
+- `archived`
+
+Rules:
+
+- `license`, `membership`, and `auction_later` force `requires_account=1` and `allow_guest_checkout=0`.
+- `price_amount` is stored in cents.
+- Activity is logged when available.
+
+`GET /api/products/:id`
+
+Auth required. Returns one product if the session can access its workspace.
+
+`PATCH /api/products/:id`
+
+Auth required. Updates supported product fields and recalculates product health.
+
+`DELETE /api/products/:id`
+
+Auth required. Archives the product by setting `status='archived'`.
 
 ## Secret BOOSTR Code
 
@@ -249,15 +325,17 @@ The ecosystem supports `en` and `es`. Selected language persists in `localStorag
 
 ## Product And Payment Readiness
 
-Current tables:
+Implemented now:
 
-- `products`
-- `payment_links`
-- `order_reservations`
+- product CRUD APIs
+- `/app/products` workspace UI
+- product health score/gaps
+- account-required vs guest-checkout product rules
 
-Not implemented:
+Still not implemented:
 
-- product APIs
 - payment-link APIs
+- product-to-payment-link conversion
+- public payment-link offer endpoint
 - Stripe checkout
 - paid orders

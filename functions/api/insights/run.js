@@ -1,0 +1,54 @@
+import { defaultWorkspaceId, json, requireDb, requireRole, requireWorkspaceAccess } from "../../_lib/api.js";
+import { customOsRoles, insertCard } from "../../_lib/custom-os.js";
+import { getWorkspaceIntelligence } from "../../_lib/intelligence.js";
+
+export async function onRequestOptions() { return json({ ok: true }); }
+
+async function existingOpenCard(env, workspaceId, reason) {
+  return env.DB.prepare(
+    `SELECT id FROM cards
+     WHERE workspace_id = ?
+       AND source_type = 'intelligence'
+       AND source_id = ?
+       AND status NOT IN ('done','archived')
+     LIMIT 1`
+  ).bind(workspaceId, reason).first();
+}
+
+export async function onRequestPost({ request, env }) {
+  const db = requireDb(env);
+  if (!db.ok) return db.response;
+  const auth = await requireRole(request, env, customOsRoles);
+  if (!auth.ok) return auth.response;
+  const url = new URL(request.url);
+  const workspaceId = url.searchParams.get("workspace_id") || defaultWorkspaceId(auth);
+  const access = requireWorkspaceAccess(auth, workspaceId);
+  if (!access.ok) return access.response;
+  const intelligence = await getWorkspaceIntelligence(env, workspaceId);
+  let created = 0;
+  let skipped_duplicates = 0;
+  const cards = [];
+  for (const rec of intelligence.recommendations.slice(0, 8)) {
+    const duplicate = await existingOpenCard(env, workspaceId, rec.reason);
+    if (duplicate?.id) { skipped_duplicates += 1; continue; }
+    const card = await insertCard(env, {
+      workspace_id: workspaceId,
+      user_id: auth.user?.id || null,
+      source_type: "intelligence",
+      source_id: rec.reason,
+      card_type: rec.type,
+      title: rec.title,
+      summary: `${rec.summary} Reason: ${rec.reason}.`,
+      priority: rec.priority,
+      status: "unread",
+      owner_user_id: auth.user?.id || null,
+      owner_role: auth.roles?.[0] || auth.user?.role || "client",
+      action_label: rec.action_label,
+      action_url: rec.action_url,
+      metadata: { recommendation_id: rec.id, reason: rec.reason, totals: intelligence.totals }
+    });
+    cards.push(card);
+    created += 1;
+  }
+  return json({ ok: true, cards_created: created, skipped_duplicates, cards, intelligence });
+}
