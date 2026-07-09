@@ -16,6 +16,8 @@
 /verify-email/* /verify-email/index.html 200
 /accept-invite /accept-invite/index.html    200
 /accept-invite/* /accept-invite/index.html  200
+/boostrcard   /boostrcard/index.html        200
+/boostrcard/* /boostrcard/index.html        200
 /demo/janko-os /demo/janko-os/index.html    200
 /demo/janko-os/* /demo/janko-os/index.html  200
 /janko-os-demo /demo/janko-os/index.html    200
