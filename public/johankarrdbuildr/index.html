@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Johankarrd BUILDR — JohankaOS</title>
   <meta name="theme-color" content="#050505">
-  <link rel="stylesheet" href="./styles.css?v=40">
+  <link rel="stylesheet" href="./styles.css?v=44">
 </head>
 <body>
   <main class="app" data-app>
     <header class="topbar">
       <div class="brand">
-        <div class="mark"><img class="brand-logo" src="/assets/link/82ngel/logo.png" alt="82NGEL"></div>
+        <div class="mark"><img class="brand-logo" src="/assets/link/82ngel/logo.png" alt=""></div>
         <div>
           <small>JOHANKA OS</small>
           <strong>Johankarrd BUILDR</strong>
@@ -26,14 +26,10 @@
         <a class="btn" href="/johankarrd/">Carrds</a>
       </div>
     </header>
-
     <section class="workspace">
       <aside class="panel left-panel">
         <h2>Johankarrds</h2>
-        <label class="field">
-          <span>Current Carrd</span>
-          <select data-site-select></select>
-        </label>
+        <label class="field"><span>Current Carrd</span><select data-site-select></select></label>
         <div class="site-tools">
           <button class="mini-btn" type="button" data-action="reset-local">Reset</button>
           <button class="mini-btn" type="button" data-action="reload-remote">Reload Cloud</button>
@@ -43,13 +39,7 @@
         <button class="wide-btn" type="button" data-action="add-section">+ Add section</button>
         <p class="hint">Build and publish smooth mobile pages for JohankaOS.</p>
       </aside>
-
-      <section class="preview-panel">
-        <div class="device">
-          <div class="preview-stage" data-preview></div>
-        </div>
-      </section>
-
+      <section class="preview-panel"><div class="device"><div class="preview-stage" data-preview></div></div></section>
       <aside class="panel editor-panel">
         <h2>Edit</h2>
         <div class="tabs">
@@ -62,11 +52,9 @@
         <textarea class="codebox" data-code readonly></textarea>
       </aside>
     </section>
-
-    <div class="status" data-status>Loading…</div>
+    <div class="status" data-status>Loading</div>
   </main>
-
-  <script src="./johankarrd-data.js?v=40" defer></script>
-  <script src="./app.js?v=40" defer></script>
+  <script src="./johankarrd-data.js?v=44" defer></script>
+  <script src="./app.js?v=44" defer></script>
 </body>
 </html>
