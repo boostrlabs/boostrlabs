@@ -3,6 +3,7 @@
   const protectedSlugs = new Set(['cafe', 'inventory', 'cafedelmar', 'solveinventory']);
   let previewDragIndex = null;
   let pendingDeleteTimer = null;
+  let uploadFallbackUsed = false;
 
   const setStatus = (text) => {
     const el = document.querySelector('[data-status]');
@@ -24,9 +25,9 @@
   };
 
   function installPatchCss() {
-    if (document.getElementById('johankarrd-v47-patch-css')) return;
+    if (document.getElementById('johankarrd-v48-patch-css')) return;
     const style = document.createElement('style');
-    style.id = 'johankarrd-v47-patch-css';
+    style.id = 'johankarrd-v48-patch-css';
     style.textContent = `.delete-carrd-btn{border-color:rgba(255,106,125,.35)!important;color:#ffb7c0!important}.delete-warning{border:1px solid rgba(255,106,125,.3);background:rgba(255,106,125,.08);border-radius:18px;padding:13px;color:#ffd2d8;font-size:13px;line-height:1.35}.danger-title{color:#ffb7c0!important}.final-delete{background:linear-gradient(135deg,#ff6a7d,#feedb9)!important;color:#140406!important}.preview-object{cursor:grab}.preview-object:active{cursor:grabbing}.preview-object.preview-dragging{opacity:.42;transform:scale(.98)}.preview-object.drop-target{border-color:rgba(139,232,255,.9)!important;box-shadow:0 0 0 5px rgba(139,232,255,.10)!important}.delete-undo-toast{position:fixed;left:50%;bottom:22px;z-index:140;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(255,106,125,.32);border-radius:999px;background:rgba(6,9,14,.9);backdrop-filter:blur(18px);box-shadow:0 24px 70px rgba(0,0,0,.55);font:900 11px/1 Arial;color:#fff}.delete-undo-toast button{border:0;border-radius:999px;padding:9px 12px;background:linear-gradient(135deg,#fff5c7,#feedb9,#8be8ff);color:#061f3d;font:1000 10px/1 Arial;cursor:pointer}`;
     document.head.append(style);
   }
@@ -111,7 +112,7 @@
       write(before);
       toast.remove();
       setStatus('Delete cancelado.');
-      location.href = '/johankarrdbuildr/?v=47';
+      location.href = '/johankarrdbuildr/?v=48';
     };
     document.body.append(toast);
     setStatus('Johankarrd removida. 5 segundos para Undo.');
@@ -125,30 +126,84 @@
         });
         if (!res.ok) throw new Error('Delete failed');
         setStatus('Johankarrd borrada permanentemente.');
-        location.href = '/johankarrdbuildr/?v=47';
+        location.href = '/johankarrdbuildr/?v=48';
       } catch (_) {
         write(before);
         setStatus('No se pudo borrar en cloud. Restaurada localmente.');
-        location.href = '/johankarrdbuildr/?v=47';
+        location.href = '/johankarrdbuildr/?v=48';
       }
     }, 5000);
+  }
+
+  function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  async function compressDataUrl(dataUrl) {
+    try {
+      const img = await loadImage(dataUrl);
+      const max = 1280;
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg', 0.84);
+    } catch (_) {
+      return dataUrl;
+    }
   }
 
   async function uploadBlob(blob, filename = 'asset.png') {
     const form = new FormData();
     form.append('file', blob, filename);
     const res = await fetch('/api/johankarrd/assets', { method: 'POST', body: form });
-    if (!res.ok) throw new Error('asset upload failed');
-    const data = await res.json();
-    if (!data.url) throw new Error('asset url missing');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.url) throw new Error(data.error || 'asset upload failed');
+    return data.url;
+  }
+
+  async function uploadDataUrl(dataUrl, filename = 'asset.jpg') {
+    const res = await fetch('/api/johankarrd/assets', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ dataUrl, filename })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.url) throw new Error(data.error || 'asset upload failed');
     return data.url;
   }
 
   async function remoteizeValue(value) {
     if (typeof value !== 'string' || !value.startsWith('data:image/')) return value;
-    const blob = await fetch(value).then((r) => r.blob());
-    const ext = (blob.type || 'image/png').split('/')[1] || 'png';
-    return uploadBlob(blob, `johankarrd-upload.${ext}`);
+    const compressed = await compressDataUrl(value);
+    const blob = await fetch(compressed).then((r) => r.blob());
+    const ext = (blob.type || 'image/jpeg').split('/')[1] || 'jpg';
+    try {
+      return await uploadBlob(blob, `johankarrd-upload.${ext}`);
+    } catch (_) {
+      try {
+        return await uploadDataUrl(compressed, `johankarrd-upload.${ext}`);
+      } catch (_) {
+        uploadFallbackUsed = true;
+        return compressed;
+      }
+    }
   }
 
   async function remoteizeSiteAssets(site) {
@@ -175,6 +230,7 @@
     const site = sites[slug];
     if (!slug || !site) return setStatus('No Johankarrd selected.');
     try {
+      uploadFallbackUsed = false;
       setStatus('Preparing images for live publish…');
       await remoteizeSiteAssets(site);
       sites[slug] = site;
@@ -192,8 +248,8 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'publish failed');
       const link = `/johankarrd/${data.slug || slug}/`;
-      setStatus(`Publicado live: ${link}`);
-      modal(`<div class="modal-head"><img src="/assets/link/82ngel/logo.png" alt=""><div><small>LIVE</small><h2>Publicado</h2></div></div><p class="hint">La página está live con imágenes remotas.</p><div class="modal-actions"><button class="btn" data-close-modal>Close</button><a class="live-link" href="${esc(link)}" target="_blank" rel="noopener">Open live ↗</a></div>`);
+      setStatus(uploadFallbackUsed ? `Publicado live con imagen embebida: ${link}` : `Publicado live: ${link}`);
+      modal(`<div class="modal-head"><img src="/assets/link/82ngel/logo.png" alt=""><div><small>LIVE</small><h2>Publicado</h2></div></div><p class="hint">${uploadFallbackUsed ? 'R2 no aceptó el upload; publiqué una versión optimizada embebida.' : 'La página está live con imágenes remotas.'}</p><div class="modal-actions"><button class="btn" data-close-modal>Close</button><a class="live-link" href="${esc(link)}" target="_blank" rel="noopener">Open live ↗</a></div>`);
     } catch (error) {
       setStatus(error.message || 'No se pudo publicar.');
     }
@@ -210,7 +266,7 @@
     items.splice(to, 0, item);
     write(sites);
     setStatus('Element moved. Reloading preview…');
-    location.href = '/johankarrdbuildr/?v=47';
+    location.href = '/johankarrdbuildr/?v=48';
   }
 
   document.addEventListener('click', (event) => {
@@ -233,7 +289,7 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       setStatus('Reloading cloud state without deleting published Carrds.');
-      syncLivePages().then(() => { location.href = '/johankarrdbuildr/?v=47'; });
+      syncLivePages().then(() => { location.href = '/johankarrdbuildr/?v=48'; });
       return;
     }
     const del = event.target.closest('[data-delete-carrd]');
@@ -294,9 +350,9 @@
     markPreviewDraggables();
     new MutationObserver(() => { addDeleteButton(); markPreviewDraggables(); }).observe(document.body, { childList: true, subtree: true });
     setTimeout(() => syncLivePages().then((changed) => {
-      if (changed && !sessionStorage.getItem('johankarrd-synced-v47')) {
-        sessionStorage.setItem('johankarrd-synced-v47', '1');
-        location.href = '/johankarrdbuildr/?v=47';
+      if (changed && !sessionStorage.getItem('johankarrd-synced-v48')) {
+        sessionStorage.setItem('johankarrd-synced-v48', '1');
+        location.href = '/johankarrdbuildr/?v=48';
       }
     }), 1000);
   });
