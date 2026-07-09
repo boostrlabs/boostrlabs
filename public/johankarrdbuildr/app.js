@@ -10,29 +10,16 @@
     code: $('[data-code]'),
     status: $('[data-status]')
   };
+  const state = { sites: {}, currentSite: 'cafe', currentSection: 'home', mode: 'content' };
 
-  const state = {
-    sites: {},
-    currentSite: 'cafe',
-    currentSection: 'home',
-    mode: 'content'
-  };
-
-  function clone(value) {
-    return JSON.parse(JSON.stringify(value));
-  }
-
-  function setStatus(message) {
-    els.status.textContent = message;
-  }
-
-  function seed() {
-    return clone(window.JOHANKARRD_SEED || {});
-  }
-
-  function isValidSites(value) {
-    return value && typeof value === 'object' && value.cafe && value.inventory && Array.isArray(value.cafe.sections) && Array.isArray(value.inventory.sections);
-  }
+  const clone = (value) => JSON.parse(JSON.stringify(value));
+  const esc = (value) => String(value ?? '').replace(/[&<>]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[char]));
+  const attr = (value) => esc(value).replace(/"/g, '&quot;');
+  const setStatus = (message) => { if (els.status) els.status.textContent = message; };
+  const seed = () => clone(window.JOHANKARRD_SEED || {});
+  const isValidSites = (value) => value && typeof value === 'object' && value.cafe && value.inventory && Array.isArray(value.cafe.sections) && Array.isArray(value.inventory.sections);
+  const site = () => state.sites[state.currentSite];
+  const section = () => site()?.sections?.find((item) => item.id === state.currentSection);
 
   function loadLocal() {
     try {
@@ -76,57 +63,35 @@
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || 'backend unavailable');
       setStatus('Draft published to BOOSTR backend');
-    } catch (error) {
+    } catch (_) {
       setStatus('Backend not ready; saved locally');
     }
   }
 
   function normalizeSelection() {
-    const keys = Object.keys(state.sites);
-    if (!keys.length) state.sites = seed();
+    if (!isValidSites(state.sites)) state.sites = seed();
+    if (!Object.keys(state.sites).length) state.sites = seed();
     if (!state.sites[state.currentSite]) state.currentSite = Object.keys(state.sites)[0];
     const current = site();
     if (!current.sections || !current.sections.length) current.sections = [{ id: 'home', label: 'Home', items: [] }];
     if (!section()) state.currentSection = current.sections[0].id;
   }
 
-  function site() {
-    return state.sites[state.currentSite];
-  }
-
-  function section() {
-    const current = site();
-    return current.sections.find((item) => item.id === state.currentSection);
-  }
-
-  function esc(value) {
-    return String(value ?? '').replace(/[&<>]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[char]));
-  }
-
-  function attr(value) {
-    return esc(value).replace(/"/g, '&quot;');
-  }
-
   function bindActions() {
     document.addEventListener('click', (event) => {
-      const action = event.target.closest('[data-action]')?.dataset.action;
-      const mode = event.target.closest('[data-mode]')?.dataset.mode;
-      const siteKey = event.target.closest('[data-site-key]')?.dataset.siteKey;
-      const sectionId = event.target.closest('[data-section-id]')?.dataset.sectionId;
-      if (mode) {
-        state.mode = mode;
+      const modeButton = event.target.closest('[data-mode]');
+      const sectionButton = event.target.closest('[data-section-id]');
+      const actionButton = event.target.closest('[data-action]');
+      if (modeButton) {
+        state.mode = modeButton.dataset.mode;
         renderEditor();
       }
-      if (siteKey) {
-        state.currentSite = siteKey;
-        state.currentSection = site().sections[0].id;
+      if (sectionButton) {
+        state.currentSection = sectionButton.dataset.sectionId;
         render();
       }
-      if (sectionId) {
-        state.currentSection = sectionId;
-        render();
-      }
-      if (!action) return;
+      if (!actionButton) return;
+      const action = actionButton.dataset.action;
       if (action === 'new-site') newSite();
       if (action === 'save-draft') saveLocal(true);
       if (action === 'publish-draft') publishDraft();
@@ -138,7 +103,6 @@
       if (action === 'add-image') addItem({ type: 'image', src: '/assets/johankarrd/cafedelmar/image04.jpg' });
       if (action === 'add-logo') addItem({ type: 'logo', src: '/assets/johankarrd/cafedelmar/logofull.png' });
     });
-
     els.siteSelect.addEventListener('change', () => {
       state.currentSite = els.siteSelect.value;
       state.currentSection = site().sections[0].id;
@@ -155,26 +119,20 @@
   }
 
   function renderSites() {
-    els.siteSelect.innerHTML = Object.keys(state.sites)
-      .map((key) => `<option value="${attr(key)}" ${key === state.currentSite ? 'selected' : ''}>${esc(state.sites[key].name || key)}</option>`)
-      .join('');
+    els.siteSelect.innerHTML = Object.keys(state.sites).map((key) => `<option value="${attr(key)}" ${key === state.currentSite ? 'selected' : ''}>${esc(state.sites[key].name || key)}</option>`).join('');
   }
 
   function renderSections() {
-    els.sectionList.innerHTML = site().sections
-      .map((item) => `<div class="item ${item.id === state.currentSection ? 'active' : ''}" data-section-id="${attr(item.id)}"><b>${esc(item.label || item.id)}</b><span>#${esc(item.id)}</span></div>`)
-      .join('');
+    els.sectionList.innerHTML = site().sections.map((item) => `<div class="item ${item.id === state.currentSection ? 'active' : ''}" data-section-id="${attr(item.id)}"><b>${esc(item.label || item.id)}</b><span>#${esc(item.id)}</span></div>`).join('');
   }
 
   function field(label, value, key, options = {}) {
     const target = options.target || 'site';
     const index = options.index ?? '';
-    const multiline = options.multiline;
-    const valueText = attr(value || '');
-    if (multiline) {
+    if (options.multiline) {
       return `<label class="field"><span>${label}</span><textarea data-edit-target="${target}" data-edit-key="${key}" data-edit-index="${index}">${esc(value || '')}</textarea></label>`;
     }
-    return `<label class="field"><span>${label}</span><input value="${valueText}" data-edit-target="${target}" data-edit-key="${key}" data-edit-index="${index}"></label>`;
+    return `<label class="field"><span>${label}</span><input value="${attr(value || '')}" data-edit-target="${target}" data-edit-key="${key}" data-edit-index="${index}"></label>`;
   }
 
   function renderEditor() {
@@ -182,7 +140,6 @@
     const currentSite = site();
     const currentSection = section();
     let html = '';
-
     if (state.mode === 'style') {
       html += field('Site Name', currentSite.name, 'name', { target: 'site' });
       html += field('Slug', currentSite.slug, 'slug', { target: 'site' });
@@ -197,9 +154,7 @@
       html += field('Hash ID', currentSection.id, 'id', { target: 'section' });
       currentSection.items.forEach((item, index) => {
         html += `<div class="item"><b>${esc(item.type)}</b>`;
-        if ('src' in item) {
-          html += `<div class="asset-row"><img class="thumb" src="${attr(item.src)}" alt=""><input value="${attr(item.src)}" data-edit-target="item" data-edit-key="src" data-edit-index="${index}"></div>`;
-        }
+        if ('src' in item) html += `<div class="asset-row"><img class="thumb" src="${attr(item.src)}" alt=""><input value="${attr(item.src)}" data-edit-target="item" data-edit-key="src" data-edit-index="${index}"></div>`;
         if ('text' in item) html += field('Text', item.text, 'text', { target: 'item', index });
         if ('link' in item) html += field('Link', item.link, 'link', { target: 'item', index });
         if ('links' in item) html += field('Links label|url', item.links.map((row) => row.join('|')).join('\n'), 'links', { target: 'item', index, multiline: true });
@@ -207,7 +162,6 @@
         html += '</div>';
       });
     }
-
     els.editor.innerHTML = html;
     els.editor.querySelectorAll('[data-edit-target]').forEach((input) => input.addEventListener('input', handleEdit));
   }
@@ -219,11 +173,15 @@
     const value = input.value;
     if (target === 'site') site()[key] = value;
     if (target === 'section') {
+      const current = section();
+      if (!current) return;
+      current[key] = value;
       if (key === 'id') state.currentSection = value;
-      section()[key] = value;
     }
     if (target === 'item') {
-      const item = section().items[Number(input.dataset.editIndex)];
+      const current = section();
+      const item = current?.items?.[Number(input.dataset.editIndex)];
+      if (!item) return;
       if (key === 'links') item.links = value.split('\n').filter(Boolean).map((row) => row.split('|'));
       else if (key === 'imgs') item.imgs = value.split('\n').filter(Boolean);
       else item[key] = value;
@@ -303,16 +261,18 @@
   }
 
   function boot() {
-    if (!window.JOHANKARRD_SEED) {
-      setStatus('Seed data missing');
-      return;
+    try {
+      if (!window.JOHANKARRD_SEED) throw new Error('seed data missing');
+      state.sites = loadLocal();
+      normalizeSelection();
+      bindActions();
+      render();
+      setStatus('Ready');
+      loadRemote();
+    } catch (error) {
+      console.error(error);
+      setStatus(`Builder error: ${error.message}`);
     }
-    state.sites = loadLocal();
-    normalizeSelection();
-    bindActions();
-    render();
-    setStatus('Ready');
-    loadRemote();
   }
 
   window.addEventListener('DOMContentLoaded', boot);
