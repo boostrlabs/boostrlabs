@@ -11,6 +11,11 @@ database_name = "boostr_labs_core"
 database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
 preview_database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
 
+[[r2_buckets]]
+binding = "BOOSTR_ASSETS"
+bucket_name = "boostr-labs-assets-prod"
+preview_bucket_name = "boostr-labs-assets-prod"
+
 [env.production.vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
 VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
@@ -19,6 +24,10 @@ VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
 binding = "DB"
 database_name = "boostr_labs_core"
 database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
+
+[[env.production.r2_buckets]]
+binding = "BOOSTR_ASSETS"
+bucket_name = "boostr-labs-assets-prod"
 
 [env.preview.vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
@@ -29,3 +38,8 @@ binding = "DB"
 database_name = "boostr_labs_core"
 database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
 preview_database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
+
+[[env.preview.r2_buckets]]
+binding = "BOOSTR_ASSETS"
+bucket_name = "boostr-labs-assets-prod"
+preview_bucket_name = "boostr-labs-assets-prod"
