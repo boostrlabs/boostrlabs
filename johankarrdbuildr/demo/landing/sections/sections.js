@@ -1,0 +1,1 @@
+Vvveb.SectionsGroup['Johankarrd'] = [];
