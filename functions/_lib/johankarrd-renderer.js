@@ -44,6 +44,7 @@ function safeUrl(value = '') {
   if (text.startsWith('#')) return text;
   if (text.startsWith('mailto:')) return text;
   if (text.startsWith('tel:')) return text;
+  if (/^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(text) && text.length < 1800000) return text;
   try {
     const url = new URL(text);
     if (url.protocol === 'https:' || url.protocol === 'http:') return text;
