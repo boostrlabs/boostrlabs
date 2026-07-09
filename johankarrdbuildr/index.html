@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Johankarrd BUILDR — BOOSTR Labs</title>
+  <meta name="theme-color" content="#050505">
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#050505;color:#fff;font-family:Inter,Arial,sans-serif;overflow:hidden}.shell{position:fixed;inset:0;display:grid;grid-template-rows:58px 1fr;background:radial-gradient(circle at top left,rgba(254,237,185,.12),transparent 34%),linear-gradient(135deg,#050505,#10141d 50%,#050505)}.top{display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.62);backdrop-filter:blur(16px)}.brand{display:flex;align-items:center;gap:12px}.mark{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:#feedb9;color:#061f3d;font-weight:1000;letter-spacing:-.08em}.brand small{display:block;color:#feedb9;font-weight:900;font-size:10px;letter-spacing:.12em}.brand strong{display:block;font-size:16px;letter-spacing:-.02em}.actions{display:flex;align-items:center;gap:10px}.actions a,.status{border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:9px 12px;color:#fff;text-decoration:none;background:rgba(255,255,255,.05);font:bold 11px/1 Arial}.status{color:#9fffc6;border-color:rgba(159,255,198,.25)}iframe{width:100%;height:100%;border:0;background:#fff}.note{position:fixed;left:14px;bottom:10px;z-index:20;color:rgba(255,255,255,.34);font:10px/1 Arial;pointer-events:none}@media(max-width:720px){.top{padding:0 10px}.brand strong{font-size:13px}.actions a,.status{font-size:10px;padding:8px}.shell{grid-template-rows:54px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div class="brand"><div class="mark">J</div><div><small>JOHANKA OS</small><strong>Johankarrd BUILDR</strong></div></div>
+      <div class="actions"><span class="status">LOCAL BUILDER</span><a href="/johankarrd/">Carrds</a><a href="/">BOOSTR</a></div>
+    </header>
+    <iframe id="builder" src="./editor.html" title="Johankarrd BUILDR"></iframe>
+  </main>
+  <div class="note">Powered by BOOSTR Labs</div>
+  <script>
+    const frame=document.getElementById('builder');
+    frame.addEventListener('load',()=>{try{const d=frame.contentDocument;d.title='Johankarrd BUILDR';const s=d.createElement('style');s.textContent=`
+      .logo img{filter:grayscale(1) brightness(1.6)!important}.logo:after{content:'JOHANKARRD BUILDR';display:block;color:#feedb9;font-weight:900;font-size:10px;text-align:center;margin-top:6px;letter-spacing:.08em}.sidebar,.navbar{background:#05070b!important}#top-panel{background:#080b12!important}.save-btn .button-text span{font-size:0}.save-btn .button-text span:after{content:'Save Draft';font-size:12px}.pages-tab .title{font-size:0}.pages-tab .title:after{content:'Carrds';font-size:12px}.components-tab .title{font-size:0}.components-tab .title:after{content:'Blocks';font-size:12px}.sections-tab .title{font-size:0}.sections-tab .title:after{content:'Sections';font-size:12px}.component-configuration-tab .title{font-size:0}.component-configuration-tab .title:after{content:'Style';font-size:12px}`;d.head.appendChild(s);}catch(e){}});
+  </script>
+</body>
+</html>
