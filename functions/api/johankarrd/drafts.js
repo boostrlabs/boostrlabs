@@ -1,8 +1,14 @@
+const MAX_REQUEST_BYTES = 6 * 1024 * 1024;
+const MAX_SITES = 100;
+const MAX_SECTIONS_PER_SITE = 1000;
+const MAX_ITEMS_PER_SITE = 10000;
+
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status,
   headers: {
     'content-type': 'application/json; charset=utf-8',
-    'cache-control': 'no-store'
+    'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff'
   }
 });
 
@@ -28,6 +34,24 @@ function storageKey(slug) {
   return slug;
 }
 
+function validateSites(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return 'Sites payload must be an object';
+  const entries = Object.entries(input);
+  if (entries.length > MAX_SITES) return `Too many sites; maximum is ${MAX_SITES}`;
+  for (const [key, site] of entries) {
+    if (!site || typeof site !== 'object' || Array.isArray(site)) return `Invalid site: ${key}`;
+    if (!Array.isArray(site.sections)) return `Sections must be an array: ${key}`;
+    if (site.sections.length > MAX_SECTIONS_PER_SITE) return `Too many sections: ${key}`;
+    let itemCount = 0;
+    for (const section of site.sections) {
+      if (!section || typeof section !== 'object' || !Array.isArray(section.items)) return `Invalid section in ${key}`;
+      itemCount += section.items.length;
+      if (itemCount > MAX_ITEMS_PER_SITE) return `Too many items: ${key}`;
+    }
+  }
+  return '';
+}
+
 async function ensureTables(db) {
   await db.prepare(`CREATE TABLE IF NOT EXISTS johankarrd_drafts (id TEXT PRIMARY KEY, owner TEXT NOT NULL, payload TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`).run();
   await db.prepare(`CREATE TABLE IF NOT EXISTS johankarrd_live_pages (slug TEXT PRIMARY KEY, payload TEXT NOT NULL, html TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`).run();
@@ -42,7 +66,7 @@ async function deletedSlugs(db) {
 function parseSites(payload) {
   try {
     const sites = JSON.parse(payload || '{}');
-    return sites && typeof sites === 'object' ? sites : {};
+    return sites && typeof sites === 'object' && !Array.isArray(sites) ? sites : {};
   } catch (_) {
     return {};
   }
@@ -102,11 +126,13 @@ async function mergeLiveSites(db, draftSites, deleted) {
 }
 
 async function persist(db, sites) {
+  const payload = JSON.stringify(sites);
+  if (payload.length > MAX_REQUEST_BYTES) throw new Error('Draft payload exceeds storage limit');
   await db.prepare(`
     INSERT INTO johankarrd_drafts (id, owner, payload, updated_at)
     VALUES (?, ?, ?, CURRENT_TIMESTAMP)
     ON CONFLICT(id) DO UPDATE SET payload = excluded.payload, updated_at = CURRENT_TIMESTAMP
-  `).bind('johanka-default', 'johanka', JSON.stringify(sites)).run();
+  `).bind('johanka-default', 'johanka', payload).run();
 }
 
 export async function onRequestGet({ env }) {
@@ -126,8 +152,14 @@ export async function onRequestGet({ env }) {
 export async function onRequestPost({ request, env }) {
   try {
     if (!env.DB) return json({ error: 'D1 binding DB is not available' }, 503);
-    const body = await request.json();
-    if (!body || !body.sites || typeof body.sites !== 'object') return json({ error: 'Missing sites payload' }, 400);
+    const declaredLength = Number(request.headers.get('content-length') || 0);
+    if (declaredLength > MAX_REQUEST_BYTES) return json({ error: 'Draft payload is too large' }, 413);
+    const body = await request.json().catch(() => null);
+    if (!body || !body.sites) return json({ error: 'Missing sites payload' }, 400);
+    const validationError = validateSites(body.sites);
+    if (validationError) return json({ error: validationError }, 422);
+    const serialized = JSON.stringify(body.sites);
+    if (serialized.length > MAX_REQUEST_BYTES) return json({ error: 'Draft payload is too large' }, 413);
     await ensureTables(env.DB);
     const deleted = await deletedSlugs(env.DB);
     const sites = await mergeLiveSites(env.DB, body.sites, deleted);
