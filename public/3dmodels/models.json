@@ -1,0 +1,27 @@
+{
+  "version": "0.1",
+  "storage": {
+    "provider": "cloudflare-r2",
+    "binding": "BOOSTR_ASSETS",
+    "bucket": "boostr-labs-assets-prod",
+    "base_key": "public/3dmodels/"
+  },
+  "models": [
+    {
+      "id": "glizzy",
+      "title": "GS Glizzy",
+      "filename": "gs_glizzy.ply",
+      "r2_key": "public/3dmodels/gs_glizzy.ply",
+      "format": "ply",
+      "status": "uploading"
+    },
+    {
+      "id": "malta",
+      "title": "GS Malta",
+      "filename": "gs_malta.ply",
+      "r2_key": "public/3dmodels/gs_malta.ply",
+      "format": "ply",
+      "status": "retry_upload"
+    }
+  ]
+}
