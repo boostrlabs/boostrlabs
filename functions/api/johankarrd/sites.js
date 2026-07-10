@@ -16,8 +16,11 @@ function safeSlug(value = '') {
 function canonicalSlug(value = '', name = '') {
   const slug = safeSlug(value || name);
   const label = safeSlug(name);
-  if (['cafe', 'cafe-del-mar', 'cafedelmar'].includes(slug) || ['cafe-del-mar', 'cafedelmar'].includes(label)) return 'cafedelmar';
-  if (['inventory', 'solve-inventory', 'solveinventory'].includes(slug) || ['solve-inventory', 'solveinventory'].includes(label)) return 'solveinventory';
+  const joined = `${slug} ${label}`;
+  if (/\bcafe-del-mar\b|\bcafedelmar\b/.test(joined) && !/\bcopy\b|\bcopia\b/.test(joined)) return 'cafedelmar';
+  if (/\bsolve-inventory\b|\bsolveinventory\b|\binventory-solve\b/.test(joined) && !/\bcopy\b|\bcopia\b/.test(joined)) return 'solveinventory';
+  if (slug === 'cafe' && /cafe-del-mar|cafedelmar/.test(label)) return 'cafedelmar';
+  if (slug === 'inventory' && /solve-inventory|solveinventory/.test(label)) return 'solveinventory';
   return slug;
 }
 
@@ -44,13 +47,29 @@ function quality(site = {}) {
   const sections = Array.isArray(site.sections) ? site.sections : [];
   const items = sections.reduce((total, section) => total + (Array.isArray(section?.items) ? section.items.length : 0), 0);
   const populated = sections.reduce((total, section) => total + (section?.items || []).filter((item) => item && Object.keys(item).length > 1).length, 0);
-  return sections.length * 100 + items * 10 + populated;
+  const publishedBonus = site.status === 'published' || site.published ? 25 : 0;
+  return sections.length * 100 + items * 10 + populated + publishedBonus;
+}
+
+function contentSignature(site = {}) {
+  const sections = (site.sections || []).map((section) => ({
+    id: safeSlug(section?.id || section?.label || ''),
+    items: (section?.items || []).map((item) => ({
+      type: item?.type || '',
+      text: item?.text || '',
+      src: item?.src || '',
+      imgs: Array.isArray(item?.imgs) ? item.imgs.slice(0, 4) : []
+    }))
+  }));
+  try { return JSON.stringify(sections); } catch (_) { return ''; }
 }
 
 function identity(key, site = {}) {
   const canonical = canonicalSlug(site.slug || key, site.name);
   if (canonical === 'cafedelmar' || canonical === 'solveinventory') return canonical;
-  return safeSlug(site.name || '') || canonical || safeSlug(key);
+  const name = safeSlug(site.name || '');
+  const signature = contentSignature(site);
+  return signature ? `${name || canonical || safeSlug(key)}::${signature}` : (name || canonical || safeSlug(key));
 }
 
 function dedupeSites(input = {}) {
@@ -98,7 +117,7 @@ export async function onRequestGet({ env }) {
       if (!slug || deleted.has(slug)) continue;
       let payload = {};
       try { payload = JSON.parse(row.payload || '{}'); } catch (_) {}
-      const normalized = normalizePayload({ ...payload, slug }, slug);
+      const normalized = normalizePayload({ ...payload, slug, published: true, status: 'published' }, slug);
       sites = dedupeSites({ ...sites, [`live-${slug}`]: normalized });
       if (!published[slug]) published[slug] = { url: `/johankarrd/${slug}/`, updated_at: row.updated_at };
     }
