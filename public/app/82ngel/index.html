@@ -3,102 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080508">
+<meta name="theme-color" content="#0a0d0b">
 <title>Johanka OS — BOOSTR Labs</title>
-<meta name="description" content="Johanka OS: dashboard multirol de BOOSTR Labs con Hummus FL y 82NGEL.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<meta name="description" content="Johanka OS: creative dashboard de BOOSTR Labs para Hummus FL y 82NGEL.">
 <style>
-:root{--bg:#070507;--panel:rgba(255,255,255,.075);--panel2:rgba(255,255,255,.045);--line:rgba(255,255,255,.13);--muted:rgba(255,248,252,.61);--text:#fff8fc;--pink:#ff3aa8;--red:#ff315a;--gold:#ffd77a;--green:#79ffb0;--shadow:0 30px 100px rgba(0,0,0,.58)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;font-family:Inter,system-ui,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0,rgba(255,49,90,.34),transparent 28%),radial-gradient(circle at 88% 7%,rgba(255,58,168,.22),transparent 24%),linear-gradient(145deg,#060406,#16070e 48%,#050406);overflow-x:hidden}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 260 260' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}.shell{position:relative;z-index:1;min-height:100vh;padding:18px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px}.glass{background:linear-gradient(145deg,rgba(255,255,255,.1),rgba(255,255,255,.035));border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}.sidebar{height:calc(100vh - 36px);position:sticky;top:18px;border-radius:31px;padding:18px;display:flex;flex-direction:column}.brand{display:flex;gap:11px;align-items:center;margin-bottom:18px}.mark{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--red),var(--pink));font-weight:950}.brand b{display:block;font-size:16px;letter-spacing:-.04em}.brand span,.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#ff9dc8;font-weight:900}.profile{border:1px solid var(--line);border-radius:23px;padding:12px;background:rgba(0,0,0,.22);margin-bottom:14px}.profile-row{display:flex;align-items:center;gap:10px}.avatar{width:46px;height:46px;border-radius:17px;display:grid;place-items:center;background:linear-gradient(135deg,#fff,var(--pink));color:#17040d;font-weight:950}.profile small{display:block;color:var(--muted);margin-top:3px}.switcher{display:grid;gap:7px;margin-top:12px}.role-btn{border:1px solid var(--line);background:rgba(255,255,255,.04);color:#fff;border-radius:15px;padding:10px;text-align:left;cursor:pointer;font-weight:800}.role-btn span{display:block;color:var(--muted);font-size:10px;margin-top:3px;font-weight:600}.role-btn.active{background:linear-gradient(90deg,rgba(255,49,90,.3),rgba(255,58,168,.16));border-color:rgba(255,80,150,.4)}.nav{display:grid;gap:7px}.nav a{color:rgba(255,255,255,.7);text-decoration:none;padding:11px 12px;border-radius:16px;font-size:12px;font-weight:750;border:1px solid transparent}.nav a:hover,.nav a.active{color:#fff;border-color:var(--line);background:rgba(255,255,255,.06)}.side-bottom{margin-top:auto}.status{border:1px solid var(--line);border-radius:20px;padding:12px;background:rgba(0,0,0,.2)}.status span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.12em}.status b{display:block;margin-top:6px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 18px var(--green);margin-right:6px}.main{min-width:0}.topbar{min-height:65px;border-radius:27px;padding:11px 13px;display:flex;gap:10px;align-items:center;margin-bottom:15px}.search{flex:1;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18);border-radius:17px;padding:12px 14px;color:var(--muted);font-size:12px}.pill{border:1px solid var(--line);background:rgba(255,255,255,.055);color:#fff;border-radius:999px;padding:10px 13px;text-decoration:none;font-size:11px;font-weight:900}.hero{border-radius:34px;padding:22px;position:relative;overflow:hidden;margin-bottom:15px}.hero:after{content:"";position:absolute;width:430px;height:430px;border-radius:50%;right:-150px;top:-180px;background:radial-gradient(circle,rgba(255,58,168,.34),transparent 63%)}.hero>*{position:relative;z-index:1}.hero h1{font-family:Space Grotesk,Inter,sans-serif;font-size:clamp(42px,7vw,82px);line-height:.86;letter-spacing:-.075em;margin:10px 0 13px}.hero p{max-width:680px;color:var(--muted);line-height:1.55;font-size:13px}.hero-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.primary,.secondary{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border-radius:16px;padding:12px 15px;font-weight:950;font-size:12px}.primary{color:#16040c;background:linear-gradient(135deg,#fff,var(--gold));box-shadow:0 18px 50px rgba(255,215,122,.2)}.secondary{color:#fff;border:1px solid var(--line);background:rgba(255,255,255,.05)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:13px}.card{border-radius:28px;padding:17px;position:relative;overflow:hidden}.span4{grid-column:span 4}.span5{grid-column:span 5}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}.card h2,.card h3{margin:0}.card h3{font-size:15px}.muted{color:var(--muted)}.tiny{font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:900}.workspace-card{min-height:260px;background:linear-gradient(145deg,rgba(255,198,78,.13),rgba(255,255,255,.035));border-color:rgba(255,215,122,.24)}.workspace-card h2{font-family:Space Grotesk;font-size:36px;letter-spacing:-.06em;margin:10px 0}.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}.chip{border:1px solid var(--line);border-radius:999px;padding:7px 9px;font-size:10px;font-weight:850;color:rgba(255,255,255,.76);background:rgba(0,0,0,.2)}.chip.live{color:var(--green);border-color:rgba(121,255,176,.25)}.mission-launch{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid rgba(255,255,255,.12);border-radius:21px;padding:13px;background:rgba(0,0,0,.23)}.mission-launch strong{display:block}.mission-launch span{display:block;color:var(--muted);font-size:11px;margin-top:4px}.round{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;text-decoration:none;background:#fff;color:#11050c;font-weight:950}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:13px}.stat{border:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.18);border-radius:21px;padding:13px}.stat span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:850}.stat b{display:block;font-size:27px;letter-spacing:-.06em;margin-top:7px}.stat small{color:var(--green)}.list{display:grid;gap:8px;margin-top:13px}.item{border:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.18);border-radius:20px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}.item b{display:block;font-size:12px}.item span{display:block;color:var(--muted);font-size:10px;margin-top:4px}.badge{border-radius:999px;padding:7px 9px;font-size:9px;text-transform:uppercase;font-weight:950;white-space:nowrap;background:rgba(255,215,122,.12);border:1px solid rgba(255,215,122,.24);color:#ffe7aa}.badge.pink{background:rgba(255,58,168,.12);border-color:rgba(255,58,168,.25);color:#ffb8df}.badge.green{background:rgba(121,255,176,.1);border-color:rgba(121,255,176,.22);color:#b8ffd2}.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.section-head p{margin:6px 0 0}.idea{min-height:170px}.idea-number{font-family:Space Grotesk;font-size:58px;line-height:1;color:rgba(255,255,255,.1);position:absolute;right:15px;bottom:5px}.artist-context{display:none}.artist-context.active{display:block}.footer{text-align:center;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.12em;margin:24px 0 8px}@media(max-width:980px){.shell{grid-template-columns:1fr;padding:10px}.sidebar{height:auto;position:relative;top:0}.main{width:100%}.span4,.span5,.span7,.span8,.span12{grid-column:span 12}.topbar{overflow:auto}.hero h1{font-size:48px}}@media(max-width:560px){.stats{grid-template-columns:1fr}.hero{padding:18px}.card{padding:15px}.workspace-card h2{font-size:31px}.sidebar .nav{grid-template-columns:1fr 1fr}.mission-launch{align-items:flex-start}.pill{white-space:nowrap}}
+:root{--bg:#0a0d0b;--card:#f4efe5;--ink:#151713;--muted:#77786f;--olive:#9ca76a;--cream:#e8dcc2;--line:rgba(21,23,19,.12);--dark:#141814;--green:#6c8e63}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 12% 8%,rgba(156,167,106,.16),transparent 28%),linear-gradient(160deg,#0a0d0b,#131713 48%,#090b09);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f7f3ea;overflow-x:hidden}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.08;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E")}.wrap{width:min(100%,760px);margin:auto;padding:22px 16px 80px;position:relative;z-index:1}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:9px;color:#fff;text-decoration:none;font-size:11px;letter-spacing:.14em;font-weight:800}.mark{width:34px;height:34px;border:1px solid rgba(255,255,255,.18);border-radius:50%;display:grid;place-items:center}.status{font:10px ui-monospace,Consolas,monospace;color:rgba(255,255,255,.48)}.status i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#7ca874;box-shadow:0 0 12px #7ca874;margin-right:6px}.hero{padding:38px 28px;border-radius:34px;background:var(--card);color:var(--ink);box-shadow:0 30px 100px rgba(0,0,0,.28);overflow:hidden;position:relative}.hero:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-100px;top:-120px;background:radial-gradient(circle,rgba(156,167,106,.38),transparent 66%)}.kicker,.mini{font-size:10px;text-transform:uppercase;letter-spacing:.16em;font-weight:850;color:#85866f}.hero h1{font-size:clamp(44px,11vw,82px);line-height:.9;letter-spacing:-.065em;margin:14px 0 16px;max-width:600px;position:relative;z-index:1}.hero p{color:#66695f;line-height:1.55;font-size:14px;max-width:570px;position:relative;z-index:1}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px;position:relative;z-index:1}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 17px;border-radius:999px;text-decoration:none;font-weight:850;font-size:12px}.btn.primary{background:var(--dark);color:#fff}.btn.soft{background:#e8e0d0;color:var(--ink)}.stack{display:grid;gap:14px;margin-top:14px}.card{border-radius:30px;padding:22px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(22px)}.card.light{background:var(--cream);color:var(--ink);border:0}.card h2,.card h3{margin:0}.card h2{font-size:34px;letter-spacing:-.055em;line-height:.95;margin-top:8px}.card p{color:rgba(255,255,255,.62);line-height:1.5;font-size:13px}.card.light p{color:#686b61}.mission{display:flex;justify-content:space-between;align-items:center;gap:16px}.mission-copy{max-width:520px}.arrow{flex:0 0 auto;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;text-decoration:none;background:var(--card);color:var(--ink);font-size:22px}.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}.chip{padding:7px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.12);font-size:10px;color:rgba(255,255,255,.72)}.light .chip{border-color:var(--line);color:#55584f}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.mini-card{min-height:160px;display:flex;flex-direction:column;justify-content:space-between}.big-number{font-size:52px;letter-spacing:-.07em;font-weight:800}.list{display:grid;gap:9px;margin-top:14px}.row{padding:13px 0;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;gap:15px;align-items:center}.light .row{border-color:var(--line)}.row:first-child{border-top:0}.row b{font-size:13px}.row span{font-size:10px;color:rgba(255,255,255,.5)}.light .row span{color:#74766d}.tag{padding:6px 8px;border-radius:999px;background:rgba(156,167,106,.14);color:#cfd7a2!important;font-weight:850;text-transform:uppercase}.light .tag{color:#66713d!important}.switch{display:flex;gap:8px;margin:14px 0}.switch button{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#fff;border-radius:999px;padding:9px 12px;font-size:11px;font-weight:800;cursor:pointer}.switch button.active{background:var(--card);color:var(--ink)}.context{display:none}.context.active{display:block}.footer{text-align:center;color:rgba(255,255,255,.34);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-top:24px}@media(max-width:620px){.wrap{padding:14px 12px 60px}.hero{padding:28px 20px}.grid{grid-template-columns:1fr}.mission{align-items:flex-start}.arrow{width:48px;height:48px}.top{align-items:flex-start}.status{margin-top:8px}}
 </style>
 </head>
 <body>
-<div class="shell">
-<aside class="sidebar glass">
-  <div class="brand"><div class="mark">B*</div><div><b>BOOSTR LABS</b><span>Custom OS</span></div></div>
-  <div class="profile">
-    <div class="profile-row"><div class="avatar">J</div><div><b>Johanka</b><small>Multi-role BOOSTR identity</small></div></div>
-    <div class="switcher">
-      <button class="role-btn active" data-mode="creative">Creative Leader<span>Hummus FL · active priority</span></button>
-      <button class="role-btn" data-mode="artist">82NGEL Artist<span>Configured shell · data pending</span></button>
+<div class="wrap">
+  <header class="top"><a class="brand" href="/"><span class="mark">B*</span><span>BOOSTR LABS</span></a><div class="status"><i></i>JOHANKA OS ONLINE</div></header>
+
+  <section class="hero">
+    <div class="kicker">JOHANKA OS · MULTI-ROLE</div>
+    <h1>Choose what you feel like building.</h1>
+    <p>No es un dashboard para mirar números por mirar. Es tu entrada a las cosas que puedes convertir en algo bello dentro de BOOSTR.</p>
+    <div class="switch"><button class="active" data-mode="creative">Creative Leader</button><button data-mode="artist">82NGEL</button></div>
+  </section>
+
+  <main id="creative" class="context active">
+    <div class="stack">
+      <section class="card light mission">
+        <div class="mission-copy"><div class="mini">ACTIVE NOW · HUMMUS FL</div><h2>Continue BOOSTR Missions</h2><p>25 ideas una por una, con prompts, assets, notas e imágenes que puedes guardar para que Janko las revise después.</p><div class="chips"><span class="chip">Partner #001</span><span class="chip">Creative Leader</span><span class="chip">Menu + branding</span></div></div>
+        <a class="arrow" href="/hummusfl/creative-missions/">→</a>
+      </section>
+
+      <section class="grid">
+        <article class="card mini-card"><div><div class="mini">NEXT TO BOOST</div><h3>Pick one visual win</h3><p>Logo HD, primer plato transparente o portada de categoría.</p></div><a class="btn soft" href="/hummusfl/creative-missions/">Open ideas</a></article>
+        <article class="card mini-card"><div><div class="mini">REAL DATA</div><div class="big-number">25</div><p>misiones creativas cargadas. Sin métricas inventadas.</p></div><span class="tag">READY</span></article>
+      </section>
+
+      <section class="card light">
+        <div class="mini">WHAT IS ALREADY HERE</div><h2>Material para crear sin esperar.</h2>
+        <div class="list">
+          <div class="row"><div><b>Logo principal + alternativo</b><span>Listos como referencia para digitalizar</span></div><span class="tag">AVAILABLE</span></div>
+          <div class="row"><div><b>Fotos de Yelp, Google y redes</b><span>Comida, ambiente y clientes</span></div><span class="tag">AVAILABLE</span></div>
+          <div class="row"><div><b>Menú actual</b><span>Productos y precios capturados</span></div><span class="tag">AVAILABLE</span></div>
+          <div class="row"><div><b>Branding anterior</b><span>Material para conservar lo que sí funciona</span></div><span class="tag">AVAILABLE</span></div>
+        </div>
+      </section>
     </div>
-  </div>
-  <nav class="nav">
-    <a class="active" href="#overview">✦ Overview</a>
-    <a href="#missions">◈ BOOSTR Missions</a>
-    <a href="#next">⌁ Next to BOOST</a>
-    <a href="#assets">▣ Assets</a>
-    <a href="/82ngel" target="_blank">♡ 82NGEL Smart Link</a>
-  </nav>
-  <div class="side-bottom"><div class="status"><span>System status</span><b><i class="dot"></i>JOHANKA OS ONLINE</b></div></div>
-</aside>
-<main class="main">
-  <header class="topbar glass"><div class="search">Search Hummus missions, assets, ideas...</div><a class="pill" href="/hummusfl/creative-missions/">Open Missions</a><a class="pill" href="/82ngel" target="_blank">82NGEL</a></header>
+  </main>
 
-  <div id="creativeMode" class="artist-context active">
-    <section class="hero glass" id="overview">
-      <div class="eyebrow">JOHANKA OS · CREATIVE LEADER MODE</div>
-      <h1>Make Hummus<br>feel unforgettable.</h1>
-      <p>Tu dashboard organiza únicamente lo que sí existe hoy: el partner Hummus FL, sus assets recopilados, el menú actual, branding disponible y las misiones creativas que pueden convertirse en piezas reales del Hummus OS.</p>
-      <div class="hero-actions"><a class="primary" href="/hummusfl/creative-missions/">Continue BOOSTR Missions</a><a class="secondary" href="#assets">See available material</a></div>
-    </section>
+  <main id="artist" class="context">
+    <div class="stack">
+      <section class="card light mission"><div class="mission-copy"><div class="mini">82NGEL ARTIST MODE</div><h2>Your artist world stays here.</h2><p>La identidad existe, pero no mostraremos streams, ventas ni fans inventados. Se irá activando cuando carguemos data real.</p><div class="chips"><span class="chip">Smart Link</span><span class="chip">Store</span><span class="chip">Artist OS</span></div></div><a class="arrow" href="/82ngel">→</a></section>
+      <section class="grid"><article class="card mini-card"><div><div class="mini">PUBLIC FRONT DOOR</div><h3>82NGEL Smart Link</h3><p>La experiencia pública que ya existe.</p></div><a class="btn soft" href="/82ngel">Open</a></article><article class="card mini-card"><div><div class="mini">DATA STATUS</div><h3>Waiting for real setup</h3><p>Sin números demo disfrazados de resultados.</p></div><span class="tag">PENDING</span></article></section>
+    </div>
+  </main>
 
-    <section class="grid">
-      <article class="card glass span7 workspace-card" id="missions">
-        <div class="tiny muted">ACTIVE WORKSPACE · PARTNER #001</div>
-        <h2>Hummus Mediterranean Food</h2>
-        <p class="muted">Restaurante mediterráneo en Florida. La prioridad visual es transformar material real existente en assets listos para menú, Smart Links, QR, landing y Hummus OS.</p>
-        <div class="chips"><span class="chip live">25 missions available</span><span class="chip">Current menu captured</span><span class="chip">Logo + alt logo</span><span class="chip">Review photos</span><span class="chip">Social assets</span></div>
-        <div class="mission-launch"><div><strong>BOOSTR Missions</strong><span>Ideas secuenciales, prompts copiables y progreso creativo.</span></div><a class="round" href="/hummusfl/creative-missions/">→</a></div>
-      </article>
-
-      <article class="card glass span5">
-        <div class="section-head"><div><div class="tiny muted">REAL DATA STATUS</div><h3>What is actually loaded</h3></div><span class="badge green">VERIFIED</span></div>
-        <div class="stats">
-          <div class="stat"><span>Missions</span><b>25</b><small>ready to explore</small></div>
-          <div class="stat"><span>Partner</span><b>#001</b><small>Hummus FL</small></div>
-          <div class="stat"><span>Menu platform</span><b style="font-size:18px">Helenabox</b><small>current</small></div>
-          <div class="stat"><span>Delivery</span><b style="font-size:18px">None</b><small>integration pending</small></div>
-        </div>
-      </article>
-
-      <article class="card glass span5" id="next">
-        <div class="section-head"><div><div class="tiny muted">NEXT TO BOOST</div><h3>Creative opportunities</h3></div><span class="badge pink">NOW</span></div>
-        <div class="list">
-          <div class="item"><div><b>Digitalize main logo</b><span>HD + transparent versions</span></div><span class="badge">Mission 01</span></div>
-          <div class="item"><div><b>Choose first food candidate</b><span>Yelp / Google / current assets</span></div><span class="badge">Mission 03</span></div>
-          <div class="item"><div><b>Create first transparent dish</b><span>Temporary menu-ready asset</span></div><span class="badge">Mission 04</span></div>
-          <div class="item"><div><b>Curate strongest 12 photos</b><span>Landing + Smart Link library</span></div><span class="badge">Mission 10</span></div>
-        </div>
-      </article>
-
-      <article class="card glass span7" id="assets">
-        <div class="section-head"><div><div class="tiny muted">AVAILABLE MATERIAL</div><h3>Creative source library</h3><p class="muted" style="font-size:12px">Material recopilado para trabajar sin esperar una sesión nueva.</p></div><span class="badge green">READY</span></div>
-        <div class="list">
-          <div class="item"><div><b>Current branding</b><span>Main logo, alternate logo and previous visual pieces</span></div><span class="badge green">available</span></div>
-          <div class="item"><div><b>Food and restaurant photography</b><span>Facebook, Google Reviews, Yelp and current social assets</span></div><span class="badge green">available</span></div>
-          <div class="item"><div><b>Current menu</b><span>Products, categories and prices captured for rebuild</span></div><span class="badge green">available</span></div>
-          <div class="item"><div><b>Review evidence</b><span>Google raw text, Yelp screenshots and review video</span></div><span class="badge green">available</span></div>
-        </div>
-      </article>
-
-      <article class="card glass span4 idea"><div class="tiny muted">CREATIVE SIGNAL</div><h3 style="margin-top:10px">You do not need to solve the whole restaurant.</h3><p class="muted">One strong asset can unlock a menu card, a QR visual, a Smart Link section and a social post.</p><div class="idea-number">01</div></article>
-      <article class="card glass span4 idea"><div class="tiny muted">WORK STYLE</div><h3 style="margin-top:10px">Build it one Carrd at a time.</h3><p class="muted">Choose the mission that gives you ganas. The OS will keep the rest waiting without pressure.</p><div class="idea-number">02</div></article>
-      <article class="card glass span4 idea"><div class="tiny muted">CURRENT PRIORITY</div><h3 style="margin-top:10px">Real enough to launch. Better later.</h3><p class="muted">Use current photos as references now. Replace temporary assets when proper product photos exist.</p><div class="idea-number">03</div></article>
-    </section>
-  </div>
-
-  <div id="artistMode" class="artist-context">
-    <section class="hero glass"><div class="eyebrow">JOHANKA OS · 82NGEL ARTIST MODE</div><h1>82NGEL is here.<br>Data comes next.</h1><p>La identidad y el front door de 82NGEL existen, pero este dashboard no mostrará ventas, fans, conversiones ni métricas inventadas. Los módulos se activarán cuando carguemos información real.</p><div class="hero-actions"><a class="primary" href="/82ngel" target="_blank">Open 82NGEL Smart Link</a><a class="secondary" href="/82store" target="_blank">Open 82 Store</a></div></section>
-    <section class="grid"><article class="card glass span4"><div class="tiny muted">SMART LINK</div><h3 style="margin-top:10px">Public artist route</h3><p class="muted">Available now.</p><span class="badge green">LIVE</span></article><article class="card glass span4"><div class="tiny muted">ARTIST DATA</div><h3 style="margin-top:10px">Insights and audience</h3><p class="muted">Waiting for real sources and connected accounts.</p><span class="badge">PENDING</span></article><article class="card glass span4"><div class="tiny muted">STORE DATA</div><h3 style="margin-top:10px">Orders and demand</h3><p class="muted">Storefront exists; real commerce data is not connected yet.</p><span class="badge">PENDING</span></article></section>
-  </div>
-  <div class="footer">POWERED BY BOOSTR LABS · ONE IDENTITY · MULTIPLE ROLES · REAL DATA ONLY</div>
-</main>
+  <div class="footer">POWERED BY BOOSTR LABS · JOHANKA OS</div>
 </div>
 <script>
-const buttons=[...document.querySelectorAll('.role-btn')];const creative=document.getElementById('creativeMode');const artist=document.getElementById('artistMode');buttons.forEach(btn=>btn.addEventListener('click',()=>{buttons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');const isArtist=btn.dataset.mode==='artist';creative.classList.toggle('active',!isArtist);artist.classList.toggle('active',isArtist);window.scrollTo({top:0,behavior:'smooth'});}));
+const buttons=[...document.querySelectorAll('[data-mode]')];
+const contexts={creative:document.getElementById('creative'),artist:document.getElementById('artist')};
+buttons.forEach(btn=>btn.addEventListener('click',()=>{buttons.forEach(b=>b.classList.toggle('active',b===btn));Object.entries(contexts).forEach(([key,node])=>node.classList.toggle('active',key===btn.dataset.mode));}));
 </script>
-<script src="/assets/boostr-mother/console.js"></script>
 </body>
 </html>
