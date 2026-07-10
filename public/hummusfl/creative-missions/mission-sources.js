@@ -3,7 +3,8 @@
   const assets = {
     logoMain: { label: 'Logo principal actual', src: './assets/logo-main.svg' },
     logoAlt: { label: 'Logo alternativo actual', src: './assets/logo-alt.svg' },
-    food01: { label: 'Foto real de comida — referencia 01', src: './assets/food-01.svg' }
+    food01: { label: 'Foto real de comida — referencia 01', src: './assets/food-01.svg' },
+    menu01: { label: 'Captura del menú actual — referencia 01', src: './assets/menu-current-01.svg' }
   };
   const missionAssets = {
     VISUAL_BOOT_01: ['logoMain'],
@@ -11,8 +12,8 @@
     ASSET_SCAN_03: ['food01'],
     FOOD_CUT_04: ['food01'],
     FOOD_SYSTEM_05: ['food01'],
-    MENU_SCAN_06: ['food01'],
-    MENU_COVER_07: ['food01'],
+    MENU_SCAN_06: ['menu01'],
+    MENU_COVER_07: ['menu01', 'food01'],
     PALETTE_08: ['logoMain', 'logoAlt', 'food01'],
     TYPE_09: ['logoMain', 'logoAlt'],
     PHOTO_CURATE_10: ['food01'],
@@ -47,11 +48,11 @@
 
   function render() {
     const code = codeNode.textContent.trim();
-    const keys = missionAssets[code] || ['logoMain', 'food01'];
+    const keys = missionAssets[code] || ['logoMain', 'food01', 'menu01'];
     const cards = keys.map(key => assets[key]).filter(Boolean);
     section.innerHTML = `
       <div class="source-assets-head">
-        <div><div class="source-kicker">HERRAMIENTAS PARA ESTA MISIÓN</div><h3>Johanka, te dejamos lo que necesitas aquí.</h3><p>Puedes abrir, descargar o subir estas referencias directamente a ChatGPT. La misión sigue siendo parte del módulo reusable BOOSTR Missions; esta versión está asignada y preparada específicamente para ti.</p></div>
+        <div><div class="source-kicker">HERRAMIENTAS PARA ESTA MISIÓN</div><h3>Johanka, te dejamos lo que necesitas aquí.</h3><p>Puedes abrir, descargar o subir estas referencias directamente a ChatGPT. La misión sigue siendo parte del módulo reutilizable BOOSTR Missions; esta versión está asignada y preparada específicamente para ti.</p></div>
         <span class="source-owner">${context.assignee} · ${context.role}</span>
       </div>
       <div class="source-grid">${cards.map(asset => `<a class="source-card" href="${asset.src}" download><img src="${asset.src}" alt="${asset.label}"><b>${asset.label}</b><small>Descargar referencia</small></a>`).join('')}</div>`;
