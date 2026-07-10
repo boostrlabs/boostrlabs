@@ -20,8 +20,8 @@ export async function onRequestOptions() {
 
 function resolveDashboard(user, memberships = []) {
   const email = clean(user?.email, 180).toLowerCase();
-  if (email === "janko@boostrlabs.com") return "/demo/janko-os/?v=0.7.2";
-  if (email === "johanka@boostrlabs.com") return "/app/82ngel/?v=0.7.2";
+  if (email === "janko@boostrlabs.com") return "/app/janko/?v=0.8.0";
+  if (email === "johanka@boostrlabs.com") return "/app/82ngel/?v=0.8.0";
 
   const roles = new Set([user?.role, ...memberships.map((item) => item.role)].filter(Boolean));
   if (roles.has("admin")) return "/admin/";
