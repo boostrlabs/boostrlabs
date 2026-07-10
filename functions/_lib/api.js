@@ -108,7 +108,9 @@ export async function hashSessionToken(token) {
 }
 
 const passwordAlgorithm = "pbkdf2_sha256";
-const passwordIterations = 120000;
+// Cloudflare Workers Web Crypto currently rejects PBKDF2 counts above 100,000.
+const passwordIterations = 100000;
+const maxSupportedPasswordIterations = 100000;
 
 const constantTimeEqual = (left, right) => {
   const a = fromHex(left);
@@ -120,6 +122,9 @@ const constantTimeEqual = (left, right) => {
 };
 
 async function derivePasswordHash(password, salt, iterations) {
+  if (!Number.isInteger(iterations) || iterations < 1 || iterations > maxSupportedPasswordIterations) {
+    throw new Error(`Unsupported PBKDF2 iteration count: ${iterations}`);
+  }
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(password),
@@ -150,6 +155,7 @@ export async function verifyPassword(password, storedHash) {
   const [algorithm, iterationsText, salt, digest] = clean(storedHash, 1000).split("$");
   const iterations = Number(iterationsText);
   if (algorithm !== passwordAlgorithm || !iterations || !salt || !digest) return false;
+  if (iterations > maxSupportedPasswordIterations) return false;
   const candidate = await derivePasswordHash(password, salt, iterations);
   return constantTimeEqual(candidate, digest);
 }
