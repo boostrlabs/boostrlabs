@@ -12,6 +12,7 @@ const progressBar = document.getElementById('progressBar');
 const title = document.getElementById('sceneTitle');
 const sceneId = document.body.dataset.scene || new URLSearchParams(location.search).get('scene') || '';
 let viewer = null;
+let homeView = null;
 
 function setStatus(text, percent = null) {
   status.textContent = text;
@@ -57,6 +58,81 @@ function assertWebGL() {
   if (!context) throw new Error('Este navegador no tiene WebGL disponible.');
 }
 
+function finite(value) {
+  return Number.isFinite(value) && Math.abs(value) < 1e9;
+}
+
+function computeBounds(centers, splatCount) {
+  if (!centers || !splatCount) return null;
+  const sampleTarget = 200000;
+  const stride = Math.max(1, Math.floor(splatCount / sampleTarget));
+  const xs = [];
+  const ys = [];
+  const zs = [];
+  for (let i = 0; i < splatCount; i += stride) {
+    const base = i * 3;
+    const x = centers[base];
+    const y = centers[base + 1];
+    const z = centers[base + 2];
+    if (finite(x) && finite(y) && finite(z)) {
+      xs.push(x); ys.push(y); zs.push(z);
+    }
+  }
+  if (!xs.length) return null;
+  xs.sort((a, b) => a - b);
+  ys.sort((a, b) => a - b);
+  zs.sort((a, b) => a - b);
+  const lo = Math.floor(xs.length * 0.01);
+  const hi = Math.max(lo, Math.floor(xs.length * 0.99) - 1);
+  const min = [xs[lo], ys[lo], zs[lo]];
+  const max = [xs[hi], ys[hi], zs[hi]];
+  const center = [
+    (min[0] + max[0]) / 2,
+    (min[1] + max[1]) / 2,
+    (min[2] + max[2]) / 2
+  ];
+  const size = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+  const radius = Math.max(size[0], size[1], size[2], 0.01) * 0.72;
+  return { min, max, center, size, radius };
+}
+
+function frameLoadedScene() {
+  const mesh = viewer?.splatMesh;
+  const splatCount = Number(mesh?.getSplatCount?.() || 0);
+  const centers = mesh?.splatDataTextures?.baseData?.centers;
+  if (!splatCount) throw new Error('El PLY cargó, pero produjo 0 splats renderizables.');
+  const bounds = computeBounds(centers, splatCount);
+  if (!bounds) throw new Error('No se pudieron calcular los límites del modelo.');
+
+  const [cx, cy, cz] = bounds.center;
+  const distance = Math.max(bounds.radius * 3.2, 1.5);
+  const cameraPosition = [cx + distance * 0.35, cy - distance, cz + distance * 0.45];
+
+  viewer.camera.position.set(...cameraPosition);
+  viewer.camera.up.set(0, 0, 1);
+  viewer.controls?.target?.set(cx, cy, cz);
+  viewer.camera.lookAt(cx, cy, cz);
+  viewer.camera.near = Math.max(distance / 10000, 0.001);
+  viewer.camera.far = Math.max(distance * 1000, 1000);
+  viewer.camera.updateProjectionMatrix?.();
+  viewer.controls?.update?.();
+
+  homeView = { center: bounds.center, cameraPosition, distance };
+  viewer.update?.();
+  viewer.render?.();
+  return { splatCount, bounds };
+}
+
+function resetCamera() {
+  if (!viewer || !homeView) return;
+  viewer.camera.position.set(...homeView.cameraPosition);
+  viewer.controls?.target?.set(...homeView.center);
+  viewer.camera.lookAt(...homeView.center);
+  viewer.controls?.update?.();
+  viewer.update?.();
+  viewer.render?.();
+}
+
 async function loadScene(id) {
   const scene = scenes[id];
   if (!scene) return fail(new Error('Escena desconocida.'), 'scene');
@@ -71,28 +147,35 @@ async function loadScene(id) {
 
     viewer = new GaussianSplats3D.Viewer({
       rootElement: root,
-      cameraUp: [0, -1, -0.6],
-      initialCameraPosition: [0, -3, 2],
+      cameraUp: [0, 0, 1],
+      initialCameraPosition: [0, -10, 5],
       initialCameraLookAt: [0, 0, 0],
       sharedMemoryForWorkers: false,
       gpuAcceleratedSort: false,
       integerBasedSort: false,
-      antialiased: true,
+      antialiased: false,
       useBuiltInControls: true,
-      logLevel: GaussianSplats3D.LogLevel?.None
+      sceneRevealMode: GaussianSplats3D.SceneRevealMode?.Instant,
+      renderMode: GaussianSplats3D.RenderMode?.Always,
+      ignoreDevicePixelRatio: false,
+      logLevel: GaussianSplats3D.LogLevel?.Info
     });
 
     setStatus(`Leyendo ${scene.title} desde R2…`, 8);
     await viewer.addSplatScene(scene.url, {
       format: GaussianSplats3D.SceneFormat.Ply,
-      splatAlphaRemovalThreshold: 5,
+      splatAlphaRemovalThreshold: 0,
       showLoadingUI: true,
-      progressiveLoad: true,
-      onProgress: (percent) => setStatus(`Cargando ${scene.title}…`, percent)
+      progressiveLoad: false,
+      onProgress: (percent, label, loaderStatus) => {
+        const phase = loaderStatus === 1 ? 'Procesando' : 'Cargando';
+        setStatus(`${phase} ${scene.title}${label ? ` · ${label}` : ''}…`, percent);
+      }
     });
 
     viewer.start();
-    setStatus('Arrastra para rotar · rueda o pellizca para acercar');
+    const framed = frameLoadedScene();
+    setStatus(`${framed.splatCount.toLocaleString()} splats · arrastra para rotar · rueda o pellizca para acercar`);
     document.body.classList.add('ready');
   } catch (error) {
     fail(error, 'load');
@@ -108,12 +191,7 @@ document.getElementById('fullscreen')?.addEventListener('click', async () => {
   }
 });
 
-document.getElementById('reset')?.addEventListener('click', () => {
-  if (!viewer) return;
-  viewer.camera.position.set(0, -3, 2);
-  viewer.controls?.target?.set(0, 0, 0);
-  viewer.controls?.update?.();
-});
+document.getElementById('reset')?.addEventListener('click', resetCamera);
 
 window.addEventListener('beforeunload', () => {
   try { viewer?.dispose?.(); } catch {}
