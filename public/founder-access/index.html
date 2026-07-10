@@ -8,40 +8,115 @@
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="stylesheet" href="/assets/boostr-mother/mother.css">
   <style>
-    *{box-sizing:border-box}body{margin:0;min-height:100dvh;background:#05080a;color:#f4f6f7;font-family:Inter,system-ui,-apple-system,sans-serif}.shell{min-height:100dvh;display:grid;place-items:center;padding:18px}.card{width:min(720px,100%);border:1px solid rgba(255,255,255,.12);border-radius:34px;padding:clamp(22px,5vw,42px);background:linear-gradient(145deg,rgba(18,27,33,.98),rgba(7,11,14,.98));box-shadow:0 40px 120px rgba(0,0,0,.62)}.brand{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}.brand img{width:126px;max-height:42px;object-fit:contain;object-position:left}.private{font:10px ui-monospace,Menlo,monospace;letter-spacing:.15em;color:#73ffb0}.kicker{font:10px ui-monospace,Menlo,monospace;letter-spacing:.17em;color:#77e8ff}.card h1{font-size:clamp(42px,8vw,76px);line-height:.92;letter-spacing:-.065em;margin:12px 0 16px}.lead{color:#9eb0b9;line-height:1.55;max-width:590px}.profiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 0}.profile{border:1px solid rgba(255,255,255,.11);border-radius:20px;background:rgba(255,255,255,.035);color:white;padding:16px;text-align:left;cursor:pointer}.profile strong,.profile span{display:block}.profile span{color:#8ea0aa;font-size:12px;margin-top:5px}.profile.active{border-color:rgba(119,232,255,.5);background:rgba(119,232,255,.08)}form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:7px}.field.full{grid-column:1/-1}.field span{font:800 10px ui-monospace,Menlo,monospace;letter-spacing:.12em;color:#8ea0aa;text-transform:uppercase}.field input{min-height:52px;border:1px solid rgba(255,255,255,.13);border-radius:17px;background:#05090c;color:white;padding:0 14px;font:700 15px system-ui}.submit{grid-column:1/-1;min-height:54px;border:0;border-radius:17px;background:linear-gradient(135deg,#77e8ff,#4b88ff);color:#041015;font-weight:900;cursor:pointer}.submit:disabled{opacity:.5;cursor:wait}.status{grid-column:1/-1;min-height:22px;color:#feedb9;font-size:13px;line-height:1.45}.note{margin-top:20px;border:1px solid rgba(115,255,176,.2);border-radius:18px;padding:13px;color:#9eb0b9;font-size:12px;line-height:1.45;background:rgba(115,255,176,.045)}@media(max-width:620px){.shell{padding:9px 9px calc(80px + env(safe-area-inset-bottom))}.card{border-radius:26px;padding:22px 17px}.brand{align-items:flex-start}.profiles,form{grid-template-columns:1fr}.field.full,.submit,.status{grid-column:auto}.card h1{font-size:48px}}
+    *{box-sizing:border-box}body{margin:0;min-height:100dvh;background:#05080a;color:#f4f6f7;font-family:Inter,system-ui,-apple-system,sans-serif}.shell{min-height:100dvh;display:grid;place-items:center;padding:18px}.card{width:min(680px,100%);border:1px solid rgba(255,255,255,.12);border-radius:34px;padding:clamp(22px,5vw,42px);background:linear-gradient(145deg,rgba(18,27,33,.98),rgba(7,11,14,.98));box-shadow:0 40px 120px rgba(0,0,0,.62)}.brand{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}.brand img{width:126px;max-height:42px;object-fit:contain;object-position:left}.private{font:10px ui-monospace,Menlo,monospace;letter-spacing:.15em;color:#73ffb0}.kicker{font:10px ui-monospace,Menlo,monospace;letter-spacing:.17em;color:#77e8ff}.card h1{font-size:clamp(42px,8vw,72px);line-height:.92;letter-spacing:-.065em;margin:12px 0 16px}.lead{color:#9eb0b9;line-height:1.55;max-width:590px}form{display:grid;gap:13px;margin-top:26px}.field{display:grid;gap:8px}.field span{font:800 10px ui-monospace,Menlo,monospace;letter-spacing:.12em;color:#8ea0aa;text-transform:uppercase}.field input,.field select{width:100%;min-height:56px;border:1px solid rgba(255,255,255,.13);border-radius:18px;background:#05090c;color:white;padding:0 15px;font:700 15px system-ui;outline:0}.field select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#77e8ff 50%),linear-gradient(135deg,#77e8ff 50%,transparent 50%);background-position:calc(100% - 20px) 24px,calc(100% - 14px) 24px;background-size:6px 6px,6px 6px;background-repeat:no-repeat}.identity{border:1px solid rgba(119,232,255,.18);border-radius:18px;padding:13px 15px;background:rgba(119,232,255,.045);color:#9eb0b9;font-size:12px;line-height:1.45}.identity strong{display:block;color:#f4f6f7;font-size:14px;margin-bottom:3px}.submit{min-height:56px;border:0;border-radius:18px;background:linear-gradient(135deg,#77e8ff,#4b88ff);color:#041015;font-weight:900;font-size:16px;cursor:pointer}.submit:disabled{opacity:.5;cursor:wait}.status{min-height:22px;color:#feedb9;font-size:13px;line-height:1.45}.note,.closed{margin-top:20px;border:1px solid rgba(115,255,176,.2);border-radius:18px;padding:14px;color:#9eb0b9;font-size:12px;line-height:1.5;background:rgba(115,255,176,.045)}.closed h2{margin:0 0 8px;color:#f4f6f7;font-size:28px;letter-spacing:-.04em}.closed a{display:inline-flex;margin-top:10px;border-radius:999px;padding:11px 15px;background:#fff;color:#05080a;text-decoration:none;font-weight:900}@media(max-width:620px){.shell{padding:9px 9px calc(80px + env(safe-area-inset-bottom))}.card{border-radius:26px;padding:22px 17px}.brand{align-items:flex-start}.card h1{font-size:46px}.private{font-size:8px}}
   </style>
 </head>
 <body>
   <main class="shell">
-    <section class="card">
+    <section class="card" id="card">
       <div class="brand"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><span class="private">PRIVATE · ONE-TIME SETUP</span></div>
       <span class="kicker">FOUNDER ACCOUNT BOOTSTRAP</span>
       <h1>Activa tu identidad BOOSTR.</h1>
-      <p class="lead">Esta ruta crea únicamente las cuentas iniciales de Janko y Johanka, las conecta a BOOSTR Labs y Hummus FL, inicia sesión y se cierra cuando ambas existen.</p>
-
-      <div class="profiles" role="group" aria-label="Selecciona perfil">
-        <button class="profile active" type="button" data-profile="janko"><strong>Janko</strong><span>Founder · BOOSTR Manager</span></button>
-        <button class="profile" type="button" data-profile="johanka"><strong>Johanka</strong><span>Creative Leader · Creator</span></button>
-      </div>
+      <p class="lead">Esta ruta solo acepta las dos identidades fundadoras aprobadas. Después de crear la segunda cuenta, el bootstrap queda cerrado permanentemente.</p>
 
       <form id="form">
-        <label class="field"><span>Nombre visible</span><input name="display_name" autocomplete="name" required></label>
-        <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
+        <label class="field">
+          <span>Cuenta fundadora</span>
+          <select name="email" id="email" autocomplete="username" required>
+            <option value="janko@boostrlabs.com">janko@boostrlabs.com</option>
+            <option value="johanka@boostrlabs.com">johanka@boostrlabs.com</option>
+          </select>
+        </label>
+        <div class="identity" id="identity"><strong>Janko</strong>Founder · BOOSTR Manager · Hummus FL</div>
         <label class="field"><span>Clave nueva</span><input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
         <label class="field"><span>Confirmar clave</span><input name="confirm" type="password" minlength="8" autocomplete="new-password" required></label>
-        <label class="field full"><span>Código privado BOOSTR</span><input name="secret_boostr_code" type="password" autocomplete="off" required></label>
         <button class="submit" id="submit" type="submit">Crear cuenta y entrar</button>
-        <div class="status" id="status"></div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
       </form>
-      <div class="note">No está enlazada desde el sitio público. Después del bootstrap, el acceso normal es por <a href="/login">BOOSTR Login</a>. Los demás usuarios entran únicamente por Audit aprobado o invitación.</div>
+
+      <div class="note" id="note">No existe registro público. Después del bootstrap, el acceso normal es por <a href="/login">BOOSTR Login</a>. Los demás usuarios entran únicamente por Audit aprobado o invitación.</div>
     </section>
   </main>
   <script>
-    const form=document.getElementById('form'),status=document.getElementById('status'),submit=document.getElementById('submit');
-    let profile='janko';
-    document.querySelectorAll('[data-profile]').forEach(button=>button.addEventListener('click',()=>{profile=button.dataset.profile;document.querySelectorAll('[data-profile]').forEach(item=>item.classList.toggle('active',item===button));if(!form.display_name.value)form.display_name.value=profile==='janko'?'Janko':'Johanka'}));
-    form.display_name.value='Janko';
-    form.addEventListener('submit',async event=>{event.preventDefault();if(form.password.value!==form.confirm.value){status.textContent='Las claves no coinciden.';return}submit.disabled=true;status.textContent='Creando identidad y workspace...';try{const response=await fetch('/api/founder-bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({profile,display_name:form.display_name.value.trim(),email:form.email.value.trim(),password:form.password.value,secret_boostr_code:form.secret_boostr_code.value.trim()})});const data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw data;if(data.token)localStorage.setItem('boostr_auth_token',data.token);localStorage.setItem('boostr_session',JSON.stringify({email:data.user?.email,username:data.user?.username,role:data.user?.role,workspace:data.active_workspace?.name,createdAt:new Date().toISOString()}));status.textContent='Cuenta activa. Abriendo BOOSTR Missions...';setTimeout(()=>location.href=data.redirect||'/app',500)}catch(error){status.textContent=error?.message||error?.error||'No se pudo activar la cuenta.'}finally{submit.disabled=false}});
+    const form=document.getElementById('form');
+    const status=document.getElementById('status');
+    const submit=document.getElementById('submit');
+    const email=document.getElementById('email');
+    const identity=document.getElementById('identity');
+    const card=document.getElementById('card');
+
+    const identities={
+      'janko@boostrlabs.com':['Janko','Founder · BOOSTR Manager · Hummus FL'],
+      'johanka@boostrlabs.com':['Johanka','Creative Leader · Creator · Hummus FL']
+    };
+
+    function paintIdentity(){
+      const selected=identities[email.value];
+      identity.innerHTML=`<strong>${selected[0]}</strong>${selected[1]}`;
+    }
+
+    function destroyBootstrap(message='BOOSTR ya fue inicializado.'){
+      localStorage.setItem('boostr_founder_bootstrap_closed','true');
+      card.innerHTML=`
+        <div class="brand"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><span class="private">INITIALIZED</span></div>
+        <span class="kicker">FOUNDER BOOTSTRAP CLOSED</span>
+        <div class="closed"><h2>${message}</h2><p>Las dos cuentas fundadoras ya existen. Esta ruta dejó de aceptar registros.</p><a href="/login">Abrir BOOSTR Login</a></div>`;
+    }
+
+    if(localStorage.getItem('boostr_founder_bootstrap_closed')==='true'){
+      destroyBootstrap();
+    }else{
+      email.addEventListener('change',paintIdentity);
+      paintIdentity();
+
+      form.addEventListener('submit',async event=>{
+        event.preventDefault();
+        if(form.password.value!==form.confirm.value){
+          status.textContent='Las claves no coinciden.';
+          return;
+        }
+
+        submit.disabled=true;
+        status.textContent='Verificando cuentas fundadoras y creando identidad...';
+
+        try{
+          const response=await fetch('/api/founder-bootstrap',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            credentials:'same-origin',
+            body:JSON.stringify({email:email.value,password:form.password.value})
+          });
+          const data=await response.json().catch(()=>({}));
+
+          if(response.status===410||data.bootstrap_closed){
+            destroyBootstrap(data.message||'BOOSTR ya fue inicializado.');
+            return;
+          }
+          if(!response.ok||data.ok===false)throw data;
+
+          if(data.token)localStorage.setItem('boostr_auth_token',data.token);
+          localStorage.setItem('boostr_session',JSON.stringify({
+            email:data.user?.email,
+            username:data.user?.username,
+            role:data.user?.role,
+            workspace:data.active_workspace?.name,
+            createdAt:new Date().toISOString()
+          }));
+
+          if(data.bootstrap_closed){
+            localStorage.setItem('boostr_founder_bootstrap_closed','true');
+            status.textContent='Segunda cuenta creada. Founder Access quedó cerrado.';
+          }else{
+            status.textContent='Cuenta activa. Falta crear la segunda identidad fundadora.';
+          }
+          setTimeout(()=>location.href=data.redirect||'/app',700);
+        }catch(error){
+          status.textContent=error?.message||error?.error||'No se pudo activar la cuenta.';
+        }finally{
+          submit.disabled=false;
+        }
+      });
+    }
   </script>
 </body>
 </html>
