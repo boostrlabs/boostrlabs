@@ -8,6 +8,10 @@ on:
       - 'functions/_lib/johankarrd-renderer.js'
       - 'scripts/patch-johankarrd-v60.mjs'
       - 'scripts/johankarrd-health.mjs'
+      - 'scripts/johankarrd-core-tests.mjs'
+      - 'scripts/johankarrd-dist-health.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
       - '.github/workflows/johankarrd-health.yml'
   pull_request:
     paths:
@@ -16,6 +20,17 @@ on:
       - 'functions/_lib/johankarrd-renderer.js'
       - 'scripts/patch-johankarrd-v60.mjs'
       - 'scripts/johankarrd-health.mjs'
+      - 'scripts/johankarrd-core-tests.mjs'
+      - 'scripts/johankarrd-dist-health.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: johankarrd-health-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   health:
@@ -29,5 +44,4 @@ jobs:
       - run: corepack enable
       - run: corepack prepare pnpm@9.15.9 --activate
       - run: pnpm install --frozen-lockfile
-      - run: node scripts/johankarrd-health.mjs
-      - run: pnpm run build
+      - run: pnpm run deploy:check
