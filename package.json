@@ -8,9 +8,11 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build && node scripts/patch-johankarrd-v60.mjs",
+    "health:johankarrd": "node scripts/johankarrd-health.mjs",
+    "health:johankarrd:dist": "node scripts/johankarrd-dist-health.mjs",
+    "build": "vite build && node scripts/patch-johankarrd-v60.mjs && node scripts/johankarrd-dist-health.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "deploy:check": "npm run build",
+    "deploy:check": "pnpm run health:johankarrd && pnpm run build",
     "smoke:launch": "node scripts/launch-smoke-test.mjs",
     "ecosystem:dev": "pnpm --filter @boostr/ecosystem dev",
     "ecosystem:build": "pnpm --filter @boostr/ecosystem build",
