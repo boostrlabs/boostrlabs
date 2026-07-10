@@ -12,6 +12,12 @@ async function latest(env, table, cols = "id, workspace_id, created_at", where =
 
 export async function onRequestGet({ env }) {
   const db = { bound: Boolean(env.DB), writable: false, tables: [], missing_tables: expectedTables };
+  const storage = {
+    r2_bound: Boolean(env.BOOSTR_ASSETS || env.JOHANKARRD_ASSETS || env.ASSETS_BUCKET || env.R2_BUCKET),
+    preferred_binding: env.BOOSTR_ASSETS ? "BOOSTR_ASSETS" : env.JOHANKARRD_ASSETS ? "JOHANKARRD_ASSETS" : env.ASSETS_BUCKET ? "ASSETS_BUCKET" : env.R2_BUCKET ? "R2_BUCKET" : null,
+    cloud_endpoint: "/api/cloud",
+    cloud_ui: "/app/johanka/cloud/"
+  };
   const metrics = { leads_total: null, audits_total: null, claimed_audits_total: null, orders_total: null, events_total: null, products_total: null, active_products_total: null, payment_links_total: null, active_payment_links_total: null, reservations_total: null, converted_reservations_total: null, files_total: null, invoices_total: null, invited_users_total: null, verified_users_total: null, pending_password_resets_total: null, invite_codes_total: null, users_total: null, workspaces_total: null, admins_total: null, last_lead: null, last_audit: null, last_product: null, last_payment_link: null, last_reservation: null, last_file: null, last_invoice: null };
   if (env.DB) {
     try {
@@ -36,8 +42,9 @@ export async function onRequestGet({ env }) {
   return json({
     ok: true,
     service: "BOOSTR Labs API",
-    version: "0.3.9-operational-polish",
+    version: "0.8.3-workspace-cloud-fix",
     db,
+    storage,
     metrics,
     readiness: { endpoint: "/api/readiness", admin_bootstrap: "/api/admin/bootstrap", admin_readiness_ui: "/admin/readiness", admin_bootstrap_key_configured: Boolean(env.BOOSTR_ADMIN_BOOTSTRAP_KEY) },
     auth_recovery: { request_endpoint: "/api/password-reset/request", confirm_endpoint: "/api/password-reset/confirm", public_route: "/forgot-password", debug_links_enabled: env.ENVIRONMENT === "development" || env.ALLOW_DEBUG_AUTH_LINKS === "true" },
@@ -49,8 +56,9 @@ export async function onRequestGet({ env }) {
     products: { endpoint: "/api/products", item_endpoint: "/api/products/:id", workspace_ui: "/app/products", returns_relationship_graph: true, creates_real_workspace_products: true, stripe_required: false },
     smart_links: { endpoint: "/api/payment-links", item_endpoint: "/api/payment-links/:id", public_offer_endpoint: "/api/public/payment-links/:id", public_route: "/pay/:id", reservations_endpoint: "/api/order-reservations", reservation_invoice_endpoint: "/api/order-reservations/:id/invoice", creates_real_reservations: true, stripe_required: false },
     files: { endpoint: "/api/files", item_endpoint: "/api/files/:id", workspace_ui: "/app/files", stores_metadata_links: true },
+    cloud: { endpoint: "/api/cloud", workspace_ui: "/app/johanka/cloud", private_r2_assets: true, local_image_compression: true },
     invoices: { endpoint: "/api/invoices", item_endpoint: "/api/invoices/:id", workspace_ui: "/app/invoices", manual_pre_stripe_records: true },
     mobile: { global_css: "/assets/boostr-mother/mobile-polish.css", injected_by_console: true },
-    endpoints: ["/api/health", "/api/readiness", "/api/manager/workspaces", "/api/password-reset/request", "/api/password-reset/confirm", "/api/email-verification/request", "/api/email-verification/confirm", "/api/invitations/accept", "/api/insights/summary", "/api/insights/run", "/api/audit/:id/claim", "/api/products", "/api/products/:id", "/api/payment-links", "/api/order-reservations", "/api/order-reservations/:id/invoice", "/api/files", "/api/invoices", "/api/cards"]
+    endpoints: ["/api/health", "/api/readiness", "/api/workspace-os", "/api/cloud", "/api/manager/workspaces", "/api/password-reset/request", "/api/password-reset/confirm", "/api/email-verification/request", "/api/email-verification/confirm", "/api/invitations/accept", "/api/insights/summary", "/api/insights/run", "/api/audit/:id/claim", "/api/products", "/api/products/:id", "/api/payment-links", "/api/order-reservations", "/api/order-reservations/:id/invoice", "/api/files", "/api/invoices", "/api/cards"]
   });
 }
