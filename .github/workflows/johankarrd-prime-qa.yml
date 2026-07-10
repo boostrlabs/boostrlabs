@@ -1,0 +1,42 @@
+name: Johankarrd PRIME QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/johankarrdbuildr/**'
+      - 'functions/_lib/johankarrd-renderer.js'
+      - 'functions/api/johankarrd/**'
+      - 'scripts/patch-johankarrd-v60.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/johankarrd-prime-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and run Johankarrd smoke checks
+        run: pnpm run build
