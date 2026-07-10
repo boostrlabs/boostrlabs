@@ -1,10 +1,16 @@
 import { isRenderable, normalizeSite, renderJohankarrdHtml, safeSlug } from '../../_lib/johankarrd-renderer.js';
 
+const MAX_REQUEST_BYTES = 8 * 1024 * 1024;
+const MAX_SITE_BYTES = 5 * 1024 * 1024;
+const MAX_HTML_BYTES = 3 * 1024 * 1024;
+const MAX_VERSIONS_PER_SLUG = 30;
+
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status,
   headers: {
     'content-type': 'application/json; charset=utf-8',
-    'cache-control': 'no-store'
+    'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff'
   }
 });
 
@@ -39,41 +45,61 @@ async function ensureTables(db) {
 export async function onRequestPost({ request, env }) {
   try {
     if (!env.DB) return json({ error: 'D1 binding DB is not available' }, 503);
-    const body = await request.json();
-    if (!body || !body.site || typeof body.site !== 'object') return json({ error: 'Missing site payload' }, 400);
+    const declaredLength = Number(request.headers.get('content-length') || 0);
+    if (declaredLength > MAX_REQUEST_BYTES) return json({ error: 'Publish payload is too large' }, 413);
+
+    const body = await request.json().catch(() => null);
+    if (!body || !body.site || typeof body.site !== 'object' || Array.isArray(body.site)) return json({ error: 'Missing site payload' }, 400);
 
     const site = normalizeSite(body.site);
     const slug = safeSlug(body.slug || site.slug || site.name);
     site.slug = slug;
 
     if (!isRenderable(site)) return json({ error: 'Johankarrd is not renderable' }, 422);
+
+    const payload = JSON.stringify(site);
+    if (payload.length > MAX_SITE_BYTES) return json({ error: 'Johankarrd payload is too large' }, 413);
+
     const html = renderJohankarrdHtml(site);
     if (!html.includes('<!doctype html>') || !html.includes('function show()') || !html.includes('class="site"')) {
       return json({ error: 'Rendered HTML failed safety checks' }, 422);
     }
+    if (html.length > MAX_HTML_BYTES) return json({ error: 'Rendered Johankarrd is too large' }, 413);
 
     await ensureTables(env.DB);
 
-    if (body.sites && typeof body.sites === 'object') {
-      await env.DB.prepare(`
+    const statements = [];
+    if (body.sites && typeof body.sites === 'object' && !Array.isArray(body.sites)) {
+      const sitesPayload = JSON.stringify(body.sites);
+      if (sitesPayload.length > MAX_SITE_BYTES) return json({ error: 'Draft collection is too large' }, 413);
+      statements.push(env.DB.prepare(`
         INSERT INTO johankarrd_drafts (id, owner, payload, updated_at)
         VALUES (?, ?, ?, CURRENT_TIMESTAMP)
         ON CONFLICT(id) DO UPDATE SET payload = excluded.payload, updated_at = CURRENT_TIMESTAMP
-      `).bind('johanka-default', 'johanka', JSON.stringify(body.sites)).run();
+      `).bind('johanka-default', 'johanka', sitesPayload));
     }
 
-    await env.DB.prepare(`
+    statements.push(env.DB.prepare(`
       INSERT INTO johankarrd_versions (slug, payload, html, created_at)
       VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-    `).bind(slug, JSON.stringify(site), html).run();
+    `).bind(slug, payload, html));
 
-    await env.DB.prepare(`
+    statements.push(env.DB.prepare(`
       INSERT INTO johankarrd_live_pages (slug, payload, html, updated_at)
       VALUES (?, ?, ?, CURRENT_TIMESTAMP)
       ON CONFLICT(slug) DO UPDATE SET payload = excluded.payload, html = excluded.html, updated_at = CURRENT_TIMESTAMP
-    `).bind(slug, JSON.stringify(site), html).run();
+    `).bind(slug, payload, html));
 
-    return json({ ok: true, slug, html_bytes: html.length });
+    await env.DB.batch(statements);
+
+    await env.DB.prepare(`
+      DELETE FROM johankarrd_versions
+      WHERE slug = ? AND id NOT IN (
+        SELECT id FROM johankarrd_versions WHERE slug = ? ORDER BY id DESC LIMIT ?
+      )
+    `).bind(slug, slug, MAX_VERSIONS_PER_SLUG).run();
+
+    return json({ ok: true, slug, html_bytes: html.length, retained_versions: MAX_VERSIONS_PER_SLUG });
   } catch (error) {
     return json({ error: error.message || 'Unable to publish Johankarrd' }, 500);
   }
