@@ -8,8 +8,8 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1",
+    "build": "vite build && node scripts/patch-johankarrd-v60.mjs",
+    "preview": "preview --host 127.0.0.1",
     "deploy:check": "npm run build",
     "smoke:launch": "node scripts/launch-smoke-test.mjs",
     "ecosystem:dev": "pnpm --filter @boostr/ecosystem dev",
