@@ -7,7 +7,8 @@
   <meta name="description" content="BOOSTR Missions para Johanka dentro del workspace Hummus FL." />
   <title>BOOSTR Missions — Johanka · Hummus FL</title>
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png" />
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./style.css?v=0.6.3" />
+  <link rel="stylesheet" href="./mobile-qa.css?v=0.6.3" />
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
@@ -37,20 +38,14 @@
 
     <section class="screen mission-screen" data-screen="missions">
       <div class="progress-wrap" aria-label="Progreso">
-        <div class="progress-meta">
-          <span id="missionLabel">IDEA 01</span>
-          <span id="progressText">0% EXPLORADO</span>
-        </div>
+        <div class="progress-meta"><span id="missionLabel">IDEA 01</span><span id="progressText">0% EXPLORADO</span></div>
         <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
       </div>
 
       <div class="mission-stage">
         <article class="mission-card" id="missionCard">
           <div class="card-head">
-            <div>
-              <p class="card-code" id="cardCode">VISUAL_BOOT_01</p>
-              <p class="card-type" id="cardType">BASE VISUAL</p>
-            </div>
+            <div><p class="card-code" id="cardCode">VISUAL_BOOT_01</p><p class="card-type" id="cardType">BASE VISUAL</p></div>
             <button class="save-toggle" id="completeBtn" type="button" aria-pressed="false">Guardar como hecha</button>
           </div>
 
@@ -58,54 +53,34 @@
           <h2 id="cardTitle"></h2>
           <p class="card-body" id="cardBody"></p>
 
-          <div class="why-box">
-            <span>POR QUÉ NOS SIRVE</span>
-            <p id="cardWhy"></p>
-          </div>
-
+          <div class="why-box"><span>POR QUÉ NOS SIRVE</span><p id="cardWhy"></p></div>
           <div class="micro-steps" id="microSteps"></div>
 
           <div class="prompt-box" id="promptBox">
-            <div class="prompt-head">
-              <span>MINI PROMPT PARA CHATGPT</span>
-              <button class="copy-btn" id="copyPrompt" type="button">Copiar</button>
-            </div>
+            <div class="prompt-head"><span>MINI PROMPT PARA CHATGPT</span><button class="copy-btn" id="copyPrompt" type="button">Copiar</button></div>
             <pre id="promptText"></pre>
           </div>
 
           <section class="delivery-box" aria-label="Entrega de la misión">
             <div class="delivery-head">
-              <div>
-                <span>TU ENTREGA</span>
-                <p>Déjalo vacío hasta que tengas algo. Cuando guardes, se quedará aquí para que Janko pueda revisarlo.</p>
-              </div>
+              <div><span>TU ENTREGA</span><p>Déjalo vacío hasta que tengas algo. Cuando guardes, se quedará aquí para que Janko pueda revisarlo.</p></div>
               <span class="sync-state" id="syncState">Sin guardar</span>
             </div>
-
             <label class="delivery-label" for="missionNote">Texto, decisión o nota</label>
             <textarea id="missionNote" rows="5" placeholder=""></textarea>
-
             <div class="upload-row">
               <label class="upload-button" for="missionImage">Agregar imagen</label>
               <input id="missionImage" type="file" accept="image/png,image/jpeg,image/webp" hidden />
               <span id="imageHint">PNG, JPG o WEBP · se comprime antes de subir</span>
             </div>
-
             <div class="image-preview" id="imagePreview" hidden>
               <img id="previewImage" alt="Entrega guardada" />
-              <div>
-                <strong id="previewName"></strong>
-                <span id="previewMeta"></span>
-              </div>
+              <div><strong id="previewName"></strong><span id="previewMeta"></span></div>
             </div>
-
             <button class="delivery-save" id="saveDelivery" type="button">Guardar entrega</button>
           </section>
 
-          <div class="card-footer">
-            <span class="reward" id="rewardText">+1 pieza para Hummus OS</span>
-            <span class="saved-note" id="savedNote"></span>
-          </div>
+          <div class="card-footer"><span class="reward" id="rewardText">+1 pieza para Hummus OS</span><span class="saved-note" id="savedNote"></span></div>
         </article>
       </div>
 
@@ -118,32 +93,26 @@
 
     <section class="screen index-screen" data-screen="index">
       <div class="index-shell">
-        <div class="index-title-row">
-          <div><p class="eyebrow">MAPA DE MISIONES</p><h2>Todas tus ideas</h2></div>
-          <button class="close-index" id="closeIndex" type="button">Cerrar</button>
-        </div>
+        <div class="index-title-row"><div><p class="eyebrow">MAPA DE MISIONES</p><h2>Todas tus ideas</h2></div><button class="close-index" id="closeIndex" type="button">Cerrar</button></div>
         <div class="index-grid" id="indexGrid"></div>
       </div>
     </section>
 
     <section class="screen completion-screen" data-screen="completion">
       <div class="completion-shell">
-        <p class="terminal-line">$ ruta creativa revisada</p>
-        <p class="eyebrow">HUMMUS FL · BOOSTR MISSIONS</p>
+        <p class="terminal-line">$ ruta creativa revisada</p><p class="eyebrow">HUMMUS FL · BOOSTR MISSIONS</p>
         <h2>No tienes que hacerlo todo hoy.</h2>
         <p>Escoge la idea que más te provoque y empieza por ahí. Cada asset que termines le da una pieza real al nuevo Hummus OS.</p>
-        <div class="completion-stats">
-          <div><strong id="doneCount">0</strong><span>ideas hechas</span></div>
-          <div><strong id="leftCount">25</strong><span>ideas disponibles</span></div>
-        </div>
+        <div class="completion-stats"><div><strong id="doneCount">0</strong><span>ideas hechas</span></div><div><strong id="leftCount">25</strong><span>ideas disponibles</span></div></div>
         <button class="primary-btn" data-action="return">Volver a las ideas</button>
       </div>
     </section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script.js"></script>
-  <script src="./mission-sources.js"></script>
-  <script src="./mission-delivery.js"></script>
+  <script src="./mission-sync.js?v=0.6.3"></script>
+  <script src="./script.js?v=0.6.3"></script>
+  <script src="./mission-sources.js?v=0.6.3"></script>
+  <script src="./mission-delivery.js?v=0.6.3"></script>
 </body>
 </html>
