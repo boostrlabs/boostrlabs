@@ -1,4 +1,5 @@
 import { defaultWorkspaceId, json, requireDb, requireSession } from "../_lib/api.js";
+import { ensureFounderIdentity } from "../_lib/founder-identity.js";
 
 const safeAll = async (statement, fallback = []) => {
   try {
@@ -25,8 +26,18 @@ export async function onRequestGet({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = await requireSession(request, env);
+  let auth = await requireSession(request, env);
   if (!auth.ok) return auth.response;
+
+  try {
+    const sync = await ensureFounderIdentity(env, auth.user);
+    if (sync.changed) {
+      const refreshed = await requireSession(request, env);
+      if (refreshed.ok) auth = refreshed;
+    }
+  } catch (error) {
+    console.error("Founder OS identity sync failed:", error);
+  }
 
   const workspaceId = defaultWorkspaceId(auth);
   const membership = auth.memberships.find((item) => item.workspace_id === workspaceId) || null;
@@ -125,7 +136,12 @@ export async function onRequestGet({ request, env }) {
     type: item.workspace_type,
     slug: item.workspace_slug,
     role: item.role,
-    status: item.status
+    status: item.status,
+    route: item.workspace_slug === "janko-westdetro"
+      ? "/partner-dashboard/?workspace=janko-westdetro"
+      : item.workspace_slug === "82ngel-artist"
+        ? "/partner-dashboard/?workspace=82ngel-artist"
+        : "/partner-dashboard/"
   }));
 
   return json({
@@ -155,14 +171,16 @@ export async function onRequestGet({ request, env }) {
     routes: {
       janko_missions: "/hummusfl/manager-missions/",
       johanka_missions: "/hummusfl/creative-missions/",
-      hummus_workspace: "/partner-dashboard",
-      admin: "/admin",
-      manager: "/manager",
-      audit: "/audit",
-      files: "/app/files",
-      products: "/manager/payment-links",
-      janko_public: "/jankodiorr",
-      boostr_home: "/home"
+      hummus_workspace: "/partner-dashboard/",
+      janko_artist_workspace: "/partner-dashboard/?workspace=janko-westdetro",
+      johanka_artist_workspace: "/partner-dashboard/?workspace=82ngel-artist",
+      admin: "/admin/",
+      manager: "/manager/",
+      audit: "/audit/",
+      files: "/app/files/",
+      products: "/app/products/",
+      janko_public: "/jankodiorr/",
+      boostr_home: "/home/"
     }
   });
 }
