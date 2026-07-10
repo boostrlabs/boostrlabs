@@ -1,191 +1,40 @@
 <!doctype html>
-<html lang="en">
+<html lang="es" data-build="0.8.1">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title data-i18n="partner_greeting_span">BOOSTR Partner OS</title>
-  <meta name="description" content="BOOSTR Partner OS.">
-  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
-  <link rel="stylesheet" href="/assets/boostr-mother/mother.css">
-  <style>
-    .partner-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
-    .partner-note{border:1px solid rgba(255,211,110,.22);background:rgba(255,211,110,.07);border-radius:22px;padding:14px;color:var(--muted);font-size:13px;line-height:1.45}
-    @media(max-width:900px){.partner-grid{grid-template-columns:1fr}.network-grid{grid-template-columns:1fr 1fr}}
-    @media(max-width:620px){.network-grid,.metrics{grid-template-columns:1fr}}
-  </style>
-  <script src="/assets/boostr-mother/i18n.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BOOSTR Workspace OS</title>
+<meta name="description" content="Workspace operativo del partner activo dentro de BOOSTR Labs.">
+<link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+<link rel="stylesheet" href="/assets/boostr-mother/mother.css?v=0.8.1">
+<style>
+.workspace-layout{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.context-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.context-box,.empty{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);border-radius:22px;padding:14px}.context-box span{display:block;color:var(--muted);font-size:10px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.context-box b{display:block;font-size:27px;margin-top:7px}.workspace-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.workspace-action{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);border-radius:22px;padding:15px;text-decoration:none;min-height:145px;display:flex;flex-direction:column}.workspace-action b{font-size:18px}.workspace-action p{font-size:12px;color:var(--muted);line-height:1.4}.workspace-action span{margin-top:auto;color:var(--champagne,#feedb9);font-size:11px;font-weight:950}.empty{color:var(--muted)}@media(max-width:900px){.workspace-layout{grid-template-columns:1fr}}@media(max-width:620px){.context-grid,.workspace-actions{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <div class="ambient"></div>
-  <div class="os">
-    <aside class="sidebar glass">
-      <a class="logo-mark" href="/home">
-        <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))">
-      </a>
-      <nav class="icon-nav">
-        <a href="/manager" title="Manager">⌘</a>
-        <a href="/app" title="Client">◫</a>
-        <a class="active" href="/partner-dashboard" title="Partner">◇</a>
-        <a href="/audit" title="Audit">↯</a>
-        <a href="/modules" title="Modules">◌</a>
-      </nav>
-      <div class="utility">
-        <a href="/login" title="Role Login">◎</a>
-        <a href="/ecosystem" title="Ecosystem Map">?</a>
-      </div>
-    </aside>
-    <main class="main">
-      <header class="topbar glass">
-        <div class="greeting">
-          <span data-i18n="partner_greeting_span">Partner OS</span>
-          <strong data-i18n="partner_greeting_val">Workspace Hub</strong>
-        </div>
-        <div class="search" data-i18n="search_placeholder">Search routes, referrals, clients, status...</div>
-        <a class="bell" href="/admin" title="Admin">♟</a>
-        <a class="role-pill" href="/login">
-          <div class="avatar"></div>
-          <div>
-            <b id="roleLabel">Role Access</b>
-            <div class="micro" data-i18n="login_desc">Partner workspace</div>
-          </div>
-        </a>
-      </header>
-      <section class="partner-grid">
-        <div class="left-col">
-          <section class="card glass">
-            <div class="section-head">
-              <div>
-                <span class="eyebrow" data-i18n="partner_greeting_span">BOOSTR Partner OS</span>
-                <h1 data-i18n="partner_h1">Routes, referrals and status.</h1>
-                <p class="micro" data-i18n="partner_desc">A clean partner workspace for applications, assigned accounts, referral links and next actions.</p>
-              </div>
-              <a class="btn primary" href="/audit" data-i18n="partner_cta_app">New Application</a>
-            </div>
-            <p class="partner-note" id="sessionBox" data-i18n="partner_note_default">Partner access will show assigned leads, active routes and status only.</p>
-          </section>
-          <section class="card glass">
-            <div class="section-head">
-              <div>
-                <h2 data-i18n="partner_sec_title">Partner Workspace</h2>
-                <div class="micro" data-i18n="partner_sec_micro">Drag cards to prioritize. Search to isolate a route or module.</div>
-              </div>
-              <a class="chip" href="/modules" data-i18n="home_switch_modules_title">Modules</a>
-            </div>
-            <div class="network-grid">
-              <a class="module" href="/partner/gemese">
-                <b>GEMESE Route</b>
-                <p class="micro" data-i18n="partner_module_gemese_desc">Partner intake path.</p>
-                <span>Open →</span>
-              </a>
-              <a class="module" href="/partner/janko">
-                <b>WESTDETRO Route</b>
-                <p class="micro" data-i18n="partner_module_westdetro_desc">Creative partner path.</p>
-                <span>Open →</span>
-              </a>
-              <a class="module" href="/partner/omgbeauty">
-                <b>OMG Beauty</b>
-                <p class="micro" data-i18n="partner_module_omg_desc">Beauty client route.</p>
-                <span>Open →</span>
-              </a>
-              <a class="module" href="/app/gemese">
-                <b>GEMESE OS</b>
-                <p class="micro" data-i18n="partner_module_gemese_os_desc">Workspace dashboard.</p>
-                <span>Open →</span>
-              </a>
-              <a class="module" href="/audit">
-                <b>BOOSTR Audit</b>
-                <p class="micro" data-i18n="partner_module_audit_desc">New application.</p>
-                <span>Open →</span>
-              </a>
-              <a class="module" href="/manager/leads">
-                <b>Lead Inbox</b>
-                <p class="micro" data-i18n="partner_module_inbox_desc">Manager review.</p>
-                <span>Open →</span>
-              </a>
-            </div>
-          </section>
-        </div>
-        <div class="right-col">
-          <section class="card glass">
-            <h3 data-i18n="partner_stack_title">Partner Stack</h3>
-            <div class="timeline">
-              <a class="task" href="/audit">
-                <span class="dot gold"></span>
-                <div>
-                  <b data-i18n="partner_stack_task1_title">Application Link</b>
-                  <span data-i18n="partner_stack_task1_desc">Send prospects to the audit route.</span>
-                </div>
-                <span>01</span>
-              </a>
-              <a class="task" href="/partner-dashboard">
-                <span class="dot"></span>
-                <div>
-                  <b data-i18n="partner_stack_task2_title">Status Board</b>
-                  <span data-i18n="partner_stack_task2_desc">Track submitted and approved accounts.</span>
-                </div>
-                <span>02</span>
-              </a>
-              <a class="task" href="/app">
-                <span class="dot blue"></span>
-                <div>
-                  <b data-i18n="partner_stack_task3_title">Workspace Access</b>
-                  <span data-i18n="partner_stack_task3_desc">Open active client or artist systems.</span>
-                </div>
-                <span>03</span>
-              </a>
-            </div>
-          </section>
-          <section class="card glass">
-            <h3 data-i18n="partner_net_title">Active Network</h3>
-            <div class="metrics">
-              <a class="metric" href="/82ngel">
-                <span>Artist OS</span>
-                <b>82</b>
-                <small data-i18n="manager_metric_inbox_status">Live</small>
-              </a>
-              <a class="metric" href="/jankodiorr">
-                <span>WESTDETRO</span>
-                <b>Janko</b>
-                <small data-i18n="manager_metric_inbox_status">Live</small>
-              </a>
-              <a class="metric" href="/app/gemese">
-                <span>Partner OS</span>
-                <b>GEMESE</b>
-                <small data-i18n="manager_metric_work_status">Shell</small>
-              </a>
-              <a class="metric" href="/audit">
-                <span>BOOSTR</span>
-                <b>Audit</b>
-                <small data-i18n="home_metric_audit_status">Open</small>
-              </a>
-            </div>
-          </section>
-        </div>
-      </section>
-      <nav class="bottom-tabs glass">
-        <a href="/manager" data-i18n="login_option_manager">Manager</a>
-        <a class="active" href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
-        <a href="/app" data-i18n="login_option_client">Client</a>
-        <a href="/audit" data-i18n="home_pulse_val">Audit</a>
-        <a href="/modules" data-i18n="home_switch_modules_title">Modules</a>
-        <a class="plus" href="/login">+</a>
-      </nav>
-      <footer class="footer">POWERED BY BOOSTR LABS · Partner OS</footer>
-    </main>
-  </div>
-  <nav class="mobile-tabs">
-    <a href="/manager" data-i18n="login_option_manager">Manager</a>
-    <a href="/app" data-i18n="login_option_client">Client</a>
-    <a class="active" href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
-    <a href="/audit" data-i18n="home_pulse_val">Audit</a>
-    <a href="/login">Login</a>
-  </nav>
-  <script>
-    const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
-    if(s){
-      roleLabel.textContent=s.role+' preview';
-    }
-  </script>
-  <script src="/assets/boostr-mother/console.js"></script>
+<div class="ambient"></div>
+<div class="os">
+<aside class="sidebar glass"><a class="logo-mark" href="/home"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></a><nav class="icon-nav"><a href="/manager" title="Manager">⌘</a><a href="/app" title="Dashboard">◫</a><a class="active" href="/partner-dashboard" title="Workspace">◇</a><a href="/audit" title="Audit">↯</a><a href="/modules" title="Modules">◌</a></nav><div class="utility"><a href="/login" title="Cuenta">◎</a><a href="/ecosystem" title="Mapa">?</a></div></aside>
+<main class="main">
+<header class="topbar glass"><div class="greeting"><span>WORKSPACE OS</span><strong id="topWorkspace">Conectando...</strong></div><div class="search">Buscar dentro del workspace activo...</div><a class="bell" href="/api/health" title="API Health">●</a><a class="role-pill" href="/login"><div class="avatar"></div><div><b id="accountName">Cuenta BOOSTR</b><div class="micro" id="accountContext">Sesión requerida</div></div></a></header>
+<section class="workspace-layout">
+<div class="left-col">
+<section class="card glass"><div class="section-head"><div><span class="eyebrow">CONTEXTO ACTIVO</span><h1 id="heroTitle">Workspace OS</h1><p class="micro" id="heroCopy">Este panel representa únicamente el workspace seleccionado. No mezcla compañías ni muestra cifras de demostración.</p></div><a class="btn primary" href="/modules">Ver módulos</a></div><div class="context-grid"><div class="context-box"><span>Rol</span><b id="roleValue">—</b></div><div class="context-box"><span>Cards reales</span><b id="cardsValue">0</b></div><div class="context-box"><span>Actividad</span><b id="activityValue">0</b></div></div></section>
+<section class="card glass"><div class="section-head"><div><h2>Acciones del workspace</h2><div class="micro">Cada ruta conserva el contexto activo.</div></div></div><div class="workspace-actions" id="actions"><div class="empty">Cargando acciones...</div></div></section>
+<section class="card glass"><div class="section-head"><div><h2>Cards del workspace</h2><div class="micro">Acciones generadas por Audit, Missions o Manager.</div></div></div><div class="workspace-actions" id="cards"><div class="empty">Cargando cards...</div></div></section>
+</div>
+<div class="right-col">
+<section class="card glass"><h3>Módulos visibles</h3><div class="timeline" id="modules"><div class="empty">Cargando módulos...</div></div></section>
+<section class="card glass"><h3>Actividad reciente</h3><div class="timeline" id="activity"><div class="empty">Cargando actividad...</div></div></section>
+</div>
+</section>
+<footer class="footer">POWERED BY BOOSTR LABS · WORKSPACE OS</footer>
+</main>
+</div>
+<script>
+const $=s=>document.querySelector(s);function headers(){const t=localStorage.getItem('boostr_auth_token');return t?{Authorization:'Bearer '+t}:{}}async function api(path){const res=await fetch(path,{headers:headers(),credentials:'same-origin',cache:'no-store'});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok===false)throw data;return data}function actionCard(title,copy,href,label='Abrir'){return `<a class="workspace-action" href="${href}"><b>${title}</b><p>${copy}</p><span>${label} →</span></a>`}function timelineItem(title,copy,status=''){return `<div class="task"><span class="dot"></span><div><b>${title}</b><span>${copy||''}</span></div><span>${status}</span></div>`}async function load(){try{const [session,dashboard]=await Promise.all([api('/api/session'),api('/api/dashboard')]);const workspace=dashboard.workspace||session.active_workspace||{};topWorkspace.textContent=workspace.name||'Sin workspace';heroTitle.textContent=`${workspace.name||'Workspace'} Custom OS`;accountName.textContent=session.user?.name||session.user?.email||'Cuenta BOOSTR';accountContext.textContent=[workspace.name,workspace.role||session.role].filter(Boolean).join(' · ');roleValue.textContent=workspace.role||session.role||'—';cardsValue.textContent=(dashboard.cards||[]).length;activityValue.textContent=(dashboard.activity||[]).length;const isHummus=/hummus/i.test(workspace.name||'');actions.innerHTML=[actionCard('BOOSTR Missions',isHummus?'Roadmaps operativos y creativos del piloto Hummus.':'Misiones asignadas a este workspace.',isHummus?'/hummusfl/manager-missions/':'/app'),actionCard('Productos y servicios','Crea ofertas dentro del workspace activo.','/app/products/'),actionCard('Archivos','Assets, entregables y documentos del workspace.','/app/files/'),actionCard('Smart Payment Link','Prepara una oferta y su ruta de cobro.','/smart-payment-link/'),actionCard('Audit','Captura información y señales del negocio.','/audit'),actionCard('Module Deck','Revisa capacidades disponibles.','/modules/')].join('');cards.innerHTML=(dashboard.cards||[]).length?(dashboard.cards||[]).map(c=>actionCard(c.title,c.summary||c.card_type,c.action_url||'#',c.action_label||'Abrir')).join(''):'<div class="empty">Todavía no hay cards reales en este workspace. Audit y Missions pueden crear las primeras.</div>';modules.innerHTML=(session.visible_modules||[]).length?(session.visible_modules||[]).map(m=>timelineItem(m.name||m.slug,m.category||'',m.status||'')).join(''):'<div class="empty">No hay módulos configurados todavía.</div>';activity.innerHTML=(dashboard.activity||[]).length?(dashboard.activity||[]).map(a=>timelineItem(a.title||a.event_type,a.body||a.created_at||'',a.event_type||'')).join(''):'<div class="empty">No hay actividad registrada todavía.</div>'}catch(e){if(e?.error==='missing_session'||e?.code==='missing_session'){location.replace('/login/?next=/partner-dashboard/');return}heroCopy.textContent=e?.message||e?.error||'No se pudo cargar el workspace.'}}
+load();
+</script>
+<script src="/assets/boostr-mother/console.js"></script>
 </body>
 </html>
