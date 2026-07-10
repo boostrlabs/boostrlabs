@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#05080a" />
+  <meta name="description" content="BOOSTR Missions Manager Version para Janko, Hummus FL y BOOSTR Labs." />
+  <title>BOOSTR Missions — Janko Manager</title>
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png" />
+  <link rel="stylesheet" href="./style.css?v=0.6.4" />
+</head>
+<body>
+  <div class="grid" aria-hidden="true"></div>
+  <div class="scan" aria-hidden="true"></div>
+  <main class="app">
+    <header class="topbar">
+      <a href="/demo/janko-os" class="brand"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></a>
+      <div class="status"><span></span> JANKO · MANAGER MODE</div>
+    </header>
+
+    <section class="screen opening is-active" data-screen="opening">
+      <div class="boot">
+        <p>$ identity: JANKO</p>
+        <p>$ role: FOUNDER / BOOSTR MANAGER</p>
+        <p>$ active priority: BOOST MONEY</p>
+        <p>$ active workspace: HUMMUS FL</p>
+      </div>
+      <div class="hero">
+        <p class="kicker">BOOSTR MISSIONS · MANAGER VERSION</p>
+        <h1>Janko, el sistema ya encontró qué deberías atacar primero.</h1>
+        <p>Misiones para convertir data, operaciones, APIs y decisiones en crecimiento real para Hummus y para BOOSTR.</p>
+        <button data-action="start">Entrar al sistema</button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="missions">
+      <div class="progress"><span id="missionLabel">MISSION 01</span><span id="progressText">0% ANALIZADO</span><i><b id="progressFill"></b></i></div>
+      <article class="mission" id="missionCard">
+        <div class="head">
+          <div><code id="cardCode">SYSTEM_SCAN_01</code><small id="cardType">SYSTEM</small></div>
+          <button id="completeBtn" aria-pressed="false">Marcar resuelta</button>
+        </div>
+        <p class="intro" id="softIntro"></p>
+        <h2 id="cardTitle"></h2>
+        <p class="body" id="cardBody"></p>
+        <div class="data-box"><span>DATA / CONTEXTO</span><pre id="cardData"></pre></div>
+        <div class="why"><span>IMPACTO</span><p id="cardWhy"></p></div>
+        <div class="steps" id="microSteps"></div>
+        <div class="command"><div><span>COMANDO PARA CHATGPT / CODEX</span><button id="copyPrompt">Copiar</button></div><pre id="promptText"></pre></div>
+        <section class="delivery">
+          <div class="delivery-head"><div><span>DECISIÓN / RESULTADO</span><p>Guarda aquí lo que decidiste, construiste o descubriste.</p></div><em id="syncState">Sin guardar</em></div>
+          <textarea id="missionNote" rows="7" placeholder=""></textarea>
+          <button id="saveDelivery">Guardar resultado</button>
+        </section>
+        <footer><span id="rewardText"></span><span id="savedNote"></span></footer>
+      </article>
+      <nav><button id="prevBtn">←</button><button id="indexBtn"><span id="currentNumber">01</span> / <span id="totalNumber">20</span></button><button id="nextBtn">→</button></nav>
+    </section>
+
+    <section class="screen" data-screen="index">
+      <div class="index-shell"><div class="index-head"><div><p class="kicker">MISSION MAP</p><h2>Janko Manager Queue</h2></div><button id="closeIndex">Cerrar</button></div><div id="indexGrid" class="index-grid"></div></div>
+    </section>
+
+    <section class="screen" data-screen="completion">
+      <div class="complete"><p>$ manager queue scanned</p><h2>No necesitas completar todo hoy.</h2><p>Ataca primero lo que desbloquee dinero, datos o infraestructura reusable.</p><div><strong id="doneCount">0</strong><span>resueltas</span><strong id="leftCount">20</strong><span>pendientes</span></div><button data-action="return">Volver</button></div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="./script.js?v=0.6.4"></script>
+  <script src="./delivery.js?v=0.6.4"></script>
+</body>
+</html>
