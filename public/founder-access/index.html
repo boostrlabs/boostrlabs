@@ -88,7 +88,7 @@
           });
           const data=await response.json().catch(()=>({}));
 
-          if(response.status===410||data.bootstrap_closed){
+          if(response.status===410){
             destroyBootstrap(data.message||'BOOSTR ya fue inicializado.');
             return;
           }
