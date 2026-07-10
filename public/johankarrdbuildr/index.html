@@ -1,1 +1,96 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Johankarrd BUILDR PRIME — JohankaOS</title><meta name="theme-color" content="#050505"><link rel="stylesheet" href="./styles.css?v=59"></head><body><main class="app" data-app><header class="topbar"><div class="brand"><div class="mark"><img class="brand-logo" src="/assets/link/82ngel/logo.png" alt=""></div><div><small>JOHANKA OS</small><strong>Johankarrd BUILDR</strong></div></div><div class="actions"><button class="btn" type="button" data-action="new-site">Nuevo</button><button class="btn premium" type="button" data-act="add-block">+ Add</button><button class="btn" type="button" data-action="save-draft">Save Draft</button><button class="btn" type="button" data-action="publish-draft">Publish Live</button><button class="btn gold" type="button" data-action="export-html">Export HTML</button><a class="btn" href="/johankarrd/">Carrds</a></div></header><section class="workspace"><aside class="panel left-panel"><h2>Johankarrds</h2><label class="field"><span>Current Carrd</span><select data-site-select></select></label><div class="site-tools"><button class="mini-btn" type="button" data-action="reset-local">Reset</button><button class="mini-btn" type="button" data-action="reload-remote">Reload Cloud</button></div><h3>Sections</h3><div class="list" data-section-list></div><button class="wide-btn" type="button" data-action="add-section">+ Add section</button><p class="hint">Build and publish smooth mobile pages for JohankaOS.</p></aside><section class="preview-panel"><div class="device"><div class="preview-stage" data-preview></div></div></section><aside class="panel editor-panel"><h2>Edit</h2><div class="tabs"><button class="tab active" type="button" data-mode="content">Content</button><button class="tab" type="button" data-mode="style">Style</button><button class="tab" type="button" data-mode="assets">Assets</button></div><div data-editor></div><h2>Export preview</h2><textarea class="codebox" data-code readonly></textarea></aside></section><div class="status" data-status>Loading</div></main><script src="./johankarrd-data.js?v=59" defer></script><script src="./app-preflight-v58.js?v=59" defer></script><script src="./app-state-merge-v58.js?v=59" defer></script><script src="./app.js?v=59" defer></script><script src="./app-fix.js?v=59" defer></script><script src="./app-upload-fix.js?v=59" defer></script><script src="./app-prime-safe.js?v=59" defer></script><script src="./app-motion.js?v=59" defer></script><script src="./app-sheet-swipe.js?v=59" defer></script><script src="./app-product-v58.js?v=59" defer></script><script src="./app-ux-v58.js?v=59" defer></script><script src="./app-gallery-clean-v58.js?v=59" defer></script><script src="./app-final-v59.js?v=59" defer></script></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Johankarrd BUILDR PRIME — JohankaOS</title>
+  <meta name="theme-color" content="#050609">
+  <link rel="stylesheet" href="./prime-v60.css?v=60">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><img src="/assets/link/82ngel/logo.png" alt=""></div>
+        <div><small>JOHANKA OS</small><strong>Johankarrd BUILDR</strong></div>
+      </div>
+      <button class="site-switch" type="button" data-site-switch aria-label="Cambiar Johankarrd"></button>
+      <div class="top-actions">
+        <button class="btn icon-btn desktop-secondary" type="button" data-undo title="Deshacer">↶</button>
+        <button class="btn icon-btn desktop-secondary" type="button" data-redo title="Rehacer">↷</button>
+        <button class="btn desktop-secondary" type="button" data-new-site>Nueva</button>
+        <button class="btn" type="button" data-save>Guardar</button>
+        <button class="btn primary" type="button" data-publish>Publicar</button>
+        <a class="btn desktop-secondary" href="/johankarrd/">Carrds</a>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <aside class="panel" id="sites-panel">
+        <div class="panel-inner">
+          <div class="section-head"><h2>Johankarrds</h2><button class="tiny-action" type="button" data-site-switch>Ver todas</button></div>
+          <div class="burli-card">
+            <div class="burli-top"><b>BURLI CLUB</b><span class="burli-pill">ACTIVO PARA SIEMPRE</span></div>
+            <div class="burli-grid">
+              <div class="burli-stat"><span>Plan</span><b>Full Pro Premium HD Extreme Platinum</b></div>
+              <div class="burli-stat"><span>Johankarrds disponibles</span><b>999</b></div>
+              <div class="burli-stat"><span>Razón</span><b>Ser esposa del BURLIGAN CORP CEO</b></div>
+              <div class="burli-stat"><span>Rol desbloqueado</span><b>CEO por consecuencia</b></div>
+            </div>
+            <div class="burli-foot">Duración: de por vida o hasta que te divorcies de Janko. (No se presta ni un poco, en verdad, pero breve.)</div>
+          </div>
+          <div class="section-head"><h3>Secciones</h3><button class="tiny-action" type="button" data-add-section>+ Agregar</button></div>
+          <div class="sections" data-sections></div>
+          <button class="btn primary wide" type="button" data-add-element>+ Agregar elemento</button>
+        </div>
+      </aside>
+
+      <section class="canvas-panel">
+        <div class="canvas-toolbar">
+          <span class="canvas-badge">Vista previa en vivo</span>
+          <button class="tiny-action" type="button" data-add-element>+ Agregar</button>
+        </div>
+        <div class="device"><div class="canvas" data-canvas></div></div>
+        <div class="item-toolbar" data-item-toolbar>
+          <button type="button" data-toolbar-up>↑</button>
+          <button type="button" data-toolbar-down>↓</button>
+          <button type="button" data-toolbar-edit>Editar</button>
+          <button type="button" class="danger" data-toolbar-delete>Borrar</button>
+        </div>
+      </section>
+
+      <aside class="panel" id="inspector-panel">
+        <div class="panel-inner">
+          <div class="section-head"><h2>Editar</h2><span class="canvas-badge">PRIME</span></div>
+          <div class="tabs">
+            <button class="tab active" type="button" data-mode="content">Contenido</button>
+            <button class="tab" type="button" data-mode="style">Diseño</button>
+            <button class="tab" type="button" data-mode="assets">Assets</button>
+          </div>
+          <div data-inspector></div>
+        </div>
+      </aside>
+    </section>
+
+    <nav class="mobile-dock" aria-label="Herramientas">
+      <button type="button" data-mobile-sites>Sites</button>
+      <button type="button" data-mobile-edit>Editar</button>
+      <button type="button" class="primary" data-mobile-add>+ Agregar</button>
+      <button type="button" class="primary" data-mobile-publish>Publicar</button>
+    </nav>
+
+    <button class="sheet-scrim" type="button" data-sheet-scrim aria-label="Cerrar panel"></button>
+    <section class="mobile-sheet" data-mobile-sheet>
+      <header class="sheet-head"><b data-sheet-title>Editar</b><button type="button" data-sheet-close>Listo</button></header>
+      <div class="sheet-body" data-sheet-body></div>
+    </section>
+
+    <div class="canvas-badge" data-status style="position:fixed;left:14px;bottom:14px;z-index:650">Cargando…</div>
+    <div data-modal-root></div>
+    <div data-toast-root></div>
+  </main>
+
+  <script src="./johankarrd-data.js?v=60" defer></script>
+  <script src="./app-v60.js?v=60" defer></script>
+</body>
+</html>
