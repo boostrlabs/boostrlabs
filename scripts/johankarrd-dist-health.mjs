@@ -19,7 +19,7 @@ const [index, core, app, hardening, css] = await Promise.all([
   read('prime-v63-hardening.css')
 ]);
 
-for (const asset of ['./johankarrd-data.js?v=64', './core-v64.js?v=64', './app-v60.js?v=64', './app-v63-hardening.js?v=64']) {
+for (const asset of ['./johankarrd-data.js?v=65', './core-v64.js?v=65', './app-v60.js?v=65', './app-v63-hardening.js?v=65', './prime-v60.css?v=65', './prime-v63-hardening.css?v=65']) {
   if (!index.includes(asset)) fail(`cache-busted asset missing: ${asset}`);
 }
 
@@ -29,14 +29,22 @@ if (order.some((value) => value < 0) || order.some((value, index) => index && va
 for (const marker of [
   'window.JOHANKARRD_CORE?.auditState',
   'window.JOHANKARRD_CORE?.moveItemExact',
-  'siteKey: state.currentSite, sectionId: state.currentSection',
+  'siteKey: state.currentSite',
+  'sectionId: state.currentSection',
   'Movimiento cancelado para proteger la sección.',
   'Cambio cancelado para proteger los datos',
   'compressImage(file)',
   'cloudEntries',
-  'data-export-site'
+  'data-export-site',
+  'johankarrd-dragging',
+  'selectstart',
+  'animateFlip',
+  'translate3d(',
+  'drag.settling',
+  'setPointerCapture',
+  'requestAnimationFrame(runAutoScroll)'
 ]) {
-  if (!app.includes(marker)) fail(`built app missing hardening marker: ${marker}`);
+  if (!app.includes(marker)) fail(`built app missing Apple drag/hardening marker: ${marker}`);
 }
 
 for (const marker of ['moveItemExact', 'auditState', 'duplicate-item-id', 'duplicate-section-id', 'duplicate-slug']) {
@@ -47,8 +55,8 @@ for (const marker of ['aria-modal', 'focus', 'pointerup', 'Termina de mover el e
   if (!hardening.includes(marker)) fail(`hardening layer missing ${marker}`);
 }
 
-for (const marker of ['prefers-reduced-motion', 'focus-visible', 'mobile-sheet', 'drag-placeholder']) {
-  if (!css.includes(marker)) fail(`hardening CSS missing ${marker}`);
+for (const marker of ['prefers-reduced-motion', 'focus-visible', 'mobile-sheet', 'drag-placeholder', 'drag-ghost', 'drag-source', 'johankarrd-dragging', 'Suelta aquí', 'touch-action:none']) {
+  if (!css.includes(marker)) fail(`Apple drag/hardening CSS missing ${marker}`);
 }
 
 for (const forbidden of ['location.reload(', 'location.replace(', 'app-motion.js', 'app-v62-enhance.js', 'Add divider', 'Ghost spacer', 'Tap action', 'No action']) {
@@ -60,4 +68,4 @@ for (const file of ['core-v64.js', 'app-v60.js', 'app-v63-hardening.js']) {
   if (check.status !== 0) fail(`${file} has invalid syntax\n${check.stderr}`);
 }
 
-console.log('Johankarrd dist health passed: v64 load order, audited mutations, protected drag, Spanish UI and built artifact integrity.');
+console.log('Johankarrd dist health passed: v65 Apple-feel GPU drag, FLIP spacing, audited mutations, protected reorder, Spanish UI and built artifact integrity.');
