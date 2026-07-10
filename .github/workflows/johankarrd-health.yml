@@ -1,0 +1,32 @@
+name: Johankarrd Health
+
+on:
+  push:
+    paths:
+      - 'public/johankarrdbuildr/**'
+      - 'functions/api/johankarrd/**'
+      - 'functions/_lib/johankarrd-renderer.js'
+      - 'scripts/patch-johankarrd-v60.mjs'
+      - 'scripts/johankarrd-health.mjs'
+      - '.github/workflows/johankarrd-health.yml'
+  pull_request:
+    paths:
+      - 'public/johankarrdbuildr/**'
+      - 'functions/api/johankarrd/**'
+      - 'functions/_lib/johankarrd-renderer.js'
+      - 'scripts/patch-johankarrd-v60.mjs'
+      - 'scripts/johankarrd-health.mjs'
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/johankarrd-health.mjs
+      - run: npm run build
