@@ -6,6 +6,7 @@ on:
       - 'public/johankarrdbuildr/**'
       - 'functions/api/johankarrd/**'
       - 'functions/_lib/johankarrd-renderer.js'
+      - 'functions/_middleware.js'
       - 'scripts/patch-johankarrd-v60.mjs'
       - 'scripts/johankarrd-health.mjs'
       - 'scripts/johankarrd-core-tests.mjs'
@@ -19,6 +20,7 @@ on:
       - 'public/johankarrdbuildr/**'
       - 'functions/api/johankarrd/**'
       - 'functions/_lib/johankarrd-renderer.js'
+      - 'functions/_middleware.js'
       - 'scripts/patch-johankarrd-v60.mjs'
       - 'scripts/johankarrd-health.mjs'
       - 'scripts/johankarrd-core-tests.mjs'
@@ -26,6 +28,7 @@ on:
       - 'scripts/johankarrd-dist-health.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - '.github/workflows/johankarrd-health.yml'
 
 permissions:
   contents: read
