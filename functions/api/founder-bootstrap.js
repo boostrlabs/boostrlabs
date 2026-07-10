@@ -2,7 +2,6 @@ import {
   clean,
   createSession,
   hashPassword,
-  isValidEmail,
   jsonError,
   jsonOk,
   now,
@@ -11,66 +10,51 @@ import {
   sessionCookie
 } from '../_lib/api.js';
 
-const encoder = new TextEncoder();
-const toHex = (buffer) => [...new Uint8Array(buffer)].map((value) => value.toString(16).padStart(2, '0')).join('');
-const normalizeCode = (value) => clean(value, 160).replace(/\s+/g, '').toLowerCase();
+const founderEmails = ['janko@boostrlabs.com', 'johanka@boostrlabs.com'];
 
-async function hashCode(code, salt = '') {
-  return toHex(await crypto.subtle.digest('SHA-256', encoder.encode(`${salt}:${normalizeCode(code)}`)));
-}
-
-async function validateFounderCode(env, rawCode) {
-  const code = normalizeCode(rawCode);
-  if (!code) return null;
-
-  const configured = clean(env.BOOSTR_FOUNDER_CODE || env.BOOSTR_SECRET_CODE || env.BOOSTR_INVITE_CODE || '', 160);
-  if (configured) {
-    const [suppliedHash, configuredHash] = await Promise.all([
-      hashCode(code, 'env'),
-      hashCode(configured, 'env')
-    ]);
-    if (suppliedHash === configuredHash) return { id: null, source: 'env' };
-  }
-
-  try {
-    const result = await env.DB.prepare(
-      `SELECT id, code_hash, code_salt
-       FROM invite_codes
-       WHERE status = 'active'
-         AND (expires_at IS NULL OR expires_at > ?)
-         AND used_count < max_uses
-       LIMIT 200`
-    ).bind(new Date().toISOString()).all();
-
-    for (const row of result.results || []) {
-      if (await hashCode(code, row.code_salt || '') === row.code_hash) {
-        return { id: row.id, source: 'db' };
-      }
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
-
-const profiles = {
-  janko: {
+const founders = {
+  'janko@boostrlabs.com': {
+    profileKey: 'janko',
+    displayName: 'Janko',
     username: 'janko',
     role: 'manager',
     membershipRole: 'manager',
     defaultPersona: 'manager',
     personas: ['manager', 'founder', 'artist', 'producer', 'creative_director'],
-    redirect: '/hummusfl/manager-missions/?v=0.6.6'
+    redirect: '/hummusfl/manager-missions/?v=0.6.7'
   },
-  johanka: {
+  'johanka@boostrlabs.com': {
+    profileKey: 'johanka',
+    displayName: 'Johanka',
     username: 'johanka',
     role: 'creator',
     membershipRole: 'creator',
     defaultPersona: 'creative_leader',
     personas: ['creative_leader', 'artist'],
-    redirect: '/hummusfl/creative-missions/?v=0.6.6'
+    redirect: '/hummusfl/creative-missions/?v=0.6.7'
   }
 };
+
+async function founderState(env) {
+  const result = await env.DB.prepare(
+    `SELECT lower(email) AS email, id, username, status, password_hash
+     FROM users
+     WHERE lower(email) IN (?, ?)`
+  ).bind(...founderEmails).all();
+
+  const rows = result.results || [];
+  const completed = new Set(
+    rows
+      .filter((row) => row.status === 'active' && Boolean(row.password_hash))
+      .map((row) => row.email)
+  );
+
+  return {
+    rows,
+    completed,
+    closed: founderEmails.every((email) => completed.has(email))
+  };
+}
 
 async function ensureWorkspace(env, config, ownerEmail, timestamp) {
   let workspace = await env.DB.prepare('SELECT id, slug, name FROM workspaces WHERE slug = ? LIMIT 1')
@@ -147,32 +131,38 @@ export async function onRequestPost({ request, env }) {
   const parsed = await readJson(request);
   if (!parsed.ok) return parsed.response;
   const payload = parsed.payload || {};
-  const profileKey = clean(payload.profile, 20).toLowerCase();
-  const profile = profiles[profileKey];
-  const displayName = clean(payload.display_name || payload.name, 120);
   const email = clean(payload.email, 180).toLowerCase();
   const password = clean(payload.password, 500);
+  const founder = founders[email];
 
-  if (!profile) return jsonError('invalid_founder_profile', 'Choose Janko or Johanka.', 400);
-  if (!displayName) return jsonError('display_name_required', 'Display name is required.', 400);
-  if (!isValidEmail(email)) return jsonError('invalid_email', 'Use a valid email address.', 400);
-  if (password.length < 8) return jsonError('weak_password', 'Password must be at least 8 characters.', 400);
-
-  const access = await validateFounderCode(env, payload.secret_boostr_code || payload.code);
-  if (!access) return jsonError('invalid_private_access', 'Private founder access code is invalid.', 401);
-
-  const bootstrapped = await env.DB.prepare(
-    `SELECT username FROM users
-     WHERE username IN ('janko', 'johanka')
-       AND status = 'active'
-       AND password_hash IS NOT NULL`
-  ).all();
-  const completed = new Set((bootstrapped.results || []).map((row) => row.username));
-  if (completed.has('janko') && completed.has('johanka')) {
-    return jsonError('founder_bootstrap_closed', 'Founder bootstrap is already complete. Use BOOSTR Login.', 403);
+  if (!founder) {
+    return jsonError(
+      'founder_email_not_allowed',
+      'This bootstrap only accepts the two approved BOOSTR founder emails.',
+      403
+    );
   }
-  if (completed.has(profile.username)) {
-    return jsonError('profile_already_bootstrapped', `${displayName || profile.username} already has an active account. Use BOOSTR Login.`, 409);
+  if (password.length < 8) {
+    return jsonError('weak_password', 'Password must be at least 8 characters.', 400);
+  }
+
+  // Required submit-time check: the route closes permanently after both accounts exist.
+  const before = await founderState(env);
+  if (before.closed) {
+    return jsonError(
+      'founder_bootstrap_closed',
+      'BOOSTR founder initialization is complete. Use BOOSTR Login.',
+      410,
+      { bootstrap_closed: true }
+    );
+  }
+  if (before.completed.has(email)) {
+    return jsonError(
+      'founder_account_exists',
+      'This founder account already exists. Use BOOSTR Login.',
+      409,
+      { account_exists: true }
+    );
   }
 
   const timestamp = now();
@@ -187,13 +177,15 @@ export async function onRequestPost({ request, env }) {
     name: 'Hummus Mediterranean Food'
   }, email, timestamp);
 
-  const emailUser = await env.DB.prepare('SELECT id, username, password_hash FROM users WHERE lower(email) = ? LIMIT 1')
-    .bind(email).first();
-  const usernameUser = await env.DB.prepare('SELECT id, email FROM users WHERE username = ? LIMIT 1')
-    .bind(profile.username).first();
+  const emailUser = await env.DB.prepare(
+    'SELECT id, username FROM users WHERE lower(email) = ? LIMIT 1'
+  ).bind(email).first();
+  const usernameUser = await env.DB.prepare(
+    'SELECT id, email FROM users WHERE username = ? LIMIT 1'
+  ).bind(founder.username).first();
 
   if (usernameUser?.id && usernameUser.id !== emailUser?.id) {
-    return jsonError('founder_username_taken', 'This founder profile is already attached to another account.', 409);
+    return jsonError('founder_username_taken', 'This founder identity is already attached to another account.', 409);
   }
 
   const userId = emailUser?.id || usernameUser?.id || crypto.randomUUID();
@@ -202,14 +194,14 @@ export async function onRequestPost({ request, env }) {
   if (emailUser?.id || usernameUser?.id) {
     await env.DB.prepare(
       `UPDATE users SET email = ?, name = ?, username = ?, role = ?, workspace_id = ?,
-        default_workspace_id = ?, status = 'active', password_hash = ?, password_set_at = ?,
-        language = 'es', theme = 'platinum_dark', signup_source = 'founder_bootstrap',
-        onboarding_status = 'founder_ready', updated_at = ? WHERE id = ?`
+       default_workspace_id = ?, status = 'active', password_hash = ?, password_set_at = ?,
+       language = 'es', theme = 'platinum_dark', signup_source = 'founder_bootstrap',
+       onboarding_status = 'founder_ready', updated_at = ? WHERE id = ?`
     ).bind(
       email,
-      displayName,
-      profile.username,
-      profile.role,
+      founder.displayName,
+      founder.username,
+      founder.role,
       hummusWorkspace.id,
       hummusWorkspace.id,
       passwordHash,
@@ -220,16 +212,16 @@ export async function onRequestPost({ request, env }) {
   } else {
     await env.DB.prepare(
       `INSERT INTO users (
-        id, email, name, username, role, workspace_id, default_workspace_id, status,
-        password_hash, password_set_at, language, theme, signup_source, onboarding_status,
-        created_at, updated_at
+       id, email, name, username, role, workspace_id, default_workspace_id, status,
+       password_hash, password_set_at, language, theme, signup_source, onboarding_status,
+       created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, 'es', 'platinum_dark', 'founder_bootstrap', 'founder_ready', ?, ?)`
     ).bind(
       userId,
       email,
-      displayName,
-      profile.username,
-      profile.role,
+      founder.displayName,
+      founder.username,
+      founder.role,
       hummusWorkspace.id,
       hummusWorkspace.id,
       passwordHash,
@@ -239,21 +231,21 @@ export async function onRequestPost({ request, env }) {
     ).run();
   }
 
-  await ensureMembership(env, boostrWorkspace.id, userId, profile.membershipRole, timestamp);
-  await ensureMembership(env, hummusWorkspace.id, userId, profile.membershipRole, timestamp);
+  await ensureMembership(env, boostrWorkspace.id, userId, founder.membershipRole, timestamp);
+  await ensureMembership(env, hummusWorkspace.id, userId, founder.membershipRole, timestamp);
 
   let defaultPersonaId = null;
-  for (const personaType of profile.personas) {
+  for (const personaType of founder.personas) {
     const personaId = await ensurePersona(
       env,
       hummusWorkspace.id,
       userId,
       personaType,
-      displayName,
+      founder.displayName,
       timestamp,
-      personaType === profile.defaultPersona
+      personaType === founder.defaultPersona
     );
-    if (personaType === profile.defaultPersona) defaultPersonaId = personaId;
+    if (personaType === founder.defaultPersona) defaultPersonaId = personaId;
   }
 
   await env.DB.prepare(
@@ -269,27 +261,29 @@ export async function onRequestPost({ request, env }) {
       hummusWorkspace.id,
       userId,
       defaultPersonaId,
-      `${profile.username} founder profile activated.`,
-      JSON.stringify({ profile: profileKey, workspaces: [boostrWorkspace.slug, hummusWorkspace.slug] }),
+      `${founder.username} founder profile activated.`,
+      JSON.stringify({ profile: founder.profileKey, workspaces: [boostrWorkspace.slug, hummusWorkspace.slug] }),
       timestamp
     ).run();
   } catch {}
 
-  if (access.source === 'db' && access.id) {
-    try {
-      await env.DB.prepare(
-        `UPDATE invite_codes SET used_count = used_count + 1, updated_at = ? WHERE id = ?`
-      ).bind(timestamp, access.id).run();
-    } catch {}
-  }
-
+  // Re-query after creation. The second successful account permanently closes the bootstrap endpoint.
+  const after = await founderState(env);
   const session = await createSession(env, request, userId, hummusWorkspace.id);
+
   return jsonOk({
     token: session.token,
     expires_at: session.expires_at,
-    user: { id: userId, email, name: displayName, username: profile.username, role: profile.role },
+    user: {
+      id: userId,
+      email,
+      name: founder.displayName,
+      username: founder.username,
+      role: founder.role
+    },
     active_workspace: hummusWorkspace,
     workspaces: [boostrWorkspace, hummusWorkspace],
-    redirect: profile.redirect
+    bootstrap_closed: after.closed,
+    redirect: founder.redirect
   }, 201, { 'Set-Cookie': sessionCookie(session.token, request) });
 }
