@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 
 const file = new URL('../dist/johankarrdbuildr/app-v60.js', import.meta.url);
+const hardeningFile = new URL('../dist/johankarrdbuildr/app-v63-hardening.js', import.meta.url);
 let source = await readFile(file, 'utf8');
 
 const replacements = [
@@ -18,12 +19,16 @@ const replacements = [
     "if (!source) return; const kind = source.hasAttribute('data-item-id') ? 'item' : 'asset'; if (kind === 'item' && event.target.closest('a,input,textarea,select,label,button')) return; if (kind === 'asset' && event.target.closest('input,textarea,select,label')) return;"
   ],
   [
+    "targetIndex: null, raf: 0 }; navigator.vibrate?.(12);",
+    "targetIndex: null, raf: 0, siteKey: state.currentSite, sectionId: state.currentSection }; navigator.vibrate?.(12);"
+  ],
+  [
     "const ordered = Array.from(card.children).filter((node) => node === drag.placeholder || node.matches?.('[data-item-id]')); drag.targetIndex = ordered.indexOf(drag.placeholder);",
     "const ordered = Array.from(card.children).filter((node) => (node === drag.placeholder || node.matches?.('[data-item-id]')) && node !== drag.source); drag.targetIndex = ordered.indexOf(drag.placeholder);"
   ],
   [
-    "let to = Math.max(0, Math.min(drag.targetIndex, items.length - 1)); if (from >= 0 && from !== to) commit('Elemento movido', () => { const [item] = items.splice(from, 1); if (to > from) to -= 1; items.splice(to, 0, item); state.selectedItemId = item.id; });",
-    "const to = Math.max(0, Math.min(drag.targetIndex, items.length - 1)); if (from >= 0 && from !== to) commit('Elemento movido', () => { const [item] = items.splice(from, 1); items.splice(to, 0, item); state.selectedItemId = item.id; });"
+    "if (drag.kind === 'item' && Number.isInteger(drag.targetIndex)) { const items = section().items; const from = items.findIndex((item) => item.id === drag.itemId); let to = Math.max(0, Math.min(drag.targetIndex, items.length - 1)); if (from >= 0 && from !== to) commit('Elemento movido', () => { const [item] = items.splice(from, 1); if (to > from) to -= 1; items.splice(to, 0, item); state.selectedItemId = item.id; }); else renderCanvas(); }",
+    "if (drag.kind === 'item' && Number.isInteger(drag.targetIndex)) { const sourceSite = state.sites[drag.siteKey]; const sourceSection = sourceSite?.sections?.find((sec) => sec.id === drag.sectionId); const items = sourceSection?.items || []; const from = items.findIndex((item) => item.id === drag.itemId); const to = Math.max(0, Math.min(drag.targetIndex, Math.max(0, items.length - 1))); if (sourceSite && sourceSection && state.currentSite === drag.siteKey && state.currentSection === drag.sectionId && from >= 0 && from !== to) commit('Elemento movido', () => { const [item] = items.splice(from, 1); items.splice(to, 0, item); state.selectedItemId = item.id; }); else { renderCanvas(); if (state.currentSite !== drag.siteKey || state.currentSection !== drag.sectionId) setStatus('Movimiento cancelado para proteger la sección.'); } }"
   ],
   [
     "else if (key.startsWith('site.')) site()[key.slice(5)] = value; else if (key.startsWith('section.'))",
@@ -63,18 +68,20 @@ for (const [before, after] of replacements) {
   source = source.replace(before, after);
 }
 
-const forbidden = ['app-motion.js', 'app-sheet-swipe.js', 'app-prime-safe.js', 'app-fix.js', 'app-upload-fix.js', 'app-product-v58.js'];
+const forbidden = ['app-motion.js', 'app-sheet-swipe.js', 'app-prime-safe.js', 'app-fix.js', 'app-upload-fix.js', 'app-product-v58.js', 'app-ux-v58.js', 'app-final-v59.js', 'app-v62-enhance.js'];
 const index = await readFile(new URL('../dist/johankarrdbuildr/index.html', import.meta.url), 'utf8');
 for (const legacy of forbidden) {
   if (index.includes(legacy)) throw new Error(`Legacy builder layer still loaded: ${legacy}`);
 }
 
-for (const required of ['data-canvas', 'data-inspector', 'data-mobile-publish', 'data-export', 'app-v60.js']) {
+for (const required of ['data-canvas', 'data-inspector', 'data-mobile-publish', 'data-export', 'app-v60.js', 'app-v63-hardening.js', 'prime-v63-hardening.css']) {
   if (!index.includes(required)) throw new Error(`Builder smoke check missing: ${required}`);
 }
 
 await writeFile(file, source, 'utf8');
-const check = spawnSync(process.execPath, ['--check', file.pathname], { encoding: 'utf8' });
-if (check.status !== 0) throw new Error(check.stderr || 'Johankarrd v60 syntax check failed');
+for (const target of [file, hardeningFile]) {
+  const check = spawnSync(process.execPath, ['--check', target.pathname], { encoding: 'utf8' });
+  if (check.status !== 0) throw new Error(check.stderr || `Johankarrd syntax check failed: ${target.pathname}`);
+}
 
-console.log('Johankarrd PRIME QA passed: unified store, stable IDs, direct reorder, mobile sheets, assets, export and publish.');
+console.log('Johankarrd PRIME QA passed: protected section drag, unified state, Spanish UI, mobile hardening, export and publish.');
