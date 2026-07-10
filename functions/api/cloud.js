@@ -44,12 +44,12 @@ async function ensureCloudSchema(env) {
       related_id TEXT,
       title TEXT NOT NULL,
       file_url TEXT,
-      file_type TEXT NOT NULL DEFAULT 'link',
-      visibility TEXT NOT NULL DEFAULT 'workspace',
-      status TEXT NOT NULL DEFAULT 'active',
+      file_type TEXT DEFAULT 'link',
+      visibility TEXT DEFAULT 'workspace',
+      status TEXT DEFAULT 'active',
       metadata_json TEXT,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      created_at TEXT,
+      updated_at TEXT
     )
   `).run();
 
@@ -60,19 +60,33 @@ async function ensureCloudSchema(env) {
     ["related_type", "TEXT"],
     ["related_id", "TEXT"],
     ["file_url", "TEXT"],
-    ["file_type", "TEXT NOT NULL DEFAULT 'link'"],
-    ["visibility", "TEXT NOT NULL DEFAULT 'workspace'"],
-    ["status", "TEXT NOT NULL DEFAULT 'active'"],
+    ["file_type", "TEXT"],
+    ["visibility", "TEXT"],
+    ["status", "TEXT"],
     ["metadata_json", "TEXT"],
-    ["created_at", "TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP"],
-    ["updated_at", "TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP"]
+    ["created_at", "TEXT"],
+    ["updated_at", "TEXT"]
   ];
 
   for (const [name, definition] of additions) {
     if (!columns.has(name)) {
       await env.DB.prepare(`ALTER TABLE workspace_files ADD COLUMN ${name} ${definition}`).run();
+      columns.add(name);
     }
   }
+
+  await env.DB.prepare(`
+    UPDATE workspace_files
+    SET file_type = COALESCE(NULLIF(file_type, ''), 'link'),
+        visibility = COALESCE(NULLIF(visibility, ''), 'workspace'),
+        status = COALESCE(NULLIF(status, ''), 'active'),
+        created_at = COALESCE(created_at, CURRENT_TIMESTAMP),
+        updated_at = COALESCE(updated_at, created_at, CURRENT_TIMESTAMP)
+    WHERE file_type IS NULL OR file_type = ''
+       OR visibility IS NULL OR visibility = ''
+       OR status IS NULL OR status = ''
+       OR created_at IS NULL OR updated_at IS NULL
+  `).run();
 
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace ON workspace_files(workspace_id, created_at DESC)").run();
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_workspace_files_related ON workspace_files(related_type, related_id)").run();
@@ -129,6 +143,7 @@ export async function onRequestGet({ request, env }) {
       headers.set("cache-control", "private, max-age=3600");
       headers.set("x-content-type-options", "nosniff");
       headers.set("content-disposition", "inline");
+      if (object.size) headers.set("content-length", String(object.size));
       return new Response(object.body, { headers });
     }
 
@@ -200,7 +215,7 @@ export async function onRequestPost({ request, env }) {
     const form = await request.formData();
     const file = form.get("file");
     if (!file || typeof file === "string") return jsonError("file_required", "Choose an image first.", 400);
-    if (!ALLOWED_TYPES.has(file.type)) return jsonError("unsupported_type", "Use JPG, PNG, WEBP or GIF.", 415);
+    if (!ALLOWED_TYPES.has(file.type)) return jsonError("unsupported_type", `Formato no soportado: ${file.type || "desconocido"}. Usa JPG, PNG, WEBP o GIF.`, 415);
     if (!file.size || file.size > MAX_BYTES) return jsonError("file_too_large", "File is too large.", 413);
 
     stage = "workspace";
