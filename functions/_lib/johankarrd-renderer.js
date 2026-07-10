@@ -4,9 +4,22 @@ const FALLBACK_SITE = {
   bg: '#000',
   accent: '#fff',
   card: '#08080b',
+  fontFamily: 'system',
   sections: [
     { id: 'home', label: 'Home', items: [{ type: 'title', text: 'Johankarrd' }] }
   ]
+};
+
+const FONT_STACKS = {
+  system: '-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif',
+  inter: 'Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+  arial: 'Arial,Helvetica,sans-serif',
+  trebuchet: '"Trebuchet MS",Arial,sans-serif',
+  verdana: 'Verdana,Geneva,sans-serif',
+  georgia: 'Georgia,"Times New Roman",serif',
+  times: '"Times New Roman",Times,serif',
+  courier: '"Courier New",Courier,monospace',
+  impact: 'Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif'
 };
 
 export function escapeHtml(value = '') {
@@ -35,6 +48,11 @@ function safeCss(value, fallback) {
   if (/[;{}<>]/.test(text)) return fallback;
   if (text.length > 220) return fallback;
   return text;
+}
+
+function safeFont(value = 'system') {
+  const key = String(value || 'system').toLowerCase();
+  return FONT_STACKS[key] ? key : 'system';
 }
 
 function safeUrl(value = '') {
@@ -98,6 +116,7 @@ export function normalizeSite(site) {
     bg: safeCss(source.bg, '#000'),
     accent: safeCss(source.accent, '#fff'),
     card: safeCss(source.card, '#08080b'),
+    fontFamily: safeFont(source.fontFamily),
     sections: sections.slice(0, 24).map((section, index) => {
       const id = safeSlug(section?.id || section?.label || `section-${index + 1}`);
       const label = String(section?.label || id || 'Section').slice(0, 32);
@@ -130,10 +149,11 @@ function itemHtml(item) {
 
 export function renderJohankarrdHtml(inputSite) {
   const site = normalizeSite(inputSite);
+  const font = FONT_STACKS[site.fontFamily] || FONT_STACKS.system;
   const ids = site.sections.map((section) => section.id);
   const nav = site.sections.map((section) => `<a href="#${escapeHtml(section.id)}">${escapeHtml(section.label)}</a>`).join('');
   const pages = site.sections.map((section) => `<section class="page" id="${escapeHtml(section.id)}"><div class="card">${section.items.map(itemHtml).join('')}</div></section>`).join('');
-  const css = `*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}body{font-family:Arial,sans-serif}.site{width:100vw;height:100vh;position:relative;overflow:hidden;background:${site.bg};color:${site.accent}}.nav{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:14px}.nav a{border:0;background:transparent;color:${site.accent};font:900 10px Arial;text-decoration:underline;text-transform:uppercase}.page{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;filter:blur(10px);transform:scale(.99);transition:.45s}.page.active{opacity:1;pointer-events:auto;filter:blur(0);transform:none}.card{width:min(86%,260px);max-height:84%;overflow:hidden;border-radius:20px;background:${site.card};padding:14px;display:grid;gap:9px;place-items:center;box-shadow:0 20px 38px #0008}.card img{display:block;max-width:100%;height:auto}.logo{max-height:84px;object-fit:contain}.shot{border-radius:8px}.title{font:1000 34px/.85 Arial;text-align:center;text-transform:uppercase}.links{background:#feedb9;color:#061f3d;border-radius:12px;padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}.links a{color:#061f3d;text-align:center;font:900 9px Arial;text-decoration:none}.gallery{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gallery img{aspect-ratio:1/1;object-fit:cover;border-radius:6px}.cargrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cargrid a{display:grid;place-items:center}.powered{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#ffffff5c;font:10px Arial}`;
+  const css = `*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}body{font-family:${font}}.site{width:100vw;height:100vh;position:relative;overflow:hidden;background:${site.bg};color:${site.accent};font-family:${font}}.nav{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:14px}.nav a{border:0;background:transparent;color:${site.accent};font-family:${font};font-size:10px;font-weight:900;text-decoration:underline;text-transform:uppercase}.page{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;filter:blur(10px);transform:scale(.99);transition:.45s}.page.active{opacity:1;pointer-events:auto;filter:blur(0);transform:none}.card{width:min(86%,260px);max-height:84%;overflow:hidden;border-radius:20px;background:${site.card};padding:14px;display:grid;gap:9px;place-items:center;box-shadow:0 20px 38px #0008;font-family:${font}}.card img{display:block;max-width:100%;height:auto}.logo{max-height:84px;object-fit:contain}.shot{border-radius:8px}.title{font-family:${font};font-size:34px;font-weight:1000;line-height:.85;text-align:center;text-transform:uppercase}.links{background:#feedb9;color:#061f3d;border-radius:12px;padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}.links a{color:#061f3d;text-align:center;font-family:${font};font-size:9px;font-weight:900;text-decoration:none}.gallery{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gallery img{aspect-ratio:1/1;object-fit:cover;border-radius:6px}.cargrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cargrid a{display:grid;place-items:center}.powered{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#ffffff5c;font-family:${font};font-size:10px}`;
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(site.name)}</title><style>${css}</style></head><body><div class="site"><nav class="nav">${nav}</nav>${pages}<div class="powered">Powered by BOOSTR Labs</div></div><script>const ids=${JSON.stringify(ids)};function show(){let id=location.hash.slice(1)||ids[0];if(!ids.includes(id))id=ids[0];document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));}addEventListener('hashchange',show);show();<\/script></body></html>`;
 }
 
