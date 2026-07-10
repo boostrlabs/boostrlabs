@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 
 const file = new URL('../dist/johankarrdbuildr/app-v60.js', import.meta.url);
+const coreFile = new URL('../dist/johankarrdbuildr/core-v64.js', import.meta.url);
 const hardeningFile = new URL('../dist/johankarrdbuildr/app-v63-hardening.js', import.meta.url);
 let source = await readFile(file, 'utf8');
 
@@ -9,6 +10,10 @@ const replacements = [
   [
     "state.sites = dedupeSites({ ...state.sites, ...(data.sites || {}) });",
     "const cloudEntries = Object.fromEntries(Object.entries(data.sites || {}).map(([key, value]) => [`cloud-${key}`, value])); state.sites = dedupeSites({ ...state.sites, ...cloudEntries });"
+  ],
+  [
+    "function commit(label, mutate) { state.history.push(snapshot()); if (state.history.length > 50) state.history.shift(); state.future = []; mutate(); state.sites = dedupeSites(state.sites); ensureSelection(); writeLocal(); renderAll(); queueSave(); showToast(label, 'Deshacer', undo, 5000); navigator.vibrate?.(10); }",
+    "function commit(label, mutate) { const before = snapshot(); state.history.push(before); if (state.history.length > 50) state.history.shift(); state.future = []; mutate(); state.sites = dedupeSites(state.sites); ensureSelection(); const audit = window.JOHANKARRD_CORE?.auditState(state.sites); if (audit && !audit.ok) { state.history.pop(); state.sites = before.sites; state.currentSite = before.currentSite; state.currentSection = before.currentSection; state.selectedItemId = before.selectedItemId; ensureSelection(); writeLocal(); renderAll(); setStatus(`Cambio cancelado para proteger los datos (${audit.code}).`); return false; } writeLocal(); renderAll(); queueSave(); showToast(label, 'Deshacer', undo, 5000); navigator.vibrate?.(10); return true; }"
   ],
   [
     "async function uploadOrEmbed(file) { try { return await uploadFile(file); } catch (_) { return fileToDataUrl(file); } }",
@@ -28,7 +33,7 @@ const replacements = [
   ],
   [
     "if (drag.kind === 'item' && Number.isInteger(drag.targetIndex)) { const items = section().items; const from = items.findIndex((item) => item.id === drag.itemId); let to = Math.max(0, Math.min(drag.targetIndex, items.length - 1)); if (from >= 0 && from !== to) commit('Elemento movido', () => { const [item] = items.splice(from, 1); if (to > from) to -= 1; items.splice(to, 0, item); state.selectedItemId = item.id; }); else renderCanvas(); }",
-    "if (drag.kind === 'item' && Number.isInteger(drag.targetIndex)) { const sourceSite = state.sites[drag.siteKey]; const sourceSection = sourceSite?.sections?.find((sec) => sec.id === drag.sectionId); const items = sourceSection?.items || []; const from = items.findIndex((item) => item.id === drag.itemId); const to = Math.max(0, Math.min(drag.targetIndex, Math.max(0, items.length - 1))); if (sourceSite && sourceSection && state.currentSite === drag.siteKey && state.currentSection === drag.sectionId && from >= 0 && from !== to) commit('Elemento movido', () => { const [item] = items.splice(from, 1); items.splice(to, 0, item); state.selectedItemId = item.id; }); else { renderCanvas(); if (state.currentSite !== drag.siteKey || state.currentSection !== drag.sectionId) setStatus('Movimiento cancelado para proteger la sección.'); } }"
+    "if (drag.kind === 'item' && Number.isInteger(drag.targetIndex)) { if (state.currentSite !== drag.siteKey || state.currentSection !== drag.sectionId) { renderCanvas(); setStatus('Movimiento cancelado para proteger la sección.'); } else { const moved = window.JOHANKARRD_CORE?.moveItemExact({ sites: state.sites, siteKey: drag.siteKey, sectionId: drag.sectionId, itemId: drag.itemId, toIndex: drag.targetIndex }); if (moved?.ok && moved.code === 'moved') commit('Elemento movido', () => { state.sites = moved.sites; state.selectedItemId = drag.itemId; }); else { renderCanvas(); if (moved && !moved.ok) setStatus(`Movimiento cancelado (${moved.code}).`); } } }"
   ],
   [
     "else if (key.startsWith('site.')) site()[key.slice(5)] = value; else if (key.startsWith('section.'))",
@@ -74,14 +79,16 @@ for (const legacy of forbidden) {
   if (index.includes(legacy)) throw new Error(`Legacy builder layer still loaded: ${legacy}`);
 }
 
-for (const required of ['data-canvas', 'data-inspector', 'data-mobile-publish', 'data-export', 'app-v60.js', 'app-v63-hardening.js', 'prime-v63-hardening.css']) {
+for (const required of ['data-canvas', 'data-inspector', 'data-mobile-publish', 'data-export', 'core-v64.js', 'app-v60.js', 'app-v63-hardening.js', 'prime-v63-hardening.css']) {
   if (!index.includes(required)) throw new Error(`Builder smoke check missing: ${required}`);
 }
 
+if (index.indexOf('core-v64.js') > index.indexOf('app-v60.js')) throw new Error('Core must load before the app');
+
 await writeFile(file, source, 'utf8');
-for (const target of [file, hardeningFile]) {
+for (const target of [file, coreFile, hardeningFile]) {
   const check = spawnSync(process.execPath, ['--check', target.pathname], { encoding: 'utf8' });
   if (check.status !== 0) throw new Error(check.stderr || `Johankarrd syntax check failed: ${target.pathname}`);
 }
 
-console.log('Johankarrd PRIME QA passed: protected section drag, unified state, Spanish UI, mobile hardening, export and publish.');
+console.log('Johankarrd PRIME QA passed: audited commits, exact protected reorder, unified state, Spanish UI, mobile hardening, export and publish.');
