@@ -19,9 +19,7 @@
   function installCss() {
     if ($('#final-v59-css')) return;
     document.head.insertAdjacentHTML('beforeend', `<style id="final-v59-css">
-      [data-site-select]7{display:none!important}
       [data-site-select]{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;clip-path:inset(50%)!important}
-      [data-site-select]\.field{display:none!important}
       .left-panel>.field:has([data-site-select]){position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}
       .font-card,.font-card b,.font-card span{font-family:inherit!important}
       .font-card b{font-size:16px!important;letter-spacing:-.02em}.font-card span{font-size:10px!important}
