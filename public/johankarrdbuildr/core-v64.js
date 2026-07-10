@@ -31,7 +31,6 @@
     if (!sites || typeof sites !== 'object' || Array.isArray(sites)) return result(false, 'invalid-sites');
 
     const slugs = new Set();
-    const globalItemIds = new Set();
     for (const [siteKey, site] of Object.entries(sites)) {
       if (!site || typeof site !== 'object') return result(false, 'invalid-site', siteKey);
       if (!Array.isArray(site.sections) || !site.sections.length) return result(false, 'site-without-sections', siteKey);
@@ -40,6 +39,7 @@
       slugs.add(site.slug);
 
       const sectionIds = new Set();
+      const siteItemIds = new Set();
       for (const section of site.sections) {
         if (!section?.id || typeof section.id !== 'string') return result(false, 'section-without-id', siteKey);
         if (sectionIds.has(section.id)) return result(false, 'duplicate-section-id', `${siteKey}:${section.id}`);
@@ -48,8 +48,8 @@
 
         for (const item of section.items) {
           if (!item?.id || typeof item.id !== 'string') return result(false, 'item-without-id', `${siteKey}:${section.id}`);
-          if (globalItemIds.has(item.id)) return result(false, 'duplicate-item-id', item.id);
-          globalItemIds.add(item.id);
+          if (siteItemIds.has(item.id)) return result(false, 'duplicate-item-id', `${siteKey}:${item.id}`);
+          siteItemIds.add(item.id);
           if (!item.type || typeof item.type !== 'string') return result(false, 'item-without-type', item.id);
         }
       }
