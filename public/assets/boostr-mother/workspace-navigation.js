@@ -1,48 +1,13 @@
 (() => {
   const path = location.pathname.replace(/\/+$/, '') || '/';
-  const token = localStorage.getItem('boostr_auth_token') || '';
-  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
-
-  async function api(url, options = {}) {
-    const response = await fetch(url, {
-      ...options,
-      headers: { ...authHeaders, ...(options.headers || {}) },
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || data.ok === false) throw data;
-    return data;
-  }
-
-  async function honorRequestedWorkspace() {
-    if (path !== '/partner-dashboard') return;
-    const requested = new URLSearchParams(location.search).get('workspace');
-    if (!requested) return;
-    try {
-      const session = await api('/api/session');
-      const target = (session.workspaces || []).find((workspace) => workspace.id === requested || workspace.slug === requested);
-      if (!target) return;
-      if (session.active_workspace?.id !== target.id) {
-        await api('/api/session/switch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ workspace_id: target.id })
-        });
-      }
-      location.replace('/partner-dashboard/?v=0.8.2');
-    } catch (error) {
-      console.error('Workspace route switch failed:', error);
-    }
-  }
 
   function workspaceHref(text = '') {
     const value = text.toLowerCase();
-    if (value.includes('janko') || value.includes('westdetro')) return '/partner-dashboard/?workspace=janko-westdetro';
-    if (value.includes('82ngel')) return '/partner-dashboard/?workspace=82ngel-artist';
-    if (value.includes('hummus')) return '/partner-dashboard/?workspace=hummus-fl';
-    if (value.includes('boostr')) return '/partner-dashboard/?workspace=boostr-internal';
-    return '/partner-dashboard/';
+    if (value.includes('janko') || value.includes('westdetro')) return '/partner-dashboard/?workspace=janko-westdetro&v=0.8.3';
+    if (value.includes('82ngel')) return '/partner-dashboard/?workspace=82ngel-artist&v=0.8.3';
+    if (value.includes('hummus')) return '/partner-dashboard/?workspace=hummus-fl&v=0.8.3';
+    if (value.includes('boostr')) return '/partner-dashboard/?workspace=boostr-internal&v=0.8.3';
+    return '/partner-dashboard/?v=0.8.3';
   }
 
   function addGlobalWorkspaceButton() {
@@ -50,7 +15,7 @@
     if (!bar || bar.querySelector('.boostr-open-workspace')) return;
     const link = document.createElement('a');
     link.className = 'boostr-open-workspace';
-    link.href = '/partner-dashboard/';
+    link.href = '/partner-dashboard/?v=0.8.3';
     link.title = 'Abrir Workspace OS';
     link.textContent = 'Workspace OS';
     const identity = bar.querySelector('.identity');
@@ -66,7 +31,7 @@
     const logout = side.querySelector('.logout');
     const link = document.createElement('a');
     link.className = 'founder-workspace-link';
-    link.href = '/partner-dashboard/';
+    link.href = '/partner-dashboard/?v=0.8.3';
     link.textContent = 'Abrir Workspace OS';
     link.style.cssText = 'min-height:48px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.055);color:inherit;border-radius:17px;padding:0 12px;font-weight:950;display:flex;align-items:center;text-decoration:none';
     side.insertBefore(link, logout || null);
@@ -89,12 +54,12 @@
     let title = null;
     let copy = null;
     if (path === '/app/janko' && mode.includes('janko artist')) {
-      href = '/partner-dashboard/?workspace=janko-westdetro';
+      href = '/partner-dashboard/?workspace=janko-westdetro&v=0.8.3';
       title = 'JANKO / WESTDETRO Artist OS';
       copy = 'Workspace privado para música, servicios, releases, files y actividad artística.';
     }
     if (path === '/app/johanka' && mode.includes('82ngel')) {
-      href = '/partner-dashboard/?workspace=82ngel-artist';
+      href = '/partner-dashboard/?workspace=82ngel-artist&v=0.8.3';
       title = '82NGEL Artist OS';
       copy = 'Workspace privado para identidad, releases, assets y actividad artística.';
     }
@@ -118,7 +83,6 @@
   style.textContent = '@media(max-width:720px){.boostr-open-workspace{font-size:0!important;width:42px!important;padding:0!important}.boostr-open-workspace:after{content:"WS";font-size:10px}}';
   document.head.appendChild(style);
 
-  honorRequestedWorkspace();
   enhance();
   new MutationObserver(enhance).observe(document.body, { childList: true, subtree: true });
 })();
