@@ -18,6 +18,18 @@ export async function onRequestOptions() {
   return json({ ok: true });
 }
 
+function resolveDashboard(user, memberships = []) {
+  const email = clean(user?.email, 180).toLowerCase();
+  if (email === "janko@boostrlabs.com") return "/demo/janko-os/?v=0.7.2";
+  if (email === "johanka@boostrlabs.com") return "/app/82ngel/?v=0.7.2";
+
+  const roles = new Set([user?.role, ...memberships.map((item) => item.role)].filter(Boolean));
+  if (roles.has("admin")) return "/admin/";
+  if (roles.has("manager")) return "/manager/";
+  if (roles.has("partner")) return "/partner-dashboard/";
+  return "/app/";
+}
+
 async function sessionPayload(env, auth) {
   const activeWorkspaceId = auth.active_workspace_id;
   const activeMembership = auth.memberships.find((item) => item.workspace_id === activeWorkspaceId) || null;
@@ -70,7 +82,8 @@ async function sessionPayload(env, auth) {
         }
       : null,
     personas: personas.results || [],
-    visible_modules: modules.results || []
+    visible_modules: modules.results || [],
+    redirect: resolveDashboard(auth.user, auth.memberships)
   };
 }
 
@@ -131,7 +144,7 @@ export async function onRequestPost({ request, env }) {
 
   const roles = [...new Set([user.role, ...(memberships.results || []).map((item) => item.role)].filter(Boolean))];
   const requestedWorkspaceId = clean(payload.active_workspace_id || payload.workspace_id, 120);
-  let activeWorkspaceId = requestedWorkspaceId || user.workspace_id || memberships.results?.[0]?.workspace_id || null;
+  const activeWorkspaceId = requestedWorkspaceId || user.workspace_id || memberships.results?.[0]?.workspace_id || null;
   const authPreview = { roles, memberships: memberships.results || [] };
 
   if (requestedWorkspaceId && !authCanSeeAll(authPreview)) {
