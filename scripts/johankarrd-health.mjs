@@ -30,8 +30,8 @@ if ((index.match(/<script\b/g) || []).length !== 4) fail('builder must load exac
 const loadOrder = ['johankarrd-data.js', 'core-v64.js', 'app-v60.js', 'app-v63-hardening.js'].map((name) => index.indexOf(name));
 if (loadOrder.some((position) => position < 0) || loadOrder.some((position, i) => i && position <= loadOrder[i - 1])) fail('unsafe script load order');
 
-for (const asset of ['./johankarrd-data.js?v=64', './core-v64.js?v=64', './app-v60.js?v=64', './app-v63-hardening.js?v=64', './prime-v60.css?v=64', './prime-v63-hardening.css?v=64']) {
-  if (!index.includes(asset)) fail(`missing v64 cache-busted asset: ${asset}`);
+for (const asset of ['./johankarrd-data.js?v=65', './core-v64.js?v=65', './app-v60.js?v=65', './app-v63-hardening.js?v=65', './prime-v60.css?v=65', './prime-v63-hardening.css?v=65']) {
+  if (!index.includes(asset)) fail(`missing v65 cache-busted asset: ${asset}`);
 }
 
 const forbiddenLayers = ['app-motion.js', 'app-sheet-swipe.js', 'app-prime-safe.js', 'app-fix.js', 'app-upload-fix.js', 'app-product-v58.js', 'app-ux-v58.js', 'app-final-v59.js', 'app-v62-enhance.js'];
@@ -69,13 +69,23 @@ for (const marker of ['moveItemExact', 'auditState', 'duplicate-item-id', 'dupli
 for (const marker of [
   'window.JOHANKARRD_CORE?.auditState',
   'window.JOHANKARRD_CORE?.moveItemExact',
-  'siteKey: state.currentSite, sectionId: state.currentSection',
+  'siteKey: state.currentSite',
+  'sectionId: state.currentSection',
   'Movimiento cancelado para proteger la sección.',
   'Cambio cancelado para proteger los datos',
   'compressImage(file)',
-  'cloudEntries'
+  'cloudEntries',
+  'replaceFunction(source',
+  'appleDragFunction',
+  'johankarrd-dragging',
+  'selectstart',
+  'animateFlip',
+  'translate3d(',
+  'drag.settling',
+  'setPointerCapture',
+  'Suelta aquí'
 ]) {
-  if (!patch.includes(marker)) fail(`build hardening marker missing: ${marker}`);
+  if (!patch.includes(marker) && !hardeningCss.includes(marker)) fail(`Apple drag/build hardening marker missing: ${marker}`);
 }
 
 for (const rendererCapability of ["type === 'text'", "type === 'title'", "type === 'divider'", "type === 'gallery'", "type === 'links'", 'fontFamily']) {
@@ -86,7 +96,7 @@ for (const marker of ['aria-modal', 'aria-live', 'focus', 'Delete', 'Backspace',
   if (!hardening.includes(marker)) fail(`interaction hardening missing: ${marker}`);
 }
 
-for (const marker of ['prefers-reduced-motion', 'focus-visible', 'mobile-sheet', 'drag-placeholder']) {
+for (const marker of ['prefers-reduced-motion', 'focus-visible', 'mobile-sheet', 'drag-placeholder', 'drag-ghost', 'drag-source', '-webkit-user-select:none', 'touch-action:none']) {
   if (!hardeningCss.includes(marker) && !baseCss.includes(marker)) fail(`motion/accessibility CSS missing: ${marker}`);
 }
 
@@ -116,4 +126,4 @@ const coreTests = spawnSync(process.execPath, [new URL('scripts/johankarrd-core-
 if (coreTests.status !== 0) fail(`core invariant tests failed\n${coreTests.stdout}\n${coreTests.stderr}`);
 
 console.log(coreTests.stdout.trim());
-console.log('Johankarrd source health passed: strict load order, audited mutations, protected reorder, Spanish UI, renderer parity, APIs and accessibility gates.');
+console.log('Johankarrd source health passed: v65 Apple-feel drag, strict load order, audited mutations, protected reorder, Spanish UI, renderer parity, APIs and accessibility gates.');
