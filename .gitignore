@@ -10,3 +10,4 @@ apps/*/tsconfig.tsbuildinfo
 apps/*/.env
 apps/*/.env.local
 .aider*
+*.ply
