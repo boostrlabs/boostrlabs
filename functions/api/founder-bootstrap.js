@@ -14,35 +14,60 @@ const founderEmails = ['janko@boostrlabs.com', 'johanka@boostrlabs.com'];
 
 const founders = {
   'janko@boostrlabs.com': {
-    profileKey: 'janko',
     displayName: 'Janko',
-    username: 'janko',
+    publicUsername: 'janko',
     role: 'manager',
     membershipRole: 'manager',
-    defaultPersonaKey: 'founder_manager',
+    defaultPersonaLabel: 'Janko Founder / BOOSTR Manager',
     personas: [
-      { key: 'founder_manager', type: 'manager', label: 'Janko Founder / BOOSTR Manager' },
-      { key: 'artist', type: 'artist', label: 'Janko Diorr Artist' },
-      { key: 'producer', type: 'producer', label: 'Janko Diorr Producer / Beatmaker' },
-      { key: 'creative_director', type: 'creator', label: 'Janko Creative Director' }
+      { type: 'manager', label: 'Janko Founder / BOOSTR Manager' },
+      { type: 'artist', label: 'Janko Diorr Artist' },
+      { type: 'producer', label: 'Janko Diorr Producer / Beatmaker' },
+      { type: 'creator', label: 'Janko Creative Director' }
     ],
-    redirect: '/hummusfl/manager-missions/?v=0.6.8'
+    redirect: '/hummusfl/manager-missions/?v=0.6.9'
   },
   'johanka@boostrlabs.com': {
-    profileKey: 'johanka',
     displayName: 'Johanka',
-    username: 'johanka',
+    publicUsername: 'johanka',
     role: 'creator',
     membershipRole: 'manager',
-    defaultPersonaKey: 'creative_leader',
+    defaultPersonaLabel: 'Johanka Creative Leader / Director',
     personas: [
-      { key: 'manager', type: 'manager', label: 'Johanka BOOSTR Manager' },
-      { key: 'creative_leader', type: 'creator', label: 'Johanka Creative Leader / Director' },
-      { key: 'artist', type: 'artist', label: '82NGEL Artist' }
+      { type: 'manager', label: 'Johanka BOOSTR Manager' },
+      { type: 'creator', label: 'Johanka Creative Leader / Director' },
+      { type: 'artist', label: '82NGEL Artist' }
     ],
-    redirect: '/hummusfl/creative-missions/?v=0.6.8'
+    redirect: '/hummusfl/creative-missions/?v=0.6.9'
   }
 };
+
+async function ensureUserColumns(env) {
+  const result = await env.DB.prepare('PRAGMA table_info(users)').all();
+  const existing = new Set((result.results || []).map((column) => column.name));
+  const additions = [
+    ['password_hash', 'TEXT'],
+    ['password_set_at', 'TEXT'],
+    ['last_login_at', 'TEXT'],
+    ['username', 'TEXT'],
+    ['phone', 'TEXT'],
+    ['normalized_phone', 'TEXT'],
+    ['default_workspace_id', 'TEXT'],
+    ['default_persona_id', 'TEXT'],
+    ['language', "TEXT NOT NULL DEFAULT 'es'"],
+    ['timezone', 'TEXT'],
+    ['theme', "TEXT NOT NULL DEFAULT 'platinum_dark'"],
+    ['signup_source', 'TEXT'],
+    ['invite_code_id', 'TEXT'],
+    ['onboarding_status', "TEXT NOT NULL DEFAULT 'first_run'"]
+  ];
+
+  for (const [name, definition] of additions) {
+    if (!existing.has(name)) {
+      await env.DB.prepare(`ALTER TABLE users ADD COLUMN ${name} ${definition}`).run();
+    }
+  }
+}
 
 async function ensureBootstrapSchema(env) {
   await env.DB.prepare(`
@@ -66,42 +91,29 @@ async function ensureBootstrapSchema(env) {
       role TEXT NOT NULL DEFAULT 'client',
       workspace_id TEXT,
       status TEXT NOT NULL DEFAULT 'invited',
+      password_hash TEXT,
+      password_set_at TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
   `).run();
 
-  const userColumns = await env.DB.prepare('PRAGMA table_info(users)').all();
-  const existing = new Set((userColumns.results || []).map((column) => column.name));
-  const additions = [
-    ['username', 'TEXT'],
-    ['password_hash', 'TEXT'],
-    ['password_set_at', 'TEXT'],
-    ['default_workspace_id', 'TEXT'],
-    ['default_persona_id', 'TEXT'],
-    ['language', "TEXT NOT NULL DEFAULT 'es'"],
-    ['theme', "TEXT NOT NULL DEFAULT 'platinum_dark'"],
-    ['signup_source', 'TEXT'],
-    ['onboarding_status', "TEXT NOT NULL DEFAULT 'first_run'"]
-  ];
-  for (const [name, definition] of additions) {
-    if (!existing.has(name)) {
-      await env.DB.prepare(`ALTER TABLE users ADD COLUMN ${name} ${definition}`).run();
-    }
-  }
+  await ensureUserColumns(env);
 
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS workspace_members (
       id TEXT PRIMARY KEY,
       workspace_id TEXT NOT NULL,
       user_id TEXT NOT NULL,
-      role TEXT NOT NULL CHECK (role IN ('admin','manager','partner','client','artist','creator','producer','seller')),
+      role TEXT NOT NULL CHECK (role IN ('admin','manager','partner','client','artist')),
       status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','invited','disabled')),
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
-  await env.DB.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_workspace_members_workspace_user ON workspace_members(workspace_id, user_id)').run();
+  await env.DB.prepare(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_workspace_members_workspace_user ON workspace_members(workspace_id, user_id)'
+  ).run();
 
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS personas (
@@ -155,45 +167,39 @@ async function founderState(env) {
     SELECT
       lower(u.email) AS email,
       u.id,
-      u.username,
       u.status,
       u.password_hash,
-      u.default_persona_id,
-      u.onboarding_status,
       SUM(CASE WHEN w.slug = 'boostr-internal' AND wm.status = 'active' THEN 1 ELSE 0 END) AS boostr_access,
       SUM(CASE WHEN w.slug = 'hummus-fl' AND wm.status = 'active' THEN 1 ELSE 0 END) AS hummus_access
     FROM users u
     LEFT JOIN workspace_members wm ON wm.user_id = u.id
     LEFT JOIN workspaces w ON w.id = wm.workspace_id
     WHERE lower(u.email) IN (?, ?)
-    GROUP BY u.id, u.email, u.username, u.status, u.password_hash, u.default_persona_id, u.onboarding_status
+    GROUP BY u.id, u.email, u.status, u.password_hash
   `).bind(...founderEmails).all();
 
-  const rows = result.results || [];
   const completed = new Set(
-    rows
+    (result.results || [])
       .filter((row) =>
         row.status === 'active' &&
         Boolean(row.password_hash) &&
-        Boolean(row.default_persona_id) &&
         Number(row.boostr_access || 0) > 0 &&
-        Number(row.hummus_access || 0) > 0 &&
-        row.onboarding_status === 'founder_ready'
+        Number(row.hummus_access || 0) > 0
       )
       .map((row) => row.email)
   );
 
   return {
-    rows,
     completed,
     closed: founderEmails.every((email) => completed.has(email))
   };
 }
 
 async function ensureWorkspace(env, config, ownerEmail, timestamp) {
-  let workspace = await env.DB.prepare('SELECT id, slug, name FROM workspaces WHERE slug = ? LIMIT 1')
-    .bind(config.slug).first();
-  if (workspace?.id) return workspace;
+  const existing = await env.DB.prepare(
+    'SELECT id, slug, name FROM workspaces WHERE slug = ? LIMIT 1'
+  ).bind(config.slug).first();
+  if (existing?.id) return existing;
 
   const id = crypto.randomUUID();
   await env.DB.prepare(`
@@ -210,7 +216,7 @@ async function ensureMembership(env, workspaceId, userId, role, timestamp) {
 
   if (current?.id) {
     await env.DB.prepare(
-      `UPDATE workspace_members SET role = ?, status = 'active', updated_at = ? WHERE id = ?`
+      "UPDATE workspace_members SET role = ?, status = 'active', updated_at = ? WHERE id = ?"
     ).bind(role, timestamp, current.id).run();
     return;
   }
@@ -221,32 +227,38 @@ async function ensureMembership(env, workspaceId, userId, role, timestamp) {
   `).bind(crypto.randomUUID(), workspaceId, userId, role, timestamp, timestamp).run();
 }
 
-async function ensurePersona(env, workspaceId, userId, persona, timestamp, isDefault) {
-  const metadata = JSON.stringify({
-    source: 'founder_bootstrap',
-    persona_key: persona.key,
-    label: persona.label,
-    default: Boolean(isDefault)
-  });
+async function ensurePersona(env, workspaceId, userId, persona, timestamp) {
+  let row = await env.DB.prepare(`
+    SELECT id FROM personas
+    WHERE workspace_id = ? AND user_id = ? AND persona_type = ? AND display_name = ?
+    LIMIT 1
+  `).bind(workspaceId, userId, persona.type, persona.label).first();
 
-  let row = await env.DB.prepare(
-    `SELECT id FROM personas
-     WHERE workspace_id = ? AND user_id = ? AND persona_type = ?
-       AND json_extract(metadata_json, '$.persona_key') = ?
-     LIMIT 1`
-  ).bind(workspaceId, userId, persona.type, persona.key).first();
-
-  if (!row?.id) {
-    row = { id: crypto.randomUUID() };
+  const metadata = JSON.stringify({ source: 'founder_bootstrap', label: persona.label });
+  if (row?.id) {
     await env.DB.prepare(`
-      INSERT INTO personas (id, workspace_id, user_id, persona_type, display_name, status, metadata_json, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)
-    `).bind(row.id, workspaceId, userId, persona.type, persona.label, metadata, timestamp, timestamp).run();
-  } else {
-    await env.DB.prepare(`
-      UPDATE personas SET display_name = ?, status = 'active', metadata_json = ?, updated_at = ? WHERE id = ?
-    `).bind(persona.label, metadata, timestamp, row.id).run();
+      UPDATE personas
+      SET status = 'active', metadata_json = ?, updated_at = ?
+      WHERE id = ?
+    `).bind(metadata, timestamp, row.id).run();
+    return row.id;
   }
+
+  row = { id: crypto.randomUUID() };
+  await env.DB.prepare(`
+    INSERT INTO personas (
+      id, user_id, workspace_id, persona_type, display_name, status, metadata_json, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)
+  `).bind(
+    row.id,
+    userId,
+    workspaceId,
+    persona.type,
+    persona.label,
+    metadata,
+    timestamp,
+    timestamp
+  ).run();
   return row.id;
 }
 
@@ -266,9 +278,9 @@ export async function onRequestPost({ request, env }) {
     stage = 'payload';
     const parsed = await readJson(request);
     if (!parsed.ok) return parsed.response;
-    const payload = parsed.payload || {};
-    const email = clean(payload.email, 180).toLowerCase();
-    const password = clean(payload.password, 500);
+
+    const email = clean(parsed.payload?.email, 180).toLowerCase();
+    const password = clean(parsed.payload?.password, 500);
     const founder = founders[email];
 
     if (!founder) {
@@ -292,16 +304,9 @@ export async function onRequestPost({ request, env }) {
         { bootstrap_closed: true }
       );
     }
-    if (before.completed.has(email)) {
-      return jsonError(
-        'founder_account_exists',
-        'This founder account already exists. Use BOOSTR Login.',
-        409,
-        { account_exists: true }
-      );
-    }
 
     const timestamp = now();
+
     stage = 'workspaces';
     const boostrWorkspace = await ensureWorkspace(env, {
       slug: 'boostr-internal',
@@ -315,33 +320,23 @@ export async function onRequestPost({ request, env }) {
     }, email, timestamp);
 
     stage = 'user_lookup';
-    const emailUser = await env.DB.prepare(
-      'SELECT id, username FROM users WHERE lower(email) = ? LIMIT 1'
+    const existingUser = await env.DB.prepare(
+      'SELECT id FROM users WHERE lower(email) = ? LIMIT 1'
     ).bind(email).first();
-    const usernameUser = await env.DB.prepare(
-      'SELECT id, email FROM users WHERE username = ? LIMIT 1'
-    ).bind(founder.username).first();
 
-    if (usernameUser?.id && usernameUser.id !== emailUser?.id) {
-      return jsonError('founder_username_taken', 'This founder identity is already attached to another account.', 409);
-    }
-
-    const userId = emailUser?.id || usernameUser?.id || crypto.randomUUID();
+    const userId = existingUser?.id || crypto.randomUUID();
     const passwordHash = await hashPassword(password);
 
     stage = 'user_upsert';
-    if (emailUser?.id || usernameUser?.id) {
+    if (existingUser?.id) {
       await env.DB.prepare(`
-        UPDATE users SET email = ?, name = ?, username = ?, role = ?, workspace_id = ?,
-          default_workspace_id = ?, status = 'active', password_hash = ?, password_set_at = ?,
-          language = 'es', theme = 'platinum_dark', signup_source = 'founder_bootstrap',
-          onboarding_status = 'founder_bootstrap_pending', updated_at = ? WHERE id = ?
+        UPDATE users
+        SET name = ?, role = ?, workspace_id = ?, status = 'active',
+            password_hash = ?, password_set_at = ?, updated_at = ?
+        WHERE id = ?
       `).bind(
-        email,
         founder.displayName,
-        founder.username,
         founder.role,
-        hummusWorkspace.id,
         hummusWorkspace.id,
         passwordHash,
         timestamp,
@@ -351,17 +346,14 @@ export async function onRequestPost({ request, env }) {
     } else {
       await env.DB.prepare(`
         INSERT INTO users (
-          id, email, name, username, role, workspace_id, default_workspace_id, status,
-          password_hash, password_set_at, language, theme, signup_source, onboarding_status,
-          created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, 'es', 'platinum_dark', 'founder_bootstrap', 'founder_bootstrap_pending', ?, ?)
+          id, email, name, role, workspace_id, status,
+          password_hash, password_set_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?)
       `).bind(
         userId,
         email,
         founder.displayName,
-        founder.username,
         founder.role,
-        hummusWorkspace.id,
         hummusWorkspace.id,
         passwordHash,
         timestamp,
@@ -377,34 +369,32 @@ export async function onRequestPost({ request, env }) {
     stage = 'personas';
     let defaultPersonaId = null;
     for (const persona of founder.personas) {
-      const personaId = await ensurePersona(
-        env,
-        hummusWorkspace.id,
-        userId,
-        persona,
-        timestamp,
-        persona.key === founder.defaultPersonaKey
-      );
-      if (persona.key === founder.defaultPersonaKey) defaultPersonaId = personaId;
+      const personaId = await ensurePersona(env, hummusWorkspace.id, userId, persona, timestamp);
+      if (persona.label === founder.defaultPersonaLabel) defaultPersonaId = personaId;
     }
 
     stage = 'finalize_user';
     await env.DB.prepare(`
-      UPDATE users SET default_persona_id = ?, onboarding_status = 'founder_ready', updated_at = ? WHERE id = ?
-    `).bind(defaultPersonaId, timestamp, userId).run();
+      UPDATE users
+      SET default_workspace_id = ?, default_persona_id = ?, language = 'es',
+          theme = 'platinum_dark', signup_source = 'founder_bootstrap',
+          onboarding_status = 'founder_ready', updated_at = ?
+      WHERE id = ?
+    `).bind(hummusWorkspace.id, defaultPersonaId, timestamp, userId).run();
 
     stage = 'activity';
     try {
       await env.DB.prepare(`
-        INSERT INTO activity_events (id, workspace_id, user_id, persona_id, event_type, title, body, metadata_json, created_at)
-        VALUES (?, ?, ?, ?, 'founder.bootstrap', 'Founder account activated', ?, ?, ?)
+        INSERT INTO activity_events (
+          id, workspace_id, user_id, persona_id, event_type, title, body, metadata_json, created_at
+        ) VALUES (?, ?, ?, ?, 'founder.bootstrap', 'Founder account activated', ?, ?, ?)
       `).bind(
         crypto.randomUUID(),
         hummusWorkspace.id,
         userId,
         defaultPersonaId,
-        `${founder.username} founder profile activated.`,
-        JSON.stringify({ profile: founder.profileKey, workspaces: [boostrWorkspace.slug, hummusWorkspace.slug] }),
+        `${founder.publicUsername} founder profile activated.`,
+        JSON.stringify({ email, workspaces: [boostrWorkspace.slug, hummusWorkspace.slug] }),
         timestamp
       ).run();
     } catch {}
@@ -422,7 +412,7 @@ export async function onRequestPost({ request, env }) {
         id: userId,
         email,
         name: founder.displayName,
-        username: founder.username,
+        username: founder.publicUsername,
         role: founder.role
       },
       active_workspace: hummusWorkspace,
@@ -431,12 +421,14 @@ export async function onRequestPost({ request, env }) {
       redirect: founder.redirect
     }, 201, { 'Set-Cookie': sessionCookie(session.token, request) });
   } catch (error) {
-    console.error('founder-bootstrap failed', { stage, message: error?.message });
     return jsonError(
       'founder_bootstrap_failed',
       `No se pudo activar la cuenta durante: ${stage}.`,
       500,
-      { stage }
+      {
+        stage,
+        detail: clean(error?.message || error, 500)
+      }
     );
   }
 }
