@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b09" />
+  <meta name="description" content="Creative Missions para Hummus Mediterranean Food — Partner #001 de BOOSTR Labs." />
+  <title>Hummus Creative Missions — BOOSTR Labs</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+
+  <main class="app" id="app">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="BOOSTR Labs">
+        <span class="brand-mark">B*</span>
+        <span>BOOSTR LABS</span>
+      </a>
+      <div class="system-status"><span></span> PARTNER #001 · ONLINE</div>
+    </header>
+
+    <section class="screen opening is-active" data-screen="opening">
+      <div class="terminal-shell">
+        <p class="terminal-line">$ initializing creative intelligence...</p>
+        <p class="terminal-line delay-1">$ partner detected: HUMMUS FL</p>
+        <p class="terminal-line delay-2">$ visual operator: JOHANKA</p>
+        <div class="opening-copy delay-3">
+          <p class="eyebrow">PRIVATE CREATIVE PATH</p>
+          <h1>Johanka, encontramos varias cositas que podrías convertir en algo bello.</h1>
+          <p>No es una lista de órdenes. Es una colección de ideas, una por una, para que construyas Hummus a tu manera.</p>
+          <button class="primary-btn" data-action="start">Abrir ideas</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen mission-screen" data-screen="missions">
+      <div class="progress-wrap" aria-label="Progreso">
+        <div class="progress-meta">
+          <span id="missionLabel">IDEA 01</span>
+          <span id="progressText">0% EXPLORADO</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <div class="mission-stage">
+        <article class="mission-card" id="missionCard">
+          <div class="card-head">
+            <div>
+              <p class="card-code" id="cardCode">VISUAL_BOOT_01</p>
+              <p class="card-type" id="cardType">BASE VISUAL</p>
+            </div>
+            <button class="save-toggle" id="completeBtn" type="button" aria-pressed="false">Guardar como hecha</button>
+          </div>
+
+          <p class="soft-intro" id="softIntro"></p>
+          <h2 id="cardTitle"></h2>
+          <p class="card-body" id="cardBody"></p>
+
+          <div class="why-box">
+            <span>POR QUÉ NOS SIRVE</span>
+            <p id="cardWhy"></p>
+          </div>
+
+          <div class="micro-steps" id="microSteps"></div>
+
+          <div class="prompt-box" id="promptBox">
+            <div class="prompt-head">
+              <span>MINI PROMPT PARA CHATGPT</span>
+              <button class="copy-btn" id="copyPrompt" type="button">Copiar</button>
+            </div>
+            <pre id="promptText"></pre>
+          </div>
+
+          <div class="card-footer">
+            <span class="reward" id="rewardText">+1 pieza para Hummus OS</span>
+            <span class="saved-note" id="savedNote"></span>
+          </div>
+        </article>
+      </div>
+
+      <nav class="mission-nav" aria-label="Navegación de ideas">
+        <button class="nav-btn" id="prevBtn" type="button">←</button>
+        <button class="index-btn" id="indexBtn" type="button"><span id="currentNumber">01</span> / <span id="totalNumber">25</span></button>
+        <button class="nav-btn next" id="nextBtn" type="button">→</button>
+      </nav>
+    </section>
+
+    <section class="screen index-screen" data-screen="index">
+      <div class="index-shell">
+        <div class="index-title-row">
+          <div>
+            <p class="eyebrow">MISSION MAP</p>
+            <h2>Todas las ideas</h2>
+          </div>
+          <button class="close-index" id="closeIndex" type="button">Cerrar</button>
+        </div>
+        <div class="index-grid" id="indexGrid"></div>
+      </div>
+    </section>
+
+    <section class="screen completion-screen" data-screen="completion">
+      <div class="completion-shell">
+        <p class="terminal-line">$ creative_path reviewed</p>
+        <p class="eyebrow">HUMMUS FL · CREATIVE MISSIONS</p>
+        <h2>No tienes que hacerlo todo hoy.</h2>
+        <p>Escoge la idea que más te provoque y empieza por ahí. Cada asset que termines le da una pieza real al nuevo Hummus OS.</p>
+        <div class="completion-stats">
+          <div><strong id="doneCount">0</strong><span>ideas hechas</span></div>
+          <div><strong id="leftCount">25</strong><span>ideas disponibles</span></div>
+        </div>
+        <button class="primary-btn" data-action="return">Volver a las ideas</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./script.js"></script>
+</body>
+</html>
