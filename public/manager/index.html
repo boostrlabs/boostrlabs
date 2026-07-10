@@ -1,240 +1,40 @@
 <!doctype html>
-<html lang="en">
+<html lang="es" data-build="0.8.1">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title data-i18n="manager_greeting_span">BOOSTR Manager OS</title>
-  <meta name="description" content="BOOSTR Manager OS.">
-  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
-  <link rel="stylesheet" href="/assets/boostr-mother/mother.css">
-  <style>
-    .manager-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:18px}
-    .signal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .signal{border:1px solid var(--line2);background:rgba(0,0,0,.16);border-radius:23px;padding:16px}
-    .signal b{display:block;font-size:34px;letter-spacing:-.08em}
-    .signal span{display:block;color:var(--soft);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:900}
-    .contract{display:grid;gap:10px}
-    .admin-note{border:1px solid rgba(255,211,110,.22);background:rgba(255,211,110,.07);border-radius:22px;padding:14px;color:var(--muted);font-size:13px;line-height:1.45}
-    @media(max-width:900px){.manager-grid{grid-template-columns:1fr}.signal-row,.metrics{grid-template-columns:1fr 1fr}}
-    @media(max-width:620px){.signal-row,.metrics,.network-grid{grid-template-columns:1fr}}
-  </style>
-  <script src="/assets/boostr-mother/i18n.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BOOSTR Manager</title>
+<meta name="description" content="Control operativo real de leads, workspaces, Missions y módulos BOOSTR.">
+<link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+<link rel="stylesheet" href="/assets/boostr-mother/mother.css?v=0.8.1">
+<style>
+.manager-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:18px}.real-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.real-metric,.empty{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);border-radius:22px;padding:14px}.real-metric span{display:block;color:var(--muted);font-size:10px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.real-metric b{display:block;font-size:30px;margin-top:7px}.action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.action-card{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);border-radius:22px;padding:15px;min-height:145px;text-decoration:none;display:flex;flex-direction:column}.action-card b{font-size:18px}.action-card p{font-size:12px;line-height:1.4;color:var(--muted)}.action-card span{margin-top:auto;color:var(--champagne,#feedb9);font-size:11px;font-weight:950}.empty{color:var(--muted)}@media(max-width:900px){.manager-grid{grid-template-columns:1fr}.real-metrics{grid-template-columns:1fr 1fr}}@media(max-width:620px){.real-metrics,.action-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <div class="ambient"></div>
-  <div class="os">
-    <aside class="sidebar glass">
-      <a class="logo-mark" href="/home">
-        <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))">
-      </a>
-      <nav class="icon-nav">
-        <a class="active" href="/manager" title="Manager">⌘</a>
-        <a href="/app" title="Client">◫</a>
-        <a href="/partner-dashboard" title="Partner">◇</a>
-        <a href="/audit" title="Audit">↯</a>
-        <a href="/modules" title="Modules">◌</a>
-      </nav>
-      <div class="utility">
-        <a href="/login" title="Role Login">◎</a>
-        <a href="/ecosystem" title="Ecosystem Map">?</a>
-      </div>
-    </aside>
-    <main class="main">
-      <header class="topbar glass">
-        <div class="greeting">
-          <span data-i18n="manager_greeting_span">BOOSTR Manager OS</span>
-          <strong data-i18n="manager_greeting_val">Control Room</strong>
-        </div>
-        <div class="search" data-i18n="search_placeholder">Search leads, modules, workspaces, routes...</div>
-        <a class="bell" href="/api/health" title="API health">●</a>
-        <a class="role-pill" href="/login">
-          <div class="avatar"></div>
-          <div>
-            <b id="roleLabel">Admin Access</b>
-            <div class="micro" data-i18n="home_switch_access_desc">Manager workspace</div>
-          </div>
-        </a>
-      </header>
-      <section class="manager-grid">
-        <div class="left-col">
-          <section class="card glass">
-            <div class="section-head">
-              <div>
-                <span class="eyebrow" data-i18n="manager_greeting_span">BOOSTR Command</span>
-                <h1 data-i18n="manager_h1">Leads. Modules. Workspaces.</h1>
-                <p class="micro" data-i18n="manager_desc">The Manager OS is where incoming applications become workspaces, modules and client actions.</p>
-              </div>
-              <a class="btn primary" href="/manager/leads" data-i18n="manager_cta_inbox">Open Lead Inbox</a>
-            </div>
-            <div class="signal-row">
-              <a class="signal" href="/manager/leads">
-                <span data-i18n="manager_signal_apps_span">Applications</span>
-                <b data-i18n="manager_signal_apps_val">Inbox</b>
-                <small class="micro" data-i18n="manager_signal_apps_micro">Audit + manual leads</small>
-              </a>
-              <a class="signal" href="/modules">
-                <span data-i18n="manager_signal_reg_span">Registry</span>
-                <b data-i18n="manager_signal_reg_val">Modules</b>
-                <small class="micro" data-i18n="manager_signal_reg_micro">Active OS surfaces</small>
-              </a>
-              <a class="signal" href="/app">
-                <span data-i18n="manager_signal_work_span">Workspaces</span>
-                <b data-i18n="manager_signal_work_val">Client</b>
-                <small class="micro" data-i18n="manager_signal_work_micro">Account surfaces</small>
-              </a>
-            </div>
-          </section>
-          <section class="card glass">
-            <div class="section-head">
-              <div>
-                <h2 data-i18n="manager_flow_title">BOOSTR Flow</h2>
-                <div class="micro" data-i18n="manager_flow_micro">The operating path for every application.</div>
-              </div>
-              <a class="chip live" href="/audit" data-i18n="home_pulse_val">Audit</a>
-            </div>
-            <div class="flow">
-              <a class="flow-row" href="/audit">
-                <b data-i18n="manager_flow_step1_title">01 · Application</b>
-                <span data-i18n="manager_flow_step1_desc">Public audit captures the opportunity.</span>
-                <span class="chip live" data-i18n="manager_flow_step1_chip">Entry</span>
-              </a>
-              <a class="flow-row" href="/manager/leads">
-                <b data-i18n="manager_flow_step2_title">02 · Review</b>
-                <span data-i18n="manager_flow_step2_desc">Manager qualifies, assigns and prioritizes.</span>
-                <span class="chip gold" data-i18n="manager_flow_step2_chip">Inbox</span>
-              </a>
-              <a class="flow-row" href="/app">
-                <b data-i18n="manager_flow_step3_title">03 · Workspace</b>
-                <span data-i18n="manager_flow_step3_desc">Approved work becomes a BOOSTR workspace.</span>
-                <span class="chip" data-i18n="manager_flow_step3_chip">OS</span>
-              </a>
-            </div>
-          </section>
-          <section class="card glass">
-            <div class="section-head">
-              <div>
-                <h2 data-i18n="manager_modules_title">OS Modules</h2>
-                <div class="micro" data-i18n="manager_modules_micro">Drag cards to organize your view. Use search to isolate a module.</div>
-              </div>
-              <a class="chip" href="/modules" data-i18n="manager_signal_reg_span">Registry</a>
-            </div>
-            <div class="metrics">
-              <a class="metric" href="/manager/leads">
-                <span>BOOSTR</span>
-                <b data-i18n="manager_signal_apps_val">Inbox</b>
-                <small data-i18n="manager_metric_inbox_status">Live</small>
-              </a>
-              <a class="metric" href="/app">
-                <span>BOOSTR</span>
-                <b data-i18n="manager_metric_work_val">Workspace</b>
-                <small data-i18n="manager_metric_work_status">Shell</small>
-              </a>
-              <a class="metric" href="/partner-dashboard">
-                <span>BOOSTR</span>
-                <b data-i18n="login_option_partner">Partner</b>
-                <small data-i18n="manager_metric_partner_status">Shell</small>
-              </a>
-              <a class="metric" href="/modules">
-                <span>BOOSTR</span>
-                <b data-i18n="manager_signal_reg_val">Modules</b>
-                <small data-i18n="manager_metric_modules_status">Map</small>
-              </a>
-            </div>
-          </section>
-        </div>
-        <div class="right-col">
-          <section class="card glass">
-            <h3 data-i18n="manager_queue_title">Admin Queue</h3>
-            <p class="admin-note" id="sessionBox" data-i18n="manager_queue_desc">Choose the next object to review. Backend auth and payments stay out of this frontend pass.</p>
-            <div class="actions">
-              <a class="btn primary" href="/manager/leads" data-i18n="manager_queue_btn_apps">Applications</a>
-              <a class="btn" href="/admin" data-i18n="manager_queue_btn_sys">System</a>
-            </div>
-          </section>
-          <section class="card glass">
-            <h3 data-i18n="manager_build_title">Build Queue</h3>
-            <div class="contract">
-              <a class="task" href="/manager/leads">
-                <span class="dot gold"></span>
-                <div>
-                  <b data-i18n="manager_build_task1_title">Lead Inbox</b>
-                  <span data-i18n="manager_build_task1_desc">Review and qualify applications.</span>
-                </div>
-                <span>01</span>
-              </a>
-              <a class="task" href="/modules">
-                <span class="dot blue"></span>
-                <div>
-                  <b data-i18n="manager_build_task2_title">Module Registry</b>
-                  <span data-i18n="manager_build_task2_desc">Keep OS surfaces clean.</span>
-                </div>
-                <span>02</span>
-              </a>
-              <a class="task" href="/admin">
-                <span class="dot"></span>
-                <div>
-                  <b data-i18n="manager_build_task3_title">Admin OS</b>
-                  <span data-i18n="manager_build_task3_desc">System requirements and implementation map.</span>
-                </div>
-                <span>03</span>
-              </a>
-            </div>
-          </section>
-          <section class="card glass">
-            <h3 data-i18n="manager_paths_title">Quick Paths</h3>
-            <div class="timeline">
-              <a class="task" href="/82ngel">
-                <span class="dot"></span>
-                <div>
-                  <b data-i18n="manager_paths_task1_title">82NGEL OS</b>
-                  <span data-i18n="manager_paths_task1_desc">Artist front door.</span>
-                </div>
-                <span>Open</span>
-              </a>
-              <a class="task" href="/jankodiorr">
-                <span class="dot gold"></span>
-                <div>
-                  <b data-i18n="manager_paths_task2_title">WESTDETRO OS</b>
-                  <span data-i18n="manager_paths_task2_desc">Artist route.</span>
-                </div>
-                <span>Open</span>
-              </a>
-              <a class="task" href="/app/82ngel">
-                <span class="dot blue"></span>
-                <div>
-                  <b data-i18n="manager_paths_task3_title">82 Command</b>
-                  <span data-i18n="manager_paths_task3_desc">Artist dashboard.</span>
-                </div>
-                <span>Open</span>
-              </a>
-            </div>
-          </section>
-        </div>
-      </section>
-      <nav class="bottom-tabs glass">
-        <a href="/manager" data-i18n="login_option_manager">Manager</a>
-        <a href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
-        <a href="/app" data-i18n="login_option_client">Client</a>
-        <a href="/audit" data-i18n="home_pulse_val">Audit</a>
-        <a href="/modules" data-i18n="home_switch_modules_title">Modules</a>
-        <a class="plus" href="/login">+</a>
-      </nav>
-      <footer class="footer">POWERED BY BOOSTR LABS · Manager OS</footer>
-    </main>
-  </div>
-  <nav class="mobile-tabs">
-    <a class="active" href="/manager" data-i18n="login_option_manager">Manager</a>
-    <a href="/app" data-i18n="login_option_client">Client</a>
-    <a href="/partner-dashboard" data-i18n="login_option_partner">Partner</a>
-    <a href="/audit" data-i18n="home_pulse_val">Audit</a>
-    <a href="/login">Login</a>
-  </nav>
-  <script>
-    const s=JSON.parse(localStorage.getItem('boostr_session')||'null');
-    if(s){
-      roleLabel.textContent=s.role+' preview';
-    }
-  </script>
-  <script src="/assets/boostr-mother/console.js"></script>
+<div class="ambient"></div>
+<div class="os">
+<aside class="sidebar glass"><a class="logo-mark" href="/home"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></a><nav class="icon-nav"><a class="active" href="/manager" title="Manager">⌘</a><a href="/app" title="Dashboard">◫</a><a href="/partner-dashboard" title="Workspace">◇</a><a href="/audit" title="Audit">↯</a><a href="/modules" title="Modules">◌</a></nav><div class="utility"><a href="/login" title="Cuenta">◎</a><a href="/ecosystem" title="Mapa">?</a></div></aside>
+<main class="main">
+<header class="topbar glass"><div class="greeting"><span>BOOSTR MANAGER</span><strong>Control Room</strong></div><div class="search">Buscar leads, workspaces, módulos y rutas...</div><a class="bell" href="/api/health" title="API Health">●</a><a class="role-pill" href="/login"><div class="avatar"></div><div><b id="accountName">Cuenta BOOSTR</b><div class="micro" id="accountRole">Sesión requerida</div></div></a></header>
+<section class="manager-grid">
+<div class="left-col">
+<section class="card glass"><div class="section-head"><div><span class="eyebrow">OPERACIÓN GLOBAL</span><h1>Opera leads, workspaces y módulos.</h1><p class="micro">Manager no pertenece a una sola compañía. Es la vista para mover el ecosistema completo y entrar al workspace correcto.</p></div><a class="btn primary" href="/manager/leads/">Abrir Audit Inbox</a></div><div class="real-metrics"><div class="real-metric"><span>Workspaces</span><b id="workspaceTotal">0</b></div><div class="real-metric"><span>Audits</span><b id="auditTotal">0</b></div><div class="real-metric"><span>Leads</span><b id="leadTotal">0</b></div><div class="real-metric"><span>Módulos</span><b id="moduleTotal">0</b></div></div></section>
+<section class="card glass"><div class="section-head"><div><h2>Qué puedes mover aquí</h2><div class="micro">Rutas operativas, no ejemplos.</div></div></div><div class="action-grid"><a class="action-card" href="/manager/leads/"><b>Audit Inbox</b><p>Revisar capturas, leads y cambios de estado.</p><span>Abrir →</span></a><a class="action-card" href="/hummusfl/manager-missions/"><b>Manager Missions</b><p>Roadmap de Hummus y crecimiento del ecosistema.</p><span>Abrir →</span></a><a class="action-card" href="/partner-dashboard/"><b>Workspace OS</b><p>Entrar al workspace activo con sus módulos y datos.</p><span>Abrir →</span></a><a class="action-card" href="/app/products/"><b>Productos</b><p>Crear ofertas dentro del workspace seleccionado.</p><span>Abrir →</span></a><a class="action-card" href="/app/files/"><b>Files</b><p>Assets, pruebas y entregables por workspace.</p><span>Abrir →</span></a><a class="action-card" href="/admin/"><b>Admin OS</b><p>Usuarios, permisos, salud y configuración del sistema.</p><span>Abrir →</span></a></div></section>
+<section class="card glass"><div class="section-head"><div><h2>Workspaces reales</h2><div class="micro">Selecciona el contexto desde la barra flotante.</div></div></div><div class="action-grid" id="workspaceGrid"><div class="empty">Cargando workspaces...</div></div></section>
+</div>
+<div class="right-col">
+<section class="card glass"><h3>Audit / Leads</h3><div class="timeline" id="leadSummary"><div class="empty">Cargando resumen...</div></div></section>
+<section class="card glass"><h3>Module Registry</h3><div class="timeline" id="moduleList"><div class="empty">Cargando módulos...</div></div></section>
+</div>
+</section>
+<footer class="footer">POWERED BY BOOSTR LABS · MANAGER OS</footer>
+</main>
+</div>
+<script>
+const $=s=>document.querySelector(s);function headers(){const t=localStorage.getItem('boostr_auth_token');return t?{Authorization:'Bearer '+t}:{}}async function api(path){const res=await fetch(path,{headers:headers(),credentials:'same-origin',cache:'no-store'});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok===false)throw data;return data}function countRows(rows=[]){return rows.reduce((sum,row)=>sum+Number(row.total||0),0)}function item(title,copy,status=''){return `<div class="task"><span class="dot"></span><div><b>${title}</b><span>${copy||''}</span></div><span>${status}</span></div>`}async function load(){try{const [session,workspaces,summary,modules]=await Promise.all([api('/api/session'),api('/api/workspaces'),api('/api/leads?type=summary'),api('/api/modules?manager=1')]);accountName.textContent=session.user?.name||session.user?.email||'Cuenta BOOSTR';accountRole.textContent=[session.role,session.active_workspace?.name].filter(Boolean).join(' · ');workspaceTotal.textContent=(workspaces.workspaces||[]).length;auditTotal.textContent=countRows(summary.audits);leadTotal.textContent=countRows(summary.leads);moduleTotal.textContent=(modules.modules||[]).length;workspaceGrid.innerHTML=(workspaces.workspaces||[]).length?(workspaces.workspaces||[]).map(w=>`<a class="action-card" href="/partner-dashboard/"><b>${w.name||w.slug}</b><p>${w.type||'workspace'} · ${w.members_total??''} miembros</p><span>${w.status||'active'} →</span></a>`).join(''):'<div class="empty">No hay workspaces registrados.</div>';const leadRows=[...(summary.audits||[]).map(x=>['Audits · '+x.status,'Registros capturados',x.total]),...(summary.leads||[]).map(x=>['Leads · '+x.status,'Registros manuales o convertidos',x.total])];leadSummary.innerHTML=leadRows.length?leadRows.map(x=>item(...x)).join(''):'<div class="empty">No hay audits ni leads todavía.</div>';moduleList.innerHTML=(modules.modules||[]).slice(0,10).map(m=>item(m.name||m.slug,m.category||'',m.status||'')).join('')||'<div class="empty">No hay módulos registrados.</div>'}catch(e){if(e?.error==='missing_session'||e?.code==='missing_session'){location.replace('/login/?next=/manager/');return}leadSummary.innerHTML=`<div class="empty">${e?.message||e?.error||'No se pudo cargar Manager.'}</div>`}}
+load();
+</script>
+<script src="/assets/boostr-mother/console.js"></script>
 </body>
 </html>
