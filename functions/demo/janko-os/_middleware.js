@@ -13,91 +13,65 @@ const injection = String.raw`
   .janko-session-note{color:rgba(247,245,239,.44);font-size:9px;line-height:1.35;text-align:center}
   .janko-profile-brand-section{grid-column:1/-1}
   .janko-profile-brand-section .janko-brand-hub{background:rgba(255,255,255,.025)}
-  @media(max-width:980px){
-    .janko-brand-hub--rail{display:none}
-  }
-  @media(max-width:620px){
-    .janko-brand-hub__logos{grid-template-columns:1fr 1fr 1fr}
-    .janko-brand-logo{min-height:50px;padding:7px}
-    .janko-brand-logo img{height:24px}
-  }
+  @media(max-width:980px){.janko-brand-hub--rail{display:none}}
+  @media(max-width:620px){.janko-brand-hub__logos{grid-template-columns:1fr 1fr 1fr}.janko-brand-logo{min-height:50px;padding:7px}.janko-brand-logo img{height:24px}}
 </style>
 <script id="janko-admin-patch-v071">
-(() => {
-  const brands = [
-    { name:'BOOSTR Labs', href:'/home', src:'/assets/logos/boostr-logo-nav.png' },
-    { name:'JANKO', href:'/jankodiorr', src:'/assets/link/janko/janko-logo-white-hd.png' },
-    { name:'WESTDETRO', href:'/jankodiorr#westdetro-world', src:'/assets/link/janko/westdetro-logo-white-hd.png' }
+(function(){
+  var brands=[
+    {name:'BOOSTR Labs',href:'/home',src:'/assets/logos/boostr-logo-nav.png'},
+    {name:'JANKO',href:'/jankodiorr',src:'/assets/link/janko/janko-logo-white-hd.png'},
+    {name:'WESTDETRO',href:'/jankodiorr#westdetro-world',src:'/assets/link/janko/westdetro-logo-white-hd.png'}
   ];
 
-  const brandHubMarkup = (extraClass='') => `
-    <section class="janko-brand-hub ${extraClass}" aria-label="Janko brand hub">
-      <div class="janko-brand-hub__label">Tus compañías y productos</div>
-      <div class="janko-brand-hub__logos">
-        ${brands.map(brand => `<a class="janko-brand-logo" href="${brand.href}" title="${brand.name}" aria-label="Abrir ${brand.name}"><img src="${brand.src}" alt="${brand.name}"></a>`).join('')}
-      </div>
-    </section>`;
+  function escapeAttr(value){return String(value).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function brandHubMarkup(extraClass){
+    var logos=brands.map(function(brand){
+      return '<a class="janko-brand-logo" href="'+escapeAttr(brand.href)+'" title="'+escapeAttr(brand.name)+'" aria-label="Abrir '+escapeAttr(brand.name)+'"><img src="'+escapeAttr(brand.src)+'" alt="'+escapeAttr(brand.name)+'"></a>';
+    }).join('');
+    return '<section class="janko-brand-hub '+(extraClass||'')+'" aria-label="Janko brand hub"><div class="janko-brand-hub__label">Tus compañías y productos</div><div class="janko-brand-hub__logos">'+logos+'</div></section>';
+  }
 
   function installRailHub(){
-    const rail = document.querySelector('.rail');
-    const profile = rail?.querySelector('.profile-mini');
-    if(!rail || !profile || rail.querySelector('.janko-brand-hub--rail')) return;
-    profile.insertAdjacentHTML('afterend', brandHubMarkup('janko-brand-hub--rail'));
-
-    const foot = rail.querySelector('.rail-foot');
-    if(foot && !rail.querySelector('.janko-session-actions')){
-      foot.insertAdjacentHTML('beforebegin', `
-        <div class="janko-session-actions">
-          <button type="button" class="janko-logout" data-janko-logout>Cerrar sesión</button>
-          <div class="janko-session-note">Revoca esta sesión y vuelve a BOOSTR Login.</div>
-        </div>`);
+    var rail=document.querySelector('.rail');
+    var profile=rail&&rail.querySelector('.profile-mini');
+    if(!rail||!profile||rail.querySelector('.janko-brand-hub--rail'))return;
+    profile.insertAdjacentHTML('afterend',brandHubMarkup('janko-brand-hub--rail'));
+    var foot=rail.querySelector('.rail-foot');
+    if(foot&&!rail.querySelector('.janko-session-actions')){
+      foot.insertAdjacentHTML('beforebegin','<div class="janko-session-actions"><button type="button" class="janko-logout" data-janko-logout>Cerrar sesión</button><div class="janko-session-note">Revoca esta sesión y vuelve a BOOSTR Login.</div></div>');
     }
   }
 
   function installProfileHub(){
-    const profileContent = document.getElementById('profileContent');
-    if(!profileContent) return;
-    const mount = () => {
-      if(profileContent.querySelector('.janko-profile-brand-section')) return;
-      profileContent.insertAdjacentHTML('afterbegin', `
-        <section class="section janko-profile-brand-section">
-          <h3>Brand Hub</h3>
-          ${brandHubMarkup('janko-brand-hub--profile')}
-          <div class="janko-session-actions">
-            <button type="button" class="janko-logout" data-janko-logout>Cerrar sesión</button>
-          </div>
-        </section>`);
-    };
+    var profileContent=document.getElementById('profileContent');
+    if(!profileContent)return;
+    function mount(){
+      if(profileContent.querySelector('.janko-profile-brand-section'))return;
+      profileContent.insertAdjacentHTML('afterbegin','<section class="section janko-profile-brand-section"><h3>Brand Hub</h3>'+brandHubMarkup('janko-brand-hub--profile')+'<div class="janko-session-actions"><button type="button" class="janko-logout" data-janko-logout>Cerrar sesión</button></div></section>');
+    }
     mount();
-    new MutationObserver(() => requestAnimationFrame(mount)).observe(profileContent,{childList:true});
+    new MutationObserver(function(){requestAnimationFrame(mount)}).observe(profileContent,{childList:true});
   }
 
   async function logout(button){
-    if(button) { button.disabled = true; button.textContent = 'Cerrando sesión…'; }
-    const token = localStorage.getItem('boostr_auth_token') || '';
+    if(button){button.disabled=true;button.textContent='Cerrando sesión…'}
+    var token=localStorage.getItem('boostr_auth_token')||'';
     try{
-      await fetch('/api/session',{
-        method:'DELETE',
-        credentials:'same-origin',
-        headers: token ? { Authorization:`Bearer ${token}` } : {}
-      });
-    }catch{}
-    [
-      'boostr_auth_token','boostr_session','boostr_janko_mode','boostr_janko_lang',
-      'boostr_founder_bootstrap_closed'
-    ].forEach(key => localStorage.removeItem(key));
+      await fetch('/api/session',{method:'DELETE',credentials:'same-origin',headers:token?{Authorization:'Bearer '+token}:{}});
+    }catch(error){}
+    ['boostr_auth_token','boostr_session','boostr_janko_mode','boostr_janko_lang'].forEach(function(key){localStorage.removeItem(key)});
     sessionStorage.clear();
     location.replace('/login/?logout=1');
   }
 
-  document.addEventListener('click', event => {
-    const button = event.target.closest('[data-janko-logout]');
-    if(button){ event.preventDefault(); logout(button); }
+  document.addEventListener('click',function(event){
+    var button=event.target.closest('[data-janko-logout]');
+    if(button){event.preventDefault();logout(button)}
   });
 
-  const boot = () => { installRailHub(); installProfileHub(); };
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
-  else boot();
+  function boot(){installRailHub();installProfileHub()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>`;
 
@@ -109,7 +83,7 @@ export async function onRequest(context) {
   const html = await response.text();
   const patched = html.includes('janko-admin-patch-v071')
     ? html
-    : html.replace('</body>', `${injection}</body>`);
+    : html.replace('</body>', injection + '</body>');
 
   const headers = new Headers(response.headers);
   headers.set('Cache-Control', 'no-store, max-age=0');
