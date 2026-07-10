@@ -6,7 +6,7 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
   }
 });
 
-async function ensureTable(db) {
+async function ensureTables(db) {
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS johankarrd_live_pages (
       slug TEXT PRIMARY KEY,
@@ -15,13 +15,24 @@ async function ensureTable(db) {
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS johankarrd_deleted_pages (
+      slug TEXT PRIMARY KEY,
+      deleted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
 }
 
 export async function onRequestGet({ env }) {
   try {
     if (!env.DB) return json({ pages: [] });
-    await ensureTable(env.DB);
-    const result = await env.DB.prepare('SELECT slug, payload, updated_at FROM johankarrd_live_pages ORDER BY updated_at DESC').all();
+    await ensureTables(env.DB);
+    const result = await env.DB.prepare(`
+      SELECT slug, payload, updated_at
+      FROM johankarrd_live_pages
+      WHERE slug NOT IN (SELECT slug FROM johankarrd_deleted_pages)
+      ORDER BY updated_at DESC
+    `).all();
     const pages = (result.results || []).map((row) => {
       let payload = {};
       try { payload = JSON.parse(row.payload || '{}'); } catch (_) {}
