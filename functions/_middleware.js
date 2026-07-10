@@ -1,10 +1,10 @@
 const languageScript = '<script src="/assets/boostr-mother/language-engine.js" defer></script>';
-const productionScript = '<script src="/assets/boostr-mother/production-shell.js?v=0.8.2" defer></script>';
-const johankaCloudScript = '<script src="/assets/boostr-mother/johanka-cloud-link.js?v=0.8.2" defer></script>';
-const founderCleanupScript = '<script src="/assets/boostr-mother/founder-shell-cleanup.js?v=0.8.2" defer></script>';
-const managerLeadsScript = '<script src="/assets/boostr-mother/manager-leads-production.js?v=0.8.2" defer></script>';
-const cloudHotfixScript = '<script src="/assets/boostr-mother/johanka-cloud-hotfix.js?v=0.8.2" defer></script>';
-const workspaceNavigationScript = '<script src="/assets/boostr-mother/workspace-navigation.js?v=0.8.2" defer></script>';
+const productionScript = '<script src="/assets/boostr-mother/production-shell.js?v=0.8.3" defer></script>';
+const johankaCloudScript = '<script src="/assets/boostr-mother/johanka-cloud-link.js?v=0.8.3" defer></script>';
+const founderCleanupScript = '<script src="/assets/boostr-mother/founder-shell-cleanup.js?v=0.8.3" defer></script>';
+const managerLeadsScript = '<script src="/assets/boostr-mother/manager-leads-production.js?v=0.8.3" defer></script>';
+const cloudHotfixScript = '<script src="/assets/boostr-mother/johanka-cloud-hotfix.js?v=0.8.3" defer></script>';
+const workspaceNavigationScript = '<script src="/assets/boostr-mother/workspace-navigation.js?v=0.8.3" defer></script>';
 const gateStyle = '<style id="boostr-gate-style">#boostr-loading-gate{position:fixed;inset:0;z-index:100020;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,rgba(125,255,158,.08),transparent 34%),#050708;color:#fff;font:900 13px ui-monospace,Menlo,monospace;letter-spacing:.13em;text-transform:uppercase}</style>';
 const gateMarkup = '<div id="boostr-loading-gate" data-no-i18n="true">Conectando tu OS...</div>';
 
