@@ -43,18 +43,39 @@ function normalizePayload(payload, fallbackSlug) {
 function quality(site = {}) {
   const sections = Array.isArray(site.sections) ? site.sections : [];
   const items = sections.reduce((total, section) => total + (Array.isArray(section?.items) ? section.items.length : 0), 0);
-  return sections.length * 10 + items;
+  const populated = sections.reduce((total, section) => total + (section?.items || []).filter((item) => item && Object.keys(item).length > 1).length, 0);
+  return sections.length * 100 + items * 10 + populated;
+}
+
+function identity(key, site = {}) {
+  const canonical = canonicalSlug(site.slug || key, site.name);
+  if (canonical === 'cafedelmar' || canonical === 'solveinventory') return canonical;
+  return safeSlug(site.name || '') || canonical || safeSlug(key);
 }
 
 function dedupeSites(input = {}) {
-  const sites = {};
+  const grouped = new Map();
   for (const [key, value] of Object.entries(input || {})) {
     const normalized = normalizePayload(value, key);
     if (!normalized.slug) continue;
+    const id = identity(key, normalized);
     const targetKey = storageKey(normalized.slug);
-    if (!sites[targetKey] || quality(normalized) > quality(sites[targetKey])) sites[targetKey] = normalized;
+    const previous = grouped.get(id);
+    if (!previous || quality(normalized) > quality(previous.site)) grouped.set(id, { key: targetKey, site: normalized });
+  }
+  const sites = {};
+  for (const { key, site } of grouped.values()) {
+    if (!sites[key] || quality(site) > quality(sites[key])) sites[key] = site;
   }
   return sites;
+}
+
+async function persistCleanDraft(db, sites) {
+  await db.prepare(`
+    INSERT INTO johankarrd_drafts (id, owner, payload, updated_at)
+    VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(id) DO UPDATE SET payload = excluded.payload, updated_at = CURRENT_TIMESTAMP
+  `).bind('johanka-default', 'johanka', JSON.stringify(sites)).run();
 }
 
 export async function onRequestGet({ env }) {
@@ -78,9 +99,8 @@ export async function onRequestGet({ env }) {
       let payload = {};
       try { payload = JSON.parse(row.payload || '{}'); } catch (_) {}
       const normalized = normalizePayload({ ...payload, slug }, slug);
-      const key = storageKey(slug);
-      if (!sites[key]) sites[key] = normalized;
-      published[slug] = { url: `/johankarrd/${slug}/`, updated_at: row.updated_at };
+      sites = dedupeSites({ ...sites, [`live-${slug}`]: normalized });
+      if (!published[slug]) published[slug] = { url: `/johankarrd/${slug}/`, updated_at: row.updated_at };
     }
 
     sites = dedupeSites(sites);
@@ -88,6 +108,7 @@ export async function onRequestGet({ env }) {
       if (deleted.has(canonicalSlug(site?.slug || key, site?.name))) delete sites[key];
     }
 
+    await persistCleanDraft(env.DB, sites);
     return json({ sites, published, deleted: [...deleted] });
   } catch (error) {
     return json({ error: error.message || 'Unable to load Johankarrd sites', sites: {}, published: {}, deleted: [] }, 500);
