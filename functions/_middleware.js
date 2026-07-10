@@ -10,16 +10,20 @@ const gateMarkup = '<div id="boostr-loading-gate" data-no-i18n="true">Conectando
 
 export async function onRequest(context) {
   const response = await context.next();
-  const contentType = response.headers.get("Content-Type") || "";
-  if (!contentType.toLowerCase().includes("text/html")) return response;
+  const contentType = response.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('text/html')) return response;
 
   const url = new URL(context.request.url);
-  const path = url.pathname.replace(/\/+$/, "") || "/";
-  const isDemo = path.startsWith("/demo/");
-  const isFounderSurface = ["/app/janko", "/app/johanka", "/app/johanka/cloud"].includes(path);
-  const isPrivate = ["/app", "/manager", "/admin", "/partner-dashboard"].some(
-    (prefix) => path === prefix || path.startsWith(prefix + "/")
+  const path = url.pathname.replace(/\/+$/, '') || '/';
+  const isDemo = path.startsWith('/demo/');
+  const isFounderSurface = ['/app/janko', '/app/johanka', '/app/johanka/cloud'].includes(path);
+  const isPrivate = ['/app', '/manager', '/admin', '/partner-dashboard'].some(
+    (prefix) => path === prefix || path.startsWith(prefix + '/')
   );
+
+  // Published Johankarrds are public client websites, not BOOSTR workspaces.
+  // Their own navigation, language controls and branding must remain isolated.
+  const isPublicJohankarrd = path.startsWith('/johankarrd/') && path !== '/johankarrd/';
 
   let html = await response.text();
   const init = {
@@ -27,39 +31,40 @@ export async function onRequest(context) {
     statusText: response.statusText,
     headers: new Headers(response.headers)
   };
-  init.headers.delete("content-length");
+  init.headers.delete('content-length');
+  init.headers.set('x-boostr-shell-mode', isPublicJohankarrd ? 'public-off' : 'ecosystem-on');
 
-  if (!/boostr-mother\/language-engine\.js/.test(html)) {
-    html = html.includes("</body>") ? html.replace("</body>", `${languageScript}</body>`) : `${html}${languageScript}`;
+  if (!isPublicJohankarrd && !/boostr-mother\/language-engine\.js/.test(html)) {
+    html = html.includes('</body>') ? html.replace('</body>', `${languageScript}</body>`) : `${html}${languageScript}`;
   }
 
-  if (!/boostr-mother\/production-shell\.js/.test(html)) {
-    html = html.includes("</body>") ? html.replace("</body>", `${productionScript}</body>`) : `${html}${productionScript}`;
+  if (!isPublicJohankarrd && !/boostr-mother\/production-shell\.js/.test(html)) {
+    html = html.includes('</body>') ? html.replace('</body>', `${productionScript}</body>`) : `${html}${productionScript}`;
   }
 
-  if (!/boostr-mother\/workspace-navigation\.js/.test(html)) {
-    html = html.includes("</body>") ? html.replace("</body>", `${workspaceNavigationScript}</body>`) : `${html}${workspaceNavigationScript}`;
+  if (!isPublicJohankarrd && !/boostr-mother\/workspace-navigation\.js/.test(html)) {
+    html = html.includes('</body>') ? html.replace('</body>', `${workspaceNavigationScript}</body>`) : `${html}${workspaceNavigationScript}`;
   }
 
-  if (path === "/app/johanka" && !/boostr-mother\/johanka-cloud-link\.js/.test(html)) {
-    html = html.includes("</body>") ? html.replace("</body>", `${johankaCloudScript}</body>`) : `${html}${johankaCloudScript}`;
+  if (path === '/app/johanka' && !/boostr-mother\/johanka-cloud-link\.js/.test(html)) {
+    html = html.includes('</body>') ? html.replace('</body>', `${johankaCloudScript}</body>`) : `${html}${johankaCloudScript}`;
   }
 
-  if (path === "/app/johanka/cloud" && !/boostr-mother\/johanka-cloud-hotfix\.js/.test(html)) {
-    html = html.includes("</body>") ? html.replace("</body>", `${cloudHotfixScript}</body>`) : `${html}${cloudHotfixScript}`;
+  if (path === '/app/johanka/cloud' && !/boostr-mother\/johanka-cloud-hotfix\.js/.test(html)) {
+    html = html.includes('</body>') ? html.replace('</body>', `${cloudHotfixScript}</body>`) : `${html}${cloudHotfixScript}`;
   }
 
-  if (path === "/manager/leads" && !/boostr-mother\/manager-leads-production\.js/.test(html)) {
-    html = html.includes("</body>") ? html.replace("</body>", `${managerLeadsScript}</body>`) : `${html}${managerLeadsScript}`;
+  if (path === '/manager/leads' && !/boostr-mother\/manager-leads-production\.js/.test(html)) {
+    html = html.includes('</body>') ? html.replace('</body>', `${managerLeadsScript}</body>`) : `${html}${managerLeadsScript}`;
   }
 
   if (isFounderSurface && !/boostr-mother\/founder-shell-cleanup\.js/.test(html)) {
-    html = html.includes("</body>") ? html.replace("</body>", `${founderCleanupScript}</body>`) : `${html}${founderCleanupScript}`;
+    html = html.includes('</body>') ? html.replace('</body>', `${founderCleanupScript}</body>`) : `${html}${founderCleanupScript}`;
   }
 
   if (isPrivate && !isDemo && !html.includes('id="boostr-loading-gate"')) {
-    html = html.includes("</head>") ? html.replace("</head>", `${gateStyle}</head>`) : `${gateStyle}${html}`;
-    html = html.includes("<body")
+    html = html.includes('</head>') ? html.replace('</head>', `${gateStyle}</head>`) : `${gateStyle}${html}`;
+    html = html.includes('<body')
       ? html.replace(/<body([^>]*)>/i, `<body$1>${gateMarkup}`)
       : `${gateMarkup}${html}`;
   }
