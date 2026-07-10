@@ -15,8 +15,11 @@
   function canonicalSlug(value = '', name = '') {
     const slug = slugify(value || name);
     const label = slugify(name);
-    if (['cafe', 'cafe-del-mar', 'cafedelmar'].includes(slug) || ['cafe-del-mar', 'cafedelmar'].includes(label)) return 'cafedelmar';
-    if (['inventory', 'solve-inventory', 'solveinventory'].includes(slug) || ['solve-inventory', 'solveinventory'].includes(label)) return 'solveinventory';
+    const joined = `${slug} ${label}`;
+    if (/\bcafe-del-mar\b|\bcafedelmar\b/.test(joined) && !/\bcopy\b|\bcopia\b/.test(joined)) return 'cafedelmar';
+    if (/\bsolve-inventory\b|\bsolveinventory\b|\binventory-solve\b/.test(joined) && !/\bcopy\b|\bcopia\b/.test(joined)) return 'solveinventory';
+    if (slug === 'cafe' && /cafe-del-mar|cafedelmar/.test(label)) return 'cafedelmar';
+    if (slug === 'inventory' && /solve-inventory|solveinventory/.test(label)) return 'solveinventory';
     return slug;
   }
 
@@ -30,14 +33,29 @@
     const sections = Array.isArray(site.sections) ? site.sections : [];
     const items = sections.reduce((total, section) => total + (Array.isArray(section?.items) ? section.items.length : 0), 0);
     const populated = sections.reduce((total, section) => total + (section?.items || []).filter((item) => item && Object.keys(item).length > 1).length, 0);
-    return sections.length * 100 + items * 10 + populated;
+    const publishedBonus = site.status === 'published' || site.published ? 25 : 0;
+    return sections.length * 100 + items * 10 + populated + publishedBonus;
+  }
+
+  function contentSignature(site = {}) {
+    const sections = (site.sections || []).map((section) => ({
+      id: slugify(section?.id || section?.label || ''),
+      items: (section?.items || []).map((item) => ({
+        type: item?.type || '',
+        text: item?.text || '',
+        src: item?.src || '',
+        imgs: Array.isArray(item?.imgs) ? item.imgs.slice(0, 4) : []
+      }))
+    }));
+    try { return JSON.stringify(sections); } catch (_) { return ''; }
   }
 
   function identity(key, site = {}) {
     const canonical = canonicalSlug(site.slug || key, site.name);
     if (canonical === 'cafedelmar' || canonical === 'solveinventory') return canonical;
     const name = slugify(site.name || '');
-    return name || canonical || slugify(key);
+    const signature = contentSignature(site);
+    return signature ? `${name || canonical || slugify(key)}::${signature}` : (name || canonical || slugify(key));
   }
 
   function dedupe(input = {}) {
@@ -63,7 +81,7 @@
     try {
       const current = JSON.parse(localStorage.getItem(KEY) || '{}');
       const cleaned = dedupe(current);
-      if (Object.keys(cleaned).length) localStorage.setItem(KEY, JSON.stringify(cleaned));
+      localStorage.setItem(KEY, JSON.stringify(cleaned));
     } catch (_) {}
   }
 
