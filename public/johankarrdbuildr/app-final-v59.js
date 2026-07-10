@@ -2,51 +2,79 @@
   'use strict';
 
   const KEY = 'johankarrd-buildr-v6';
-  const SYNC_KEY = 'johankarrd-v59-synced';
+  const RELOAD_KEY = 'johankarrd-v59-clean-reload';
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-  const preflight = window.JOHANKARRD_PREFLIGHT || {};
-  const dedupe = preflight.dedupe || ((sites) => sites || {});
 
-  const read = () => {
-    try { return dedupe(JSON.parse(localStorage.getItem(KEY) || '{}') || {}); }
+  const slugify = (value = '') => String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  function canonical(site = {}, fallback = '') {
+    const slug = slugify(site.slug || fallback || site.name);
+    const name = slugify(site.name || '');
+    if (['inventory', 'solve-inventory', 'solveinventory'].includes(slug) || name === 'solve-inventory') return 'solveinventory';
+    if (['cafe', 'cafe-del-mar', 'cafedelmar'].includes(slug) || name === 'cafe-del-mar') return 'cafedelmar';
+    return slug || name || slugify(fallback);
+  }
+
+  function storageKey(id) {
+    if (id === 'cafedelmar') return 'cafe';
+    if (id === 'solveinventory') return 'inventory';
+    return id;
+  }
+
+  function score(site = {}) {
+    const sections = Array.isArray(site.sections) ? site.sections : [];
+    const items = sections.reduce((sum, section) => sum + (Array.isArray(section?.items) ? section.items.length : 0), 0);
+    return sections.length * 100 + items * 10 + (site.slug ? 1 : 0);
+  }
+
+  function dedupe(input = {}) {
+    const output = {};
+    for (const [key, raw] of Object.entries(input || {})) {
+      if (!raw || typeof raw !== 'object') continue;
+      const id = canonical(raw, key);
+      if (!id) continue;
+      const target = storageKey(id);
+      const site = { ...raw, slug: id, sections: Array.isArray(raw.sections) ? raw.sections : [] };
+      if (!output[target] || score(site) > score(output[target])) output[target] = site;
+    }
+    return output;
+  }
+
+  function readLocal() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
     catch (_) { return {}; }
-  };
+  }
 
-  const write = (sites) => localStorage.setItem(KEY, JSON.stringify(dedupe(sites || {})));
-  const status = (text) => { const node = $('[data-status]'); if (node) node.textContent = text; };
-
-  function installCss() {
-    if ($('#final-v59-css')) return;
-    document.head.insertAdjacentHTML('beforeend', `<style id="final-v59-css">
-      [data-site-select]{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;clip-path:inset(50%)!important}
-      .left-panel>.field:has([data-site-select]){position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}
-      .font-card,.font-card b,.font-card span{font-family:inherit!important}
-      .font-card b{font-size:16px!important;letter-spacing:-.02em}.font-card span{font-size:10px!important}
-      .prime-love-badge{overflow:hidden!important}
-      .burli-card{position:relative}.burli-card:after{content:"BURLI CLUB";position:absolute;right:-18px;bottom:-12px;font:1000 30px/1 Arial;letter-spacing:-.07em;color:rgba(255,255,255,.025);transform:rotate(-8deg);pointer-events:none}
-      .media-simple .advanced-url{display:none!important}.media-simple.show-advanced .advanced-url{display:block!important}
-      .media-upload-primary{user-select:none;-webkit-user-select:none}
-      .preset-copy b{font-size:14px!important}.preset-copy span{font-size:10px!important}
-      .preset-art{position:relative;overflow:hidden}.preset-art:after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.22) 48%,transparent 70%);transform:translateX(-120%);animation:presetShine 5s ease-in-out infinite}@keyframes presetShine{50%,100%{transform:translateX(120%)}}
-    </style>`);
+  function writeLocal(sites) {
+    localStorage.setItem(KEY, JSON.stringify(dedupe(sites)));
   }
 
   function hideLegacySelector() {
+    const field = $('[data-site-select]')?.closest('.field');
+    if (!field) return;
+    Object.assign(field.style, {
+      position: 'absolute', width: '1px', height: '1px', overflow: 'hidden',
+      opacity: '0', pointerEvents: 'none', margin: '0', padding: '0'
+    });
+    field.setAttribute('aria-hidden', 'true');
+    $$('[data-prime-manager]').slice(1).forEach((node) => node.remove());
+  }
+
+  function rebuildSelect(sites) {
     const select = $('[data-site-select]');
     if (!select) return;
-    const field = select.closest('.field');
-    if (field) {
-      field.setAttribute('aria-hidden', 'true');
-      field.style.position = 'absolute';
-      field.style.width = '1px';
-      field.style.height = '1px';
-      field.style.overflow = 'hidden';
-      field.style.opacity = '0';
-      field.style.pointerEvents = 'none';
-    }
-    const managers = $$('[data-prime-manager]');
-    managers.slice(1).forEach((node) => node.remove());
+    const current = select.value;
+    select.innerHTML = Object.entries(sites).map(([key, site]) => {
+      const label = String(site.name || key).replace(/[&<>"']/g, '');
+      return `<option value="${key}">${label}</option>`;
+    }).join('');
+    select.value = sites[current] ? current : (Object.keys(sites)[0] || '');
   }
 
   function closeTopLayer() {
@@ -54,46 +82,44 @@
     if (modal) { modal.remove(); return true; }
     const sheet = $('[data-mobile-sheet].open');
     if (sheet) { $('[data-mobile-close]')?.click(); return true; }
-    const menu = $('[data-mobile-more-menu],.prime-quick-menu');
-    if (menu) { menu.remove(); return true; }
     return false;
   }
 
-  async function syncCloud() {
-    try {
-      const response = await fetch('/api/johankarrd/sites', { cache: 'no-store' });
-      if (!response.ok) return;
-      const data = await response.json();
-      const cleaned = dedupe(data.sites || {});
-      const before = JSON.stringify(read());
-      const after = JSON.stringify(cleaned);
-      write(cleaned);
-      if (before !== after && !sessionStorage.getItem(SYNC_KEY)) {
-        sessionStorage.setItem(SYNC_KEY, '1');
-        status('Sites synchronized.');
-        location.replace('/johankarrdbuildr/?v=59');
-      }
-    } catch (_) {}
+  function polish() {
+    hideLegacySelector();
+    $$('.font-card').forEach((card) => {
+      card.querySelectorAll('b,span').forEach((node) => { node.style.fontFamily = 'inherit'; });
+    });
   }
 
-  async function persistCleanState() {
-    const sites = read();
-    write(sites);
+  async function synchronize() {
+    const local = dedupe(readLocal());
+    let merged = local;
+    try {
+      const response = await fetch('/api/johankarrd/sites', { cache: 'no-store' });
+      if (response.ok) {
+        const data = await response.json();
+        merged = dedupe({ ...local, ...(data.sites || {}) });
+      }
+    } catch (_) {}
+
+    const before = JSON.stringify(local);
+    const after = JSON.stringify(merged);
+    writeLocal(merged);
+    rebuildSelect(merged);
+
     try {
       await fetch('/api/johankarrd/drafts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sites })
+        body: JSON.stringify({ sites: merged })
       });
     } catch (_) {}
-  }
 
-  function inspect() {
-    hideLegacySelector();
-    $$('.font-card').forEach((card) => {
-      const inline = card.getAttribute('style') || '';
-      if (inline.includes('font-family')) card.querySelectorAll('b,span').forEach((node) => { node.style.fontFamily = 'inherit'; });
-    });
+    if (before !== after && !sessionStorage.getItem(RELOAD_KEY)) {
+      sessionStorage.setItem(RELOAD_KEY, '1');
+      location.replace('/johankarrdbuildr/?v=59');
+    }
   }
 
   document.addEventListener('keydown', (event) => {
@@ -103,16 +129,12 @@
       event.stopImmediatePropagation();
       return;
     }
-    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    document.activeElement?.blur?.();
   }, true);
 
   window.addEventListener('load', () => {
-    installCss();
-    write(read());
-    inspect();
-    const observer = new MutationObserver(inspect);
-    observer.observe(document.body, { childList: true, subtree: true });
-    setTimeout(syncCloud, 450);
-    setTimeout(persistCleanState, 1400);
+    polish();
+    new MutationObserver(polish).observe(document.body, { childList: true, subtree: true });
+    setTimeout(synchronize, 500);
   });
 })();
