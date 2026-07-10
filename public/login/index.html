@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-build="0.7.2">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -7,9 +7,9 @@
 <title>BOOSTR Login</title>
 <meta name="description" content="Acceso privado a BOOSTR Labs.">
 <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
-<link rel="stylesheet" href="/assets/boostr-mother/mother.css">
+<link rel="stylesheet" href="/assets/boostr-mother/mother.css?v=0.7.2">
 <style>
-.login-shell{min-height:100dvh;display:grid;place-items:center;padding:16px;position:relative;z-index:1}.login-card{width:min(540px,100%);border-radius:36px;padding:26px}.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:18px;text-decoration:none}.login-brand img{width:112px;max-height:44px;object-fit:contain}.login-card h1{font-family:Arial Black,Arial,sans-serif;font-size:clamp(42px,7vw,72px);line-height:.9;letter-spacing:-.075em;margin:0 0 12px}.auth-form{display:grid;gap:12px;margin-top:22px}.auth-form label{display:grid;gap:7px;color:rgba(255,255,255,.62);font-size:11px;text-transform:uppercase;letter-spacing:.11em;font-weight:900}.auth-form input{min-height:52px;border-radius:17px;border:1px solid rgba(255,255,255,.13);background:rgba(0,0,0,.32);color:white;padding:0 14px;font-weight:800}.passrow{display:grid;grid-template-columns:1fr auto;gap:8px}.smallbtn{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:white;border-radius:999px;padding:0 12px;font-weight:950;cursor:pointer}.login-note{border:1px solid rgba(119,255,172,.2);background:rgba(119,255,172,.06);border-radius:20px;padding:13px;color:var(--muted);font-size:12px;line-height:1.45}.login-foot{margin-top:18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.ghost-link{font-size:12px;color:var(--champagne,#feedb9);font-weight:900}.private{font:900 10px ui-monospace,Menlo,monospace;letter-spacing:.13em;color:#73ffb0}@media(max-width:620px){.login-shell{padding:8px 8px 86px}.login-card{padding:20px;border-radius:30px}.login-foot a{width:100%}}
+.login-shell{min-height:100dvh;display:grid;place-items:center;padding:16px;position:relative;z-index:1}.login-card{width:min(540px,100%);border-radius:36px;padding:26px}.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:18px;text-decoration:none}.login-brand img{width:112px;max-height:44px;object-fit:contain}.login-card h1{font-family:Arial Black,Arial,sans-serif;font-size:clamp(42px,7vw,72px);line-height:.9;letter-spacing:-.075em;margin:0 0 12px}.auth-form{display:grid;gap:12px;margin-top:22px}.auth-form label{display:grid;gap:7px;color:rgba(255,255,255,.62);font-size:11px;text-transform:uppercase;letter-spacing:.11em;font-weight:900}.auth-form input{min-height:52px;border-radius:17px;border:1px solid rgba(255,255,255,.13);background:rgba(0,0,0,.32);color:white;padding:0 14px;font-weight:800}.passrow{display:grid;grid-template-columns:1fr auto;gap:8px}.smallbtn{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:white;border-radius:999px;padding:0 12px;font-weight:950;cursor:pointer}.login-note{border:1px solid rgba(119,255,172,.2);background:rgba(119,255,172,.06);border-radius:20px;padding:13px;color:var(--muted);font-size:12px;line-height:1.45}.login-foot{margin-top:18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.ghost-link{font-size:12px;color:var(--champagne,#feedb9);font-weight:900}.private{font:900 10px ui-monospace,Menlo,monospace;letter-spacing:.13em;color:#73ffb0}.session-card{display:none;margin-top:18px}.session-card.on{display:block}.session-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}@media(max-width:620px){.login-shell{padding:8px 8px 86px}.login-card{padding:20px;border-radius:30px}.login-foot a,.session-actions a,.session-actions button{width:100%}}
 </style>
 </head>
 <body>
@@ -17,24 +17,30 @@
 <main class="login-shell">
 <section class="login-card glass">
 <a class="login-brand" href="/home"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><div><span class="private">PRIVATE ACCOUNT ACCESS</span><strong>BOOSTR Login</strong></div></a>
+<div id="loginState">
 <h1>Entrar.</h1>
 <p class="micro">Usa email, usuario o teléfono.</p>
-<form class="auth-form" id="loginForm">
-<label><span>Email, usuario o teléfono</span><input name="identifier" autocomplete="username" required></label>
+<form class="auth-form" id="loginForm" autocomplete="on">
+<label><span>Email, usuario o teléfono</span><input name="identifier" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
 <label><span>Clave</span><div class="passrow"><input name="password" type="password" autocomplete="current-password" required><button class="smallbtn" type="button" id="showPass">Ver</button></div></label>
 <button class="btn primary" type="submit" id="submitBtn">Continuar</button>
-<button class="btn" type="button" id="clearSession">Cerrar sesión local</button>
 <div class="login-note" id="authStatus">Las cuentas BOOSTR no se crean públicamente. El acceso llega después de un Audit aprobado o una invitación privada.</div>
 </form>
-<div class="login-foot"><a class="ghost-link" href="/audit">Solicitar acceso con BOOSTR Audit ↗</a><a class="ghost-link" href="/accept-invite">Tengo una invitación</a><a class="ghost-link" href="#">Recuperar clave · luego</a></div>
+<div class="login-foot"><a class="ghost-link" href="/audit">Solicitar acceso con BOOSTR Audit ↗</a><a class="ghost-link" href="/accept-invite">Tengo una invitación</a><a class="ghost-link" href="/password-reset">Recuperar clave</a></div>
+</div>
+<div class="session-card login-note" id="sessionState"><strong id="sessionTitle">Sesión activa.</strong><div id="sessionCopy" style="margin-top:7px"></div><div class="session-actions"><a class="btn primary" id="openDashboard" href="/app">Abrir mi dashboard</a><button class="btn" id="logoutBtn" type="button">Cerrar sesión</button></div></div>
 </section>
 </main>
 <script>
 const form=document.getElementById('loginForm'),status=document.getElementById('authStatus'),show=document.getElementById('showPass');
+const headers=()=>{const token=localStorage.getItem('boostr_auth_token');return token?{Authorization:'Bearer '+token}:{}};
+function saveSession(identifier,data){const user=data.user||{},workspace=data.active_workspace||data.workspace||{};if(data.token)localStorage.setItem('boostr_auth_token',data.token);localStorage.setItem('boostr_session',JSON.stringify({email:user.email||identifier,username:data.username||user.username||user.name||identifier,role:user.role||data.role||'client',workspace:workspace.name||null,redirect:data.redirect||'/app/',createdAt:new Date().toISOString()}))}
+async function logout(){try{await fetch('/api/session',{method:'DELETE',headers:headers(),credentials:'same-origin'})}catch{}localStorage.removeItem('boostr_auth_token');localStorage.removeItem('boostr_session');location.replace('/login/?logout=1')}
+async function detectSession(){if(new URLSearchParams(location.search).get('logout')==='1')return;try{const response=await fetch('/api/session',{headers:headers(),credentials:'same-origin',cache:'no-store'});if(!response.ok)return;const data=await response.json();saveSession(data.user?.email||'',data);document.getElementById('loginState').hidden=true;document.getElementById('sessionState').classList.add('on');document.getElementById('sessionCopy').textContent=[data.user?.email,data.active_workspace?.name,data.role].filter(Boolean).join(' · ');document.getElementById('openDashboard').href=data.redirect||'/app/'}catch{}}
 show.onclick=()=>{form.password.type=form.password.type==='password'?'text':'password';show.textContent=form.password.type==='password'?'Ver':'Ocultar'};
-function saveSession(identifier,data){const user=data.user||{},workspace=data.active_workspace||data.workspace||{};if(data.token)localStorage.setItem('boostr_auth_token',data.token);localStorage.setItem('boostr_session',JSON.stringify({email:user.email||identifier,username:user.username||user.name||identifier,role:user.role||data.role||'client',workspace:workspace.name||null,createdAt:new Date().toISOString()}))}
-form.addEventListener('submit',async event=>{event.preventDefault();status.textContent='Entrando...';const identifier=form.identifier.value.trim();try{const response=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({identifier,password:form.password.value})});const data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw data;saveSession(identifier,data);status.textContent='Sesión iniciada.';location.href=data.redirect||'/app'}catch(error){status.textContent=error?.message||error?.error||'No se pudo iniciar sesión.'}});
-document.getElementById('clearSession').onclick=async()=>{try{await fetch('/api/session',{method:'DELETE',headers:localStorage.getItem('boostr_auth_token')?{Authorization:'Bearer '+localStorage.getItem('boostr_auth_token')}: {},credentials:'same-origin'})}catch{}localStorage.removeItem('boostr_auth_token');localStorage.removeItem('boostr_session');status.textContent='Sesión cerrada.';form.reset()};
+form.addEventListener('submit',async event=>{event.preventDefault();status.textContent='Entrando...';const identifier=form.identifier.value.trim();try{const response=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({identifier,password:form.password.value})});const data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw data;saveSession(identifier,data);status.textContent='Sesión iniciada.';location.replace(data.redirect||'/app/')}catch(error){status.textContent=error?.message||error?.error||'No se pudo iniciar sesión.'}});
+document.getElementById('logoutBtn').onclick=logout;
+detectSession();
 </script>
 </body>
 </html>
