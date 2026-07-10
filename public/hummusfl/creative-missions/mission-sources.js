@@ -92,6 +92,55 @@
   section.className = 'source-assets';
   bodyNode.insertAdjacentElement('afterend', section);
 
+  const showroom = document.createElement('div');
+  showroom.className = 'asset-showroom';
+  showroom.setAttribute('aria-hidden', 'true');
+  showroom.innerHTML = `
+    <div class="asset-showroom-backdrop" data-showroom-close></div>
+    <div class="asset-showroom-panel" role="dialog" aria-modal="true" aria-labelledby="assetShowroomTitle">
+      <button class="asset-showroom-close" type="button" aria-label="Cerrar" data-showroom-close>×</button>
+      <div class="asset-showroom-media"><img id="assetShowroomImage" alt=""></div>
+      <div class="asset-showroom-copy">
+        <span>ARCHIVO DE APOYO</span>
+        <h3 id="assetShowroomTitle"></h3>
+        <p id="assetShowroomNote"></p>
+        <small>Para guardar: click derecho en PC o mantén presionada la imagen en iPhone.</small>
+      </div>
+    </div>`;
+  document.body.appendChild(showroom);
+
+  const showroomImage = showroom.querySelector('#assetShowroomImage');
+  const showroomTitle = showroom.querySelector('#assetShowroomTitle');
+  const showroomNote = showroom.querySelector('#assetShowroomNote');
+  let lastFocused = null;
+
+  const openShowroom = (asset, trigger) => {
+    lastFocused = trigger;
+    showroomImage.src = asset.src;
+    showroomImage.alt = asset.label;
+    showroomTitle.textContent = asset.label;
+    showroomNote.textContent = asset.note;
+    showroom.classList.add('is-open');
+    showroom.setAttribute('aria-hidden', 'false');
+    document.documentElement.style.overflow = 'hidden';
+    showroom.querySelector('.asset-showroom-close').focus();
+  };
+
+  const closeShowroom = () => {
+    showroom.classList.remove('is-open');
+    showroom.setAttribute('aria-hidden', 'true');
+    document.documentElement.style.overflow = '';
+    showroomImage.removeAttribute('src');
+    if (lastFocused) lastFocused.focus();
+  };
+
+  showroom.addEventListener('click', (event) => {
+    if (event.target.closest('[data-showroom-close]')) closeShowroom();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && showroom.classList.contains('is-open')) closeShowroom();
+  });
+
   const style = document.createElement('style');
   style.textContent = `
     .source-assets{margin:24px 0 4px;padding:20px;border:1px solid rgba(228,214,184,.22);border-radius:24px;background:linear-gradient(145deg,rgba(228,214,184,.12),rgba(169,182,111,.055));box-shadow:0 18px 48px rgba(0,0,0,.18)}
@@ -101,10 +150,24 @@
     .source-kicker{font:9px ui-monospace,Consolas,monospace;letter-spacing:.16em;color:var(--sand);text-transform:uppercase}
     .source-owner{white-space:nowrap;border:1px solid rgba(228,214,184,.3);border-radius:999px;padding:7px 9px;color:var(--sand);font-size:9px}
     .source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;margin-top:16px;max-height:520px;overflow:auto;padding-right:4px}
-    .source-card{display:block;text-decoration:none;color:var(--text);padding:8px;border:1px solid rgba(242,240,233,.12);border-radius:18px;background:rgba(0,0,0,.24);transition:.2s ease}
+    .source-card{display:block;width:100%;text-align:left;color:var(--text);padding:8px;border:1px solid rgba(242,240,233,.12);border-radius:18px;background:rgba(0,0,0,.24);transition:.2s ease;cursor:zoom-in}
     .source-card:hover{transform:translateY(-2px);border-color:rgba(228,214,184,.45)}
     .source-card img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;background:#fff}
     .source-card b,.source-card small{display:block}.source-card b{font-size:11px;margin:9px 4px 3px;line-height:1.3}.source-card small{font-size:9px;color:var(--sand);margin:0 4px 4px}
+    .asset-showroom{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;visibility:hidden;opacity:0;transition:opacity .32s ease,visibility .32s ease}
+    .asset-showroom.is-open{visibility:visible;opacity:1}
+    .asset-showroom-backdrop{position:absolute;inset:0;background:rgba(3,5,4,.78);backdrop-filter:blur(18px)}
+    .asset-showroom-panel{position:relative;width:min(94vw,1100px);max-height:90vh;display:grid;grid-template-columns:minmax(0,1fr) 300px;overflow:hidden;border:1px solid rgba(255,255,255,.13);border-radius:30px;background:linear-gradient(145deg,rgba(17,22,18,.98),rgba(7,10,8,.98));box-shadow:0 40px 140px rgba(0,0,0,.65);transform:translateY(18px) scale(.985);transition:transform .38s cubic-bezier(.22,1,.36,1)}
+    .asset-showroom.is-open .asset-showroom-panel{transform:none}
+    .asset-showroom-media{min-height:420px;max-height:90vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 20%,rgba(228,214,184,.1),transparent 45%),#080b09}
+    .asset-showroom-media img{display:block;max-width:100%;max-height:82vh;object-fit:contain;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+    .asset-showroom-copy{padding:30px;display:flex;flex-direction:column;justify-content:flex-end}
+    .asset-showroom-copy span{font:9px ui-monospace,Consolas,monospace;letter-spacing:.16em;color:var(--olive)}
+    .asset-showroom-copy h3{margin:12px 0 8px;font-size:28px;line-height:1.03;letter-spacing:-.04em}
+    .asset-showroom-copy p{margin:0;color:var(--muted);line-height:1.5}
+    .asset-showroom-copy small{margin-top:22px;color:rgba(242,240,233,.42);line-height:1.45}
+    .asset-showroom-close{position:absolute;z-index:3;top:14px;right:14px;width:44px;height:44px;border:1px solid rgba(255,255,255,.14);border-radius:50%;background:rgba(0,0,0,.42);color:#fff;font-size:26px;cursor:pointer;backdrop-filter:blur(12px)}
+    @media(max-width:760px){.asset-showroom-panel{width:min(94vw,620px);grid-template-columns:1fr;max-height:92vh;overflow:auto}.asset-showroom-media{min-height:55vh;max-height:none}.asset-showroom-media img{max-height:58vh}.asset-showroom-copy{padding:22px}.asset-showroom-copy h3{font-size:23px}}
     @media(max-width:620px){.source-assets{padding:16px}.source-assets-head{flex-direction:column}.source-grid{grid-template-columns:1fr 1fr;max-height:440px}.source-owner{white-space:normal}}
   `;
   document.head.appendChild(style);
@@ -118,11 +181,15 @@
         <div>
           <div class="source-kicker">ARCHIVOS REALES PARA ESTA MISIÓN</div>
           <h3>Johanka, no tienes que buscar nada.</h3>
-          <p>Estos archivos vienen de la biblioteca maestra de Hummus FL. Ábrelos o descárgalos y súbelos directamente a ChatGPT junto con el prompt de esta misión.</p>
+          <p>Estos archivos vienen de la biblioteca maestra de Hummus FL. Toca uno para verlo grande y úsalo junto con el prompt de esta misión.</p>
         </div>
         <span class="source-owner">${context.assignee} · ${context.role}</span>
       </div>
-      <div class="source-grid">${cards.map((asset) => `<a class="source-card" href="${asset.src}" download><img src="${asset.src}" alt="${asset.label}" loading="lazy"><b>${asset.label}</b><small>${asset.note}</small></a>`).join('')}</div>`;
+      <div class="source-grid">${cards.map((asset, index) => `<button class="source-card" type="button" data-asset-index="${index}"><img src="${asset.src}" alt="${asset.label}" loading="lazy"><b>${asset.label}</b><small>${asset.note}</small></button>`).join('')}</div>`;
+
+    section.querySelectorAll('[data-asset-index]').forEach((button) => {
+      button.addEventListener('click', () => openShowroom(cards[Number(button.dataset.assetIndex)], button));
+    });
   }
 
   new MutationObserver(render).observe(codeNode, { childList: true, subtree: true, characterData: true });
