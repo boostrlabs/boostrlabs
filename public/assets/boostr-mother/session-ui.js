@@ -14,8 +14,8 @@
   function dashboardFor(session) {
     if (session?.redirect) return session.redirect;
     const email = (session?.user?.email || '').toLowerCase();
-    if (email === 'janko@boostrlabs.com') return '/demo/janko-os/?v=0.7.2';
-    if (email === 'johanka@boostrlabs.com') return '/app/82ngel/?v=0.7.2';
+    if (email === 'janko@boostrlabs.com') return '/app/janko/?v=0.8.0';
+    if (email === 'johanka@boostrlabs.com') return '/app/johanka/?v=0.8.0';
     if ((session?.roles || []).includes('admin')) return '/admin/';
     if ((session?.roles || []).includes('manager')) return '/manager/';
     if ((session?.roles || []).includes('partner')) return '/partner-dashboard/';
