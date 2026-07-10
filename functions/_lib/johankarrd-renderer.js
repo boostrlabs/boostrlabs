@@ -28,6 +28,11 @@ export function safeSlug(value = 'johankarrd') {
   return String(value || 'johankarrd').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80) || 'johankarrd';
 }
 
+function safeOptionalSlug(value = '') {
+  const text = String(value || '').replace(/^#/, '').trim();
+  return text ? safeSlug(text) : '';
+}
+
 function safeCss(value, fallback) {
   const text = String(value || '').trim();
   if (!text || /[;{}<>]/.test(text) || text.length > 520) return fallback;
@@ -108,7 +113,7 @@ function normalizeItem(item = {}) {
       color: safeColor(item.color) || '#feedb9',
       size: Math.max(1, Math.min(12, Number(item.size) || 2)),
       label: String(item.label || '').slice(0, 48),
-      target: safeSlug(String(item.target || '').replace(/^#/, ''))
+      target: safeOptionalSlug(item.target)
     };
   }
   return null;
