@@ -13,6 +13,7 @@ import {
   verifyPassword,
   now
 } from "../_lib/api.js";
+import { ensureFounderIdentity } from "../_lib/founder-identity.js";
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -20,8 +21,8 @@ export async function onRequestOptions() {
 
 function resolveDashboard(user, memberships = []) {
   const email = clean(user?.email, 180).toLowerCase();
-  if (email === "janko@boostrlabs.com") return "/app/janko/?v=0.8.0";
-  if (email === "johanka@boostrlabs.com") return "/app/johanka/?v=0.8.0";
+  if (email === "janko@boostrlabs.com") return "/app/janko/?v=0.8.2";
+  if (email === "johanka@boostrlabs.com") return "/app/johanka/?v=0.8.2";
 
   const roles = new Set([user?.role, ...memberships.map((item) => item.role)].filter(Boolean));
   if (roles.has("admin")) return "/admin/";
@@ -78,7 +79,8 @@ async function sessionPayload(env, auth) {
           id: activeWorkspaceId,
           name: activeMembership?.workspace_name || null,
           type: activeMembership?.workspace_type || null,
-          slug: activeMembership?.workspace_slug || null
+          slug: activeMembership?.workspace_slug || null,
+          role: activeMembership?.role || auth.user.role
         }
       : null,
     personas: personas.results || [],
@@ -87,12 +89,25 @@ async function sessionPayload(env, auth) {
   };
 }
 
+async function syncFounder(env, request, auth) {
+  try {
+    const result = await ensureFounderIdentity(env, auth.user);
+    if (!result.changed) return auth;
+    const refreshed = await requireSession(request, env);
+    return refreshed.ok ? refreshed : auth;
+  } catch (error) {
+    console.error("Founder identity sync failed:", error);
+    return auth;
+  }
+}
+
 export async function onRequestGet({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const auth = await requireSession(request, env);
+  let auth = await requireSession(request, env);
   if (!auth.ok) return auth.response;
+  auth = await syncFounder(env, request, auth);
 
   return json({ ok: true, ...(await sessionPayload(env, auth)) });
 }
@@ -130,6 +145,12 @@ export async function onRequestPost({ request, env }) {
     return jsonError("user_inactive", "User is not active.", 403);
   }
 
+  try {
+    await ensureFounderIdentity(env, user);
+  } catch (error) {
+    console.error("Founder identity sync during login failed:", error);
+  }
+
   const memberships = await env.DB.prepare(
     `SELECT workspace_members.workspace_id, workspace_members.role, workspace_members.status,
             workspaces.name AS workspace_name, workspaces.type AS workspace_type, workspaces.slug AS workspace_slug
@@ -161,8 +182,9 @@ export async function onRequestPost({ request, env }) {
     .run();
 
   const session = await createSession(env, request, user.id, activeWorkspaceId);
-  const auth = await requireSession(new Request(request.url, { headers: { Authorization: `Bearer ${session.token}` } }), env);
+  let auth = await requireSession(new Request(request.url, { headers: { Authorization: `Bearer ${session.token}` } }), env);
   if (!auth.ok) return auth.response;
+  auth = await syncFounder(env, new Request(request.url, { headers: { Authorization: `Bearer ${session.token}` } }), auth);
 
   return json(
     {
