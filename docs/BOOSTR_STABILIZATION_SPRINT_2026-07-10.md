@@ -36,12 +36,14 @@ This document records repairs applied directly to production source before any f
 - `/api/cloud`
 - `/api/3d-model/:id`
 
-## Validation
+## Validation result
 
-The `BOOSTR Ecosystem Stability` GitHub Action runs:
+- `144` ecosystem checks passed.
+- `0` ecosystem checks failed.
+- Dependency installation completed successfully with the repository lockfile.
+- The production Vite/Johankarrd build completed successfully.
+- The Cloudflare Pages branch preview reported a successful deployment.
 
-1. dependency installation with the repository lockfile;
-2. static ecosystem stability checks;
-3. the production Vite/Johankarrd build.
+The automated checks cover required files, JavaScript syntax, classic inline scripts, JSON validity, critical route targets, removal of the Manager PIN UI, removal of legacy active partner data, session/workspace navigation protections, Johanka Cloud runtime protections and preservation of PLY/Luma viewer routing.
 
-No claim of successful Cloudflare browser deployment is made until production QA is completed.
+Interactive production QA remains a separate browser-level verification step.
