@@ -68,6 +68,13 @@ export async function onRequest(context) {
   const shouldInjectRuntime = !isDemo && !isPublicExperience && (isInternalSurface || shellRequestedByPage);
   const shouldInjectLanguage = !isDemo && !isPublicExperience && (isInternalSurface || isAuthSurface || path === "/audit" || shellRequestedByPage);
 
+  if (path === "/app/johanka/cloud") {
+    html = html.replace(
+      "renderFilters();loadSession().then(loadAssets);",
+      "renderFilters();window.__JOHANKA_CLOUD_BOOTSTRAP_DEFERRED__=true;"
+    );
+  }
+
   if (shouldInjectLanguage && !/boostr-mother\/language-engine\.js/.test(html)) {
     html = injectBeforeBody(html, languageScript);
   }
