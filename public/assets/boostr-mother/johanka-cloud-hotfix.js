@@ -227,8 +227,12 @@
   style.textContent = '.asset-load-error{display:grid;place-items:center;color:rgba(255,255,255,.55);font-size:11px;padding:12px}.asset-load-error:after{content:"No se pudo cargar"}';
   document.head.appendChild(style);
 
-  setTimeout(() => {
-    if (/Conectando|Cargando/i.test(gallery?.textContent || '')) loadSession().then(loadAssets).catch(() => {});
+  const bootstrap = () => loadSession().then(loadAssets).catch((error) => {
+    gallery.innerHTML = `<div class="empty"><b>No se pudo abrir la nube.</b><br><span>${detail(error, 'Error desconocido')}</span></div>`;
+  });
+  if (window.__JOHANKA_CLOUD_BOOTSTRAP_DEFERRED__) bootstrap();
+  else setTimeout(() => {
+    if (/Conectando|Cargando/i.test(gallery?.textContent || '')) bootstrap();
   }, 3500);
 
   addEventListener('pagehide', () => {
