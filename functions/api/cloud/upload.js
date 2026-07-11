@@ -25,6 +25,7 @@ const IMAGE_TYPES = new Set([
   "image/heic",
   "image/heif"
 ]);
+const VISIBILITIES = new Set(["private", "workspace", "role", "users", "module"]);
 
 function bucket(env) {
   return env.BOOSTR_ASSETS || env.JOHANKARRD_ASSETS || env.ASSETS_BUCKET || env.R2_BUCKET || null;
@@ -50,6 +51,10 @@ function classify(contentType, filename) {
   return "file";
 }
 
+function csv(value, max = 40) {
+  return [...new Set(clean(value, 3000).split(",").map((item) => clean(item, 120)).filter(Boolean))].slice(0, max);
+}
+
 async function ensureCloudSchema(env) {
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS workspace_files (
@@ -71,7 +76,7 @@ async function ensureCloudSchema(env) {
 }
 
 function fail(error, stage) {
-  console.error(`Johanka Cloud binary upload failed during ${stage}:`, error);
+  console.error(`BOOSTR Cloud binary upload failed during ${stage}:`, error);
   return jsonError(
     "cloud_upload_failed",
     "No se pudo subir el archivo.",
@@ -109,6 +114,21 @@ export async function onRequestPost({ request, env }) {
     const access = requireWorkspaceAccess(auth, workspaceId);
     if (!access.ok) return access.response;
 
+    const requestedVisibility = clean(url.searchParams.get("visibility") || "workspace", 30).toLowerCase();
+    const visibility = VISIBILITIES.has(requestedVisibility) ? requestedVisibility : "workspace";
+    const moduleSlug = clean(url.searchParams.get("module_slug") || url.searchParams.get("category"), 120) || null;
+    const allowedRoles = csv(url.searchParams.get("allowed_roles"));
+    const allowedUserIds = csv(url.searchParams.get("allowed_user_ids"));
+    if (visibility === "role" && !allowedRoles.length) {
+      return jsonError("roles_required", "Selecciona al menos un rol para compartir.", 400);
+    }
+    if (visibility === "users" && !allowedUserIds.length) {
+      return jsonError("users_required", "Selecciona al menos un usuario para compartir.", 400);
+    }
+    if (visibility === "module" && !moduleSlug) {
+      return jsonError("module_required", "Selecciona un módulo para compartir.", 400);
+    }
+
     stage = "body";
     const body = await request.arrayBuffer();
     if (!body.byteLength) return jsonError("file_required", "El archivo llegó vacío.", 400);
@@ -122,7 +142,7 @@ export async function onRequestPost({ request, env }) {
     const filename = clean(url.searchParams.get("filename") || request.headers.get("x-boostr-filename") || "archivo", 220);
     const title = clean(url.searchParams.get("title") || request.headers.get("x-boostr-title") || filename, 220);
     const category = clean(url.searchParams.get("category") || request.headers.get("x-boostr-category") || "inbox", 80) || "inbox";
-    const source = clean(url.searchParams.get("source") || request.headers.get("x-boostr-source") || "johanka_custom_cloud", 80);
+    const source = clean(url.searchParams.get("source") || request.headers.get("x-boostr-source") || "boostr_cloud", 80);
     const width = Number(url.searchParams.get("width") || request.headers.get("x-boostr-width") || 0) || null;
     const height = Number(url.searchParams.get("height") || request.headers.get("x-boostr-height") || 0) || null;
     const originalBytes = Number(url.searchParams.get("original_bytes") || request.headers.get("x-boostr-original-bytes") || body.byteLength) || body.byteLength;
@@ -142,6 +162,8 @@ export async function onRequestPost({ request, env }) {
         workspace_id: workspaceId,
         uploaded_by_user_id: auth.user.id,
         category,
+        module_slug: moduleSlug || "",
+        visibility,
         source,
         filename,
         file_type: fileType,
@@ -153,6 +175,11 @@ export async function onRequestPost({ request, env }) {
     const metadata = JSON.stringify({
       r2_key: key,
       category,
+      module_slug: moduleSlug,
+      visibility,
+      allowed_roles: allowedRoles,
+      allowed_user_ids: allowedUserIds,
+      owner_user_id: auth.user.id,
       source,
       original_name: filename,
       mime_type: contentType,
@@ -169,8 +196,8 @@ export async function onRequestPost({ request, env }) {
     await env.DB.prepare(
       `INSERT INTO workspace_files
         (id, workspace_id, uploaded_by_user_id, related_type, related_id, title, file_url, file_type, visibility, status, metadata_json, created_at, updated_at)
-       VALUES (?, ?, ?, 'cloud_asset', ?, ?, ?, ?, 'workspace', 'active', ?, ?, ?)`
-    ).bind(id, workspaceId, auth.user.id, category, title, fileUrl, fileType, metadata, timestamp, timestamp).run();
+       VALUES (?, ?, ?, 'cloud_asset', ?, ?, ?, ?, ?, 'active', ?, ?, ?)`
+    ).bind(id, workspaceId, auth.user.id, moduleSlug || category, title, fileUrl, fileType, visibility, metadata, timestamp, timestamp).run();
 
     storedKey = null;
     return json({
@@ -182,6 +209,8 @@ export async function onRequestPost({ request, env }) {
         file_url: fileUrl,
         file_type: fileType,
         category,
+        module_slug: moduleSlug,
+        visibility,
         bytes: body.byteLength,
         created_at: timestamp
       }
