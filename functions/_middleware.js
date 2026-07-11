@@ -1,8 +1,9 @@
-const VERSION = "0.9.4";
+const VERSION = "0.9.5";
 const languageScript = `<script src="/assets/boostr-mother/language-engine.js?v=${VERSION}" defer></script>`;
 const productionScript = `<script src="/assets/boostr-mother/production-shell.js?v=${VERSION}" defer></script>`;
 const johankaCloudScript = `<script src="/assets/boostr-mother/johanka-cloud-link.js?v=${VERSION}" defer></script>`;
 const johankaCloudRuntimeScript = `<script src="/assets/boostr-mother/johanka-cloud-hotfix.js?v=${VERSION}" defer></script>`;
+const johankaCloudBinaryUploadScript = `<script src="/assets/boostr-mother/johanka-cloud-binary-upload.js?v=${VERSION}" defer></script>`;
 const johankaCloudLiveScript = `<script src="/assets/boostr-mother/johanka-cloud-live.js?v=${VERSION}" defer></script>`;
 const founderCleanupScript = `<script src="/assets/boostr-mother/founder-shell-cleanup.js?v=${VERSION}" defer></script>`;
 const workspaceNavigationScript = `<script src="/assets/boostr-mother/workspace-navigation.js?v=${VERSION}" defer></script>`;
@@ -94,6 +95,10 @@ export async function onRequest(context) {
 
   if (path === "/app/johanka/cloud" && !/boostr-mother\/johanka-cloud-hotfix\.js/.test(html)) {
     html = injectBeforeBody(html, johankaCloudRuntimeScript);
+  }
+
+  if (path === "/app/johanka/cloud" && !/boostr-mother\/johanka-cloud-binary-upload\.js/.test(html)) {
+    html = injectBeforeBody(html, johankaCloudBinaryUploadScript);
   }
 
   if (path === "/app/johanka/cloud" && !/boostr-mother\/johanka-cloud-live\.js/.test(html)) {
