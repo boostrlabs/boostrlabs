@@ -3,7 +3,24 @@
   if (!location.pathname.replace(/\/+$/, '').endsWith('/app/johanka/cloud')) return;
   window.__JOHANKA_CLOUD_RUNTIME__ = true;
 
+  const byId = (id) => document.getElementById(id);
   const blobUrls = new Map();
+  const fileInputEl = byId('fileInput');
+  const chooseBtnEl = byId('chooseBtn');
+  const dropZoneEl = byId('dropZone');
+  const progressEl = byId('progress');
+  const progressTextEl = byId('progressText');
+  const progressFillEl = byId('progressFill');
+  const categorySelectEl = byId('categorySelect');
+  const galleryEl = byId('gallery');
+  const countTextEl = byId('countText');
+  const viewerImageEl = byId('viewerImage');
+  const viewerTitleEl = byId('viewerTitle');
+  const viewerMetaEl = byId('viewerMeta');
+  const modalEl = byId('modal');
+  const refreshBtnEl = byId('refreshBtn');
+  let selectedFiles = [];
+
   const authHeaders = () => {
     const token = localStorage.getItem('boostr_auth_token');
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -15,14 +32,34 @@
       .join(' · ');
   }
 
+  function ensureSelectionStatus() {
+    let node = byId('cloudSelectionStatus');
+    if (node) return node;
+    node = document.createElement('div');
+    node.id = 'cloudSelectionStatus';
+    node.setAttribute('aria-live', 'polite');
+    node.style.cssText = 'margin-top:10px;color:rgba(247,242,229,.72);font-size:12px;font-weight:800;line-height:1.4';
+    dropZoneEl?.insertAdjacentElement('afterend', node);
+    return node;
+  }
+
+  function renderSelection() {
+    const node = ensureSelectionStatus();
+    if (!node) return;
+    if (!selectedFiles.length) {
+      node.textContent = 'Ninguna imagen seleccionada.';
+      return;
+    }
+    const names = selectedFiles.slice(0, 3).map((file) => file.name).join(', ');
+    node.textContent = selectedFiles.length === 1
+      ? `Lista para subir: ${names}`
+      : `${selectedFiles.length} imágenes listas: ${names}${selectedFiles.length > 3 ? '…' : ''}`;
+  }
+
   async function privateBlobUrl(url) {
     if (!url) throw new Error('El asset no tiene archivo asociado.');
     if (blobUrls.has(url)) return blobUrls.get(url);
-    const response = await fetch(url, {
-      headers: authHeaders(),
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
+    const response = await fetch(url, { headers: authHeaders(), credentials: 'same-origin', cache: 'no-store' });
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(detail(error, `No se pudo abrir la imagen (${response.status})`));
@@ -57,16 +94,16 @@
 
   renderGallery = function renderGalleryStable() {
     const list = filteredAssets();
-    countText.textContent = `${assets.length} ${assets.length === 1 ? 'imagen' : 'imágenes'}`;
-    gallery.innerHTML = list.length
+    countTextEl.textContent = `${assets.length} ${assets.length === 1 ? 'imagen' : 'imágenes'}`;
+    galleryEl.innerHTML = list.length
       ? list.map((asset) => `<button class="asset" data-id="${asset.id}"><figure><img loading="lazy" data-private-src="${asset.file_url}" alt="${String(asset.title || 'Asset').replace(/"/g, '&quot;')}"></figure><div class="asset-meta"><b>${asset.title || 'Asset'}</b><span>${asset.metadata?.category || 'inbox'} · ${dateLabel(asset.created_at)}</span></div></button>`).join('')
       : '<div class="empty">No hay imágenes en esta vista. Toca “Subir imágenes” y manda la primera.</div>';
-    gallery.querySelectorAll('.asset').forEach((button) => { button.onclick = () => openAsset(button.dataset.id); });
-    hydrateImages(gallery);
+    galleryEl.querySelectorAll('.asset').forEach((button) => { button.onclick = () => openAsset(button.dataset.id); });
+    hydrateImages(galleryEl);
   };
 
   loadAssets = async function loadAssetsStable() {
-    gallery.innerHTML = '<div class="empty">Cargando tu piscina...</div>';
+    galleryEl.innerHTML = '<div class="empty">Cargando tu piscina...</div>';
     try {
       const workspaceId = selectedWorkspace();
       if (!workspaceId) throw new Error('Selecciona un workspace antes de abrir la nube.');
@@ -74,25 +111,25 @@
       assets = data.assets || [];
       renderGallery();
     } catch (error) {
-      gallery.innerHTML = `<div class="empty"><b>No se pudo abrir la nube.</b><br><span>${detail(error, 'Error desconocido')}</span><br><button class="btn" id="cloudRetry" style="margin-top:12px">Intentar otra vez</button></div>`;
-      document.getElementById('cloudRetry')?.addEventListener('click', loadAssets);
+      galleryEl.innerHTML = `<div class="empty"><b>No se pudo abrir la nube.</b><br><span>${detail(error, 'Error desconocido')}</span><br><button class="btn" id="cloudRetry" style="margin-top:12px">Intentar otra vez</button></div>`;
+      byId('cloudRetry')?.addEventListener('click', loadAssets);
     }
   };
 
   openAsset = async function openAssetStable(id) {
     current = assets.find((asset) => asset.id === id);
     if (!current) return;
-    viewerTitle.textContent = current.title || 'Asset';
-    viewerMeta.textContent = 'Abriendo imagen privada...';
-    viewerImage.removeAttribute('src');
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
+    viewerTitleEl.textContent = current.title || 'Asset';
+    viewerMetaEl.textContent = 'Abriendo imagen privada...';
+    viewerImageEl.removeAttribute('src');
+    modalEl.classList.add('open');
+    modalEl.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     try {
-      viewerImage.src = await privateBlobUrl(current.file_url);
-      viewerMeta.textContent = `${current.metadata?.category || 'inbox'} · ${formatBytes(current.metadata?.bytes)} · ${dateLabel(current.created_at)}`;
+      viewerImageEl.src = await privateBlobUrl(current.file_url);
+      viewerMetaEl.textContent = `${current.metadata?.category || 'inbox'} · ${formatBytes(current.metadata?.bytes)} · ${dateLabel(current.created_at)}`;
     } catch (error) {
-      viewerMeta.textContent = detail(error, 'No se pudo abrir esta imagen.');
+      viewerMetaEl.textContent = detail(error, 'No se pudo abrir esta imagen.');
     }
   };
 
@@ -132,7 +169,6 @@
       width = source.naturalWidth;
       height = source.naturalHeight;
     }
-
     const max = 2000;
     const scale = Math.min(1, max / Math.max(width, height));
     const nextWidth = Math.max(1, Math.round(width * scale));
@@ -146,73 +182,104 @@
     source.close?.();
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 0.84));
     if (!blob) throw new Error('No se pudo comprimir la imagen.');
-    const base = file.name.replace(/\.[^.]+$/, '');
+    const base = file.name.replace(/\.[^.]+$/, '') || 'imagen';
     return {
-      file: new File([blob], `${base}.webp`, { type: 'image/webp' }),
+      file: blob,
+      filename: `${base}.webp`,
       width: nextWidth,
       height: nextHeight,
       original: file.size
     };
   };
 
+  function buildForm(upload, original, packed) {
+    const form = new FormData();
+    const filename = upload.name || packed?.filename || original.name || 'imagen.webp';
+    form.append('file', upload, filename);
+    form.append('workspace_id', selectedWorkspace());
+    form.append('category', categorySelectEl?.value || 'inbox');
+    form.append('title', original.name.replace(/\.[^.]+$/, '') || 'Imagen');
+    form.append('source', 'johanka_custom_cloud');
+    form.append('original_bytes', String(packed?.original || original.size));
+    if (packed?.width) form.append('width', String(packed.width));
+    if (packed?.height) form.append('height', String(packed.height));
+    return form;
+  }
+
+  async function sendUpload(upload, original, packed) {
+    const response = await fetch('/api/cloud', {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'same-origin',
+      body: buildForm(upload, original, packed)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw { ...data, status: response.status };
+    return data;
+  }
+
   uploadFiles = async function uploadFilesStable(fileList) {
-    const files = [...fileList].filter((file) => file.type.startsWith('image/'));
-    if (!files.length) { say('Elige imágenes'); return; }
+    const files = [...(fileList || [])].filter((file) => file && file.type?.startsWith('image/'));
+    if (!files.length) { say('Elige una imagen primero'); return; }
     if (!selectedWorkspace()) { say('Selecciona un workspace'); return; }
 
-    progress.classList.add('show');
-    chooseBtn.disabled = true;
+    selectedFiles = files;
+    renderSelection();
+    progressEl.classList.add('show');
+    chooseBtnEl.disabled = true;
     let failures = 0;
 
     for (let index = 0; index < files.length; index += 1) {
       const original = files[index];
-      progressText.textContent = `Preparando ${index + 1} de ${files.length}: ${original.name}`;
-      progressFill.style.width = `${Math.round((index / files.length) * 100)}%`;
+      progressTextEl.textContent = `Preparando ${index + 1} de ${files.length}: ${original.name}`;
+      progressFillEl.style.width = `${Math.round((index / files.length) * 100)}%`;
       try {
         const packed = await compressImage(original);
-        const form = new FormData();
-        form.append('file', packed.file);
-        form.append('workspace_id', selectedWorkspace());
-        form.append('category', categorySelect.value || 'inbox');
-        form.append('title', original.name.replace(/\.[^.]+$/, ''));
-        form.append('source', 'johanka_custom_cloud');
-        form.append('original_bytes', String(packed.original));
-        if (packed.width) form.append('width', String(packed.width));
-        if (packed.height) form.append('height', String(packed.height));
-
-        const response = await fetch('/api/cloud', {
-          method: 'POST',
-          headers: authHeaders(),
-          credentials: 'same-origin',
-          body: form
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || data.ok === false) throw data;
-        progressText.textContent = `Subida: ${original.name} · ${formatBytes(packed.file.size)}`;
+        try {
+          await sendUpload(packed.file, original, packed);
+        } catch (error) {
+          if (error?.error !== 'file_required' && error?.status !== 400) throw error;
+          progressTextEl.textContent = `Reintentando ${original.name} sin compresión...`;
+          await sendUpload(original, original, { original: original.size });
+        }
+        progressTextEl.textContent = `Subida: ${original.name} · ${formatBytes(packed.file.size)}`;
       } catch (error) {
         failures += 1;
-        progressText.textContent = detail(error, `Falló ${original.name}`);
+        progressTextEl.textContent = detail(error, `Falló ${original.name}`);
         say(detail(error, `Falló ${original.name}`));
       }
     }
 
-    progressFill.style.width = '100%';
-    progressText.textContent = failures
-      ? `${files.length - failures} subidas · ${failures} con error. ${progressText.textContent}`
+    progressFillEl.style.width = '100%';
+    progressTextEl.textContent = failures
+      ? `${files.length - failures} subidas · ${failures} con error. ${progressTextEl.textContent}`
       : 'Listo. Ya aparece en tu nube.';
-    chooseBtn.disabled = false;
-    fileInput.value = '';
+    chooseBtnEl.disabled = false;
+    selectedFiles = [];
+    if (fileInputEl) fileInputEl.value = '';
+    renderSelection();
     await loadAssets();
-    if (!failures) setTimeout(() => progress.classList.remove('show'), 1800);
+    if (!failures) setTimeout(() => progressEl.classList.remove('show'), 1800);
   };
 
-  refreshBtn.onclick = loadAssets;
-  fileInput.onchange = (event) => uploadFiles(event.target.files);
-  dropZone.ondrop = (event) => {
-    event.preventDefault();
-    dropZone.classList.remove('drag');
-    uploadFiles(event.dataTransfer.files);
+  chooseBtnEl.onclick = () => fileInputEl?.click();
+  refreshBtnEl.onclick = loadAssets;
+  fileInputEl.onchange = (event) => {
+    selectedFiles = [...(event.target.files || [])];
+    renderSelection();
+    uploadFiles(selectedFiles);
   };
+  dropZoneEl.ondragover = (event) => { event.preventDefault(); dropZoneEl.classList.add('drag'); };
+  dropZoneEl.ondragleave = () => dropZoneEl.classList.remove('drag');
+  dropZoneEl.ondrop = (event) => {
+    event.preventDefault();
+    dropZoneEl.classList.remove('drag');
+    selectedFiles = [...(event.dataTransfer.files || [])];
+    renderSelection();
+    uploadFiles(selectedFiles);
+  };
+
+  renderSelection();
 
   const observer = new MutationObserver((records) => {
     for (const record of records) {
@@ -221,18 +288,18 @@
       });
     }
   });
-  observer.observe(document.getElementById('gallery') || document.body, { childList: true, subtree: true });
+  observer.observe(galleryEl || document.body, { childList: true, subtree: true });
 
   const style = document.createElement('style');
   style.textContent = '.asset-load-error{display:grid;place-items:center;color:rgba(255,255,255,.55);font-size:11px;padding:12px}.asset-load-error:after{content:"No se pudo cargar"}';
   document.head.appendChild(style);
 
   const bootstrap = () => loadSession().then(loadAssets).catch((error) => {
-    gallery.innerHTML = `<div class="empty"><b>No se pudo abrir la nube.</b><br><span>${detail(error, 'Error desconocido')}</span></div>`;
+    galleryEl.innerHTML = `<div class="empty"><b>No se pudo abrir la nube.</b><br><span>${detail(error, 'Error desconocido')}</span></div>`;
   });
   if (window.__JOHANKA_CLOUD_BOOTSTRAP_DEFERRED__) bootstrap();
   else setTimeout(() => {
-    if (/Conectando|Cargando/i.test(gallery?.textContent || '')) bootstrap();
+    if (/Conectando|Cargando/i.test(galleryEl?.textContent || '')) bootstrap();
   }, 3500);
 
   addEventListener('pagehide', () => {
