@@ -1,4 +1,4 @@
-const VERSION = "0.9.5";
+const VERSION = "0.9.6";
 const languageScript = `<script src="/assets/boostr-mother/language-engine.js?v=${VERSION}" defer></script>`;
 const productionScript = `<script src="/assets/boostr-mother/production-shell.js?v=${VERSION}" defer></script>`;
 const johankaCloudScript = `<script src="/assets/boostr-mother/johanka-cloud-link.js?v=${VERSION}" defer></script>`;
