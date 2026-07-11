@@ -1,5 +1,7 @@
 (() => {
+  if (window.__JOHANKA_CLOUD_RUNTIME__) return;
   if (!location.pathname.replace(/\/+$/, '').endsWith('/app/johanka/cloud')) return;
+  window.__JOHANKA_CLOUD_RUNTIME__ = true;
 
   const blobUrls = new Map();
   const authHeaders = () => {
@@ -30,30 +32,40 @@
     return objectUrl;
   }
 
-  async function hydrateImages() {
-    const images = [...document.querySelectorAll('#gallery img[data-private-src]')];
-    await Promise.all(images.map(async (image) => {
-      try {
-        image.src = await privateBlobUrl(image.dataset.privateSrc);
-        image.removeAttribute('data-private-src');
-      } catch (error) {
-        image.alt = detail(error, 'No se pudo abrir');
-        image.closest('figure')?.classList.add('asset-load-error');
-      }
-    }));
+  async function hydrateImage(image, url) {
+    if (!image || !url || image.dataset.privateHydrating === 'true') return;
+    image.dataset.privateHydrating = 'true';
+    try {
+      image.src = await privateBlobUrl(url);
+      image.dataset.privateReady = 'true';
+      image.removeAttribute('data-private-src');
+    } catch (error) {
+      image.removeAttribute('src');
+      image.alt = detail(error, 'No se pudo abrir');
+      image.closest('figure')?.classList.add('asset-load-error');
+    } finally {
+      delete image.dataset.privateHydrating;
+    }
   }
 
-  renderGallery = function renderGalleryPatched() {
+  function hydrateImages(root = document) {
+    root.querySelectorAll?.('#gallery img').forEach((image) => {
+      const source = image.dataset.privateSrc || (image.getAttribute('src')?.startsWith('/api/cloud?key=') ? image.getAttribute('src') : '');
+      if (source && image.dataset.privateReady !== 'true') hydrateImage(image, source);
+    });
+  }
+
+  renderGallery = function renderGalleryStable() {
     const list = filteredAssets();
     countText.textContent = `${assets.length} ${assets.length === 1 ? 'imagen' : 'imágenes'}`;
     gallery.innerHTML = list.length
       ? list.map((asset) => `<button class="asset" data-id="${asset.id}"><figure><img loading="lazy" data-private-src="${asset.file_url}" alt="${String(asset.title || 'Asset').replace(/"/g, '&quot;')}"></figure><div class="asset-meta"><b>${asset.title || 'Asset'}</b><span>${asset.metadata?.category || 'inbox'} · ${dateLabel(asset.created_at)}</span></div></button>`).join('')
       : '<div class="empty">No hay imágenes en esta vista. Toca “Subir imágenes” y manda la primera.</div>';
     gallery.querySelectorAll('.asset').forEach((button) => { button.onclick = () => openAsset(button.dataset.id); });
-    hydrateImages();
+    hydrateImages(gallery);
   };
 
-  loadAssets = async function loadAssetsPatched() {
+  loadAssets = async function loadAssetsStable() {
     gallery.innerHTML = '<div class="empty">Cargando tu piscina...</div>';
     try {
       const workspaceId = selectedWorkspace();
@@ -67,11 +79,12 @@
     }
   };
 
-  openAsset = async function openAssetPatched(id) {
+  openAsset = async function openAssetStable(id) {
     current = assets.find((asset) => asset.id === id);
     if (!current) return;
     viewerTitle.textContent = current.title || 'Asset';
     viewerMeta.textContent = 'Abriendo imagen privada...';
+    viewerImage.removeAttribute('src');
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -79,7 +92,6 @@
       viewerImage.src = await privateBlobUrl(current.file_url);
       viewerMeta.textContent = `${current.metadata?.category || 'inbox'} · ${formatBytes(current.metadata?.bytes)} · ${dateLabel(current.created_at)}`;
     } catch (error) {
-      viewerImage.removeAttribute('src');
       viewerMeta.textContent = detail(error, 'No se pudo abrir esta imagen.');
     }
   };
@@ -100,7 +112,7 @@
     }
   }
 
-  compressImage = async function compressImagePatched(file) {
+  compressImage = async function compressImageStable(file) {
     if (file.type === 'image/gif') return { file, width: null, height: null, original: file.size };
     let source;
     let width;
@@ -143,7 +155,7 @@
     };
   };
 
-  uploadFiles = async function uploadFilesPatched(fileList) {
+  uploadFiles = async function uploadFilesStable(fileList) {
     const files = [...fileList].filter((file) => file.type.startsWith('image/'));
     if (!files.length) { say('Elige imágenes'); return; }
     if (!selectedWorkspace()) { say('Selecciona un workspace'); return; }
@@ -186,7 +198,7 @@
 
     progressFill.style.width = '100%';
     progressText.textContent = failures
-      ? `${files.length - failures} subidas · ${failures} con error. El detalle quedó arriba.`
+      ? `${files.length - failures} subidas · ${failures} con error. ${progressText.textContent}`
       : 'Listo. Ya aparece en tu nube.';
     chooseBtn.disabled = false;
     fileInput.value = '';
@@ -202,9 +214,26 @@
     uploadFiles(event.dataTransfer.files);
   };
 
+  const observer = new MutationObserver((records) => {
+    for (const record of records) {
+      record.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) hydrateImages(node);
+      });
+    }
+  });
+  observer.observe(document.getElementById('gallery') || document.body, { childList: true, subtree: true });
+
   const style = document.createElement('style');
   style.textContent = '.asset-load-error{display:grid;place-items:center;color:rgba(255,255,255,.55);font-size:11px;padding:12px}.asset-load-error:after{content:"No se pudo cargar"}';
   document.head.appendChild(style);
 
-  loadSession().then(loadAssets);
+  setTimeout(() => {
+    if (/Conectando|Cargando/i.test(gallery?.textContent || '')) loadSession().then(loadAssets).catch(() => {});
+  }, 3500);
+
+  addEventListener('pagehide', () => {
+    observer.disconnect();
+    blobUrls.forEach((url) => URL.revokeObjectURL(url));
+    blobUrls.clear();
+  }, { once: true });
 })();
