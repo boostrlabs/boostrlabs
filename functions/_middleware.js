@@ -1,4 +1,4 @@
-const VERSION = "0.9.1";
+const VERSION = "0.9.3";
 const languageScript = `<script src="/assets/boostr-mother/language-engine.js?v=${VERSION}" defer></script>`;
 const productionScript = `<script src="/assets/boostr-mother/production-shell.js?v=${VERSION}" defer></script>`;
 const johankaCloudScript = `<script src="/assets/boostr-mother/johanka-cloud-link.js?v=${VERSION}" defer></script>`;
@@ -37,8 +37,7 @@ export async function onRequest(context) {
     "/pay",
     "/portfolio",
     "/partner",
-    "/omgbeauty",
-    "/hummusfl/mava-presentation"
+    "/omgbeauty"
   ]);
   const isPrivate = matches(path, ["/app", "/manager", "/admin", "/partner-dashboard"]);
   const isInternalSurface = isPrivate || matches(path, [
