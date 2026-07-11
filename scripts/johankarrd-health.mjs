@@ -102,7 +102,7 @@ for (const marker of [
   if (!renderer.includes(marker)) fail(`renderer v66 capability missing: ${marker}`);
 }
 
-for (const marker of ['isPublicJohankarrd', 'wantsWorkspaceShell', 'shellRequestedByPage', 'shouldInjectEcosystem']) {
+for (const marker of ['isPublicJohankarrd', 'wantsWorkspaceShell', 'shellRequestedByPage', 'shouldInjectRuntime']) {
   if (!middleware.includes(marker)) fail(`public shell isolation missing: ${marker}`);
 }
 
