@@ -25,11 +25,11 @@ export async function onRequestPost({ request, env }) {
   }
 
   const workspace = await env.DB.prepare(
-    "SELECT id, name, slug, type FROM workspaces WHERE id = ? LIMIT 1"
+    "SELECT id, name, slug, type, status FROM workspaces WHERE id = ? LIMIT 1"
   ).bind(workspaceId).first();
 
   if (!workspace?.id) return jsonError("workspace_not_found", "Workspace not found.", 404);
-
+  if (workspace.status !== "active") return jsonError("workspace_inactive", "Workspace is not active.", 409);
   if (!auth.session?.id) return jsonError("session_missing", "Active session not found.", 401);
 
   const timestamp = now();
