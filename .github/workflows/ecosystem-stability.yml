@@ -46,10 +46,10 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --reporter=silent
 
       - name: Run ecosystem stability checks
-        run: pnpm run stability:check
+        run: node scripts/ecosystem-stability.mjs
 
       - name: Build production bundle
         run: pnpm run build
