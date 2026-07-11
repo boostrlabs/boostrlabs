@@ -106,7 +106,7 @@ for (const marker of ['isPublicJohankarrd', 'wantsWorkspaceShell', 'shellRequest
   if (!middleware.includes(marker)) fail(`public shell isolation missing: ${marker}`);
 }
 
-if (!middleware.includes("path === '/johankarrd' || path.startsWith('/johankarrd/')")) fail('public Johankarrd route isolation missing');
+if (!/path\s*===\s*["']\/johankarrd["']\s*\|\|\s*path\.startsWith\(["']\/johankarrd\/["']\)/.test(middleware)) fail('public Johankarrd route isolation missing');
 if (!renderer.includes('<meta name="boostr-shell"')) fail('renderer shell metadata missing');
 
 for (const marker of ['aria-modal', 'aria-live', 'focus', 'Delete', 'Backspace', 'Termina de mover el elemento primero.', 'Texto actualizado.']) {
