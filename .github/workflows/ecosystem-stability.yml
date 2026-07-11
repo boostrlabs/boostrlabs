@@ -1,6 +1,7 @@
 name: BOOSTR Ecosystem Stability
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -32,21 +33,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22.12.0'
-
-      - name: Enable pnpm through Corepack
-        run: |
-          corepack enable
-          pnpm --version
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --reporter=silent
 
       - name: Run ecosystem stability checks
-        run: pnpm run stability:check
+        id: stability
+        continue-on-error: true
+        run: node scripts/ecosystem-stability.mjs > ecosystem-stability.log 2>&1
+
+      - name: Upload ecosystem stability report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecosystem-stability-report
+          path: ecosystem-stability.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce ecosystem stability result
+        if: steps.stability.outcome == 'failure'
+        run: |
+          cat ecosystem-stability.log
+          exit 1
 
       - name: Build production bundle
         run: pnpm run build
