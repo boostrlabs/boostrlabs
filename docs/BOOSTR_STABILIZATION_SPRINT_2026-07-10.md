@@ -17,6 +17,7 @@ This document records repairs applied directly to production source before any f
 - Founder Artist OS synchronization is idempotent instead of rewriting rows on every session request.
 - Johanka Cloud uses one controlled bootstrap path, authenticated private blobs, mobile image fallback and GPU/blob cleanup.
 - Login preserves a validated same-origin `next` destination through authentication.
+- Historical `/password-reset/` links now preserve their query/token and route to `/forgot-password/`.
 - Workspace switching rejects inactive workspaces.
 - Critical route, syntax, JSON, PIN, demo-data and local-link checks were added to the deploy workflow.
 
