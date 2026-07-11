@@ -1,4 +1,6 @@
 import {
+  authCanSeeAll,
+  canAccessModule,
   clean,
   defaultWorkspaceId,
   json,
@@ -9,26 +11,15 @@ import {
   requireWorkspaceAccess
 } from "../_lib/api.js";
 
-const MAX_BYTES = 12 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-
 function bucket(env) {
   return env.BOOSTR_ASSETS || env.JOHANKARRD_ASSETS || env.ASSETS_BUCKET || env.R2_BUCKET || null;
 }
 
-function safeName(name = "asset") {
-  return String(name || "asset")
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 100) || "asset";
-}
-
 function cloudError(error, stage) {
-  console.error(`Johanka Cloud failed during ${stage}:`, error);
+  console.error(`BOOSTR Cloud failed during ${stage}:`, error);
   return jsonError(
     "cloud_operation_failed",
-    "No se pudo completar la operación de la nube.",
+    "No se pudo completar la operación de BOOSTR Cloud.",
     500,
     { stage, detail: clean(error?.message || error, 500) }
   );
@@ -56,23 +47,12 @@ async function ensureCloudSchema(env) {
   const info = await env.DB.prepare("PRAGMA table_info(workspace_files)").all();
   const columns = new Set((info.results || []).map((row) => row.name));
   const additions = [
-    ["uploaded_by_user_id", "TEXT"],
-    ["related_type", "TEXT"],
-    ["related_id", "TEXT"],
-    ["file_url", "TEXT"],
-    ["file_type", "TEXT"],
-    ["visibility", "TEXT"],
-    ["status", "TEXT"],
-    ["metadata_json", "TEXT"],
-    ["created_at", "TEXT"],
-    ["updated_at", "TEXT"]
+    ["uploaded_by_user_id", "TEXT"], ["related_type", "TEXT"], ["related_id", "TEXT"],
+    ["file_url", "TEXT"], ["file_type", "TEXT"], ["visibility", "TEXT"],
+    ["status", "TEXT"], ["metadata_json", "TEXT"], ["created_at", "TEXT"], ["updated_at", "TEXT"]
   ];
-
   for (const [name, definition] of additions) {
-    if (!columns.has(name)) {
-      await env.DB.prepare(`ALTER TABLE workspace_files ADD COLUMN ${name} ${definition}`).run();
-      columns.add(name);
-    }
+    if (!columns.has(name)) await env.DB.prepare(`ALTER TABLE workspace_files ADD COLUMN ${name} ${definition}`).run();
   }
 
   await env.DB.prepare(`
@@ -82,10 +62,8 @@ async function ensureCloudSchema(env) {
         status = COALESCE(NULLIF(status, ''), 'active'),
         created_at = COALESCE(created_at, CURRENT_TIMESTAMP),
         updated_at = COALESCE(updated_at, created_at, CURRENT_TIMESTAMP)
-    WHERE file_type IS NULL OR file_type = ''
-       OR visibility IS NULL OR visibility = ''
-       OR status IS NULL OR status = ''
-       OR created_at IS NULL OR updated_at IS NULL
+    WHERE file_type IS NULL OR file_type = '' OR visibility IS NULL OR visibility = ''
+       OR status IS NULL OR status = '' OR created_at IS NULL OR updated_at IS NULL
   `).run();
 
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace ON workspace_files(workspace_id, created_at DESC)").run();
@@ -95,17 +73,40 @@ async function ensureCloudSchema(env) {
 
 function resolveWorkspace(auth, requested) {
   const workspaceId = clean(requested, 120) || defaultWorkspaceId(auth);
-  if (!workspaceId) {
-    return { ok: false, response: jsonError("workspace_required", "Selecciona un workspace antes de subir.", 400) };
-  }
+  if (!workspaceId) return { ok: false, response: jsonError("workspace_required", "Selecciona un workspace.", 400) };
   const access = requireWorkspaceAccess(auth, workspaceId);
   if (!access.ok) return { ok: false, response: access.response };
   return { ok: true, workspace_id: workspaceId };
 }
 
-function cloudKeyWorkspace(key = "") {
-  const match = String(key).match(/^cloud\/([^/]+)\//);
-  return match ? match[1] : null;
+function parseMetadata(record) {
+  try { return JSON.parse(record?.metadata_json || "{}"); } catch { return {}; }
+}
+
+async function canReadRecord(auth, env, record) {
+  if (!record?.workspace_id) return false;
+  if (authCanSeeAll(auth)) return true;
+  const workspaceAccess = requireWorkspaceAccess(auth, record.workspace_id);
+  if (!workspaceAccess.ok) return false;
+  if (record.uploaded_by_user_id === auth.user.id) return true;
+
+  const metadata = parseMetadata(record);
+  const visibility = clean(record.visibility || metadata.visibility || "workspace", 30).toLowerCase();
+  if (visibility === "private") return false;
+  if (visibility === "workspace") return true;
+  if (visibility === "role") {
+    const allowed = Array.isArray(metadata.allowed_roles) ? metadata.allowed_roles : [];
+    return auth.roles?.some((role) => allowed.includes(role)) || false;
+  }
+  if (visibility === "users") {
+    const allowed = Array.isArray(metadata.allowed_user_ids) ? metadata.allowed_user_ids : [];
+    return allowed.includes(auth.user.id);
+  }
+  if (visibility === "module") {
+    const moduleSlug = clean(metadata.module_slug || record.related_id, 120);
+    return moduleSlug ? canAccessModule(env, record.workspace_id, moduleSlug) : false;
+  }
+  return false;
 }
 
 export async function onRequestOptions() {
@@ -115,40 +116,41 @@ export async function onRequestOptions() {
 export async function onRequestGet({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
-
   let stage = "auth";
   try {
     const auth = await requireSession(request, env);
     if (!auth.ok) return auth.response;
+    await ensureCloudSchema(env);
 
     const url = new URL(request.url);
-    const key = url.searchParams.get("key");
-
+    const key = clean(url.searchParams.get("key"), 1000);
     if (key) {
-      stage = "asset_access";
-      const workspaceId = cloudKeyWorkspace(key);
-      if (!workspaceId || key.includes("..")) return jsonError("invalid_asset_key", "Invalid asset key.", 400);
-      const access = requireWorkspaceAccess(auth, workspaceId);
-      if (!access.ok) return access.response;
+      if (!key.startsWith("cloud/") || key.includes("..")) return jsonError("invalid_asset_key", "Invalid asset key.", 400);
+      stage = "asset_lookup";
+      const encoded = encodeURIComponent(key);
+      const record = await env.DB.prepare(
+        `SELECT id, workspace_id, uploaded_by_user_id, title, file_url, file_type, visibility, metadata_json
+         FROM workspace_files
+         WHERE related_type = 'cloud_asset' AND status = 'active' AND (file_url = ? OR metadata_json LIKE ?)
+         LIMIT 1`
+      ).bind(`/api/cloud?key=${encoded}`, `%\"r2_key\":\"${key.replace(/[\"%_]/g, "")}\"%`).first();
+      if (!record?.id) return jsonError("asset_not_found", "Asset not found.", 404);
+      if (!(await canReadRecord(auth, env, record))) return jsonError("cloud_access_denied", "No tienes acceso a este archivo.", 403);
 
       stage = "asset_read";
       const store = bucket(env);
       if (!store) return jsonError("r2_missing", "Cloud storage is not configured.", 503);
       const object = await store.get(key);
       if (!object) return jsonError("asset_not_found", "Asset not found.", 404);
-
       const headers = new Headers();
       object.writeHttpMetadata(headers);
       headers.set("etag", object.httpEtag);
-      headers.set("cache-control", "private, max-age=3600");
+      headers.set("cache-control", "private, max-age=300");
       headers.set("x-content-type-options", "nosniff");
       headers.set("content-disposition", "inline");
       if (object.size) headers.set("content-length", String(object.size));
       return new Response(object.body, { headers });
     }
-
-    stage = "schema";
-    await ensureCloudSchema(env);
 
     stage = "workspace";
     const workspace = resolveWorkspace(auth, url.searchParams.get("workspace_id"));
@@ -156,133 +158,25 @@ export async function onRequestGet({ request, env }) {
 
     const q = clean(url.searchParams.get("q"), 120).toLowerCase();
     const category = clean(url.searchParams.get("category"), 80);
+    const moduleSlug = clean(url.searchParams.get("module_slug"), 120);
     const filters = ["workspace_id = ?", "status = 'active'", "related_type = 'cloud_asset'"];
     const binds = [workspace.workspace_id];
-
-    if (q) {
-      filters.push("lower(title) LIKE ?");
-      binds.push(`%${q}%`);
-    }
-    if (category) {
-      filters.push("metadata_json LIKE ?");
-      binds.push(`%\"category\":\"${category.replace(/[\"%_]/g, "")}\"%`);
-    }
+    if (q) { filters.push("lower(title) LIKE ?"); binds.push(`%${q}%`); }
+    if (category) { filters.push("metadata_json LIKE ?"); binds.push(`%\"category\":\"${category.replace(/[\"%_]/g, "")}\"%`); }
+    if (moduleSlug) { filters.push("(related_id = ? OR metadata_json LIKE ?)"); binds.push(moduleSlug, `%\"module_slug\":\"${moduleSlug.replace(/[\"%_]/g, "")}\"%`); }
 
     stage = "list";
     const result = await env.DB.prepare(
-      `SELECT id, workspace_id, uploaded_by_user_id, title, file_url, file_type, visibility, metadata_json, created_at, updated_at
-       FROM workspace_files
-       WHERE ${filters.join(" AND ")}
-       ORDER BY created_at DESC
-       LIMIT 200`
+      `SELECT id, workspace_id, uploaded_by_user_id, related_id, title, file_url, file_type, visibility, metadata_json, created_at, updated_at
+       FROM workspace_files WHERE ${filters.join(" AND ")} ORDER BY created_at DESC LIMIT 400`
     ).bind(...binds).all();
 
-    return json({
-      ok: true,
-      workspace_id: workspace.workspace_id,
-      assets: (result.results || []).map((item) => {
-        let metadata = {};
-        try { metadata = JSON.parse(item.metadata_json || "{}"); } catch {}
-        return { ...item, metadata };
-      })
-    });
-  } catch (error) {
-    return cloudError(error, stage);
-  }
-}
-
-export async function onRequestPost({ request, env }) {
-  const db = requireDb(env);
-  if (!db.ok) return db.response;
-
-  let stage = "auth";
-  let storedKey = null;
-  try {
-    const auth = await requireSession(request, env);
-    if (!auth.ok) return auth.response;
-
-    stage = "schema";
-    await ensureCloudSchema(env);
-
-    stage = "storage";
-    const store = bucket(env);
-    if (!store) return jsonError("r2_missing", "Cloud storage is not configured.", 503);
-
-    const declaredLength = Number(request.headers.get("content-length") || 0);
-    if (declaredLength > MAX_BYTES + 2 * 1024 * 1024) return jsonError("file_too_large", "File is too large.", 413);
-
-    stage = "form";
-    const form = await request.formData();
-    const file = form.get("file");
-    if (!file || typeof file === "string") return jsonError("file_required", "Choose an image first.", 400);
-    if (!ALLOWED_TYPES.has(file.type)) return jsonError("unsupported_type", `Formato no soportado: ${file.type || "desconocido"}. Usa JPG, PNG, WEBP o GIF.`, 415);
-    if (!file.size || file.size > MAX_BYTES) return jsonError("file_too_large", "File is too large.", 413);
-
-    stage = "workspace";
-    const workspace = resolveWorkspace(auth, form.get("workspace_id"));
-    if (!workspace.ok) return workspace.response;
-
-    const title = clean(form.get("title") || file.name || "Asset", 180);
-    const category = clean(form.get("category") || "inbox", 80) || "inbox";
-    const source = clean(form.get("source") || "custom_cloud", 80);
-    const width = Number(form.get("width") || 0) || null;
-    const height = Number(form.get("height") || 0) || null;
-    const originalBytes = Number(form.get("original_bytes") || file.size) || file.size;
-    const id = crypto.randomUUID();
-    const timestamp = now();
-    const key = `cloud/${workspace.workspace_id}/${auth.user.id}/${Date.now()}-${id}-${safeName(file.name)}`;
-    storedKey = key;
-    const body = await file.arrayBuffer();
-
-    stage = "r2_write";
-    await store.put(key, body, {
-      httpMetadata: { contentType: file.type },
-      customMetadata: {
-        workspace_id: workspace.workspace_id,
-        uploaded_by_user_id: auth.user.id,
-        category,
-        source,
-        bytes: String(body.byteLength)
-      }
-    });
-
-    const fileUrl = `/api/cloud?key=${encodeURIComponent(key)}`;
-    const metadata = JSON.stringify({
-      r2_key: key,
-      category,
-      source,
-      original_name: file.name,
-      bytes: body.byteLength,
-      original_bytes: originalBytes,
-      width,
-      height
-    });
-
-    stage = "d1_write";
-    await env.DB.prepare(
-      `INSERT INTO workspace_files
-        (id, workspace_id, uploaded_by_user_id, related_type, related_id, title, file_url, file_type, visibility, status, metadata_json, created_at, updated_at)
-       VALUES (?, ?, ?, 'cloud_asset', ?, ?, ?, 'image', 'workspace', 'active', ?, ?, ?)`
-    ).bind(id, workspace.workspace_id, auth.user.id, category, title, fileUrl, metadata, timestamp, timestamp).run();
-
-    storedKey = null;
-    return json({
-      ok: true,
-      asset: {
-        id,
-        workspace_id: workspace.workspace_id,
-        title,
-        file_url: fileUrl,
-        file_type: "image",
-        category,
-        bytes: body.byteLength,
-        created_at: timestamp
-      }
-    }, 201);
-  } catch (error) {
-    if (storedKey) {
-      try { await bucket(env)?.delete(storedKey); } catch {}
+    const visible = [];
+    for (const item of result.results || []) {
+      if (await canReadRecord(auth, env, item)) visible.push({ ...item, metadata: parseMetadata(item) });
     }
+    return json({ ok: true, workspace_id: workspace.workspace_id, assets: visible.slice(0, 200) });
+  } catch (error) {
     return cloudError(error, stage);
   }
 }
@@ -290,38 +184,31 @@ export async function onRequestPost({ request, env }) {
 export async function onRequestDelete({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
-
   let stage = "auth";
   try {
     const auth = await requireSession(request, env);
     if (!auth.ok) return auth.response;
-
-    stage = "schema";
     await ensureCloudSchema(env);
-
-    stage = "payload";
     const payload = await request.json().catch(() => null);
     const id = clean(payload?.id, 120);
     if (!id) return jsonError("asset_id_required", "Asset id is required.", 400);
 
     stage = "lookup";
     const record = await env.DB.prepare(
-      "SELECT id, workspace_id, file_url, metadata_json FROM workspace_files WHERE id = ? AND related_type = 'cloud_asset' LIMIT 1"
+      "SELECT id, workspace_id, uploaded_by_user_id, metadata_json FROM workspace_files WHERE id = ? AND related_type = 'cloud_asset' LIMIT 1"
     ).bind(id).first();
     if (!record?.id) return jsonError("asset_not_found", "Asset not found.", 404);
-
-    const access = requireWorkspaceAccess(auth, record.workspace_id);
-    if (!access.ok) return access.response;
+    const workspaceAccess = requireWorkspaceAccess(auth, record.workspace_id);
+    if (!workspaceAccess.ok) return workspaceAccess.response;
+    if (!authCanSeeAll(auth) && record.uploaded_by_user_id !== auth.user.id) {
+      return jsonError("cloud_delete_denied", "Solo quien subió el archivo o un manager puede archivarlo.", 403);
+    }
 
     stage = "archive";
-    await env.DB.prepare("UPDATE workspace_files SET status = 'archived', updated_at = ? WHERE id = ?")
-      .bind(now(), id).run();
-
-    let key = null;
-    try { key = JSON.parse(record.metadata_json || "{}").r2_key || null; } catch {}
+    await env.DB.prepare("UPDATE workspace_files SET status = 'archived', updated_at = ? WHERE id = ?").bind(now(), id).run();
+    const metadata = parseMetadata(record);
     const store = bucket(env);
-    if (store && key) await store.delete(key).catch(() => {});
-
+    if (store && metadata.r2_key) await store.delete(metadata.r2_key).catch(() => {});
     return json({ ok: true, archived: id });
   } catch (error) {
     return cloudError(error, stage);
