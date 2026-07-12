@@ -8,6 +8,7 @@ const requiredFiles = [
   "functions/api/documents/[id].js",
   "functions/api/documents/[id]/events.js",
   "functions/api/public/documents/[slug].js",
+  "functions/api/public/assets/[id].js",
   "functions/d/[slug].js",
   "public/app/documents/index.html",
   "migrations/0015_smart_documents.sql"
@@ -60,8 +61,16 @@ if (existsSync(migrationPath)) {
 const receiptHelperPath = "functions/_lib/payment-receipts.js";
 if (existsSync(receiptHelperPath)) {
   const source = readFileSync(receiptHelperPath, "utf8");
-  for (const marker of ["resolvePaymentImage", "image_url", "product_image"]) {
+  for (const marker of ["resolvePaymentImage", "publicProductImageUrl", "/api/public/assets/", "product_image"]) {
     if (!source.includes(marker)) failures.push(`receipt helper missing product image marker: ${marker}`);
+  }
+}
+
+const publicAssetPath = "functions/api/public/assets/[id].js";
+if (existsSync(publicAssetPath)) {
+  const source = readFileSync(publicAssetPath, "utf8");
+  for (const marker of ["product-media", "quick_publish_v4", "cache-control", "public, max-age=31536000"]) {
+    if (!source.includes(marker)) failures.push(`public product asset route missing marker: ${marker}`);
   }
 }
 
