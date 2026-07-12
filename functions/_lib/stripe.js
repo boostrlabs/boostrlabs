@@ -67,6 +67,19 @@ export async function getStripeCredentials(env) {
   return { publishableKey: row.publishable_value || "", secretKey, secretMask: row.secret_mask || null, mode };
 }
 
+export async function getStripeWebhookSecret(env) {
+  const envSecret = String(env.STRIPE_WEBHOOK_SECRET || "").trim();
+  if (envSecret) return envSecret;
+  let row = null;
+  try {
+    row = await env.DB.prepare(
+      "SELECT webhook_secret_encrypted FROM founder_secure_settings WHERE provider = 'stripe' AND webhook_secret_encrypted IS NOT NULL ORDER BY updated_at DESC LIMIT 1"
+    ).first();
+  } catch {}
+  if (!row?.webhook_secret_encrypted) throw new Error("stripe_webhook_not_configured");
+  return decryptValue(env, row.webhook_secret_encrypted);
+}
+
 export async function stripeRequest(secretKey, path, { method = "GET", body = null, idempotencyKey = null } = {}) {
   const headers = { Authorization: `Bearer ${secretKey}` };
   if (body) headers["Content-Type"] = "application/x-www-form-urlencoded";
