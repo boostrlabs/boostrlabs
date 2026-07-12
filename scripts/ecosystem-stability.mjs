@@ -110,6 +110,7 @@ const required = [
   'functions/api/session/switch.js',
   'functions/api/workspace-os.js',
   'functions/api/cloud.js',
+  'functions/api/cloud/upload.js',
   'functions/api/3d-model/[id].js',
   'public/home/index.html',
   'public/login/index.html',
@@ -118,6 +119,7 @@ const required = [
   'public/partner-dashboard/index.html',
   'public/app/janko/index.html',
   'public/app/johanka/index.html',
+  'public/app/cloud/index.html',
   'public/app/johanka/cloud/index.html',
   'public/3d/index.html',
   'public/3d/viewer.js',
@@ -131,6 +133,7 @@ required.forEach(requireFile);
   'functions/api/session/switch.js',
   'functions/api/workspace-os.js',
   'functions/api/cloud.js',
+  'functions/api/cloud/upload.js',
   'functions/api/3d-model/[id].js',
   'functions/_lib/founder-identity.js',
   'public/assets/boostr-mother/production-shell.js',
@@ -143,20 +146,25 @@ required.forEach(requireFile);
   'public/login/index.html',
   'public/manager/leads/index.html',
   'public/partner-dashboard/index.html',
+  'public/app/cloud/index.html',
   'public/app/johanka/cloud/index.html'
 ].forEach(checkInlineScripts);
 
 ['public/3dmodels/models.json', 'package.json'].forEach(checkJson);
 
 assertContains('functions/_middleware.js', '"/3d"', 'Middleware explicitly isolates the 3D public experience');
-assertContains('functions/_middleware.js', 'johanka-cloud-hotfix.js', 'Johanka Cloud stable runtime is injected');
+assertContains('functions/_middleware.js', 'johanka-cloud-hotfix.js', 'BOOSTR Cloud stable runtime is injected');
 assertContains('public/assets/boostr-mother/production-shell.js', '__BOOSTR_PRODUCTION_SHELL__', 'Production shell has a duplicate-runtime guard');
 assertContains('public/assets/boostr-mother/production-shell.js', 'Workspace OS', 'Workspace OS is directly reachable from the context bar');
 assertNotContains('public/manager/leads/index.html', /Manager PIN|id=["']pin["']|X-Manager-Pin/i, 'Audit Inbox has no manager PIN fallback UI');
 assertNotContains('public/manager/leads/index.html', 'console.js', 'Audit Inbox does not load demo console effects');
 assertNotContains('public/partner-dashboard/index.html', /OMG Beauty|GEMESE/i, 'Workspace OS does not expose legacy partner demo data');
 assertContains('public/login/index.html', 'Founder · CEO · Full system access', 'Janko founder identity remains visible at login');
-assertContains('public/assets/boostr-mother/johanka-cloud-hotfix.js', '__JOHANKA_CLOUD_RUNTIME__', 'Johanka Cloud runtime has a duplicate-bootstrap guard');
+assertContains('public/assets/boostr-mother/johanka-cloud-hotfix.js', '__JOHANKA_CLOUD_RUNTIME__', 'BOOSTR Cloud runtime has a duplicate-bootstrap guard');
+assertContains('functions/api/cloud.js', 'findRecordByKey', 'BOOSTR Cloud uses an exact direct-asset lookup helper');
+assertContains('functions/api/cloud.js', 'file_url = ? OR file_url = ?', 'BOOSTR Cloud resolves direct assets by exact URL equality');
+assertNotContains('functions/api/cloud.js', 'metadata_json LIKE', 'BOOSTR Cloud never uses metadata JSON as a LIKE pattern');
+assertContains('functions/api/cloud.js', 'application/json; charset=utf-8', 'BOOSTR Cloud errors declare UTF-8 JSON');
 assertContains('public/3d/viewer.js', "format: 'ply'", '3D viewer preserves PLY rendering');
 assertContains('public/3d/viewer.js', "format: 'luma'", '3D viewer includes Luma routing');
 
@@ -165,6 +173,7 @@ assertContains('public/3d/viewer.js', "format: 'luma'", '3D viewer includes Luma
   'public/login/index.html',
   'public/manager/leads/index.html',
   'public/partner-dashboard/index.html',
+  'public/app/cloud/index.html',
   'public/3d/index.html'
 ].forEach(checkLocalLinks);
 
