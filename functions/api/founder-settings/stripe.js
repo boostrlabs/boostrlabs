@@ -6,11 +6,6 @@ function bytesToBase64(bytes) {
   return btoa(binary);
 }
 
-function base64ToBytes(value) {
-  const binary = atob(value);
-  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
-}
-
 function encryptionSeed(env) {
   return env.BOOSTR_ENCRYPTION_KEY || env.AUTH_SECRET || env.JWT_SECRET || env.SESSION_SECRET || env.BOOSTR_AUTH_SECRET || null;
 }
@@ -76,11 +71,15 @@ async function ensureSchema(env) {
       publishable_value TEXT,
       secret_value_encrypted TEXT,
       secret_mask TEXT,
+      webhook_secret_encrypted TEXT,
+      webhook_secret_mask TEXT,
       created_at TEXT,
       updated_at TEXT,
       UNIQUE(user_id, provider)
     )
   `).run();
+  try { await env.DB.prepare("ALTER TABLE founder_secure_settings ADD COLUMN webhook_secret_encrypted TEXT").run(); } catch {}
+  try { await env.DB.prepare("ALTER TABLE founder_secure_settings ADD COLUMN webhook_secret_mask TEXT").run(); } catch {}
 }
 
 async function authorize(request, env) {
@@ -100,7 +99,7 @@ export async function onRequestGet({ request, env }) {
   if (!auth.ok) return auth.response;
   await ensureSchema(env);
   const row = await env.DB.prepare(
-    "SELECT publishable_value, secret_mask, updated_at FROM founder_secure_settings WHERE user_id = ? AND provider = 'stripe' LIMIT 1"
+    "SELECT publishable_value, secret_mask, webhook_secret_mask, updated_at FROM founder_secure_settings WHERE user_id = ? AND provider = 'stripe' LIMIT 1"
   ).bind(auth.user.id).first();
   return json({
     ok: true,
@@ -108,6 +107,8 @@ export async function onRequestGet({ request, env }) {
       publishable_key: row?.publishable_value || "",
       secret_configured: Boolean(row?.secret_mask),
       secret_mask: row?.secret_mask || null,
+      webhook_secret_configured: Boolean(row?.webhook_secret_mask),
+      webhook_secret_mask: row?.webhook_secret_mask || null,
       updated_at: row?.updated_at || null
     }
   });
@@ -122,6 +123,7 @@ export async function onRequestPost({ request, env }) {
   const payload = await request.json().catch(() => null);
   const publishableKey = clean(payload?.publishable_key, 300);
   const secretKey = clean(payload?.secret_key, 500);
+  const webhookSecret = clean(payload?.webhook_secret, 500);
 
   if (publishableKey && !publishableKey.startsWith("pk_")) {
     return jsonError("invalid_publishable_key", "La publishable key debe comenzar con pk_", 400);
@@ -129,36 +131,57 @@ export async function onRequestPost({ request, env }) {
   if (secretKey && !(secretKey.startsWith("sk_") || secretKey.startsWith("rk_"))) {
     return jsonError("invalid_secret_key", "La clave privada debe comenzar con sk_ o rk_", 400);
   }
+  if (webhookSecret && !webhookSecret.startsWith("whsec_")) {
+    return jsonError("invalid_webhook_secret", "El webhook secret debe comenzar con whsec_", 400);
+  }
 
   const existing = await env.DB.prepare(
-    "SELECT id, secret_value_encrypted, secret_mask FROM founder_secure_settings WHERE user_id = ? AND provider = 'stripe' LIMIT 1"
+    "SELECT id, secret_value_encrypted, secret_mask, webhook_secret_encrypted, webhook_secret_mask FROM founder_secure_settings WHERE user_id = ? AND provider = 'stripe' LIMIT 1"
   ).bind(auth.user.id).first();
 
   let encrypted = existing?.secret_value_encrypted || null;
   let secretMask = existing?.secret_mask || null;
-  if (secretKey) {
-    try {
+  let webhookEncrypted = existing?.webhook_secret_encrypted || null;
+  let webhookMask = existing?.webhook_secret_mask || null;
+  try {
+    if (secretKey) {
       encrypted = await encryptValue(env, secretKey);
       secretMask = maskKey(secretKey);
-    } catch (error) {
-      return jsonError("encryption_unavailable", "No se pudo inicializar el cifrado seguro.", 503, { detail: String(error?.message || error) });
     }
+    if (webhookSecret) {
+      webhookEncrypted = await encryptValue(env, webhookSecret);
+      webhookMask = maskKey(webhookSecret);
+    }
+  } catch (error) {
+    return jsonError("encryption_unavailable", "No se pudo inicializar el cifrado seguro.", 503, { detail: String(error?.message || error) });
   }
 
   const timestamp = now();
   const id = existing?.id || crypto.randomUUID();
   await env.DB.prepare(`
     INSERT INTO founder_secure_settings
-      (id, user_id, provider, publishable_value, secret_value_encrypted, secret_mask, created_at, updated_at)
-    VALUES (?, ?, 'stripe', ?, ?, ?, ?, ?)
+      (id, user_id, provider, publishable_value, secret_value_encrypted, secret_mask, webhook_secret_encrypted, webhook_secret_mask, created_at, updated_at)
+    VALUES (?, ?, 'stripe', ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id, provider) DO UPDATE SET
       publishable_value = excluded.publishable_value,
       secret_value_encrypted = excluded.secret_value_encrypted,
       secret_mask = excluded.secret_mask,
+      webhook_secret_encrypted = excluded.webhook_secret_encrypted,
+      webhook_secret_mask = excluded.webhook_secret_mask,
       updated_at = excluded.updated_at
-  `).bind(id, auth.user.id, publishableKey || "", encrypted, secretMask, timestamp, timestamp).run();
+  `).bind(id, auth.user.id, publishableKey || "", encrypted, secretMask, webhookEncrypted, webhookMask, timestamp, timestamp).run();
 
-  return json({ ok: true, stripe: { publishable_key: publishableKey || "", secret_configured: Boolean(secretMask), secret_mask: secretMask, updated_at: timestamp } });
+  return json({
+    ok: true,
+    stripe: {
+      publishable_key: publishableKey || "",
+      secret_configured: Boolean(secretMask),
+      secret_mask: secretMask,
+      webhook_secret_configured: Boolean(webhookMask),
+      webhook_secret_mask: webhookMask,
+      updated_at: timestamp
+    }
+  });
 }
 
 export async function onRequestDelete({ request, env }) {
