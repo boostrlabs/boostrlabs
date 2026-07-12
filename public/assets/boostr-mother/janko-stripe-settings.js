@@ -24,48 +24,59 @@
     notify.t = setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(-20px)'; }, 2200);
   }
 
+  function showSettings() {
+    const main = document.querySelector('.main');
+    const section = document.getElementById('jankoStripeSettings');
+    const button = document.getElementById('stripeSettingsNav');
+    if (!main || !section || !button) return;
+    document.querySelectorAll('#modeNav button').forEach((item) => item.classList.remove('active'));
+    button.classList.add('active');
+    main.querySelectorAll(':scope > section').forEach((item) => { item.style.display = item === section ? '' : 'none'; });
+    loadSettings();
+  }
+
+  function ensureNav() {
+    const nav = document.getElementById('modeNav');
+    if (!nav || document.getElementById('stripeSettingsNav')) return;
+    const button = document.createElement('button');
+    button.id = 'stripeSettingsNav';
+    button.type = 'button';
+    button.textContent = 'Settings';
+    button.onclick = showSettings;
+    nav.appendChild(button);
+  }
+
   function buildPanel() {
-    if (document.getElementById('jankoStripeSettings')) return;
     const main = document.querySelector('.main');
     if (!main) return;
 
-    const section = document.createElement('section');
-    section.id = 'jankoStripeSettings';
-    section.className = 'section glass';
-    section.style.display = 'none';
-    section.innerHTML = `
-      <div class="section-head">
-        <div><span class="kicker">SETTINGS · PAYMENTS</span><h2>Stripe</h2></div>
-        <span class="pill status" id="stripeStatus">Cargando...</span>
-      </div>
-      <div style="display:grid;gap:12px;max-width:760px">
-        <label style="display:grid;gap:7px"><span class="label">Publishable key</span><input id="stripePublishable" autocomplete="off" spellcheck="false" placeholder="pk_test_... o pk_live_..." style="min-height:50px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--ink);border-radius:16px;padding:0 14px"></label>
-        <label style="display:grid;gap:7px"><span class="label">Secret / restricted key</span><input id="stripeSecret" type="password" autocomplete="new-password" spellcheck="false" placeholder="sk_... o rk_..." style="min-height:50px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--ink);border-radius:16px;padding:0 14px"></label>
-        <div id="stripeSecretState" style="color:var(--muted);font-size:12px;line-height:1.5">La clave privada nunca vuelve al navegador después de guardarse.</div>
-        <div style="display:flex;gap:9px;flex-wrap:wrap">
-          <button id="saveStripeSettings" style="min-height:48px;border:1px solid rgba(124,236,255,.45);background:rgba(124,236,255,.12);color:var(--ink);border-radius:999px;padding:0 17px;font-weight:950;cursor:pointer">Guardar credenciales</button>
-          <button id="deleteStripeSettings" style="min-height:48px;border:1px solid rgba(255,146,146,.3);background:rgba(255,146,146,.07);color:var(--red);border-radius:999px;padding:0 17px;font-weight:950;cursor:pointer">Eliminar credenciales</button>
+    let section = document.getElementById('jankoStripeSettings');
+    if (!section) {
+      section = document.createElement('section');
+      section.id = 'jankoStripeSettings';
+      section.className = 'section glass';
+      section.style.display = 'none';
+      section.innerHTML = `
+        <div class="section-head">
+          <div><span class="kicker">SETTINGS · PAYMENTS</span><h2>Stripe</h2></div>
+          <span class="pill status" id="stripeStatus">Cargando...</span>
         </div>
-        <p style="margin:0;color:var(--muted);font-size:11px;line-height:1.5">La clave privada se cifra en el backend antes de almacenarse. GitHub y el navegador no reciben la clave completa después del guardado.</p>
-      </div>`;
-    main.appendChild(section);
-
-    const nav = document.getElementById('modeNav');
-    if (nav && !document.getElementById('stripeSettingsNav')) {
-      const button = document.createElement('button');
-      button.id = 'stripeSettingsNav';
-      button.textContent = 'Settings';
-      button.onclick = () => {
-        document.querySelectorAll('#modeNav button').forEach((item) => item.classList.remove('active'));
-        button.classList.add('active');
-        main.querySelectorAll(':scope > section').forEach((item) => { item.style.display = item === section ? '' : 'none'; });
-        loadSettings();
-      };
-      nav.appendChild(button);
+        <div style="display:grid;gap:12px;max-width:760px">
+          <label style="display:grid;gap:7px"><span class="label">Publishable key</span><input id="stripePublishable" autocomplete="off" spellcheck="false" placeholder="pk_test_... o pk_live_..." style="min-height:50px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--ink);border-radius:16px;padding:0 14px"></label>
+          <label style="display:grid;gap:7px"><span class="label">Secret / restricted key</span><input id="stripeSecret" type="password" autocomplete="new-password" spellcheck="false" placeholder="sk_... o rk_..." style="min-height:50px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--ink);border-radius:16px;padding:0 14px"></label>
+          <div id="stripeSecretState" style="color:var(--muted);font-size:12px;line-height:1.5">La clave privada nunca vuelve al navegador después de guardarse.</div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap">
+            <button id="saveStripeSettings" style="min-height:48px;border:1px solid rgba(124,236,255,.45);background:rgba(124,236,255,.12);color:var(--ink);border-radius:999px;padding:0 17px;font-weight:950;cursor:pointer">Guardar credenciales</button>
+            <button id="deleteStripeSettings" style="min-height:48px;border:1px solid rgba(255,146,146,.3);background:rgba(255,146,146,.07);color:var(--red);border-radius:999px;padding:0 17px;font-weight:950;cursor:pointer">Eliminar credenciales</button>
+          </div>
+          <p style="margin:0;color:var(--muted);font-size:11px;line-height:1.5">La clave privada se cifra en el backend antes de almacenarse. GitHub y el navegador no reciben la clave completa después del guardado.</p>
+        </div>`;
+      main.appendChild(section);
+      document.getElementById('saveStripeSettings').onclick = saveSettings;
+      document.getElementById('deleteStripeSettings').onclick = deleteSettings;
     }
 
-    document.getElementById('saveStripeSettings').onclick = saveSettings;
-    document.getElementById('deleteStripeSettings').onclick = deleteSettings;
+    ensureNav();
   }
 
   async function loadSettings() {
@@ -124,8 +135,13 @@
     }
   }
 
-  const observer = new MutationObserver(buildPanel);
+  const observer = new MutationObserver(() => {
+    buildPanel();
+    ensureNav();
+  });
   observer.observe(document.documentElement, { childList: true, subtree: true });
   buildPanel();
+  setTimeout(buildPanel, 250);
+  setTimeout(buildPanel, 1000);
   addEventListener('pagehide', () => observer.disconnect(), { once: true });
 })();
