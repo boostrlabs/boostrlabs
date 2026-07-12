@@ -5,6 +5,27 @@ function parseJson(value) {
   try { return value ? JSON.parse(value) : {}; } catch { return {}; }
 }
 
+function publicProductImageUrl(value, assetId = "") {
+  const explicitId = clean(assetId, 120);
+  if (/^[a-f0-9-]{20,120}$/i.test(explicitId)) return `/api/public/assets/${explicitId}`;
+
+  const raw = clean(value, 2000);
+  if (!raw) return null;
+  if (/^[a-f0-9-]{20,120}$/i.test(raw)) return `/api/public/assets/${raw}`;
+
+  try {
+    const url = new URL(raw, "https://boostr.local");
+    const parts = url.pathname.split("/").filter(Boolean);
+    const last = parts.at(-1) || "";
+    if (parts.length === 1 && /^[a-f0-9-]{20,120}$/i.test(last)) {
+      return `/api/public/assets/${last}`;
+    }
+    if (url.pathname.startsWith("/api/public/assets/")) return `${url.pathname}${url.search}`;
+  } catch {}
+
+  return raw;
+}
+
 export async function onRequestOptions() { return json({ ok: true }); }
 
 export async function onRequestGet({ env, params }) {
@@ -33,13 +54,17 @@ export async function onRequestGet({ env, params }) {
   if (!link?.id) return jsonError("payment_link_not_found", "Smart Link not found or inactive.", 404);
   const metadata = { ...parseJson(link.product_metadata_json), ...parseJson(link.metadata_json) };
   const disclosure = parseJson(link.disclosure_json);
+  const imageUrl = publicProductImageUrl(
+    metadata.image_url || metadata.hero_image_url || metadata.cover_url || metadata.image || "",
+    metadata.image_asset_id || metadata.product_image_asset_id || metadata.asset_id || ""
+  );
   return json({
     ok: true,
     payment_link: {
       ...link,
-      metadata,
+      metadata: { ...metadata, image_url: imageUrl },
       disclosure,
-      image_url: metadata.image_url || null,
+      image_url: imageUrl,
       sale_type: metadata.sale_type || link.checkout_mode || "purchase_now",
       subscription_interval: metadata.subscription_interval || null,
       auction_end: metadata.auction_end || null,
