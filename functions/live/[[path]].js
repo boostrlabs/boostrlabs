@@ -4,6 +4,9 @@ export async function onRequest({request,env}){
     return env.ASSETS.fetch(new Request(new URL('/live/index.html',url.origin),request));
   }
   const slug=url.pathname.split('/').filter(Boolean).slice(1).join('/');
+  if(slug==='jankodiorr'){
+    return env.ASSETS.fetch(new Request(new URL('/live/jankodiorr.html',url.origin),request));
+  }
   const viewer=new URL('/live/index.html',url.origin);
   if(slug)viewer.searchParams.set('room',slug);
   return env.ASSETS.fetch(new Request(viewer,request));
