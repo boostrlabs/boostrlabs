@@ -35,9 +35,14 @@ export async function onRequestPost({request,env}){
   const parsed=await readJson(request); if(!parsed.ok)return parsed.response; const p=parsed.payload||{};
   const workspaceId=clean(p.workspace_id,120)||auth.active_workspace_id; const access=requireWorkspaceAccess(auth,workspaceId); if(!access.ok)return access.response;
   const title=clean(p.title,180); if(!title)return jsonError('title_required','Escribe un nombre para la sala.',400);
-  const id=crypto.randomUUID(); const slug=slugify(p.slug||title)+'-'+id.slice(0,6); const ts=now();
+  const requestedSlug=slugify(p.slug||'');
+  if(!requestedSlug)return jsonError('slug_required','Escribe un link personalizado para el creador.',400);
+  if(requestedSlug.length<3)return jsonError('slug_too_short','El link personalizado debe tener al menos 3 caracteres.',400);
+  const existing=await env.DB.prepare("SELECT id FROM live_rooms WHERE slug=? LIMIT 1").bind(requestedSlug).first();
+  if(existing?.id)return jsonError('slug_taken','Ese link personalizado ya está ocupado.',409);
+  const id=crypto.randomUUID(); const ts=now();
   await env.DB.prepare(`INSERT INTO live_rooms (id,workspace_id,created_by_user_id,title,slug,status,primary_platform,youtube_url,twitch_url,kick_url,chat_mode,auction_link_id,description,created_at,updated_at) VALUES (?,?,?,?,?,'active',?,?,?,?,?,?,?,?,?)`).bind(
-    id,workspaceId,auth.user?.id||null,title,slug,clean(p.primary_platform||'youtube',20),clean(p.youtube_url,500)||null,clean(p.twitch_url,500)||null,clean(p.kick_url,500)||null,clean(p.chat_mode||'boostr',30),clean(p.auction_link_id,120)||null,clean(p.description,1200)||null,ts,ts
+    id,workspaceId,auth.user?.id||null,title,requestedSlug,clean(p.primary_platform||'youtube',20),clean(p.youtube_url,500)||null,clean(p.twitch_url,500)||null,clean(p.kick_url,500)||null,clean(p.chat_mode||'boostr',30),clean(p.auction_link_id,120)||null,clean(p.description,1200)||null,ts,ts
   ).run();
-  return json({ok:true,room:{id,slug,public_url:`/live/${slug}`}},201);
+  return json({ok:true,room:{id,slug:requestedSlug,public_url:`/live/${requestedSlug}`}},201);
 }
