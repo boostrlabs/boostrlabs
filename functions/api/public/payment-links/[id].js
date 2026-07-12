@@ -1,6 +1,10 @@
 import { clean, json, jsonError, requireDb } from "../../../_lib/api.js";
 import { paymentLinkHealth } from "../../../_lib/payment-links.js";
 
+function parseJson(value) {
+  try { return value ? JSON.parse(value) : {}; } catch { return {}; }
+}
+
 export async function onRequestOptions() { return json({ ok: true }); }
 
 export async function onRequestGet({ env, params }) {
@@ -15,7 +19,7 @@ export async function onRequestGet({ env, params }) {
             payment_links.license_metadata_json, payment_links.disclosure_json,
             payment_links.metadata_json, payment_links.created_at, payment_links.updated_at,
             products.title AS product_title, products.product_type, products.description AS product_description,
-            products.asset_status, products.fulfillment_type,
+            products.asset_status, products.fulfillment_type, products.metadata_json AS product_metadata_json,
             workspaces.name AS workspace_name, workspaces.slug AS workspace_slug
      FROM payment_links
      LEFT JOIN products ON products.id = payment_links.product_id
@@ -27,5 +31,21 @@ export async function onRequestGet({ env, params }) {
     .bind(id)
     .first();
   if (!link?.id) return jsonError("payment_link_not_found", "Smart Link not found or inactive.", 404);
-  return json({ ok: true, payment_link: { ...link, health: paymentLinkHealth(link), no_real_payment: true } });
+  const metadata = { ...parseJson(link.product_metadata_json), ...parseJson(link.metadata_json) };
+  const disclosure = parseJson(link.disclosure_json);
+  return json({
+    ok: true,
+    payment_link: {
+      ...link,
+      metadata,
+      disclosure,
+      image_url: metadata.image_url || null,
+      sale_type: metadata.sale_type || link.checkout_mode || "purchase_now",
+      subscription_interval: metadata.subscription_interval || null,
+      auction_end: metadata.auction_end || null,
+      min_increment_cents: metadata.min_increment_cents || null,
+      health: paymentLinkHealth(link),
+      no_real_payment: Boolean(disclosure.no_real_payment)
+    }
+  });
 }
