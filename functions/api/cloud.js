@@ -118,8 +118,7 @@ async function findRecordByKey(env, key) {
      LIMIT 1000`
   ).bind(workspaceId).all();
 
-  record = (candidates.results || []).find((item) => parseMetadata(item).r2_key === key) || null;
-  return record;
+  return (candidates.results || []).find((item) => parseMetadata(item).r2_key === key) || null;
 }
 
 async function canReadRecord(auth, env, record) {
@@ -190,14 +189,15 @@ export async function onRequestGet({ request, env }) {
     const workspace = resolveWorkspace(auth, url.searchParams.get("workspace_id"));
     if (!workspace.ok) return workspace.response;
 
-    const q = clean(url.searchParams.get("q"), 120).toLowerCase();
+    const q = clean(url.searchParams.get("q"), 120).toLowerCase().replace(/[%_]/g, "");
     const category = clean(url.searchParams.get("category"), 80);
     const moduleSlug = clean(url.searchParams.get("module_slug"), 120);
     const filters = ["workspace_id = ?", "status = 'active'", "related_type = 'cloud_asset'"];
     const binds = [workspace.workspace_id];
-    if (q) { filters.push("lower(title) LIKE ?"); binds.push(`%${q.replace(/[%_]/g, "")} %`.trim()); }
-    if (category) { filters.push("related_id = ?"); binds.push(category); }
-    if (moduleSlug) { filters.push("related_id = ?"); binds.push(moduleSlug); }
+    if (q) {
+      filters.push("lower(title) LIKE ?");
+      binds.push(`%${q}%`);
+    }
 
     stage = "list";
     const result = await env.DB.prepare(
@@ -207,7 +207,10 @@ export async function onRequestGet({ request, env }) {
 
     const visible = [];
     for (const item of result.results || []) {
-      if (await canReadRecord(auth, env, item)) visible.push({ ...item, metadata: parseMetadata(item) });
+      const metadata = parseMetadata(item);
+      if (category && metadata.category !== category) continue;
+      if (moduleSlug && clean(metadata.module_slug || item.related_id, 120) !== moduleSlug) continue;
+      if (await canReadRecord(auth, env, item)) visible.push({ ...item, metadata });
     }
     return json({ ok: true, workspace_id: workspace.workspace_id, assets: visible.slice(0, 200) });
   } catch (error) {
