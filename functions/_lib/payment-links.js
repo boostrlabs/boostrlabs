@@ -2,7 +2,16 @@ import { clean, jsonError } from "./api.js";
 import { normalizeCurrency, normalizeMetadata, normalizePriceAmount } from "./products.js";
 
 export const paymentLinkStatuses = new Set(["draft", "active", "paused", "archived"]);
-export const checkoutModes = new Set(["reservation", "deposit_later", "manual_checkout", "stripe_later"]);
+export const checkoutModes = new Set([
+  "reservation",
+  "deposit_later",
+  "manual_checkout",
+  "stripe_later",
+  "purchase_now",
+  "subscription",
+  "auction",
+  "bnpl"
+]);
 
 export const paymentLinkColumns = `
   id, workspace_id, product_id, title, status, amount_cents, currency,
@@ -31,10 +40,15 @@ export function normalizePaymentLinkPayload(payload = {}, product = null, curren
   const requiresAccount = productRequiresAccount ? 1 : Number(Boolean(requestedRequiresAccount));
   const requestedGuest = payload.allow_guest_checkout ?? current.allow_guest_checkout ?? product?.allow_guest_checkout ?? 1;
   const allowGuestCheckout = requiresAccount ? 0 : Number(Boolean(requestedGuest));
+  const isRealCheckout = ["purchase_now", "subscription", "bnpl", "stripe_later"].includes(checkoutMode);
   const disclosure = payload.disclosure ?? payload.disclosure_json ?? current.disclosure_json ?? {
-    no_real_payment: true,
-    payment_status: "not_charged",
-    note: "This BOOSTR Smart Link creates a reservation/intention record. No card is charged."
+    no_real_payment: !isRealCheckout,
+    payment_status: isRealCheckout ? "checkout_available" : "not_charged",
+    note: checkoutMode === "auction"
+      ? "Esta oferta acepta pujas. El cobro final ocurre cuando el vendedor selecciona una oferta."
+      : isRealCheckout
+        ? "Stripe procesa el pago; BOOSTR no guarda datos de tarjeta."
+        : "Este enlace crea una reserva o intención. No se realiza ningún cargo."
   };
 
   return {
@@ -55,7 +69,7 @@ export function normalizePaymentLinkPayload(payload = {}, product = null, curren
 export function validatePaymentLinkForWrite(link) {
   if (!link.title) return { ok: false, response: jsonError("payment_link_title_required", "Payment link title is required.", 400, { fields: ["title"] }) };
   if (!paymentLinkStatuses.has(link.status)) return { ok: false, response: jsonError("invalid_payment_link_status", "Payment link status is not supported.", 400, { fields: ["status"] }) };
-  if (!checkoutModes.has(link.checkout_mode)) return { ok: false, response: jsonError("invalid_checkout_mode", "Checkout mode is not supported.", 400, { fields: ["checkout_mode"] }) };
+  if (!checkoutModes.has(link.checkout_mode)) return { ok: false, response: jsonError("invalid_checkout_mode", "Payment mode is not supported.", 400, { fields: ["checkout_mode"] }) };
   if (link.amount_cents !== null && link.amount_cents < 0) return { ok: false, response: jsonError("invalid_amount_cents", "Amount must be zero or higher.", 400, { fields: ["amount_cents"] }) };
   return { ok: true };
 }
