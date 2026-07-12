@@ -57,6 +57,20 @@ if (existsSync(migrationPath)) {
   }
 }
 
+const receiptHelperPath = "functions/_lib/payment-receipts.js";
+if (existsSync(receiptHelperPath)) {
+  const source = readFileSync(receiptHelperPath, "utf8");
+  for (const marker of ["resolvePaymentImage", "image_url", "product_image"]) {
+    if (!source.includes(marker)) failures.push(`receipt helper missing product image marker: ${marker}`);
+  }
+}
+
+const publicDocumentPath = "functions/api/public/documents/[slug].js";
+if (existsSync(publicDocumentPath)) {
+  const source = readFileSync(publicDocumentPath, "utf8");
+  if (!source.includes("syncInteractiveReceipt")) failures.push("public receipt route does not refresh interactive receipt data");
+}
+
 if (failures.length) {
   console.error("SMART DOCUMENTS HEALTH: FAILED");
   for (const failure of failures) console.error(`- ${failure}`);
