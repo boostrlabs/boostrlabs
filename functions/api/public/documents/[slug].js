@@ -1,6 +1,41 @@
 import { clean, json, jsonError, requireDb } from "../../../_lib/api.js";
 import { ensureSmartDocumentsSchema, hydrateSmartDocument, parseDocumentJson } from "../../../_lib/documents.js";
 
+function maskEmail(value) {
+  const email = clean(value, 240).toLowerCase();
+  const [name, domain] = email.split("@");
+  if (!name || !domain) return null;
+  const visible = name.slice(0, Math.min(2, name.length));
+  return `${visible}${"•".repeat(Math.max(3, Math.min(8, name.length - visible.length)))}@${domain}`;
+}
+
+function publicDocument(row) {
+  const document = hydrateSmartDocument(row);
+  return {
+    id: document.id,
+    public_slug: document.public_slug,
+    public_url: document.public_url,
+    document_number: document.document_number,
+    document_type: document.document_type,
+    title: document.title,
+    subtitle: document.subtitle,
+    status: document.status,
+    customer_name: document.customer_name,
+    customer_email: maskEmail(document.customer_email),
+    amount_cents: document.amount_cents,
+    currency: document.currency,
+    template_key: document.template_key,
+    theme: document.theme,
+    blocks: document.blocks,
+    timeline: document.timeline,
+    actions: document.actions,
+    published_at: document.published_at,
+    expires_at: document.expires_at,
+    workspace_name: row.workspace_name || null,
+    workspace_slug: row.workspace_slug || null
+  };
+}
+
 export async function onRequestOptions() {
   return json({ ok: true });
 }
@@ -34,7 +69,14 @@ export async function onRequestGet({ env, params }) {
 
   return json({
     ok: true,
-    document: hydrateSmartDocument(document),
-    events: (events.results || []).map((event) => ({ ...event, metadata: parseDocumentJson(event.metadata_json, {}) }))
+    document: publicDocument(document),
+    events: (events.results || []).map((event) => ({
+      id: event.id,
+      event_type: event.event_type,
+      title: event.title,
+      body: event.body,
+      occurred_at: event.occurred_at,
+      metadata: parseDocumentJson(event.metadata_json, {})
+    }))
   });
 }
