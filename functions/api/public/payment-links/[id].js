@@ -8,21 +8,29 @@ function parseJson(value) {
 function publicProductImageUrl(value, assetId = "") {
   const explicitId = clean(assetId, 120);
   if (/^[a-f0-9-]{20,120}$/i.test(explicitId)) return `/api/public/assets/${explicitId}`;
-
   const raw = clean(value, 2000);
   if (!raw) return null;
   if (/^[a-f0-9-]{20,120}$/i.test(raw)) return `/api/public/assets/${raw}`;
-
   try {
     const url = new URL(raw, "https://boostr.local");
     const parts = url.pathname.split("/").filter(Boolean);
     const last = parts.at(-1) || "";
-    if (parts.length === 1 && /^[a-f0-9-]{20,120}$/i.test(last)) {
-      return `/api/public/assets/${last}`;
-    }
+    if (parts.length === 1 && /^[a-f0-9-]{20,120}$/i.test(last)) return `/api/public/assets/${last}`;
     if (url.pathname.startsWith("/api/public/assets/")) return `${url.pathname}${url.search}`;
   } catch {}
+  return raw;
+}
 
+function publicProductModelUrl(value, assetId = "") {
+  const explicitId = clean(assetId, 120);
+  if (/^[a-f0-9-]{20,120}$/i.test(explicitId)) return `/api/public/models/${explicitId}`;
+  const raw = clean(value, 2000);
+  if (!raw) return null;
+  if (/^[a-f0-9-]{20,120}$/i.test(raw)) return `/api/public/models/${raw}`;
+  try {
+    const url = new URL(raw, "https://boostr.local");
+    if (url.pathname.startsWith("/api/public/models/")) return `${url.pathname}${url.search}`;
+  } catch {}
   return raw;
 }
 
@@ -45,26 +53,32 @@ export async function onRequestGet({ env, params }) {
      FROM payment_links
      LEFT JOIN products ON products.id = payment_links.product_id
      LEFT JOIN workspaces ON workspaces.id = payment_links.workspace_id
-     WHERE payment_links.id = ?
-       AND payment_links.status = 'active'
+     WHERE payment_links.id = ? AND payment_links.status = 'active'
      LIMIT 1`
-  )
-    .bind(id)
-    .first();
+  ).bind(id).first();
   if (!link?.id) return jsonError("payment_link_not_found", "Smart Link not found or inactive.", 404);
+
   const metadata = { ...parseJson(link.product_metadata_json), ...parseJson(link.metadata_json) };
   const disclosure = parseJson(link.disclosure_json);
   const imageUrl = publicProductImageUrl(
     metadata.image_url || metadata.hero_image_url || metadata.cover_url || metadata.image || "",
     metadata.image_asset_id || metadata.product_image_asset_id || metadata.asset_id || ""
   );
+  const modelUrl = publicProductModelUrl(
+    metadata.model_3d_url || metadata.model_url || "",
+    metadata.model_3d_asset_id || metadata.model_asset_id || ""
+  );
+
   return json({
     ok: true,
     payment_link: {
       ...link,
-      metadata: { ...metadata, image_url: imageUrl },
+      metadata: { ...metadata, image_url: imageUrl, model_3d_url: modelUrl },
       disclosure,
       image_url: imageUrl,
+      model_3d_url: modelUrl,
+      model_3d_format: metadata.model_3d_format || null,
+      model_3d_poster: metadata.model_3d_poster || imageUrl,
       sale_type: metadata.sale_type || link.checkout_mode || "purchase_now",
       subscription_interval: metadata.subscription_interval || null,
       auction_end: metadata.auction_end || null,
