@@ -24,7 +24,7 @@
 const PUBLIC_ORIGIN='https://boostrlabs.pages.dev';
 const links={fixed:PUBLIC_ORIGIN+'/parking/omni-jr/8h',monthly:PUBLIC_ORIGIN+'/parking/omni-jr/monthly'};
 const codes={fixed:'omni_jr_8h',monthly:'omni_jr_monthly'};
-const $=id=>document.getElementById(id);const token=()=>localStorage.getItem('boostr_auth_token');const authHeaders=()=>token()?{Authorization:'Bearer '+token}:{}};
+const $=id=>document.getElementById(id);const token=()=>localStorage.getItem('boostr_auth_token');const authHeaders=()=>token()?{Authorization:'Bearer '+token()}:{};
 let workspaces=[],workspaceId='',products=[],paymentLinks=[],busy=false;
 function parseMeta(value){try{return typeof value==='string'?JSON.parse(value||'{}'):(value||{})}catch{return{}}}
 function qr(url,size=700){return 'https://quickchart.io/qr?size='+size+'&margin=2&ecLevel=H&format=png&text='+encodeURIComponent(url)}
