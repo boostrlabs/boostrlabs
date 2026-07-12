@@ -1,3 +1,5 @@
+import { liveDemoResponse } from "../_lib/janko-live-demo.js";
+
 export async function onRequest({request,env}){
   const url=new URL(request.url);
   if(url.pathname==='/live' || url.pathname==='/live/'){
@@ -5,7 +7,7 @@ export async function onRequest({request,env}){
   }
   const slug=url.pathname.split('/').filter(Boolean).slice(1).join('/');
   if(slug==='jankodiorr' || slug==='jankodiorr/'){
-    return env.ASSETS.fetch(new Request(new URL('/demos/jankodiorr-live.html',url.origin),request));
+    return liveDemoResponse();
   }
   const viewer=new URL('/live/index.html',url.origin);
   if(slug)viewer.searchParams.set('room',slug);
