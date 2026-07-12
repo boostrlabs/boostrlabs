@@ -6,7 +6,7 @@ export async function onRequest({request,env}){
     return env.ASSETS.fetch(new Request(new URL('/live/index.html',url.origin),request));
   }
   const slug=url.pathname.split('/').filter(Boolean).slice(1).join('/');
-  if(slug==='jankodiorr' || slug==='jankodiorr/'){
+  if(slug==='jankodiorr' || slug==='jankodiorr/' || slug==='jankodiorr-smoke'){
     return liveDemoResponse();
   }
   const viewer=new URL('/live/index.html',url.origin);
