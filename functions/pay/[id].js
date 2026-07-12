@@ -1,14 +1,9 @@
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet({ request, params }) {
   const url = new URL(request.url);
-  const assetUrl = new URL('/pay/index.html', url.origin);
-
-  if (env.ASSETS?.fetch) {
-    const response = await env.ASSETS.fetch(new Request(assetUrl.toString(), request));
-    if (response.ok) return response;
-  }
-
-  return new Response('BOOSTR Smart Pay unavailable.', {
-    status: 503,
-    headers: { 'content-type': 'text/plain; charset=utf-8' }
-  });
+  const id = String(params?.id || "").trim();
+  if (!id) return Response.redirect(new URL('/pay/', url.origin).toString(), 302);
+  const target = new URL('/pay/', url.origin);
+  target.searchParams.set('id', id);
+  for (const [key, value] of url.searchParams.entries()) target.searchParams.set(key, value);
+  return Response.redirect(target.toString(), 302);
 }
