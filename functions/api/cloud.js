@@ -21,7 +21,8 @@ function cloudError(error, stage) {
     "cloud_operation_failed",
     "No se pudo completar la operación de BOOSTR Cloud.",
     500,
-    { stage, detail: clean(error?.message || error, 500) }
+    { stage, detail: clean(error?.message || error, 500) },
+    { "Content-Type": "application/json; charset=utf-8" }
   );
 }
 
@@ -83,6 +84,44 @@ function parseMetadata(record) {
   try { return JSON.parse(record?.metadata_json || "{}"); } catch { return {}; }
 }
 
+function cloudKeyWorkspace(key = "") {
+  const match = String(key).match(/^cloud\/([^/]+)\//);
+  return match ? clean(match[1], 120) : null;
+}
+
+async function findRecordByKey(env, key) {
+  const fields = "id, workspace_id, uploaded_by_user_id, related_id, title, file_url, file_type, visibility, metadata_json, created_at, updated_at";
+  const encodedUrl = `/api/cloud?key=${encodeURIComponent(key)}`;
+  const rawUrl = `/api/cloud?key=${key}`;
+
+  let record = await env.DB.prepare(
+    `SELECT ${fields}
+     FROM workspace_files
+     WHERE related_type = 'cloud_asset'
+       AND status = 'active'
+       AND (file_url = ? OR file_url = ?)
+     LIMIT 1`
+  ).bind(encodedUrl, rawUrl).first();
+
+  if (record?.id) return record;
+
+  const workspaceId = cloudKeyWorkspace(key);
+  if (!workspaceId) return null;
+
+  const candidates = await env.DB.prepare(
+    `SELECT ${fields}
+     FROM workspace_files
+     WHERE workspace_id = ?
+       AND related_type = 'cloud_asset'
+       AND status = 'active'
+     ORDER BY created_at DESC
+     LIMIT 1000`
+  ).bind(workspaceId).all();
+
+  record = (candidates.results || []).find((item) => parseMetadata(item).r2_key === key) || null;
+  return record;
+}
+
 async function canReadRecord(auth, env, record) {
   if (!record?.workspace_id) return false;
   if (authCanSeeAll(auth)) return true;
@@ -127,13 +166,7 @@ export async function onRequestGet({ request, env }) {
     if (key) {
       if (!key.startsWith("cloud/") || key.includes("..")) return jsonError("invalid_asset_key", "Invalid asset key.", 400);
       stage = "asset_lookup";
-      const encoded = encodeURIComponent(key);
-      const record = await env.DB.prepare(
-        `SELECT id, workspace_id, uploaded_by_user_id, title, file_url, file_type, visibility, metadata_json
-         FROM workspace_files
-         WHERE related_type = 'cloud_asset' AND status = 'active' AND (file_url = ? OR metadata_json LIKE ?)
-         LIMIT 1`
-      ).bind(`/api/cloud?key=${encoded}`, `%\"r2_key\":\"${key.replace(/[\"%_]/g, "")}\"%`).first();
+      const record = await findRecordByKey(env, key);
       if (!record?.id) return jsonError("asset_not_found", "Asset not found.", 404);
       if (!(await canReadRecord(auth, env, record))) return jsonError("cloud_access_denied", "No tienes acceso a este archivo.", 403);
 
@@ -148,6 +181,7 @@ export async function onRequestGet({ request, env }) {
       headers.set("cache-control", "private, max-age=300");
       headers.set("x-content-type-options", "nosniff");
       headers.set("content-disposition", "inline");
+      if (!headers.get("content-type")) headers.set("content-type", "application/octet-stream");
       if (object.size) headers.set("content-length", String(object.size));
       return new Response(object.body, { headers });
     }
@@ -161,9 +195,9 @@ export async function onRequestGet({ request, env }) {
     const moduleSlug = clean(url.searchParams.get("module_slug"), 120);
     const filters = ["workspace_id = ?", "status = 'active'", "related_type = 'cloud_asset'"];
     const binds = [workspace.workspace_id];
-    if (q) { filters.push("lower(title) LIKE ?"); binds.push(`%${q}%`); }
-    if (category) { filters.push("metadata_json LIKE ?"); binds.push(`%\"category\":\"${category.replace(/[\"%_]/g, "")}\"%`); }
-    if (moduleSlug) { filters.push("(related_id = ? OR metadata_json LIKE ?)"); binds.push(moduleSlug, `%\"module_slug\":\"${moduleSlug.replace(/[\"%_]/g, "")}\"%`); }
+    if (q) { filters.push("lower(title) LIKE ?"); binds.push(`%${q.replace(/[%_]/g, "")} %`.trim()); }
+    if (category) { filters.push("related_id = ?"); binds.push(category); }
+    if (moduleSlug) { filters.push("related_id = ?"); binds.push(moduleSlug); }
 
     stage = "list";
     const result = await env.DB.prepare(
