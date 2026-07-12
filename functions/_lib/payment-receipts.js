@@ -1,6 +1,27 @@
 import { clean } from "./api.js";
 import { parseDocumentJson, syncPaymentReceipt, updateSmartDocument } from "./documents.js";
 
+function publicProductImageUrl(value, assetId = "") {
+  const explicitId = clean(assetId, 120);
+  if (/^[a-f0-9-]{20,120}$/i.test(explicitId)) return `/api/public/assets/${explicitId}`;
+
+  const raw = clean(value, 2000);
+  if (!raw) return null;
+  if (/^[a-f0-9-]{20,120}$/i.test(raw)) return `/api/public/assets/${raw}`;
+
+  try {
+    const url = new URL(raw, "https://boostr.local");
+    const parts = url.pathname.split("/").filter(Boolean);
+    const last = parts.at(-1) || "";
+    if (parts.length === 1 && /^[a-f0-9-]{20,120}$/i.test(last)) {
+      return `/api/public/assets/${last}`;
+    }
+    if (url.pathname.startsWith("/api/public/assets/")) return `${url.pathname}${url.search}`;
+  } catch {}
+
+  return raw;
+}
+
 async function resolvePaymentImage(env, paymentId) {
   const row = await env.DB.prepare(`
     SELECT payment_links.metadata_json AS payment_link_metadata_json,
@@ -17,10 +38,10 @@ async function resolvePaymentImage(env, paymentId) {
     ...parseDocumentJson(row?.payment_link_metadata_json, {})
   };
 
-  return clean(
-    metadata.image_url || metadata.hero_image_url || metadata.cover_url || "",
-    2000
-  ) || null;
+  return publicProductImageUrl(
+    metadata.image_url || metadata.hero_image_url || metadata.cover_url || metadata.image || "",
+    metadata.image_asset_id || metadata.product_image_asset_id || metadata.asset_id || ""
+  );
 }
 
 export async function syncInteractiveReceipt(env, paymentId, status = "paid") {
