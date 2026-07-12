@@ -41,6 +41,9 @@ export async function onRequestPost({ request, env, params }) {
   } catch {
     return jsonError("stripe_not_configured", "Stripe todavía no está configurado para BOOSTR.", 503);
   }
+  if (!credentials.publishableKey) {
+    return jsonError("stripe_publishable_key_missing", "Falta la publishable key de Stripe en BOOSTR Settings.", 503);
+  }
 
   await ensureStripeSchema(env);
   const paymentId = crypto.randomUUID();
@@ -54,12 +57,12 @@ export async function onRequestPost({ request, env, params }) {
       (id, workspace_id, payment_link_id, customer_email, amount_cents, currency, mode, status, metadata_json, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`
   ).bind(paymentId, link.workspace_id, link.id, email || null, Number(link.amount_cents), currency, credentials.mode,
-    JSON.stringify({ source: "boostr_payment_link", workspace_name: link.workspace_name || null, sale_type: saleType, stripe_mode: stripeMode }), timestamp, timestamp).run();
+    JSON.stringify({ source: "boostr_payment_link", workspace_name: link.workspace_name || null, sale_type: saleType, stripe_mode: stripeMode, ui_mode: "embedded" }), timestamp, timestamp).run();
 
   const formPayload = {
     mode: stripeMode,
-    success_url: `${origin}/pay/success/?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/pay/${encodeURIComponent(link.id)}?canceled=1`,
+    ui_mode: "embedded",
+    return_url: `${origin}/pay/${encodeURIComponent(link.id)}?session_id={CHECKOUT_SESSION_ID}`,
     customer_email: email || undefined,
     client_reference_id: paymentId,
     "line_items[0][price_data][currency]": currency,
@@ -85,26 +88,34 @@ export async function onRequestPost({ request, env, params }) {
     const session = await stripeRequest(credentials.secretKey, "/checkout/sessions", {
       method: "POST",
       body: form,
-      idempotencyKey: `boostr-checkout-${paymentId}`
+      idempotencyKey: `boostr-embedded-checkout-${paymentId}`
     });
 
     await env.DB.prepare(
       `UPDATE stripe_payments
-       SET stripe_checkout_session_id = ?, checkout_url = ?, status = 'checkout_created', updated_at = ?
+       SET stripe_checkout_session_id = ?, checkout_url = NULL, status = 'checkout_created', updated_at = ?
        WHERE id = ?`
-    ).bind(session.id, session.url || null, now(), paymentId).run();
+    ).bind(session.id, now(), paymentId).run();
 
     await recordStripeActivity(env, {
       workspaceId: link.workspace_id,
-      eventType: stripeMode === "subscription" ? "stripe.subscription.checkout.created" : "stripe.checkout.created",
-      title: stripeMode === "subscription" ? "Checkout de suscripción creado" : "Stripe Checkout creado",
+      eventType: stripeMode === "subscription" ? "stripe.subscription.embedded_checkout.created" : "stripe.embedded_checkout.created",
+      title: stripeMode === "subscription" ? "Checkout embebido de suscripción creado" : "Checkout embebido creado",
       body: link.title,
-      metadata: { payment_id: paymentId, payment_link_id: link.id, session_id: session.id, mode: credentials.mode, sale_type: saleType }
+      metadata: { payment_id: paymentId, payment_link_id: link.id, session_id: session.id, mode: credentials.mode, sale_type: saleType, ui_mode: "embedded" }
     });
 
-    return json({ ok: true, checkout: { payment_id: paymentId, session_id: session.id, url: session.url, mode: credentials.mode, sale_type: saleType } }, 201);
+    return json({ ok: true, checkout: {
+      payment_id: paymentId,
+      session_id: session.id,
+      client_secret: session.client_secret,
+      publishable_key: credentials.publishableKey,
+      mode: credentials.mode,
+      sale_type: saleType,
+      ui_mode: "embedded"
+    } }, 201);
   } catch (error) {
     await env.DB.prepare("UPDATE stripe_payments SET status = 'failed', updated_at = ? WHERE id = ?").bind(now(), paymentId).run();
-    return jsonError(error.code || "stripe_checkout_failed", clean(error.message, 500) || "No se pudo abrir Stripe Checkout.", error.status || 502);
+    return jsonError(error.code || "stripe_checkout_failed", clean(error.message, 500) || "No se pudo abrir el checkout embebido.", error.status || 502);
   }
 }
