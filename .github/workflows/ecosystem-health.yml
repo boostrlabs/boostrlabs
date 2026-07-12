@@ -1,0 +1,87 @@
+name: BOOSTR Ecosystem Health
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 9 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boostr-ecosystem-health-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-health:
+    name: Repository and build health
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Ecosystem static stability
+        run: pnpm run stability:check
+      - name: Johankarrd frontend health
+        run: pnpm run health:johankarrd
+      - name: Johankarrd backend health
+        run: pnpm run health:johankarrd:backend
+      - name: Johankarrd renderer health
+        run: pnpm run health:johankarrd:renderer
+      - name: Build complete production bundle
+        run: pnpm run build
+      - name: Verify built Johankarrd output
+        run: pnpm run health:johankarrd:dist
+
+  production-health:
+    name: Production route and API health
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: repository-health
+    if: github.event_name != 'pull_request'
+    env:
+      BOOSTR_BASE_URL: https://boostrlabs.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: BOOSTR Live production health
+        run: pnpm run health:boostr-live
+      - name: Core public API and route smoke test
+        run: pnpm run smoke:launch
+
+  summary:
+    name: Ecosystem summary
+    runs-on: ubuntu-latest
+    needs: [repository-health, production-health]
+    if: always()
+    steps:
+      - name: Report result
+        run: |
+          echo "Repository health: ${{ needs.repository-health.result }}"
+          echo "Production health: ${{ needs.production-health.result }}"
+          test "${{ needs.repository-health.result }}" = "success"
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            test "${{ needs.production-health.result }}" = "success"
+          fi
