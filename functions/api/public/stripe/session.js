@@ -1,5 +1,5 @@
 import { clean, json, jsonError, now, requireDb } from "../../../_lib/api.js";
-import { syncPaymentReceipt } from "../../../_lib/documents.js";
+import { syncInteractiveReceipt } from "../../../_lib/payment-receipts.js";
 import { ensureStripeSchema, getStripeCredentials, recordStripeActivity, stripeRequest } from "../../../_lib/stripe.js";
 
 export async function onRequestOptions() {
@@ -50,7 +50,7 @@ export async function onRequestGet({ request, env }) {
     let document = null;
     if (status === "paid") {
       try {
-        document = await syncPaymentReceipt(env, existing.id, "paid");
+        document = await syncInteractiveReceipt(env, existing.id, "paid");
       } catch {}
     }
 
