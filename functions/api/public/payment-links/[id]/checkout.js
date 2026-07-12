@@ -39,10 +39,10 @@ export async function onRequestPost({ request, env, params }) {
   try {
     credentials = await getStripeCredentials(env);
   } catch {
-    return jsonError("stripe_not_configured", "Stripe todavía no está configurado para BOOSTR.", 503);
+    return jsonError("payment_provider_not_configured", "El proveedor de pagos todavía no está configurado.", 503);
   }
   if (!credentials.publishableKey) {
-    return jsonError("stripe_publishable_key_missing", "Falta la publishable key de Stripe en BOOSTR Settings.", 503);
+    return jsonError("payment_public_key_missing", "Falta la clave pública del proveedor de pagos.", 503);
   }
 
   await ensureStripeSchema(env);
@@ -56,12 +56,28 @@ export async function onRequestPost({ request, env, params }) {
     `INSERT INTO stripe_payments
       (id, workspace_id, payment_link_id, customer_email, amount_cents, currency, mode, status, metadata_json, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`
-  ).bind(paymentId, link.workspace_id, link.id, email || null, Number(link.amount_cents), currency, credentials.mode,
-    JSON.stringify({ source: "boostr_payment_link", workspace_name: link.workspace_name || null, sale_type: saleType, stripe_mode: stripeMode, ui_mode: "embedded" }), timestamp, timestamp).run();
+  ).bind(
+    paymentId,
+    link.workspace_id,
+    link.id,
+    email || null,
+    Number(link.amount_cents),
+    currency,
+    credentials.mode,
+    JSON.stringify({
+      source: "boostr_payment_link",
+      workspace_name: link.workspace_name || null,
+      sale_type: saleType,
+      stripe_mode: stripeMode,
+      ui_mode: "elements"
+    }),
+    timestamp,
+    timestamp
+  ).run();
 
   const formPayload = {
     mode: stripeMode,
-    ui_mode: "embedded",
+    ui_mode: "elements",
     return_url: `${origin}/pay/${encodeURIComponent(link.id)}?session_id={CHECKOUT_SESSION_ID}`,
     customer_email: email || undefined,
     client_reference_id: paymentId,
@@ -75,6 +91,7 @@ export async function onRequestPost({ request, env, params }) {
     "metadata[workspace_id]": link.workspace_id,
     "metadata[sale_type]": saleType
   };
+
   if (stripeMode === "subscription") {
     const interval = ["month", "year"].includes(metadata.subscription_interval) ? metadata.subscription_interval : "month";
     formPayload["line_items[0][price_data][recurring][interval]"] = interval;
@@ -82,14 +99,14 @@ export async function onRequestPost({ request, env, params }) {
     formPayload["subscription_data][metadata][payment_link_id]"] = link.id;
   }
 
-  const form = stripeForm(formPayload);
-
   try {
     const session = await stripeRequest(credentials.secretKey, "/checkout/sessions", {
       method: "POST",
-      body: form,
-      idempotencyKey: `boostr-embedded-checkout-${paymentId}`
+      body: stripeForm(formPayload),
+      idempotencyKey: `boostr-elements-checkout-${paymentId}`
     });
+
+    if (!session?.client_secret) throw new Error("payment_client_secret_missing");
 
     await env.DB.prepare(
       `UPDATE stripe_payments
@@ -99,23 +116,37 @@ export async function onRequestPost({ request, env, params }) {
 
     await recordStripeActivity(env, {
       workspaceId: link.workspace_id,
-      eventType: stripeMode === "subscription" ? "stripe.subscription.embedded_checkout.created" : "stripe.embedded_checkout.created",
-      title: stripeMode === "subscription" ? "Checkout embebido de suscripción creado" : "Checkout embebido creado",
+      eventType: stripeMode === "subscription" ? "payments.subscription.elements.created" : "payments.elements.created",
+      title: stripeMode === "subscription" ? "Suscripción preparada" : "Pago preparado",
       body: link.title,
-      metadata: { payment_id: paymentId, payment_link_id: link.id, session_id: session.id, mode: credentials.mode, sale_type: saleType, ui_mode: "embedded" }
+      metadata: {
+        payment_id: paymentId,
+        payment_link_id: link.id,
+        session_id: session.id,
+        mode: credentials.mode,
+        sale_type: saleType,
+        ui_mode: "elements"
+      }
     });
 
-    return json({ ok: true, checkout: {
-      payment_id: paymentId,
-      session_id: session.id,
-      client_secret: session.client_secret,
-      publishable_key: credentials.publishableKey,
-      mode: credentials.mode,
-      sale_type: saleType,
-      ui_mode: "embedded"
-    } }, 201);
+    return json({
+      ok: true,
+      checkout: {
+        payment_id: paymentId,
+        session_id: session.id,
+        client_secret: session.client_secret,
+        publishable_key: credentials.publishableKey,
+        mode: credentials.mode,
+        sale_type: saleType,
+        ui_mode: "elements"
+      }
+    }, 201);
   } catch (error) {
     await env.DB.prepare("UPDATE stripe_payments SET status = 'failed', updated_at = ? WHERE id = ?").bind(now(), paymentId).run();
-    return jsonError(error.code || "stripe_checkout_failed", clean(error.message, 500) || "No se pudo abrir el checkout embebido.", error.status || 502);
+    return jsonError(
+      error.code || "payment_checkout_failed",
+      clean(error.message, 500) || "No se pudo preparar el formulario de pago.",
+      error.status || 502
+    );
   }
 }
