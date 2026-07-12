@@ -1,4 +1,5 @@
 import { clean, json, jsonError, now, requireDb } from "../../../_lib/api.js";
+import { syncPaymentReceipt } from "../../../_lib/documents.js";
 import { ensureStripeSchema, getStripeWebhookSecret, recordStripeActivity } from "../../../_lib/stripe.js";
 
 function parseSignature(header = "") {
@@ -26,7 +27,6 @@ async function verifyStripeSignature(rawBody, header, secret, toleranceSeconds =
   const parsed = parseSignature(header);
   if (!parsed.timestamp || !parsed.signatures.length) return false;
   if (Math.abs(Math.floor(Date.now() / 1000) - parsed.timestamp) > toleranceSeconds) return false;
-
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -41,7 +41,7 @@ async function verifyStripeSignature(rawBody, header, secret, toleranceSeconds =
 async function updatePayment(env, event) {
   const object = event?.data?.object || {};
   const timestamp = now();
-  let paymentId = clean(object?.metadata?.boostr_payment_id, 160);
+  const paymentId = clean(object?.metadata?.boostr_payment_id, 160);
   let stripeSessionId = null;
   let stripePaymentIntentId = null;
   let status = null;
@@ -94,15 +94,15 @@ async function updatePayment(env, event) {
   }
   if (!payment?.id) return null;
 
-  await env.DB.prepare(
-    `UPDATE stripe_payments
-     SET stripe_checkout_session_id = COALESCE(?, stripe_checkout_session_id),
-         stripe_payment_intent_id = COALESCE(?, stripe_payment_intent_id),
-         customer_email = COALESCE(?, customer_email),
-         status = COALESCE(?, status),
-         updated_at = ?
-     WHERE id = ?`
-  ).bind(stripeSessionId || null, stripePaymentIntentId || null, customerEmail, status, timestamp, payment.id).run();
+  await env.DB.prepare(`
+    UPDATE stripe_payments
+    SET stripe_checkout_session_id = COALESCE(?, stripe_checkout_session_id),
+        stripe_payment_intent_id = COALESCE(?, stripe_payment_intent_id),
+        customer_email = COALESCE(?, customer_email),
+        status = COALESCE(?, status),
+        updated_at = ?
+    WHERE id = ?
+  `).bind(stripeSessionId || null, stripePaymentIntentId || null, customerEmail, status, timestamp, payment.id).run();
 
   if (status && status !== payment.status) {
     await recordStripeActivity(env, {
@@ -121,26 +121,34 @@ async function updatePayment(env, event) {
     });
   }
 
-  return { id: payment.id, status };
+  let document = null;
+  if (status === "paid" || status === "refunded") {
+    try {
+      document = await syncPaymentReceipt(env, payment.id, status);
+    } catch {}
+  }
+
+  return {
+    id: payment.id,
+    status,
+    document: document ? { id: document.id, public_url: document.public_url, document_number: document.document_number } : null
+  };
 }
 
 export async function onRequestPost({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
-
   let webhookSecret;
   try {
     webhookSecret = await getStripeWebhookSecret(env);
   } catch {
     return jsonError("stripe_webhook_not_configured", "Stripe webhook secret is not configured.", 503);
   }
-
   const rawBody = await request.text();
   const signature = request.headers.get("stripe-signature") || "";
   if (!(await verifyStripeSignature(rawBody, signature, webhookSecret))) {
     return jsonError("invalid_stripe_signature", "Invalid Stripe signature.", 400);
   }
-
   const event = JSON.parse(rawBody);
   await ensureStripeSchema(env);
   const payment = await updatePayment(env, event);
