@@ -105,21 +105,46 @@ export async function onRequestGet({ request, env }) {
 
   const url = new URL(request.url);
   const requested = clean(url.searchParams.get("workspace"), 120);
-  const fallbackId = auth.active_workspace_id || auth.memberships?.[0]?.workspace_id || null;
+  const membershipIds = (auth.memberships || []).map((item) => clean(item.workspace_id, 120)).filter(Boolean);
+  const candidateIds = [
+    clean(requested, 120),
+    clean(auth.active_workspace_id, 120),
+    ...membershipIds
+  ].filter(Boolean);
 
   let workspace = null;
-  if (requested) {
-    workspace = await env.DB.prepare(
-      "SELECT id, name, slug, type, owner_email, status, created_at, updated_at FROM workspaces WHERE id = ? OR lower(slug) = lower(?) LIMIT 1"
-    ).bind(requested, requested).first();
-  } else if (fallbackId) {
-    workspace = await env.DB.prepare(
-      "SELECT id, name, slug, type, owner_email, status, created_at, updated_at FROM workspaces WHERE id = ? LIMIT 1"
-    ).bind(fallbackId).first();
+  for (const candidate of [...new Set(candidateIds)]) {
+    workspace = await safeFirst(
+      env.DB.prepare(
+        "SELECT id, name, slug, type, owner_email, status, created_at, updated_at FROM workspaces WHERE id = ? OR lower(slug) = lower(?) LIMIT 1"
+      ).bind(candidate, candidate)
+    );
+    if (workspace?.id) break;
   }
 
+  const availableWorkspaces = (auth.memberships || [])
+    .filter((item) => item.workspace_id)
+    .map((item) => ({
+      id: item.workspace_id,
+      slug: item.workspace_slug,
+      name: item.workspace_name,
+      type: item.workspace_type,
+      role: item.role
+    }));
+
   if (!workspace?.id) {
-    return jsonError("workspace_not_found", "No se encontró el workspace solicitado.", 404, { requested: requested || null });
+    return json({
+      ok: true,
+      workspace: null,
+      user: auth.user,
+      cards: [],
+      activity: [],
+      modules: [],
+      counts: { cards: 0, activity: 0, files: 0, products: 0 },
+      routes: [],
+      available_workspaces: availableWorkspaces,
+      warning: "workspace_not_found"
+    });
   }
 
   const access = requireWorkspaceAccess(auth, workspace.id);
@@ -173,12 +198,6 @@ export async function onRequestGet({ request, env }) {
       products: Number(productCount?.total || 0)
     },
     routes: routeSet(workspace, auth.user?.email),
-    available_workspaces: (auth.memberships || []).map((item) => ({
-      id: item.workspace_id,
-      slug: item.workspace_slug,
-      name: item.workspace_name,
-      type: item.workspace_type,
-      role: item.role
-    }))
+    available_workspaces: availableWorkspaces
   });
 }
