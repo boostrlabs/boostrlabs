@@ -1,5 +1,5 @@
 import { clean, json, jsonError, now, requireDb } from "../../../_lib/api.js";
-import { syncPaymentReceipt } from "../../../_lib/documents.js";
+import { syncInteractiveReceipt } from "../../../_lib/payment-receipts.js";
 import { ensureStripeSchema, getStripeWebhookSecret, recordStripeActivity } from "../../../_lib/stripe.js";
 
 function parseSignature(header = "") {
@@ -124,7 +124,7 @@ async function updatePayment(env, event) {
   let document = null;
   if (status === "paid" || status === "refunded") {
     try {
-      document = await syncPaymentReceipt(env, payment.id, status);
+      document = await syncInteractiveReceipt(env, payment.id, status);
     } catch {}
   }
 
