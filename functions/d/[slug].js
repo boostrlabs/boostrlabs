@@ -1,0 +1,68 @@
+function scriptValue(value) {
+  return JSON.stringify(String(value || "")).replace(/</g, "\\u003c");
+}
+
+export async function onRequestGet({ params }) {
+  const slug = String(params?.slug || "").trim();
+  if (!slug) return new Response("Smart Document missing.", { status: 400 });
+  const publicSlug = scriptValue(slug);
+  const html = `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>BOOSTR Smart Document</title>
+<link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+:root{--accent:#feedb9;--bg:#020202;--ink:#f8f8f5;--muted:rgba(248,248,245,.65);--line:rgba(255,255,255,.14)}*{box-sizing:border-box}html{background:#000}body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overflow-x:hidden}.fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}.orb{position:absolute;border-radius:50%;filter:blur(28px);opacity:.2;animation:float 12s ease-in-out infinite}.orb.a{width:48vw;height:48vw;right:-18vw;top:-18vw;background:var(--accent)}.orb.b{width:38vw;height:38vw;left:-16vw;bottom:-16vw;background:#7dff9e;animation-delay:-4s}.orb.c{width:25vw;height:25vw;left:38vw;top:42vh;background:#7cecff;animation-delay:-8s}@keyframes float{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(3vw,3vh,0) scale(1.08)}}.shell{position:relative;z-index:1;width:min(100%,1120px);margin:0 auto;padding:18px 14px 70px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.logo{width:126px;max-height:62px;object-fit:contain}.live{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(125,255,158,.26);background:rgba(125,255,158,.08);border-radius:999px;padding:8px 11px;font:900 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#b9ffc9}.dot{width:7px;height:7px;border-radius:50%;background:#7dff9e;box-shadow:0 0 16px #7dff9e}.hero{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.025));border-radius:38px;padding:clamp(20px,5vw,54px);box-shadow:0 34px 120px rgba(0,0,0,.7);overflow:hidden;position:relative}.eyebrow{display:inline-flex;border:1px solid color-mix(in srgb,var(--accent) 38%,transparent);background:color-mix(in srgb,var(--accent) 9%,transparent);color:var(--accent);border-radius:999px;padding:8px 11px;font:950 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.15em;text-transform:uppercase}.hero h1{font-family:Arial Black,Arial,sans-serif;font-size:clamp(44px,9vw,98px);line-height:.88;letter-spacing:-.075em;margin:18px 0 14px;overflow-wrap:anywhere}.subtitle{max-width:720px;color:var(--muted);font-size:clamp(15px,2vw,20px);line-height:1.5}.amount{font-family:Arial Black,Arial,sans-serif;font-size:clamp(48px,8vw,92px);letter-spacing:-.07em;margin-top:28px}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.pill{border:1px solid var(--line);background:rgba(0,0,0,.25);border-radius:999px;padding:8px 10px;color:var(--muted);font-size:11px;font-weight:850}.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:16px}.block{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.025));border-radius:30px;padding:clamp(18px,4vw,30px);backdrop-filter:blur(18px)}.block h2{font-family:Arial Black,Arial,sans-serif;font-size:clamp(26px,4vw,46px);letter-spacing:-.045em;margin:4px 0 12px}.block p{color:var(--muted);line-height:1.6}.media{width:100%;border-radius:22px;border:1px solid var(--line);background:#000;overflow:hidden}.media img,.media video{display:block;width:100%;max-height:70vh;object-fit:cover}.media iframe{display:block;width:100%;aspect-ratio:16/9;border:0}.audio{width:100%;margin-top:12px}.summary{display:grid;gap:9px}.row{display:flex;justify-content:space-between;gap:16px;padding:13px;border:1px solid var(--line);background:rgba(0,0,0,.24);border-radius:17px;color:var(--muted)}.row b{color:#fff;text-align:right}.timeline{display:grid;gap:12px;position:relative}.event{display:grid;grid-template-columns:18px 1fr;gap:12px}.event-marker{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 18px color-mix(in srgb,var(--accent) 70%,transparent);margin-top:5px}.event-card{border:1px solid var(--line);background:rgba(0,0,0,.24);border-radius:18px;padding:14px}.event-card b{display:block}.event-card small{display:block;color:var(--muted);margin-top:5px}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;border-radius:999px;padding:0 18px;text-decoration:none;font-weight:950;border:1px solid var(--accent);background:var(--accent);color:#050505}.btn.alt{background:transparent;color:#fff;border-color:var(--line)}.qr-wrap{display:grid;grid-template-columns:160px 1fr;gap:20px;align-items:center}.qr{width:160px;height:160px;background:#fff;border-radius:18px;padding:12px;display:grid;place-items:center}.qr img,.qr canvas{max-width:100%;height:auto!important}.files{display:grid;gap:9px}.file{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);background:rgba(0,0,0,.24);border-radius:17px;padding:13px;color:#fff;text-decoration:none}.footer{text-align:center;color:var(--muted);font-size:11px;letter-spacing:.13em;text-transform:uppercase;margin-top:28px}.error{border:1px solid rgba(255,146,146,.34);background:rgba(255,146,146,.08);border-radius:28px;padding:22px;color:#ffd2d2}@media(min-width:880px){.grid.two{grid-template-columns:1fr 1fr}.block.wide{grid-column:1/-1}}@media(max-width:620px){.shell{padding:10px 8px 48px}.hero,.block{border-radius:26px}.qr-wrap{grid-template-columns:1fr}.qr{width:150px;height:150px}}
+</style>
+</head>
+<body>
+<div class="fx"><span class="orb a"></span><span class="orb b"></span><span class="orb c"></span></div>
+<main class="shell">
+<header class="top"><img class="logo" src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="live"><i class="dot"></i>Documento vivo</span></header>
+<section class="hero" id="hero"><span class="eyebrow" id="type">SMART DOCUMENT</span><h1 id="title">Cargando...</h1><p class="subtitle" id="subtitle">Preparando documento.</p><div class="amount" id="amount"></div><div class="meta" id="meta"></div></section>
+<section class="grid two" id="blocks"></section>
+<footer class="footer">POWERED BY BOOSTR LABS · SMART DOCUMENTS</footer>
+</main>
+<script>
+(function(){
+'use strict';
+const slug=${publicSlug};
+const $=function(id){return document.getElementById(id)};
+const esc=function(value){return String(value==null?'':value).replace(/[&<>"']/g,function(char){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[char]})};
+const safeUrl=function(value){try{const url=new URL(String(value||''),location.origin);return ['http:','https:'].includes(url.protocol)?url.href:''}catch{return''}};
+const money=function(cents,currency){if(!Number(cents))return'';return new Intl.NumberFormat('es-US',{style:'currency',currency:currency||'USD'}).format(Number(cents)/100)};
+const typeLabel=function(type){return({invoice:'FACTURA',receipt:'COMPROBANTE',ticket:'TICKET',quote:'COTIZACIÓN',contract:'CONTRATO',license:'LICENCIA',certificate:'CERTIFICADO',delivery_note:'ENTREGA',warranty_card:'GARANTÍA',custom:'SMART DOCUMENT'})[type]||'SMART DOCUMENT'};
+const statusLabel=function(status){return({draft:'Borrador',live:'Activo',pending:'Pendiente',paid:'Pagado',fulfilled:'Completado',refunded:'Reembolsado',canceled:'Cancelado',void:'Anulado'})[status]||status};
+function youtubeEmbed(value){try{const url=new URL(value);if(url.hostname.includes('youtu.be'))return 'https://www.youtube.com/embed/'+esc(url.pathname.slice(1));if(url.hostname.includes('youtube.com')){const id=url.searchParams.get('v');if(id)return 'https://www.youtube.com/embed/'+esc(id)}}catch{}return''}
+function blockShell(content,wide){return '<article class="block'+(wide?' wide':'')+'">'+content+'</article>'}
+function renderBlock(block,index){const type=block&&block.type||'text';const heading=block&&block.heading?'<h2>'+esc(block.heading)+'</h2>':'';const body=block&&block.body?'<p>'+esc(block.body)+'</p>':'';
+ if(type==='summary'){const items=Array.isArray(block.items)?block.items:[];return blockShell((block.eyebrow?'<span class="eyebrow">'+esc(block.eyebrow)+'</span>':'')+heading+body+'<div class="summary">'+items.map(function(item){return '<div class="row"><span>'+esc(item.label)+'</span><b>'+esc(item.value)+'</b></div>'}).join('')+'</div>',true)}
+ if(type==='image'){const url=safeUrl(block.url||block.src);return url?blockShell(heading+body+'<div class="media"><img src="'+esc(url)+'" alt=""></div>',true):''}
+ if(type==='video'){const url=safeUrl(block.url||block.src);const embed=youtubeEmbed(url);if(!url)return'';return blockShell(heading+body+'<div class="media">'+(embed?'<iframe src="'+embed+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>':'<video src="'+esc(url)+'" controls playsinline preload="metadata"></video>')+'</div>',true)}
+ if(type==='audio'){const url=safeUrl(block.url||block.src);return url?blockShell(heading+body+'<audio class="audio" src="'+esc(url)+'" controls preload="metadata"></audio>',false):''}
+ if(type==='cta'){const url=safeUrl(block.url);return url?blockShell(heading+body+'<div class="actions"><a class="btn" href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(block.label||'Abrir')+'</a></div>',false):''}
+ if(type==='files'){const files=Array.isArray(block.files)?block.files:[];return blockShell(heading+body+'<div class="files">'+files.map(function(file){const url=safeUrl(file.url);return url?'<a class="file" href="'+esc(url)+'" target="_blank" rel="noopener"><span>'+esc(file.label||file.name||'Archivo')+'</span><b>Abrir →</b></a>':''}).join('')+'</div>',true)}
+ if(type==='qr'){const value=String(block.value||location.href);const id='qr-'+index;return blockShell(heading+body+'<div class="qr-wrap"><div class="qr" id="'+id+'"></div><div><p>'+esc(block.copy||'Escanea para abrir o verificar este documento.')+'</p><a class="btn alt" href="'+esc(safeUrl(value)||location.href)+'">Abrir enlace</a></div></div>',false)+'<span data-qr-id="'+id+'" data-qr-value="'+esc(value)+'"></span>'}
+ if(type==='timeline')return '<article class="block wide" data-timeline-block><h2>'+esc(block.heading||'Historial en vivo')+'</h2><div class="timeline" id="timeline"></div></article>';
+ return blockShell(heading+body,false)}
+function renderTimeline(events){const root=$('timeline');if(!root)return;root.innerHTML=(events||[]).length?(events||[]).map(function(event){const date=event.occurred_at?new Date(event.occurred_at).toLocaleString():'Ahora';return '<div class="event"><span class="event-marker"></span><div class="event-card"><b>'+esc(event.title)+'</b>'+(event.body?'<small>'+esc(event.body)+'</small>':'')+'<small>'+esc(date)+'</small></div></div>'}).join(''):'<p>Aún no hay actualizaciones públicas.</p>'}
+function initQr(){document.querySelectorAll('[data-qr-id]').forEach(function(node){const target=$(node.dataset.qrId);if(target&&window.QRCode){new QRCode(target,{text:node.dataset.qrValue||location.href,width:136,height:136,colorDark:'#050505',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}})}
+async function load(){try{const response=await fetch('/api/public/documents/'+encodeURIComponent(slug),{cache:'no-store'});const data=await response.json().catch(function(){return{}});if(!response.ok||data.ok===false)throw new Error(data.message||data.error||'Documento no disponible');const doc=data.document;document.title=(doc.document_number?doc.document_number+' · ':'')+doc.title;$('type').textContent=typeLabel(doc.document_type);$('title').textContent=doc.title;$('subtitle').textContent=doc.subtitle||doc.workspace_name||'BOOSTR Smart Document';$('amount').textContent=money(doc.amount_cents,doc.currency);$('meta').innerHTML='<span class="pill">'+esc(doc.document_number||'Documento')+'</span><span class="pill">'+esc(statusLabel(doc.status))+'</span><span class="pill">'+esc(doc.workspace_name||'BOOSTR')+'</span>'+(doc.customer_name||doc.customer_email?'<span class="pill">'+esc(doc.customer_name||doc.customer_email)+'</span>':'');const theme=doc.theme||{};if(theme.accent)document.documentElement.style.setProperty('--accent',theme.accent);if(theme.background)document.documentElement.style.setProperty('--bg',theme.background);const blocks=Array.isArray(doc.blocks)?doc.blocks:[];$('blocks').innerHTML=blocks.map(renderBlock).join('')+(Array.isArray(doc.actions)&&doc.actions.length?blockShell('<h2>Acciones</h2><div class="actions">'+doc.actions.map(function(action){const url=safeUrl(action.url);return url?'<a class="btn" href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(action.label||'Abrir')+'</a>':''}).join('')+'</div>',true):'');renderTimeline(data.events||[]);setTimeout(initQr,100)}catch(error){$('hero').innerHTML='<div class="error"><b>Documento no disponible</b><p>'+esc(error.message||'No se pudo cargar.')+'</p></div>';$('blocks').innerHTML=''}}
+load();
+})();
+</script>
+</body>
+</html>`;
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store, no-cache, must-revalidate, max-age=0",
+      "x-robots-tag": "noindex, nofollow"
+    }
+  });
+}

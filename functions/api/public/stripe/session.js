@@ -1,7 +1,10 @@
 import { clean, json, jsonError, now, requireDb } from "../../../_lib/api.js";
+import { syncInteractiveReceipt } from "../../../_lib/payment-receipts.js";
 import { ensureStripeSchema, getStripeCredentials, recordStripeActivity, stripeRequest } from "../../../_lib/stripe.js";
 
-export async function onRequestOptions() { return json({ ok: true }); }
+export async function onRequestOptions() {
+  return json({ ok: true });
+}
 
 export async function onRequestGet({ request, env }) {
   const db = requireDb(env);
@@ -10,8 +13,11 @@ export async function onRequestGet({ request, env }) {
   if (!sessionId || !sessionId.startsWith("cs_")) return jsonError("session_required", "Stripe session required.", 400);
 
   let credentials;
-  try { credentials = await getStripeCredentials(env); }
-  catch { return jsonError("stripe_not_configured", "Stripe no está configurado.", 503); }
+  try {
+    credentials = await getStripeCredentials(env);
+  } catch {
+    return jsonError("stripe_not_configured", "Stripe no está configurado.", 503);
+  }
 
   await ensureStripeSchema(env);
   try {
@@ -25,9 +31,11 @@ export async function onRequestGet({ request, env }) {
       .bind(sessionId, paymentId || "").first();
     if (!existing?.id) return jsonError("payment_not_found", "BOOSTR payment record not found.", 404);
 
-    await env.DB.prepare(
-      `UPDATE stripe_payments SET stripe_payment_intent_id = ?, customer_email = COALESCE(?, customer_email), status = ?, updated_at = ? WHERE id = ?`
-    ).bind(paymentIntent, email, status, now(), existing.id).run();
+    await env.DB.prepare(`
+      UPDATE stripe_payments
+      SET stripe_payment_intent_id = ?, customer_email = COALESCE(?, customer_email), status = ?, updated_at = ?
+      WHERE id = ?
+    `).bind(paymentIntent, email, status, now(), existing.id).run();
 
     if (status === "paid" && existing.status !== "paid") {
       await recordStripeActivity(env, {
@@ -39,15 +47,31 @@ export async function onRequestGet({ request, env }) {
       });
     }
 
-    return json({ ok: true, payment: {
-      id: existing.id,
-      status,
-      payment_status: session.payment_status,
-      amount_total: session.amount_total,
-      currency: session.currency,
-      customer_email: email,
-      mode: credentials.mode
-    }});
+    let document = null;
+    if (status === "paid") {
+      try {
+        document = await syncInteractiveReceipt(env, existing.id, "paid");
+      } catch {}
+    }
+
+    return json({
+      ok: true,
+      payment: {
+        id: existing.id,
+        status,
+        payment_status: session.payment_status,
+        amount_total: session.amount_total,
+        currency: session.currency,
+        customer_email: email,
+        mode: credentials.mode
+      },
+      document: document ? {
+        id: document.id,
+        document_number: document.document_number,
+        public_url: document.public_url,
+        status: document.status
+      } : null
+    });
   } catch (error) {
     return jsonError(error.code || "stripe_session_failed", clean(error.message, 500) || "No se pudo verificar el pago.", error.status || 502);
   }

@@ -1,4 +1,4 @@
-const VERSION = "0.9.10";
+const VERSION = "0.9.11";
 const languageScript = `<script src="/assets/boostr-mother/language-engine.js?v=${VERSION}" defer></script>`;
 const productionScript = `<script src="/assets/boostr-mother/production-shell.js?v=${VERSION}" defer></script>`;
 const johankaCloudScript = `<script src="/assets/boostr-mother/johanka-cloud-link.js?v=${VERSION}" defer></script>`;
@@ -11,6 +11,7 @@ const workspaceNavigationScript = `<script src="/assets/boostr-mother/workspace-
 const jankoStripeSettingsScript = `<script src="/assets/boostr-mother/janko-stripe-settings.js?v=${VERSION}" defer></script>`;
 const paymentLinksHotfixScript = `<script src="/assets/boostr-mother/payment-links-hotfix.js?v=${VERSION}" defer></script>`;
 const STRIPE_JS_DAHLIA = "https://js.stripe.com/dahlia/stripe.js";
+const smartReceiptScript = `<script id="boostr-smart-receipt-link">(function(){var p=new URLSearchParams(location.search),s=p.get('session_id');if(!s)return;function add(url,number){if(!url||document.getElementById('boostr-receipt-button'))return;var host=document.getElementById('resultPanel')||document.querySelector('.success');if(!host)return;var a=document.createElement('a');a.id='boostr-receipt-button';a.href=url;a.textContent='Abrir comprobante interactivo'+(number?' · '+number:'');a.style.cssText='display:flex;align-items:center;justify-content:center;min-height:54px;margin-top:16px;border-radius:999px;background:#feedb9;color:#050505;text-decoration:none;font-weight:950;padding:0 18px';host.appendChild(a)}fetch('/api/public/stripe/session?session_id='+encodeURIComponent(s),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){if(d&&d.document)add(d.document.public_url,d.document.document_number)}).catch(function(){})})();</script>`;
 const gateStyle = '<style id="boostr-gate-style">#boostr-loading-gate{position:fixed;inset:0;z-index:100020;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,rgba(125,255,158,.08),transparent 34%),#050708;color:#fff;font:900 13px ui-monospace,Menlo,monospace;letter-spacing:.13em;text-transform:uppercase}</style>';
 const gateMarkup = '<div id="boostr-loading-gate" data-no-i18n="true">Conectando tu OS...</div>';
 
@@ -41,6 +42,7 @@ export async function onRequest(context) {
     "/jankodiorr",
     "/82ngel",
     "/pay",
+    "/d",
     "/portfolio",
     "/partner",
     "/omgbeauty"
@@ -77,6 +79,11 @@ export async function onRequest(context) {
 
   if (matches(path, ["/pay"])) {
     html = html.replace(/https:\/\/js\.stripe\.com\/(?:v3\/?|[a-z]+\/stripe\.js)/gi, STRIPE_JS_DAHLIA);
+    if (!html.includes('id="boostr-smart-receipt-link"')) html = injectBeforeBody(html, smartReceiptScript);
+    init.headers.set("cache-control", "no-store, no-cache, must-revalidate, max-age=0");
+  }
+
+  if (matches(path, ["/d"])) {
     init.headers.set("cache-control", "no-store, no-cache, must-revalidate, max-age=0");
   }
 
