@@ -15,16 +15,46 @@ function encryptionSeed(env) {
   return env.BOOSTR_ENCRYPTION_KEY || env.AUTH_SECRET || env.JWT_SECRET || env.SESSION_SECRET || env.BOOSTR_AUTH_SECRET || null;
 }
 
+async function ensureKeyring(env) {
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS boostr_keyring (
+      key_name TEXT PRIMARY KEY,
+      key_material TEXT NOT NULL,
+      created_at TEXT,
+      updated_at TEXT
+    )
+  `).run();
+}
+
+async function databaseManagedSeed(env) {
+  await ensureKeyring(env);
+  let row = await env.DB.prepare(
+    "SELECT key_material FROM boostr_keyring WHERE key_name = 'founder_settings_v1' LIMIT 1"
+  ).first();
+  if (row?.key_material) return row.key_material;
+
+  const material = bytesToBase64(crypto.getRandomValues(new Uint8Array(32)));
+  const timestamp = now();
+  await env.DB.prepare(`
+    INSERT INTO boostr_keyring (key_name, key_material, created_at, updated_at)
+    VALUES ('founder_settings_v1', ?, ?, ?)
+    ON CONFLICT(key_name) DO NOTHING
+  `).bind(material, timestamp, timestamp).run();
+
+  row = await env.DB.prepare(
+    "SELECT key_material FROM boostr_keyring WHERE key_name = 'founder_settings_v1' LIMIT 1"
+  ).first();
+  return row?.key_material || material;
+}
+
 async function encryptionKey(env) {
-  const seed = encryptionSeed(env);
-  if (!seed) return null;
+  const seed = encryptionSeed(env) || await databaseManagedSeed(env);
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(seed)));
   return crypto.subtle.importKey("raw", digest, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
 }
 
 async function encryptValue(env, value) {
   const key = await encryptionKey(env);
-  if (!key) throw new Error("encryption_key_missing");
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(value));
   return `${bytesToBase64(iv)}.${bytesToBase64(new Uint8Array(encrypted))}`;
@@ -111,7 +141,7 @@ export async function onRequestPost({ request, env }) {
       encrypted = await encryptValue(env, secretKey);
       secretMask = maskKey(secretKey);
     } catch (error) {
-      return jsonError("encryption_unavailable", "El servidor todavía no tiene una llave de cifrado disponible.", 503, { detail: String(error?.message || error) });
+      return jsonError("encryption_unavailable", "No se pudo inicializar el cifrado seguro.", 503, { detail: String(error?.message || error) });
     }
   }
 
