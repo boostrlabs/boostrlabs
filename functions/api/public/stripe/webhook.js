@@ -1,5 +1,5 @@
 import { clean, json, jsonError, now, requireDb } from "../../../_lib/api.js";
-import { ensureStripeSchema, recordStripeActivity } from "../../../_lib/stripe.js";
+import { ensureStripeSchema, getStripeWebhookSecret, recordStripeActivity } from "../../../_lib/stripe.js";
 
 function parseSignature(header = "") {
   const result = { timestamp: null, signatures: [] };
@@ -128,8 +128,12 @@ export async function onRequestPost({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
 
-  const webhookSecret = String(env.STRIPE_WEBHOOK_SECRET || "").trim();
-  if (!webhookSecret) return jsonError("stripe_webhook_not_configured", "Stripe webhook secret is not configured.", 503);
+  let webhookSecret;
+  try {
+    webhookSecret = await getStripeWebhookSecret(env);
+  } catch {
+    return jsonError("stripe_webhook_not_configured", "Stripe webhook secret is not configured.", 503);
+  }
 
   const rawBody = await request.text();
   const signature = request.headers.get("stripe-signature") || "";
