@@ -65,11 +65,13 @@
           <label style="display:grid;gap:7px"><span class="label">Publishable key</span><input id="stripePublishable" autocomplete="off" spellcheck="false" placeholder="pk_test_... o pk_live_..." style="min-height:50px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--ink);border-radius:16px;padding:0 14px"></label>
           <label style="display:grid;gap:7px"><span class="label">Secret / restricted key</span><input id="stripeSecret" type="password" autocomplete="new-password" spellcheck="false" placeholder="sk_... o rk_..." style="min-height:50px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--ink);border-radius:16px;padding:0 14px"></label>
           <div id="stripeSecretState" style="color:var(--muted);font-size:12px;line-height:1.5">La clave privada nunca vuelve al navegador después de guardarse.</div>
+          <label style="display:grid;gap:7px"><span class="label">Webhook signing secret</span><input id="stripeWebhookSecret" type="password" autocomplete="new-password" spellcheck="false" placeholder="whsec_..." style="min-height:50px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--ink);border-radius:16px;padding:0 14px"></label>
+          <div id="stripeWebhookState" style="color:var(--muted);font-size:12px;line-height:1.5">Pega aquí el signing secret generado por Stripe para el endpoint de BOOSTR.</div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button id="saveStripeSettings" style="min-height:48px;border:1px solid rgba(124,236,255,.45);background:rgba(124,236,255,.12);color:var(--ink);border-radius:999px;padding:0 17px;font-weight:950;cursor:pointer">Guardar credenciales</button>
             <button id="deleteStripeSettings" style="min-height:48px;border:1px solid rgba(255,146,146,.3);background:rgba(255,146,146,.07);color:var(--red);border-radius:999px;padding:0 17px;font-weight:950;cursor:pointer">Eliminar credenciales</button>
           </div>
-          <p style="margin:0;color:var(--muted);font-size:11px;line-height:1.5">La clave privada se cifra en el backend antes de almacenarse. GitHub y el navegador no reciben la clave completa después del guardado.</p>
+          <p style="margin:0;color:var(--muted);font-size:11px;line-height:1.5">Las claves privadas y el webhook secret se cifran en el backend antes de almacenarse. GitHub y el navegador no reciben los valores completos después del guardado.</p>
         </div>`;
       main.appendChild(section);
       document.getElementById('saveStripeSettings').onclick = saveSettings;
@@ -87,11 +89,16 @@
       if (!response.ok || data.ok === false) throw data;
       document.getElementById('stripePublishable').value = data.stripe?.publishable_key || '';
       document.getElementById('stripeSecret').value = '';
+      document.getElementById('stripeWebhookSecret').value = '';
       document.getElementById('stripeSecretState').textContent = data.stripe?.secret_configured
         ? `Configurada: ${data.stripe.secret_mask}`
         : 'La clave privada todavía no está configurada.';
-      status.textContent = data.stripe?.secret_configured ? 'CONFIGURADO' : 'PENDIENTE';
-      status.style.color = data.stripe?.secret_configured ? 'var(--green)' : 'var(--gold)';
+      document.getElementById('stripeWebhookState').textContent = data.stripe?.webhook_secret_configured
+        ? `Configurado: ${data.stripe.webhook_secret_mask}`
+        : 'El webhook signing secret todavía no está configurado.';
+      const complete = data.stripe?.secret_configured && data.stripe?.webhook_secret_configured;
+      status.textContent = complete ? 'CONFIGURADO' : data.stripe?.secret_configured ? 'FALTA WEBHOOK' : 'PENDIENTE';
+      status.style.color = complete ? 'var(--green)' : 'var(--gold)';
     } catch (error) {
       status.textContent = 'ERROR';
       status.style.color = 'var(--red)';
@@ -103,13 +110,14 @@
     const button = document.getElementById('saveStripeSettings');
     const publishableKey = document.getElementById('stripePublishable').value.trim();
     const secretKey = document.getElementById('stripeSecret').value.trim();
+    const webhookSecret = document.getElementById('stripeWebhookSecret').value.trim();
     button.disabled = true;
     try {
       const response = await fetch('/api/founder-settings/stripe', {
         method: 'POST',
         headers: { ...headers(), 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ publishable_key: publishableKey, secret_key: secretKey })
+        body: JSON.stringify({ publishable_key: publishableKey, secret_key: secretKey, webhook_secret: webhookSecret })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.ok === false) throw data;
