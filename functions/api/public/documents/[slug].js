@@ -1,5 +1,6 @@
 import { clean, json, jsonError, requireDb } from "../../../_lib/api.js";
 import { ensureSmartDocumentsSchema, hydrateSmartDocument, parseDocumentJson } from "../../../_lib/documents.js";
+import { syncInteractiveReceipt } from "../../../_lib/payment-receipts.js";
 
 function maskEmail(value) {
   const email = clean(value, 240).toLowerCase();
@@ -45,7 +46,7 @@ export async function onRequestGet({ env, params }) {
   if (!db.ok) return db.response;
   await ensureSmartDocumentsSchema(env);
   const slug = clean(params.slug, 180).toLowerCase();
-  const document = await env.DB.prepare(`
+  let document = await env.DB.prepare(`
     SELECT smart_documents.*, workspaces.name AS workspace_name, workspaces.slug AS workspace_slug
     FROM smart_documents
     LEFT JOIN workspaces ON workspaces.id = smart_documents.workspace_id
@@ -57,6 +58,20 @@ export async function onRequestGet({ env, params }) {
   if (!document?.id) return jsonError("document_not_found", "Document not found or not public.", 404);
   if (document.expires_at && Date.parse(document.expires_at) < Date.now()) {
     return jsonError("document_expired", "This document has expired.", 410);
+  }
+
+  if (document.document_type === "receipt" && document.related_type === "stripe_payment" && document.related_id) {
+    try {
+      const refreshed = await syncInteractiveReceipt(env, document.related_id, document.status);
+      if (refreshed?.id) {
+        document = {
+          ...document,
+          ...refreshed,
+          workspace_name: document.workspace_name,
+          workspace_slug: document.workspace_slug
+        };
+      }
+    } catch {}
   }
 
   const events = await env.DB.prepare(`
