@@ -23,6 +23,16 @@ function isOmniParking(link, metadata) {
     || title.startsWith("omni jr parking");
 }
 
+function omniPlanKey(link, metadata) {
+  const code = clean(metadata.parking_code);
+  const type = clean(metadata.plan_type);
+  const vehicle = clean(metadata.vehicle_class);
+  const title = clean(link?.title);
+  if (code === "omni_jr_monthly" || type === "monthly" || title.includes("monthly") || title.includes("mensual")) return "monthly";
+  if (code === "omni_jr_large_8h" || vehicle === "truck_big_suv" || title.includes("truck") || title.includes("big suv") || title.includes("pickup")) return "large";
+  return "standard";
+}
+
 function redirect(location) {
   return new Response(null, {
     status: 302,
@@ -43,6 +53,7 @@ export async function onRequestGet({ request, env, params }) {
   const incoming = new URL(request.url);
   let activeLink = null;
   let omni = false;
+  let plan = "";
 
   if (env.DB) {
     try {
@@ -59,6 +70,7 @@ export async function onRequestGet({ request, env, params }) {
       if (activeLink) {
         const metadata = { ...parseJson(activeLink.product_metadata_json), ...parseJson(activeLink.metadata_json) };
         omni = isOmniParking(activeLink, metadata);
+        if (omni) plan = omniPlanKey(activeLink, metadata);
       }
     } catch (error) {
       console.error("Payment brand lookup failed", error);
@@ -76,11 +88,12 @@ export async function onRequestGet({ request, env, params }) {
     }
   }
 
-  const target = new URL(omni ? "/pay/omni/" : "/pay/", incoming.origin);
+  const target = new URL(omni ? "/omni-jr/checkout-v3/" : "/pay/", incoming.origin);
   target.searchParams.set("id", id);
+  if (omni && plan) target.searchParams.set("plan", plan);
 
   for (const [key, value] of incoming.searchParams.entries()) {
-    if (key !== "id") target.searchParams.append(key, value);
+    if (key !== "id" && key !== "plan") target.searchParams.append(key, value);
   }
 
   return redirect(`${target.pathname}${target.search}`);

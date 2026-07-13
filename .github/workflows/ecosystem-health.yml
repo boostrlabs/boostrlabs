@@ -49,11 +49,13 @@ jobs:
   production-health:
     name: Production route and API health
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     needs: repository-health
     if: github.event_name != 'pull_request'
     env:
       BOOSTR_BASE_URL: https://boostrlabs.pages.dev
+      OMNI_SMOKE_ATTEMPTS: 48
+      OMNI_SMOKE_DELAY_MS: 10000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -66,6 +68,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: OMNI JR live payment and route health
+        run: pnpm run health:omni-parking:live
       - name: BOOSTR Live production health
         run: pnpm run health:boostr-live
       - name: Core public API and route smoke test
