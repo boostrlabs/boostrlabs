@@ -11,14 +11,15 @@ async function read(path) {
   }
 }
 
-const [manifestSource, worker, registration, pwaCss, offline, headers, viteConfig] = await Promise.all([
+const [manifestSource, worker, registration, pwaCss, offline, headers, viteConfig, landing] = await Promise.all([
   read('public/manifest.webmanifest'),
   read('public/service-worker.js'),
   read('public/pwa-register.js'),
   read('public/pwa.css'),
   read('public/offline.html'),
   read('public/_headers'),
-  read('vite.config.js')
+  read('vite.config.js'),
+  read('index.html')
 ]);
 
 let manifest;
@@ -54,6 +55,33 @@ const workerRequirements = [
 
 for (const requirement of workerRequirements) {
   if (!worker.includes(requirement)) failures.push(`service worker missing privacy/update guard: ${requirement}`);
+}
+
+const landingRequirements = [
+  '¿Qué necesitas hacer hoy?',
+  'href="/audit/"',
+  'href="/login/"',
+  'href="/accept-invite/"',
+  "fetch('/api/session'",
+  "cache:'no-store'",
+  'viewport-fit=cover',
+  'safe-area-inset-bottom',
+  'data-i18n="auditTitle"',
+  'data-i18n="loginTitle"'
+];
+
+for (const requirement of landingRequirements) {
+  if (!landing.includes(requirement)) failures.push(`landing gateway missing requirement: ${requirement}`);
+}
+
+const forbiddenLandingCopy = [
+  'Search modules, leads, partners, stores',
+  'Backend/auth/data pending Codex',
+  'Next backend move'
+];
+
+for (const copy of forbiddenLandingCopy) {
+  if (landing.includes(copy)) failures.push(`landing still exposes internal dashboard copy: ${copy}`);
 }
 
 if (!registration.includes("register('/service-worker.js'")) failures.push('service worker is not registered');
