@@ -1062,6 +1062,184 @@ const renderDashboardPlaceholder = (type) => {
   `, isAdmin ? 'BOOSTR Admin' : 'BOOSTR Client OS');
 };
 
+const appSystems = [
+  {
+    category: 'Operating Systems',
+    title: 'BOOSTR Worker OS',
+    description: 'Entrar al BOOSTR Worker OS',
+    status: 'Access',
+    icon: 'worker',
+    accent: 'blue',
+    href: '/admin',
+    logos: [
+      { name: 'BOOSTR Labs', src: '/assets/logos/boostr-logo-nav.png', href: '/admin' }
+    ]
+  },
+  {
+    category: 'Parking',
+    title: 'Parking OS',
+    description: 'Abrir servicio conectado',
+    status: 'Live',
+    icon: 'parking',
+    accent: 'cyan',
+    href: '/login',
+    logos: [
+      { name: 'Ben Soli Parking', label: 'BEN SOLI', href: '/login' }
+    ]
+  },
+  {
+    category: 'Restaurant',
+    title: 'Restaurant OS',
+    description: 'Disponible para miembros',
+    status: 'Members',
+    icon: 'restaurant',
+    accent: 'gold',
+    locked: true,
+    logos: [
+      { name: 'Hummus', label: 'HUMMUS', href: '/login' }
+    ]
+  },
+  {
+    category: 'Automotive',
+    title: 'Automotive OS',
+    description: 'Proximamente',
+    status: 'Soon',
+    icon: 'car',
+    accent: 'indigo',
+    locked: true,
+    logos: []
+  },
+  {
+    category: 'Artist',
+    title: 'Artist OS',
+    description: 'Proximamente',
+    status: 'Soon',
+    icon: 'mic',
+    accent: 'rose',
+    locked: true,
+    logos: []
+  },
+  {
+    category: 'Payments',
+    title: 'Payments OS',
+    description: 'Proximamente',
+    status: 'Soon',
+    icon: 'card',
+    accent: 'green',
+    locked: true,
+    logos: [
+      { name: 'BOOSTR Labs', src: '/assets/logos/boostr-logo-nav.png', href: '/login' }
+    ]
+  },
+  {
+    category: 'Beauty',
+    title: 'Beauty OS',
+    description: 'Proximamente',
+    status: 'Soon',
+    icon: 'sparkle',
+    accent: 'pink',
+    locked: true,
+    logos: []
+  }
+];
+
+const appIconTemplate = (name) => {
+  const icons = {
+    worker: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 11h3a2 2 0 0 1 2 2v6h-7v-6a2 2 0 0 1 2-2z"></path><path d="M15 11V8a3 3 0 0 1 6 0v3"></path><circle cx="8" cy="7" r="3"></circle><path d="M3 20v-2a5 5 0 0 1 8.4-3.7"></path></svg>',
+    parking: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V4h7a5 5 0 0 1 0 10H7"></path><path d="M7 14h7"></path></svg>',
+    restaurant: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v18"></path><path d="M4 3v6a2 2 0 0 0 4 0V3"></path><circle cx="15" cy="12" r="5"></circle><path d="M20 4v17"></path></svg>',
+    car: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12 7 6h10l2 6"></path><path d="M4 12h16v6H4z"></path><circle cx="7" cy="18" r="1"></circle><circle cx="17" cy="18" r="1"></circle></svg>',
+    mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path><path d="M8 21h8"></path><path d="m18 4 .5 1.5L20 6l-1.5.5L18 8l-.5-1.5L16 6l1.5-.5z"></path></svg>',
+    card: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M3 10h18"></path><path d="M7 15h3"></path><circle cx="17" cy="15" r="1"></circle></svg>',
+    sparkle: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"></path><path d="m5 3 .8 2.2L8 6l-2.2.8L5 9l-.8-2.2L2 6l2.2-.8z"></path></svg>',
+    home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6 10v10h12V10"></path></svg>',
+    user: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>',
+    shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.8 8.4 7 10 4.2-1.6 7-5.5 7-10V6z"></path><path d="m9 12 2 2 4-5"></path></svg>'
+  };
+
+  return icons[name] || icons.sparkle;
+};
+
+const appLogoTemplate = (logo, disabled = false) => {
+  const content = logo.src
+    ? `<img src="${logo.src}" alt="${logo.name}" />`
+    : `<strong>${logo.label || logo.name}</strong>`;
+  const classes = `app-logo-button${disabled ? ' is-disabled' : ''}`;
+
+  return `<a class="${classes}" href="${logo.href || '/login'}" aria-label="${logo.name}">${content}<span>${logo.name}</span></a>`;
+};
+
+const renderAppLauncherPage = () => {
+  document.querySelector('#app').innerHTML = `
+    <main class="app-launcher-page" id="top">
+      <header class="app-launcher-header" aria-label="BOOSTR app launcher">
+        <a class="app-launcher-brand" href="/" aria-label="BOOSTR Labs home">
+          <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" />
+        </a>
+        <label class="app-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Buscar OS" aria-label="Buscar OS" />
+        </label>
+        <a class="app-launcher-mark" href="/login" aria-label="Login">
+          <img src="/assets/icons/07.-b-star-icon-app.png" alt="" />
+        </a>
+      </header>
+
+      <section class="app-system-panel" aria-labelledby="app-os-title">
+        <div class="app-panel-heading">
+          <p class="eyebrow" id="app-os-title">Operating Systems</p>
+          <span aria-hidden="true"></span>
+        </div>
+        <div class="app-system-list">
+          ${appSystems
+            .map(
+              (system) => `
+                <article class="app-system-card ${system.locked ? 'is-locked' : ''} app-accent-${system.accent}">
+                  <div class="app-system-icon">${appIconTemplate(system.icon)}</div>
+                  <div class="app-system-copy">
+                    <small>${system.category}</small>
+                    <h2>${system.title}</h2>
+                    <p>${system.description}</p>
+                    <div class="app-logo-row">
+                      ${
+                        system.logos.length
+                          ? system.logos.map((logo) => appLogoTemplate(logo, system.locked && system.status === 'Soon')).join('')
+                          : '<span class="app-empty-logo">Sin partners activos</span>'
+                      }
+                    </div>
+                  </div>
+                  <div class="app-system-actions">
+                    <span>${system.status}</span>
+                    <a class="app-open-button" href="${system.locked ? '/login' : system.href}" aria-label="Abrir ${system.title}">${system.locked ? '•••' : '→'}</a>
+                  </div>
+                </article>
+              `
+            )
+            .join('')}
+        </div>
+      </section>
+
+      <section class="app-role-panel" aria-labelledby="new-boostr-title">
+        <h2 id="new-boostr-title">¿Nuevo en BOOSTR?</h2>
+        <div class="app-role-grid">
+          <a class="app-role-card is-primary" href="/quote">
+            ${appIconTemplate('home')}
+            <span>Soy negocio</span>
+          </a>
+          <a class="app-role-card" href="/login">
+            ${appIconTemplate('user')}
+            <span>Soy cliente</span>
+          </a>
+          <a class="app-role-card" href="/admin">
+            ${appIconTemplate('shield')}
+            <span>Soy manager BOOSTR</span>
+          </a>
+        </div>
+      </section>
+    </main>
+  `;
+};
+
 const renderLoginPage = () => {
   renderShell(`
     <main id="top">
@@ -1201,7 +1379,7 @@ const render = () => {
     return;
   }
   if (routePath === '/app') {
-    renderDashboardPlaceholder('client');
+    renderAppLauncherPage();
     return;
   }
   if (routePath === '/login') {
