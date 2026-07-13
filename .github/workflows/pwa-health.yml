@@ -73,5 +73,6 @@ jobs:
           grep -q '/pwa-register.js' dist/index.html
           grep -q 'apple-mobile-web-app-capable' dist/index.html
           grep -q 'viewport-fit=cover' dist/index.html
-          grep -q 'id="loginChoice"' dist/index.html
-          grep -q 'id="auditChoice"' dist/index.html
+          grep -q 'id="choiceA"' dist/index.html
+          grep -q 'id="choiceB"' dist/index.html
+          grep -q 'id="questionStage"' dist/index.html
