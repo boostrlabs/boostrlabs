@@ -1,0 +1,32 @@
+{
+  "id": "/app/",
+  "name": "BOOSTR Labs",
+  "short_name": "BOOSTR",
+  "description": "BOOSTR Super App para acceder a Smart Parking y futuros módulos conectados.",
+  "start_url": "/app/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#05080a",
+  "theme_color": "#05080a",
+  "icons": [
+    {
+      "src": "/assets/icons/09.-b-star-favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "SMART PARKING",
+      "short_name": "Parking",
+      "url": "/parking/omni-jr/"
+    },
+    {
+      "name": "BOOSTR App",
+      "short_name": "App",
+      "url": "/app/"
+    }
+  ]
+}
