@@ -4,74 +4,102 @@ Status: pilot implementation on `pwa-pilot`.
 
 ## Purpose
 
-The PWA pilot installs the existing BOOSTR Labs web system on an iPhone home screen without an Apple Developer account, Xcode, TestFlight, Capacitor, or a separate mobile codebase.
+The PWA pilot installs the BOOSTR web experience on an iPhone home screen without an Apple Developer account, Xcode, TestFlight, Capacitor, or a separate mobile codebase.
 
-The installed experience continues to use the deployed Cloudflare frontend, Pages Functions, and remote database. Primary business records are not stored as an offline replica on the phone.
+The installed experience uses the deployed Cloudflare frontend, Pages Functions, and remote database. Private business records are not stored as an offline replica on the phone.
 
-## Landing gateway
+## Entry model
 
-The root landing is the public decision layer for the installed PWA. It must not look like an internal dashboard or assume that every visitor already understands BOOSTR.
+The installed app opens `/app/?source=pwa`, a public service gateway. It is not a private dashboard and it must not assume that the visitor already knows what BOOSTR is.
 
-It presents two independent paths with equal visibility:
+The first screen is organized by user intent:
 
-- **BOOSTR Audit** for a visitor who does not yet know what system, module, or solution the business needs.
-- **BOOSTR Login** for a person who already has an account, workspace, private invitation, or direct access.
+- **Use a service now:** guests and customers of a partner can open a public service without signing in when that service allows guest access.
+- **Enter a private panel:** owners, managers, staff, employees, operators and BOOSTR clients use login or an invitation.
 
-The landing does not force login visitors through the Audit. It also does not describe BOOSTR as “my system” to an unknown visitor.
+An authenticated person is not automatically removed from the public gateway. The app keeps public services available and reveals a role-aware **Open my panel** action.
 
-When `/api/session` confirms an active session, the login path changes to **Continue in BOOSTR** and uses the safe same-origin destination returned by the session. Session detection is non-blocking and uses `cache: no-store`; a backend failure cannot prevent the Audit and Login links from working.
+## Current public services
+
+### SMART PARKING
+
+SMART PARKING is live. It opens the OMNI JR flow, where a visitor can choose a vehicle, provide a plate and email, pay, and receive a QR receipt without creating an account.
+
+### BOOSTR EATS, BOOSTR RIDES and BOOSTR EXOTIC
+
+These are frontend-only future service positions. They are labeled **Próximamente**, do not open fake checkout flows, and do not require login.
+
+## Private routing
+
+After authentication, BOOSTR resolves the destination from the account and active workspace:
+
+- Admin → `/admin/`
+- Manager → `/manager/`
+- Partner / business owner → `/partner-dashboard/`
+- Staff / employee / operator / BOOSTR client → `/app/workspace/`
+- Founder identities → founder-specific Custom OS routes
+
+Exact `/app/` stays public. Nested `/app/*` routes remain protected unless a future route is explicitly declared public.
+
+## Account rule
+
+Guest access remains available for simple, low-risk purchases or actions that do not require future identity or history.
+
+An account is required for private dashboards, staff operations, recurring access, rewards, Fan Passport, VIP access, licenses, downloads, warranties, transfers, private content, or other records that must remain attached to a person.
 
 ## Install on iPhone
 
-1. Open the deployed BOOSTR Labs URL in Safari.
+1. Open the deployed PWA URL in Safari.
 2. Wait for the page to finish loading.
 3. Tap the Safari Share button.
 4. Choose **Add to Home Screen**.
-5. Confirm the name **BOOSTR Labs** and tap **Add**.
-6. Launch BOOSTR from the new home-screen icon.
+5. Confirm the name **BOOSTR** and tap **Add**.
+6. Launch BOOSTR from the home-screen icon.
 
 Safari must be used for installation. Opening the URL inside Instagram, Gmail, or another embedded browser is not sufficient.
 
 ## Update behavior
 
-- Page navigation is network-first, so a new Cloudflare deployment is used on the next open or navigation when online.
+- Navigation is network-first, so a new Cloudflare deployment is used when online.
 - Static visual assets may use a cache fallback when the network is unavailable.
-- A service-worker upgrade displays **Update BOOSTR**. Activating it switches to the new service worker and reloads once.
+- A service-worker upgrade displays **Update BOOSTR**.
+- The guest-first correction uses cache version `boostr-pwa-v3`.
 - No App Store update or device reinstall is required for normal frontend deployments.
-- For a landing-only change, fully close and reopen the installed PWA. If the prior page remains visible, open the branch URL once in Safari and then reopen the home-screen app.
+- If the prior page remains visible, fully close the PWA, open the branch URL once in Safari, then reopen the home-screen app and accept **Update BOOSTR** when shown.
 
-## Offline behavior
+## Offline and privacy behavior
 
-The offline page intentionally does not display cached leads, orders, payments, private dashboards, or other business records. It states that current data could not be loaded and asks the user to reconnect.
-
-## Data and cache guardrails
+The offline page intentionally does not display cached leads, orders, payments, private dashboards, or other business records.
 
 The service worker bypasses caching for:
 
 - `/api/*`
 - login and administration routes
-- manager, partner, and client application routes
+- manager, partner, and application routes
 - payments, checkout, orders, and leads
 - URLs containing `pin` or `token`
 - requests containing authorization or manager PIN headers
 - all non-GET requests
 
-## Landing QA
+## iPhone QA
 
-Before merge, verify from the installed iPhone PWA:
+Before pilot acceptance, verify from the installed PWA:
 
-1. The first screen shows Audit and Login without exposing internal Manager/Client navigation.
-2. Audit opens `/audit/`.
-3. Login opens `/login/`.
-4. Private invitation opens `/accept-invite/`.
-5. Spanish/English switching survives reopen.
-6. An authenticated account sees **Continue in BOOSTR**.
-7. An unavailable `/api/session` request does not break either public path.
-8. The layout clears the notch, Dynamic Island, keyboard, and home indicator.
+1. The first screen opens without login.
+2. SMART PARKING opens the OMNI JR guest-capable flow.
+3. EATS, RIDES and EXOTIC only show a future-service message.
+4. Login and invitation are available but visually secondary.
+5. A guest never sees workspace, manager, staff or ecosystem controls.
+6. An authenticated manager opens `/manager/` from **Open my panel**.
+7. An authenticated partner or owner opens `/partner-dashboard/`.
+8. Staff, employees and BOOSTR clients open `/app/workspace/`.
+9. Public services remain usable while a session is active.
+10. The layout clears the notch, Dynamic Island, keyboard and home indicator.
+11. A service-worker update replaces the previous login-walled shell.
 
 ## Rollback
 
-Revert the faulty commit or deployment in GitHub/Cloudflare. Because navigation is network-first, the repaired deployment becomes the source of truth without reinstalling the home-screen app. If the service worker itself changed, publish a new service-worker version so the installed app offers the controlled update.
+Revert the faulty commit or deployment in GitHub/Cloudflare. Because navigation is network-first, the repaired deployment becomes the source of truth without reinstalling the home-screen app. If the service worker changed, publish a new cache version so the installed app offers a controlled update.
 
 ## Pilot limitations
 
