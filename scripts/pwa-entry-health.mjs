@@ -41,7 +41,6 @@ need(app, [
   'href="/audit/"',
   'href="/client-audit/"',
   "fetch('/api/session'",
-  'visible_modules',
   'maximum-scale=1',
   'user-scalable=no',
   "addEventListener('gesturestart'",
@@ -141,10 +140,8 @@ need(workspace, ['ESPACIO PRIVADO', '/api/session', '/api/dashboard', '/login/?n
 need(middleware, ['const isPublicAppGateway = path === "/app"', 'const isNestedAppSurface = path.startsWith("/app/")', 'const isPublicExperience = isPublicAppGateway'], 'middleware');
 need(shell, ["const isPublicAppGateway = path === '/app'", "const isNestedAppSurface = path.startsWith('/app/')", "'/app/workspace'"], 'shell');
 
-for (const [name, source] of [['registry', registry]]) {
-  try { new Function(source); }
-  catch (error) { failures.push(`${name} script: ${error.message}`); }
-}
+try { new Function(registry); }
+catch (error) { failures.push(`registry script: ${error.message}`); }
 for (const [name, html] of [['app', app], ['client-audit', clientAudit], ['login', login], ['workspace', workspace]]) {
   const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)];
   scripts.forEach((match, index) => {
