@@ -39,7 +39,7 @@ export async function onRequestGet({ env }) {
         amount_cents: Number(row?.amount_cents || 0),
         checkout_mode: row?.checkout_mode || null,
         stable_url: `/parking/omni-jr/${key}`,
-        checkout_url: row?.id ? `/pay/omni/?id=${encodeURIComponent(row.id)}&plan=${encodeURIComponent(key)}` : null
+        checkout_url: row?.id ? `/omni-jr/checkout/?id=${encodeURIComponent(row.id)}&plan=${encodeURIComponent(key)}` : null
       };
     }
 
