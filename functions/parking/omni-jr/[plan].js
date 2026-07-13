@@ -32,7 +32,7 @@ export async function onRequestGet({ env, params }) {
 
   try {
     const provisioned = await ensureOmniPlan(env, key);
-    const target = `/omni-jr/checkout/?id=${encodeURIComponent(provisioned.link.id)}&plan=${encodeURIComponent(key)}`;
+    const target = `/omni-jr/checkout-v3/?id=${encodeURIComponent(provisioned.link.id)}&plan=${encodeURIComponent(key)}`;
     return redirect(target);
   } catch (error) {
     console.error("OMNI JR stable plan route failed", { plan: key, error: String(error?.message || error) });
