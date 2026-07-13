@@ -3,10 +3,12 @@
   window.__BOOSTR_PRODUCTION_SHELL__ = true;
 
   const path = location.pathname.replace(/\/+$/, '') || '/';
-  const internalPrefixes = ['/app', '/manager', '/admin', '/partner-dashboard', '/home', '/modules', '/ecosystem', '/hummusfl', '/smart-payment-link'];
-  const privatePrefixes = ['/app', '/manager', '/admin', '/partner-dashboard'];
-  const isInternal = internalPrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
-  const isPrivate = privatePrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+  const isPublicAppGateway = path === '/app';
+  const isNestedAppSurface = path.startsWith('/app/');
+  const internalPrefixes = ['/manager', '/admin', '/partner-dashboard', '/home', '/modules', '/ecosystem', '/hummusfl', '/smart-payment-link'];
+  const privatePrefixes = ['/manager', '/admin', '/partner-dashboard'];
+  const isInternal = !isPublicAppGateway && (isNestedAppSurface || internalPrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`)));
+  const isPrivate = !isPublicAppGateway && (isNestedAppSurface || privatePrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`)));
   const isExplicitDemo = path.startsWith('/demo/') || document.documentElement.dataset.demo === 'true';
   if (!isInternal || isExplicitDemo) {
     document.getElementById('boostr-loading-gate')?.remove();
@@ -43,7 +45,7 @@
     const email = (session?.user?.email || '').toLowerCase();
     if (email === 'janko@boostrlabs.com') return '/app/janko/';
     if (email === 'johanka@boostrlabs.com') return '/app/johanka/';
-    return session?.redirect || '/app/';
+    return session?.redirect || '/app/workspace/';
   }
 
   async function switchWorkspace(workspaceId) {
@@ -86,7 +88,7 @@
   }
 
   function injectContext(session) {
-    const excluded = ['/app/janko', '/app/johanka', '/app/johanka/cloud'];
+    const excluded = ['/app/workspace', '/app/janko', '/app/johanka', '/app/johanka/cloud'];
     if (excluded.includes(path) || document.querySelector('.boostr-production-context')) return;
     const dashboard = founderDashboard(session);
     const email = session.user?.email || '';
@@ -98,8 +100,8 @@
     bar.setAttribute('data-no-i18n', 'true');
     bar.innerHTML = `
       <button type="button" data-back title="Volver">←</button>
-      <a href="/home/" title="BOOSTR CORE">⌂</a>
-      <a href="${dashboard}" title="Mi Custom OS">OS</a>
+      <a href="/app/" title="Servicios">⌂</a>
+      <a href="${dashboard}" title="Mi panel">OS</a>
       <a class="workspace-os" href="/partner-dashboard/" title="Workspace OS">Workspace OS</a>
       <button type="button" class="workspace" data-workspace title="Cambiar workspace">${esc(active)}</button>
       <a href="${cloud}" title="Archivos">▣</a>
