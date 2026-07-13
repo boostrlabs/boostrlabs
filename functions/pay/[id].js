@@ -88,7 +88,7 @@ export async function onRequestGet({ request, env, params }) {
     }
   }
 
-  const target = new URL(omni ? "/pay/omni/" : "/pay/", incoming.origin);
+  const target = new URL(omni ? "/omni-jr/checkout/" : "/pay/", incoming.origin);
   target.searchParams.set("id", id);
   if (omni && plan) target.searchParams.set("plan", plan);
 
