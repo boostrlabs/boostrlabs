@@ -28,14 +28,21 @@ for (const marker of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EX
 for (const marker of ['/assets/logos/boostr-logo-nav.png', 'Inicia sesión con tus credenciales BOOSTR.', 'id="quickLoginForm"', 'También puedes abrir un servicio disponible sin iniciar sesión.']) {
   if (!app.includes(marker)) failures.push(`BOOSTR App brand or access entry missing marker: ${marker}`);
 }
-for (const marker of ['autocomplete="off"', 'id="boostrIdentifier"', 'name="boostr_account_identifier"', 'id="boostrPassword"', 'class="masked-secret"', 'systemSecretPattern', 'looksLikeSystemSecret', 'Ese valor parece una clave de sistema']) {
+for (const marker of ['data-autofill-proof="contenteditable"', 'contenteditable="plaintext-only"', 'id="boostrIdentifier"', 'id="boostrPassword"', 'class="credential-field masked-secret"', 'systemSecretPattern', 'looksLikeSystemSecret', 'validIdentifier', 'Ese valor parece una clave de sistema']) {
   if (!app.includes(marker)) failures.push(`BOOSTR App credential isolation missing marker: ${marker}`);
+}
+const appCredentialStart = app.indexOf('data-autofill-proof="contenteditable"');
+const appCredentialEnd = app.indexOf('<div class="login-links">', appCredentialStart);
+const appCredentialBlock = appCredentialStart >= 0 && appCredentialEnd > appCredentialStart ? app.slice(appCredentialStart, appCredentialEnd) : '';
+if (!appCredentialBlock) failures.push('BOOSTR App credential block could not be isolated');
+for (const forbidden of ['<input', '<form', 'autocomplete=', 'name="boostr_account_identifier"', 'name="boostr_account_secret"', 'type="password"']) {
+  if (appCredentialBlock.includes(forbidden)) failures.push(`BOOSTR App credential block still exposes Safari autofill trigger: ${forbidden}`);
 }
 for (const marker of ['🍽️', '🚘', '🏎️', 'PRÓXIMAMENTE', 'aria-disabled="true"']) {
   if (!app.includes(marker)) failures.push(`BOOSTR App unavailable-service presentation missing marker: ${marker}`);
 }
-for (const forbidden of ['¿Qué necesitas resolver hoy?', 'Pagar parking', 'Iniciar Audit', 'Tu cuenta.<br>Tu OS.', 'Entra a tu espacio.', '¿Aún no tienes sistema?', 'href="/audit/"', 'name="identifier" autocomplete="username"', 'name="password" type="password" autocomplete="current-password"']) {
-  if (app.includes(forbidden)) failures.push(`BOOSTR App still exposes rejected landing or credential content: ${forbidden}`);
+for (const forbidden of ['¿Qué necesitas resolver hoy?', 'Pagar parking', 'Iniciar Audit', 'Tu cuenta.<br>Tu OS.', 'Entra a tu espacio.', '¿Aún no tienes sistema?', 'href="/audit/"']) {
+  if (app.includes(forbidden)) failures.push(`BOOSTR App still exposes rejected landing content: ${forbidden}`);
 }
 
 for (const marker of ['id="accessPanel"', 'id="memberPanel" hidden', 'roleContext(session)', '/accept-invite/', "fetch('/api/session'", "method:'POST'"]) {
@@ -58,11 +65,15 @@ for (const marker of ['ESPACIO PRIVADO', '/api/session', '/api/dashboard', '/log
 for (const marker of ['roleDestination(data)', "return'/app/workspace/'", 'Usar servicios como guest', 'Bienvenido<br>de vuelta.', '/assets/logos/boostr-logo-nav.png']) {
   if (!login.includes(marker)) failures.push(`Login role router or brand UI missing marker: ${marker}`);
 }
-for (const marker of ['autocomplete="off"', 'id="boostrLoginIdentifier"', 'name="boostr_login_identifier"', 'id="boostrLoginSecret"', 'name="boostr_login_secret"', 'class="masked-secret"', 'looksLikeSystemSecret', 'Ese valor parece una clave de sistema']) {
+for (const marker of ['data-autofill-proof="contenteditable"', 'contenteditable="plaintext-only"', 'id="boostrLoginIdentifier"', 'id="boostrLoginSecret"', 'class="credential-field masked-secret"', 'looksLikeSystemSecret', 'validIdentifier', 'Ese valor parece una clave de sistema']) {
   if (!login.includes(marker)) failures.push(`Dedicated login credential isolation missing marker: ${marker}`);
 }
-for (const forbidden of ['name="identifier" inputmode="email" autocomplete="username"', 'name="password" type="password" autocomplete="current-password"']) {
-  if (login.includes(forbidden)) failures.push(`Dedicated login still exposes rejected autofill configuration: ${forbidden}`);
+const loginCredentialStart = login.indexOf('data-autofill-proof="contenteditable"');
+const loginCredentialEnd = login.indexOf('<div class="links">', loginCredentialStart);
+const loginCredentialBlock = loginCredentialStart >= 0 && loginCredentialEnd > loginCredentialStart ? login.slice(loginCredentialStart, loginCredentialEnd) : '';
+if (!loginCredentialBlock) failures.push('Dedicated login credential block could not be isolated');
+for (const forbidden of ['<input', '<form', 'autocomplete=', 'name="boostr_login_identifier"', 'name="boostr_login_secret"', 'type="password"']) {
+  if (loginCredentialBlock.includes(forbidden)) failures.push(`Dedicated login still exposes Safari autofill trigger: ${forbidden}`);
 }
 
 for (const [name, html] of [['app', app], ['workspace', workspace], ['login', login]]) {
