@@ -17,7 +17,7 @@ export async function onRequestGet({ env, params }) {
     const provisioned = await ensureOmniPlan(env, key);
     return json({
       ok: true,
-      build: "omni-self-heal-v1",
+      build: "omni-self-heal-v2",
       operator: "OMNI JR Parking",
       plan: {
         key: plan.key,
