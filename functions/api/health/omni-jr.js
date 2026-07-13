@@ -44,11 +44,11 @@ export async function onRequestGet({ env }) {
     }
 
     const ok = Object.values(plans).every((plan) => plan.ok);
-    if (!ok) return jsonError("omni_health_failed", "One or more OMNI JR plans are unhealthy.", 503, { build: "omni-self-heal-v1", plans });
+    if (!ok) return jsonError("omni_health_failed", "One or more OMNI JR plans are unhealthy.", 503, { build: "omni-self-heal-v2", plans });
 
     return json({
       ok: true,
-      build: "omni-self-heal-v1",
+      build: "omni-self-heal-v2",
       db_binding: "DB",
       operator: "omni-jr-parking",
       plans
@@ -56,7 +56,7 @@ export async function onRequestGet({ env }) {
   } catch (error) {
     console.error("OMNI JR health repair failed", error);
     return jsonError("omni_health_exception", "OMNI JR health check failed.", 503, {
-      build: "omni-self-heal-v1",
+      build: "omni-self-heal-v2",
       reason: String(error?.message || error),
       plans
     });
