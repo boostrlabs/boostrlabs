@@ -1,5 +1,5 @@
 const base = (process.env.BOOSTR_BASE_URL || "https://boostrlabs.pages.dev").replace(/\/$/, "");
-const expectedBuild = "omni-self-heal-v1";
+const expectedBuild = "omni-self-heal-v2";
 const attempts = Math.max(1, Number(process.env.OMNI_SMOKE_ATTEMPTS || 36));
 const delayMs = Math.max(1000, Number(process.env.OMNI_SMOKE_DELAY_MS || 10000));
 const expected = {
@@ -61,7 +61,7 @@ for (const [plan, rules] of Object.entries(expected)) {
   assert(["/omni-jr/checkout", "/omni-jr/checkout/"].includes(finalCheckoutUrl.pathname), `${plan}: checkout canonicalized to ${finalCheckoutUrl.pathname}`);
   assert(finalCheckoutUrl.searchParams.get("id") === id, `${plan}: payment link id was lost after canonical redirect`);
   assert(finalCheckoutUrl.searchParams.get("plan") === plan, `${plan}: plan was lost after canonical redirect`);
-  assert(checkoutHtml.includes('data-build="omni-self-heal-v1"'), `${plan}: current checkout build marker missing`);
+  assert(checkoutHtml.includes('data-build="omni-self-heal-v2"'), `${plan}: current checkout build marker missing`);
   assert(checkoutHtml.includes("OMNI JR PARKING"), `${plan}: OMNI branding missing`);
   assert(!checkoutHtml.includes("Link no disponible"), `${plan}: stale unavailable-link UI detected`);
 
