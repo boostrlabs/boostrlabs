@@ -9,6 +9,8 @@ const sharedRuntime = read('public/assets/boostr-theme/shared-ui-runtime.js');
 const sharedCss = read('public/assets/boostr-theme/shared-ui-v2.css');
 const themeLib = read('functions/_lib/theme.js');
 const app = read('public/app/index.html');
+const registry = read('public/assets/boostr-launcher/registry.js');
+const clientAudit = read('public/client-audit/index.html');
 const home = read('public/home/index.html');
 const payment = read('public/smart-payment-link/index.html');
 const modules = read('public/modules/index.html');
@@ -33,12 +35,47 @@ assert.ok(sharedCss.includes('.boostr-app-shell'));
 assert.ok(sharedCss.includes('.boostr-payment-grid'));
 assert.ok(sharedCss.includes('One shared mobile dock'));
 
-for (const marker of ['class="app"','class="card access"','assets/logos/boostr-logo-nav.png','/parking/omni-jr/','function d(s)','maximum-scale=1','user-scalable=no']) {
+for (const marker of [
+  'class="app"',
+  'class="launcher"',
+  'data-launcher-level="os-only"',
+  'assets/logos/boostr-logo-nav.png',
+  'assets/boostr-launcher/registry.js',
+  'Operating Systems',
+  '¿Nuevo en BOOSTR?',
+  '/client-audit/',
+  'maximum-scale=1',
+  'user-scalable=no'
+]) {
   assert.ok(app.includes(marker), `Missing app marker: ${marker}`);
 }
-for (const removed of ['class="card login-preview"','id="quickLoginForm"','boostr-mother/i18n.js']) {
+for (const removed of [
+  'class="card access"',
+  'class="card login-preview"',
+  'id="quickLoginForm"',
+  'boostr-mother/i18n.js',
+  'href="/ecosystem/"',
+  'href="/modules/"'
+]) {
   assert.ok(!app.includes(removed), `Removed app marker returned: ${removed}`);
 }
+
+for (const osName of ['BOOSTR WORKER OS', 'PARKING OS', 'RESTAURANT OS', 'AUTOMOTIVE OS', 'ARTIST OS', 'PAYMENTS OS', 'BEAUTY OS']) {
+  assert.ok(registry.includes(`name: '${osName}'`), `Missing OS registry name: ${osName}`);
+}
+assert.ok(registry.includes("publicRoute: '/parking/omni-jr/'"));
+assert.ok(registry.includes("guestState: 'locked'"));
+assert.ok(registry.includes('visible_modules'));
+assert.ok(registry.includes('workspaces'));
+assert.ok(registry.includes('personas'));
+assert.ok(!registry.includes("publicRoute: '/hummusfl/'"));
+assert.ok(!registry.includes("publicRoute: '/jankodiorr/'"));
+assert.ok(!registry.includes("publicRoute: '/82ngel/'"));
+
+assert.ok(clientAudit.includes('No es un marketplace.'));
+assert.ok(clientAudit.includes('/accept-invite/'));
+assert.ok(clientAudit.includes('/login/'));
+assert.ok(clientAudit.includes('/app/'));
 
 assert.ok(home.includes('boostr-app-shell'));
 assert.ok(home.includes('boostr-hero-grid'));
