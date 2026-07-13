@@ -46,6 +46,31 @@ function normalizeOmniMetadata(link, metadata) {
   };
 }
 
+function isUiModeCompatibilityError(error) {
+  const message = clean(error?.message, 500).toLowerCase();
+  return Number(error?.status || 0) === 400
+    && (message.includes("ui_mode") || message.includes("embedded_page") || message.includes("embedded"));
+}
+
+async function createEmbeddedSession(secretKey, formPayload, paymentId) {
+  let lastError = null;
+  for (const uiMode of ["embedded", "embedded_page"]) {
+    try {
+      const session = await stripeRequest(secretKey, "/checkout/sessions", {
+        method: "POST",
+        body: stripeForm({ ...formPayload, ui_mode: uiMode }),
+        idempotencyKey: `boostr-embedded-checkout-${uiMode}-${paymentId}`
+      });
+      return { session, uiMode: session?.ui_mode || uiMode };
+    } catch (error) {
+      lastError = error;
+      if (uiMode === "embedded" && isUiModeCompatibilityError(error)) continue;
+      throw error;
+    }
+  }
+  throw lastError || new Error("embedded_checkout_session_failed");
+}
+
 export async function onRequestOptions() { return json({ ok: true }); }
 
 export async function onRequestPost({ request, env, params }) {
@@ -106,7 +131,7 @@ export async function onRequestPost({ request, env, params }) {
     workspace_name: link.workspace_name || null,
     sale_type: saleType,
     stripe_mode: stripeMode,
-    ui_mode: "elements",
+    ui_mode: "embedded",
     operator: isParking ? "omni_jr" : null,
     parking_plate: isParking ? plateDisplay : null,
     parking_plate_normalized: isParking ? plate : null,
@@ -134,7 +159,6 @@ export async function onRequestPost({ request, env, params }) {
 
   const formPayload = {
     mode: stripeMode,
-    ui_mode: "elements",
     return_url: `${origin}/pay/${encodeURIComponent(link.id)}?session_id={CHECKOUT_SESSION_ID}`,
     customer_email: email || undefined,
     client_reference_id: paymentId,
@@ -164,12 +188,7 @@ export async function onRequestPost({ request, env, params }) {
   }
 
   try {
-    const session = await stripeRequest(credentials.secretKey, "/checkout/sessions", {
-      method: "POST",
-      body: stripeForm(formPayload),
-      idempotencyKey: `boostr-elements-checkout-${paymentId}`
-    });
-
+    const { session, uiMode } = await createEmbeddedSession(credentials.secretKey, formPayload, paymentId);
     if (!session?.client_secret) throw new Error("payment_client_secret_missing");
 
     await env.DB.prepare(
@@ -180,7 +199,7 @@ export async function onRequestPost({ request, env, params }) {
 
     await recordStripeActivity(env, {
       workspaceId: link.workspace_id,
-      eventType: stripeMode === "subscription" ? "payments.subscription.elements.created" : "payments.elements.created",
+      eventType: stripeMode === "subscription" ? "payments.subscription.embedded.created" : "payments.embedded.created",
       title: stripeMode === "subscription" ? "Suscripción preparada" : "Pago preparado",
       body: link.title,
       metadata: {
@@ -189,7 +208,7 @@ export async function onRequestPost({ request, env, params }) {
         session_id: session.id,
         mode: credentials.mode,
         sale_type: saleType,
-        ui_mode: "elements",
+        ui_mode: uiMode,
         operator: isParking ? "omni_jr" : null,
         plate: isParking ? plate : null
       }
@@ -204,7 +223,7 @@ export async function onRequestPost({ request, env, params }) {
         publishable_key: credentials.publishableKey,
         mode: credentials.mode,
         sale_type: saleType,
-        ui_mode: "elements"
+        ui_mode: uiMode
       }
     }, 201);
   } catch (error) {
