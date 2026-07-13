@@ -13,6 +13,7 @@ on:
       - 'public/pwa.css'
       - 'public/offline.html'
       - 'public/assets/boostr-entry/**'
+      - 'public/assets/boostr-mother/session-ui.js'
       - 'public/_headers'
       - 'scripts/pwa-health.mjs'
       - 'vite.config.js'
@@ -28,6 +29,7 @@ on:
       - 'public/pwa.css'
       - 'public/offline.html'
       - 'public/assets/boostr-entry/**'
+      - 'public/assets/boostr-mother/session-ui.js'
       - 'public/_headers'
       - 'scripts/pwa-health.mjs'
       - 'vite.config.js'
@@ -48,6 +50,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 9.15.9

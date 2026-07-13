@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" data-build="1.1.0" data-session="loading">
+<html lang="es" data-build="1.1.1" data-session="loading">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="stylesheet" href="/assets/boostr-entry/entry.css?v=1.1.0">
   <script src="/assets/boostr-mother/session-ui.js?v=0.9.0" defer></script>
-  <script src="/assets/boostr-entry/entry.js?v=1.1.0" defer></script>
+  <script src="/assets/boostr-entry/entry.js?v=1.1.1" defer></script>
 </head>
 <body class="boostr-entry">
   <div class="entry-ambient" aria-hidden="true"></div>
@@ -24,7 +24,7 @@
       </a>
       <div class="header-tools">
         <span class="app-state"><i></i><span data-i18n="status">BOOSTR ONLINE</span></span>
-        <div class="language-switch" role="group" aria-label="Language">
+        <div class="language-switch" role="group" data-i18n-aria-label="languageLabel" aria-label="Idioma">
           <button type="button" data-language="es" aria-pressed="true">ES</button>
           <button type="button" data-language="en" aria-pressed="false">EN</button>
         </div>
@@ -36,7 +36,6 @@
         <span data-i18n="routeLabel">ENCONTRANDO TU RUTA</span>
         <b id="stepCounter">01</b>
       </div>
-
       <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
 
       <div class="decision-mark" aria-hidden="true">
@@ -49,7 +48,6 @@
         <span class="question-kicker" id="questionKicker">BOOSTR ENTRY</span>
         <h1 id="entryQuestion">¿Ya tienes acceso a BOOSTR?</h1>
         <p id="entryDescription">Cuenta activa o invitación privada.</p>
-
         <div class="binary-options" id="binaryOptions">
           <button class="binary-option option-a" id="choiceA" type="button">
             <span class="option-letter">A</span>
@@ -77,15 +75,10 @@
     </footer>
   </main>
 
-  <noscript>
-    <div class="noscript-fallback">
-      <a href="/login/">Iniciar sesión</a>
-      <a href="/audit/">Comenzar BOOSTR Audit</a>
-    </div>
-  </noscript>
+  <noscript><div class="noscript-fallback"><a href="/login/">Iniciar sesión</a><a href="/audit/">Comenzar BOOSTR Audit</a></div></noscript>
 
   <dialog class="install-dialog" id="installDialog">
-    <button class="dialog-close" id="installClose" type="button" aria-label="Close">×</button>
+    <button class="dialog-close" id="installClose" type="button" data-i18n-aria-label="closeLabel" aria-label="Cerrar">×</button>
     <img src="/assets/icons/09.-b-star-favicon.png" alt="BOOSTR Labs">
     <span class="question-kicker" data-i18n="installEyebrow">BOOSTR PWA</span>
     <h2 data-i18n="installTitle">Instala BOOSTR en tu iPhone.</h2>
