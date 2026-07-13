@@ -1,5 +1,343 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BOOSTR Labs — Custom Operating Systems</title><meta name="description" content="BOOSTR Labs Custom Operating Systems."><link rel="icon" href="/assets/icons/09.-b-star-favicon.png"><link rel="stylesheet" href="/assets/boostr-mother/mother.css"></head><body><div class="ambient"></div><div class="os"><aside class="sidebar glass" aria-label="BOOSTR OS navigation"><a class="logo-mark" href="/home"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-letter',textContent:'B'}))"></a><nav class="icon-nav"><a  href="/manager" title="Manager">⌘</a><a  href="/app" title="Client">◫</a><a  href="/partner-dashboard" title="Partner">◇</a><a  href="/audit" title="Audit">↯</a><a  href="/portfolio" title="Portfolio">◌</a></nav><div class="utility"><a  href="/login" title="Role Login">◎</a><a  href="/ecosystem" title="Ecosystem Map">?</a></div></aside><main class="main"><header class="topbar glass"><div class="greeting"><span>BOOSTR Labs</span><strong>BOOSTR Labs</strong></div><div class="search">⌕ Search modules, leads, partners, stores...</div><a class="bell" href="/admin" title="Admin">♟</a><a class="role-pill" href="/login"><div class="avatar"></div><div><b>Role Access</b><div class="micro">Manager / Partner / Client</div></div></a></header><section class="dashboard"><div class="left-col">
-<section class="card glass"><div class="hero-grid"><div class="hero-copy"><div class="chip gold">Custom Operating Systems</div><h1>The system layer behind modern businesses.</h1><p>BOOSTR Labs builds websites, apps, dashboards, stores, audit funnels and operating systems around how each business actually works.</p><div class="actions"><a class="btn primary" href="/audit">Start BOOSTR Audit</a><a class="btn" href="/portfolio">View work</a><a class="btn" href="/login">Role access</a></div></div><div class="visual-card"><div class="orbital"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="orbit-node o1">Website</span><span class="orbit-node o2">CRM</span><span class="orbit-node o3">Store</span><span class="orbit-node o4">Dashboard</span><span class="orbit-node o5">AI</span></div></div></div></section>
-<section class="card glass"><div class="section-head"><div><h2>What we build</h2><div class="micro">Services stay clear. The system can grow later.</div></div><a class="chip" href="/modules">Registry</a></div><div class="metrics"><a class="metric" href="/audit"><span>Lead funnel</span><b>Audit</b><small>Live</small></a><a class="metric" href="/82store"><span>Commerce</span><b>Store</b><small>Live</small></a><a class="metric" href="/app"><span>Workspace</span><b>Client</b><small>Ready</small></a><a class="metric" href="/manager"><span>Operations</span><b>Manager</b><small>Ready</small></a></div></section>
-<section class="card glass"><div class="section-head"><div><h2>Live network</h2><div class="micro">No ambassador or pulse layers. Audit is the main lead entry.</div></div></div><div class="network-grid"><div class="module"><b>BOOSTR Audit</b><p class="micro">Qualification and diagnosis.</p><a href="/audit">Open →</a></div><div class="module"><b>82 Store</b><p class="micro">Commerce frontend.</p><a href="/82store">Open →</a></div><div class="module"><b>82NGEL Link</b><p class="micro">Artist smart link.</p><a href="/82ngel">Open →</a></div><div class="module"><b>Janko Diorr</b><p class="micro">WESTDETRO smart link.</p><a href="/jankodiorr">Open →</a></div><div class="module"><b>GEMESE OS</b><p class="micro">Dashboard demo.</p><a href="/app/gemese">Open →</a></div><div class="module"><b>OMG Beauty</b><p class="micro">Portfolio route.</p><a href="/omgbeauty">Open →</a></div></div></section>
-</div><div class="right-col"><section class="card glass"><div class="pulse"><span class="chip live">Ready for leads</span><strong>Audit</strong><div class="micro">Use /audit as the public entry point. Manager OS receives the backend wiring later.</div></div></section><section class="mini-switches"><a class="switch-card on glass" href="/login"><div class="switch-top"><b>Role Login</b><span class="toggle"></span></div><p class="micro">Manager, Partner, Client and Artist access shells.</p></a><a class="switch-card off glass" href="/admin"><div class="switch-top"><b>Backend</b><span class="toggle"></span></div><p class="micro">Codex connects auth, DB, payments and CRM next.</p></a></section><section class="card glass"><h3>Next backend move</h3><div class="timeline"><a class="task" href="/login"><span class="dot blue"></span><div><b>Auth by role</b><span>Manager / Partner / Client.</span></div><span>01</span></a><a class="task" href="/audit"><span class="dot"></span><div><b>Save audit leads</b><span>Cloudflare Function + D1.</span></div><span>02</span></a><a class="task" href="/manager"><span class="dot gold"></span><div><b>Manager inbox</b><span>See leads and modules.</span></div><span>03</span></a></div></section></div></section><nav class="bottom-tabs glass" aria-label="BOOSTR OS quick switcher"><a class="" href="/manager">Manager</a><a class="" href="/partner-dashboard">Partner</a><a class="" href="/app">Client</a><a href="/audit">Audit</a><a class="" href="/portfolio">Portfolio</a><a class="plus" href="/login">+</a></nav><footer class="footer">BOOSTR Labs • Mother UI • Backend/auth/data pending Codex</footer></main></div><nav class="mobile-tabs"><a class="" href="/manager">Manager</a><a class="" href="/app">Client</a><a class="" href="/partner-dashboard">Partner</a><a href="/audit">Audit</a><a class="" href="/login">Login</a></nav></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <title>BOOSTR Labs — Comienza o entra</title>
+  <meta name="description" content="Descubre qué necesita tu negocio con BOOSTR Audit o entra a tu cuenta BOOSTR.">
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#050505;
+      --panel:rgba(255,255,255,.055);
+      --panel-strong:rgba(255,255,255,.09);
+      --line:rgba(255,255,255,.14);
+      --text:#f7f7f4;
+      --muted:rgba(255,255,255,.58);
+      --champagne:#feedb9;
+      --green:#76ffa8;
+      --shadow:0 28px 90px rgba(0,0,0,.52);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html{min-height:100%;background:var(--bg)}
+    body{
+      min-height:100dvh;
+      margin:0;
+      overflow-x:hidden;
+      background:
+        radial-gradient(circle at 82% 3%,rgba(254,237,185,.14),transparent 30%),
+        radial-gradient(circle at 7% 94%,rgba(118,255,168,.08),transparent 28%),
+        linear-gradient(180deg,#090909 0,#030303 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,Arial,sans-serif;
+    }
+    a{color:inherit}
+    button,a{touch-action:manipulation}
+    .shell{
+      min-height:100dvh;
+      width:min(1120px,100%);
+      margin:0 auto;
+      padding:
+        max(24px,env(safe-area-inset-top))
+        max(20px,env(safe-area-inset-right))
+        max(24px,env(safe-area-inset-bottom))
+        max(20px,env(safe-area-inset-left));
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      isolation:isolate;
+    }
+    .noise{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.035;
+      z-index:-1;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;min-width:0}
+    .brand img{width:128px;max-width:42vw;max-height:44px;object-fit:contain;object-position:left center}
+    .pilot{
+      border:1px solid rgba(118,255,168,.22);
+      background:rgba(118,255,168,.07);
+      color:var(--green);
+      border-radius:999px;
+      padding:7px 10px;
+      font:800 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+      letter-spacing:.13em;
+      white-space:nowrap;
+    }
+    .lang{
+      min-width:44px;
+      min-height:40px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .hero{padding:clamp(58px,10vh,108px) 0 34px;max-width:830px}
+    .eyebrow{
+      margin:0 0 16px;
+      color:var(--champagne);
+      font:900 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+    }
+    h1{
+      max-width:800px;
+      margin:0;
+      font-family:Arial Black,-apple-system,BlinkMacSystemFont,sans-serif;
+      font-size:clamp(48px,10vw,104px);
+      line-height:.87;
+      letter-spacing:-.082em;
+      text-wrap:balance;
+    }
+    .intro{
+      max-width:660px;
+      margin:22px 0 0;
+      color:var(--muted);
+      font-size:clamp(16px,2.3vw,20px);
+      line-height:1.48;
+      text-wrap:pretty;
+    }
+    .paths{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-bottom:30px}
+    .path{
+      min-height:290px;
+      padding:24px;
+      border:1px solid var(--line);
+      border-radius:30px;
+      background:linear-gradient(145deg,var(--panel-strong),var(--panel));
+      box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.09);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      position:relative;
+    }
+    .path::after{
+      content:"";
+      width:180px;
+      height:180px;
+      position:absolute;
+      right:-78px;
+      top:-78px;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:50%;
+      box-shadow:0 0 0 28px rgba(255,255,255,.018),0 0 0 56px rgba(255,255,255,.012);
+    }
+    .path.audit{border-color:rgba(254,237,185,.24)}
+    .path.login{border-color:rgba(118,255,168,.2)}
+    .path-num{font:900 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;color:var(--muted)}
+    .path h2{margin:42px 0 10px;font-size:clamp(31px,4vw,49px);line-height:.94;letter-spacing:-.055em;max-width:12ch}
+    .path p{margin:0 0 24px;color:var(--muted);font-size:14px;line-height:1.5;max-width:45ch}
+    .path-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:auto}
+    .primary,.secondary{
+      min-height:50px;
+      border-radius:999px;
+      padding:0 19px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:900;
+      border:1px solid var(--line);
+    }
+    .primary{background:#fff;color:#050505;border-color:#fff}
+    .login .primary{background:var(--green);border-color:var(--green)}
+    .secondary{background:rgba(255,255,255,.04);color:#fff}
+    .primary:active,.secondary:active{transform:scale(.985)}
+    .meta{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.42);font-size:11px;font-weight:750}
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 15px rgba(118,255,168,.7)}
+    .session{
+      display:none;
+      margin-top:16px;
+      border:1px solid rgba(118,255,168,.22);
+      border-radius:18px;
+      padding:12px 14px;
+      color:rgba(255,255,255,.7);
+      background:rgba(118,255,168,.055);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .session.on{display:block}
+    .session strong{color:#fff}
+    footer{margin-top:auto;padding:18px 2px 2px;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;color:rgba(255,255,255,.35);font-size:10px;letter-spacing:.06em}
+    footer a{text-decoration:none;color:rgba(255,255,255,.58);font-weight:800}
+    @media(max-width:760px){
+      .shell{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));padding-bottom:max(18px,env(safe-area-inset-bottom))}
+      .topbar{padding:2px 2px 0}
+      .pilot{display:none}
+      .hero{padding:54px 5px 28px}
+      h1{font-size:clamp(52px,16vw,76px)}
+      .intro{font-size:16px;max-width:38ch}
+      .paths{grid-template-columns:1fr;gap:12px}
+      .path{min-height:250px;padding:21px;border-radius:27px}
+      .path h2{margin-top:34px;font-size:38px}
+      .path-actions{display:grid;grid-template-columns:1fr}
+      .primary,.secondary{width:100%}
+      footer{padding-bottom:6px}
+    }
+    @media(max-width:380px){
+      .hero{padding-top:40px}
+      h1{font-size:49px}
+      .path h2{font-size:34px}
+    }
+    @media(prefers-reduced-motion:no-preference){
+      .hero,.path{animation:rise .55s ease both}
+      .path:nth-child(2){animation-delay:.08s}
+      @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    }
+  </style>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="BOOSTR Labs home">
+        <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
+        <span class="pilot" id="pilotLabel">MOBILE PILOT</span>
+      </a>
+      <button class="lang" id="langToggle" type="button" aria-label="Cambiar idioma">EN</button>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow" data-i18n="eyebrow">TU PUNTO DE ENTRADA</p>
+      <h1 data-i18n="title">¿Qué necesitas hacer hoy?</h1>
+      <p class="intro" data-i18n="intro">Si todavía no sabes qué sistema necesita tu negocio, empieza con el Audit. Si ya tienes una cuenta o invitación, entra directamente.</p>
+    </section>
+
+    <section class="paths" aria-label="Opciones de acceso">
+      <article class="path audit">
+        <span class="path-num">01 · DISCOVERY</span>
+        <h2 data-i18n="auditTitle">Todavía estoy descubriendo.</h2>
+        <p data-i18n="auditCopy">BOOSTR Audit identifica dónde se tranca tu operación, qué ya tienes y qué debería construirse primero.</p>
+        <div class="path-actions">
+          <a class="primary" href="/audit/" data-i18n="auditCta">Comenzar Audit <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+
+      <article class="path login" id="loginPath">
+        <span class="path-num">02 · ACCESS</span>
+        <h2 id="loginTitle" data-i18n="loginTitle">Ya tengo acceso.</h2>
+        <p id="loginCopy" data-i18n="loginCopy">Inicia sesión para abrir tus workspaces, dashboards, módulos y herramientas de BOOSTR.</p>
+        <div class="session" id="sessionNotice" aria-live="polite"></div>
+        <div class="path-actions" id="loginActions">
+          <a class="primary" id="loginPrimary" href="/login/" data-i18n="loginCta">Iniciar sesión <span aria-hidden="true">→</span></a>
+          <a class="secondary" href="/accept-invite/" data-i18n="inviteCta">Tengo una invitación</a>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      <span>BOOSTR LABS · BUSINESS OPERATING SYSTEMS</span>
+      <a href="/portfolio/" data-i18n="portfolio">Ver trabajos</a>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      const translations = {
+        es: {
+          eyebrow:'TU PUNTO DE ENTRADA',
+          title:'¿Qué necesitas hacer hoy?',
+          intro:'Si todavía no sabes qué sistema necesita tu negocio, empieza con el Audit. Si ya tienes una cuenta o invitación, entra directamente.',
+          auditTitle:'Todavía estoy descubriendo.',
+          auditCopy:'BOOSTR Audit identifica dónde se tranca tu operación, qué ya tienes y qué debería construirse primero.',
+          auditCta:'Comenzar Audit <span aria-hidden="true">→</span>',
+          loginTitle:'Ya tengo acceso.',
+          loginCopy:'Inicia sesión para abrir tus workspaces, dashboards, módulos y herramientas de BOOSTR.',
+          loginCta:'Iniciar sesión <span aria-hidden="true">→</span>',
+          inviteCta:'Tengo una invitación',
+          portfolio:'Ver trabajos',
+          sessionTitle:'Tu sesión sigue activa.',
+          sessionCopy:'Puedes continuar sin volver a iniciar sesión.',
+          continueCta:'Continuar en BOOSTR <span aria-hidden="true">→</span>'
+        },
+        en: {
+          eyebrow:'YOUR ENTRY POINT',
+          title:'What do you need to do today?',
+          intro:'If you are still unsure what system your business needs, start with the Audit. If you already have an account or invitation, sign in directly.',
+          auditTitle:'I am still figuring it out.',
+          auditCopy:'BOOSTR Audit identifies where your operation gets stuck, what you already have and what should be built first.',
+          auditCta:'Start Audit <span aria-hidden="true">→</span>',
+          loginTitle:'I already have access.',
+          loginCopy:'Sign in to open your BOOSTR workspaces, dashboards, modules and tools.',
+          loginCta:'Sign in <span aria-hidden="true">→</span>',
+          inviteCta:'I have an invitation',
+          portfolio:'View work',
+          sessionTitle:'Your session is still active.',
+          sessionCopy:'Continue without signing in again.',
+          continueCta:'Continue to BOOSTR <span aria-hidden="true">→</span>'
+        }
+      };
+
+      const toggle = document.getElementById('langToggle');
+      const notice = document.getElementById('sessionNotice');
+      const loginTitle = document.getElementById('loginTitle');
+      const loginCopy = document.getElementById('loginCopy');
+      const loginPrimary = document.getElementById('loginPrimary');
+      let lang = localStorage.getItem('boostr_lang') || ((navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en');
+      let activeSession = null;
+
+      function applyLanguage(next) {
+        lang = next;
+        localStorage.setItem('boostr_lang', lang);
+        document.documentElement.lang = lang;
+        toggle.textContent = lang === 'es' ? 'EN' : 'ES';
+        document.querySelectorAll('[data-i18n]').forEach((node) => {
+          const key = node.dataset.i18n;
+          if (translations[lang][key]) node.innerHTML = translations[lang][key];
+        });
+        if (activeSession) paintSession(activeSession);
+      }
+
+      function safeDestination(data) {
+        const candidate = data?.redirect || data?.active_workspace?.dashboard_path || '/app/';
+        if (typeof candidate !== 'string' || !candidate.startsWith('/') || candidate.startsWith('//') || candidate.includes('\\')) return '/app/';
+        return candidate;
+      }
+
+      function paintSession(data) {
+        activeSession = data;
+        const text = translations[lang];
+        const name = data?.user?.name || data?.user?.username || data?.user?.email || '';
+        loginTitle.textContent = text.sessionTitle;
+        loginCopy.textContent = text.sessionCopy;
+        notice.classList.add('on');
+        notice.innerHTML = name ? `<strong>${escapeHtml(name)}</strong><br>${text.sessionCopy}` : text.sessionCopy;
+        loginPrimary.href = safeDestination(data);
+        loginPrimary.innerHTML = text.continueCta;
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+      }
+
+      async function detectSession() {
+        const token = localStorage.getItem('boostr_auth_token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        try {
+          const response = await fetch('/api/session', { headers, credentials:'same-origin', cache:'no-store' });
+          if (!response.ok) return;
+          const data = await response.json();
+          if (data?.user || data?.ok) paintSession(data);
+        } catch (_) {
+          // Landing remains fully usable when session detection is unavailable.
+        }
+      }
+
+      toggle.addEventListener('click', () => applyLanguage(lang === 'es' ? 'en' : 'es'));
+      applyLanguage(lang);
+      detectSession();
+    })();
+  </script>
+</body>
+</html>
