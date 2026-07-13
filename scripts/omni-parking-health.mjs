@@ -157,7 +157,7 @@ const checks = {
   ],
   "public/assets/omni-jr/omni-jr-logo-black.svg": [
     "OMNI JR Parking",
-    "viewBox=\"0 0 1024 1024\"",
+    "viewBox=\"0 0 1254 1254\"",
     "PARKING"
   ]
 };
