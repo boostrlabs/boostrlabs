@@ -1,32 +1,80 @@
-function scriptValue(value) {
-  return JSON.stringify(String(value || "")).replace(/</g, "\\u003c");
+const LEGACY_OMNI_LINKS = {
+  "913ccc9a-e7fe-4dfc-8310-a70b47d10fb8": "/parking/omni-jr/standard"
+};
+
+function parseJson(value) {
+  try { return value ? JSON.parse(value) : {}; } catch { return {}; }
 }
 
-export async function onRequestGet({ params }) {
+function clean(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function isOmniParking(link, metadata) {
+  const operator = clean(metadata.operator);
+  const parkingCode = clean(metadata.parking_code);
+  const workspaceSlug = clean(link?.workspace_slug);
+  const workspaceName = clean(link?.workspace_name);
+  const title = clean(link?.title);
+  return operator === "omni_jr"
+    || parkingCode.startsWith("omni_jr_")
+    || workspaceSlug === "omni-jr-parking"
+    || workspaceName === "omni jr parking"
+    || title.startsWith("omni jr parking");
+}
+
+function redirect(location) {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location,
+      "cache-control": "no-store, no-cache, must-revalidate, max-age=0",
+      pragma: "no-cache",
+      expires: "0",
+      "x-robots-tag": "noindex, nofollow"
+    }
+  });
+}
+
+export async function onRequestGet({ request, env, params }) {
   const id = String(params?.id || "").trim();
   if (!id) return new Response("Smart Payment Link missing.", { status: 400 });
-  const paymentLinkId = scriptValue(id);
 
-  const html = `<!doctype html>
-<html lang="es" data-build="smart-pay-3d-v1">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow">
-<title>BOOSTR Smart Pay</title><link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
-<script src="https://js.stripe.com/dahlia/stripe.js"></script>
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
-<style>
-:root{--bg:#020202;--ink:#f7f7f5;--muted:rgba(247,247,245,.62);--line:rgba(255,255,255,.14);--gold:#feedb9;--green:#7dff9e;--red:#ff9292}*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 78% 0,rgba(254,237,185,.13),transparent 30%),#020202;color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.shell{min-height:100dvh;display:grid;place-items:center;padding:12px}.wrap{width:min(100%,980px);display:grid;grid-template-columns:.92fr 1.08fr;gap:16px}.card{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.025));border-radius:34px;box-shadow:0 36px 120px rgba(0,0,0,.72);padding:22px}.logo{width:126px}.media{display:none;width:100%;aspect-ratio:1/1;border-radius:24px;overflow:hidden;background:#080808;margin:16px 0}.media img,.media model-viewer{width:100%;height:100%;display:block;object-fit:cover}.model-badge{position:absolute;margin:12px;z-index:2;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.62);backdrop-filter:blur(10px);border-radius:999px;padding:7px 10px;font-size:10px;font-weight:950}.eyebrow{display:inline-flex;border:1px solid rgba(254,237,185,.3);background:rgba(254,237,185,.07);color:var(--gold);border-radius:999px;padding:8px 11px;font:950 10px/1 ui-monospace,monospace;letter-spacing:.15em;text-transform:uppercase}h1,h2{font-family:Arial Black,Arial,sans-serif;letter-spacing:-.06em}h1{font-size:clamp(42px,7vw,76px);line-height:.9;margin:16px 0 10px}h2{font-size:clamp(28px,5vw,44px);margin:16px 0 10px}.lead{color:var(--muted);line-height:1.5}.price{font-family:Arial Black,Arial,sans-serif;font-size:clamp(54px,8vw,88px);letter-spacing:-.075em;margin:18px 0}.meta{display:grid;gap:9px}.meta div{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--line);background:rgba(0,0,0,.24);border-radius:18px;padding:13px;color:var(--muted);font-size:13px}.meta b{color:#fff}.form{display:grid;gap:12px}.field{display:grid;gap:8px;color:rgba(255,255,255,.68);font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.field input{width:100%;border:1px solid var(--line);background:rgba(0,0,0,.34);color:#fff;border-radius:18px;min-height:54px;padding:0 14px;font-size:16px}.notice{border:1px solid rgba(125,255,158,.22);background:rgba(125,255,158,.06);border-radius:20px;padding:13px;color:rgba(255,255,255,.76);font-size:13px;line-height:1.45}.notice.error{border-color:rgba(255,146,146,.34);background:rgba(255,146,146,.08);color:#ffd2d2}.btn{width:100%;border:0;background:#fff;color:#050505;border-radius:999px;min-height:56px;padding:0 18px;font-size:15px;font-weight:1000}.secondary{border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff}.status{min-height:20px;color:var(--gold);font-size:13px;font-weight:850}.hidden{display:none!important}.payment-shell{display:grid;gap:14px}.success{border:1px solid rgba(125,255,158,.32);background:rgba(125,255,158,.08);border-radius:22px;padding:18px}@media(max-width:820px){.wrap{grid-template-columns:1fr}.shell{padding:8px}.card{border-radius:28px;padding:18px}}
-</style>
-</head>
-<body><main class="shell"><section class="wrap"><aside class="card"><img class="logo" src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><div id="productMedia" class="media"></div><span class="eyebrow" id="saleBadge">SMART PAY</span><h1 id="title">Cargando...</h1><p class="lead" id="description">Preparando la oferta.</p><div class="price" id="price">—</div><div class="meta"><div><span>Negocio</span><b id="workspace">BOOSTR</b></div><div><span>Tipo</span><b id="mode">Pago</b></div><div><span>Acceso</span><b id="rule">Verificando</b></div></div></aside><section class="card"><div id="startPanel"><span class="eyebrow">PAGO SEGURO</span><h2 id="actionTitle">Elige cómo pagar.</h2><p class="lead" id="actionCopy">Los métodos disponibles aparecerán dentro de BOOSTR.</p><form class="form" id="startForm"><label class="field">Correo<input id="email" type="email" required inputmode="email" autocomplete="email"></label><label class="field hidden" id="bidField">Tu puja<input id="bidAmount" type="number" min="1" step="0.01"></label><div class="notice" id="notice">Tus datos sensibles se envían directamente al procesador certificado.</div><button class="btn" id="startButton" type="submit">Ver métodos de pago</button><div class="status" id="startStatus"></div></form></div><div id="paymentPanel" class="payment-shell hidden"><span class="eyebrow">MÉTODOS DISPONIBLES</span><h2>Finaliza tu pago.</h2><div id="payment-element"></div><form id="confirmForm"><button class="btn" id="confirmButton" type="submit" disabled>Confirmar pago</button></form><div class="status" id="paymentStatus"></div><button class="btn secondary" id="backButton" type="button">Cambiar correo</button></div><div id="resultPanel" class="success hidden"><span class="eyebrow">RESULTADO</span><h2 id="resultTitle">Pago recibido.</h2><p id="resultCopy">BOOSTR está verificando la transacción.</p></div></section></section></main>
-<script>
-(function(){'use strict';const paymentLinkId=${paymentLinkId};const params=new URLSearchParams(location.search);let link=null,checkoutSdk=null,checkoutActions=null,paymentElement=null;const el=id=>document.getElementById(id);const money=(c,cur)=>c==null?'Manual':new Intl.NumberFormat('es-US',{style:'currency',currency:cur||'USD'}).format(Number(c)/100);const label=v=>({purchase_now:'Compra inmediata',subscription:'Suscripción',auction:'Subasta',bnpl:'Opciones flexibles'})[v]||v||'Pago';const errorText=(e,f)=>e&&((e.message)||(e.error))||f;async function fetchJson(url,o){const r=await fetch(url,o||{});const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(errorText(d,'No se pudo completar la solicitud.'));return d}
-function renderMedia(){const root=el('productMedia');if(link.model_3d_url&&link.model_3d_format!=='usdz'){root.innerHTML='<span class="model-badge">3D INTERACTIVO</span><model-viewer src="'+link.model_3d_url+'" poster="'+(link.model_3d_poster||'')+'" camera-controls auto-rotate shadow-intensity="1" interaction-prompt="none"></model-viewer>';root.style.display='block';return}if(link.image_url){root.innerHTML='<img src="'+link.image_url+'" alt="Producto">';root.style.display='block'}}
-async function verifyReturn(){const s=params.get('session_id');if(!s)return false;const d=await fetchJson('/api/public/stripe/session?session_id='+encodeURIComponent(s),{cache:'no-store'});el('startPanel').classList.add('hidden');el('paymentPanel').classList.add('hidden');el('resultPanel').classList.remove('hidden');const paid=d.payment&&d.payment.status==='paid';el('resultTitle').textContent=paid?'Pago confirmado.':'Pago en procesamiento.';el('resultCopy').textContent=paid?'BOOSTR registró correctamente la transacción.':'El método elegido todavía está procesando la transacción.';return true}
-async function loadOffer(){try{const d=await fetchJson('/api/public/payment-links/'+encodeURIComponent(paymentLinkId),{cache:'no-store'});link=d.payment_link;el('title').textContent=link.title;el('description').textContent=link.product_description||'BOOSTR Smart Pay';el('price').textContent=money(link.amount_cents,link.currency);el('workspace').textContent=link.workspace_name||'BOOSTR Workspace';const sale=link.sale_type||link.checkout_mode||'purchase_now';el('mode').textContent=label(sale);el('saleBadge').textContent=label(sale).toUpperCase();el('rule').textContent=link.requires_account?'Cuenta requerida':'Checkout como invitado';renderMedia();if(sale==='auction'){el('bidField').classList.remove('hidden');el('startButton').textContent='Enviar puja'}await verifyReturn()}catch(e){el('title').textContent='Link no disponible';el('description').textContent=errorText(e,'Esta oferta está inactiva o no existe.');el('startForm').classList.add('hidden')}}
-async function createPaymentForm(email){if(typeof window.Stripe!=='function')throw new Error('El motor seguro de pagos no pudo cargar.');const d=await fetchJson('/api/public/payment-links/'+encodeURIComponent(link.id)+'/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});const c=d.checkout||{};if(!c.client_secret||!c.publishable_key)throw new Error('El proveedor no devolvió una sesión válida.');const stripe=window.Stripe(c.publishable_key);checkoutSdk=stripe.initCheckoutElementsSdk({clientSecret:Promise.resolve(c.client_secret),elementsOptions:{appearance:{theme:'night',variables:{colorPrimary:'#feedb9',colorBackground:'#0b0d0c',colorText:'#f7f7f5',colorDanger:'#ff9292',borderRadius:'16px'}}}});checkoutSdk.on('change',s=>{el('confirmButton').disabled=!s.canConfirm});el('startPanel').classList.add('hidden');el('paymentPanel').classList.remove('hidden');paymentElement=checkoutSdk.createPaymentElement({layout:{type:'accordion',defaultCollapsed:false,radios:'always'}});paymentElement.mount('#payment-element');const loaded=await checkoutSdk.loadActions();if(loaded&&loaded.type==='error')throw new Error(loaded.error&&loaded.error.message||'No se pudieron cargar las acciones.');checkoutActions=loaded.actions}
-el('startForm').addEventListener('submit',async e=>{e.preventDefault();const b=el('startButton');b.disabled=true;el('startStatus').textContent='Preparando...';try{const sale=link.sale_type||link.checkout_mode;if(sale==='auction'){const bid=Math.round(Number(el('bidAmount').value)*100);await fetchJson('/api/order-reservations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({payment_link_id:link.id,guest_email:el('email').value.trim(),customer_contact:el('email').value.trim(),source:'auction_bid',metadata:{bid_amount_cents:bid,sale_type:'auction'}})});el('startPanel').classList.add('hidden');el('resultPanel').classList.remove('hidden');el('resultTitle').textContent='Puja enviada.';return}await createPaymentForm(el('email').value.trim());el('startStatus').textContent=''}catch(err){el('startStatus').textContent=errorText(err,'No se pudo preparar el pago.');el('notice').classList.add('error');b.disabled=false}});el('confirmForm').addEventListener('submit',async e=>{e.preventDefault();const b=el('confirmButton');b.disabled=true;try{if(!checkoutActions)throw new Error('La sesión no está lista.');const r=await checkoutActions.confirm();if(r&&r.type==='error')throw new Error(r.error&&r.error.message||'No se pudo confirmar.')}catch(err){el('paymentStatus').textContent=errorText(err,'No se pudo confirmar el pago.');b.disabled=false}});el('backButton').onclick=()=>{if(paymentElement&&paymentElement.unmount)paymentElement.unmount();checkoutSdk=checkoutActions=paymentElement=null;el('paymentPanel').classList.add('hidden');el('startPanel').classList.remove('hidden');el('startButton').disabled=false};loadOffer()})();
-</script></body></html>`;
+  const incoming = new URL(request.url);
+  const legacyRoute = LEGACY_OMNI_LINKS[id];
+  if (legacyRoute) {
+    const target = new URL(legacyRoute, incoming.origin);
+    for (const [key, value] of incoming.searchParams.entries()) target.searchParams.append(key, value);
+    return redirect(`${target.pathname}${target.search}`);
+  }
 
-  return new Response(html, { status: 200, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate, max-age=0", "pragma": "no-cache", "expires": "0", "x-robots-tag": "noindex, nofollow" } });
+  let omni = false;
+  if (env.DB) {
+    try {
+      const link = await env.DB.prepare(`
+        SELECT payment_links.title, payment_links.metadata_json,
+               products.metadata_json AS product_metadata_json,
+               workspaces.name AS workspace_name, workspaces.slug AS workspace_slug
+        FROM payment_links
+        LEFT JOIN products ON products.id = payment_links.product_id
+        LEFT JOIN workspaces ON workspaces.id = payment_links.workspace_id
+        WHERE payment_links.id = ? AND payment_links.status = 'active' LIMIT 1
+      `).bind(id).first();
+      if (link) {
+        const metadata = { ...parseJson(link.product_metadata_json), ...parseJson(link.metadata_json) };
+        omni = isOmniParking(link, metadata);
+      }
+    } catch (error) {
+      console.error("Payment brand lookup failed", error);
+    }
+  }
+
+  const target = new URL(omni ? "/pay/omni/" : "/pay/", incoming.origin);
+  target.searchParams.set("id", id);
+
+  for (const [key, value] of incoming.searchParams.entries()) {
+    if (key !== "id") target.searchParams.append(key, value);
+  }
+
+  return redirect(`${target.pathname}${target.search}`);
 }
