@@ -1,5 +1,6 @@
 import { readFile, stat } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const root = new URL('../dist/johankarrdbuildr/', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
@@ -76,7 +77,7 @@ for (const forbidden of ['location.reload(', 'location.replace(', 'app-motion.js
 }
 
 for (const file of ['core-v64.js', 'app-v60.js', 'app-v63-hardening.js', 'app-v66-creative-controls.js']) {
-  const check = spawnSync(process.execPath, ['--check', new URL(file, root).pathname], { encoding: 'utf8' });
+  const check = spawnSync(process.execPath, ['--check', fileURLToPath(new URL(file, root))], { encoding: 'utf8' });
   if (check.status !== 0) fail(`${file} has invalid syntax\n${check.stderr}`);
 }
 

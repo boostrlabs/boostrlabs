@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const file = new URL('../dist/johankarrdbuildr/app-v60.js', import.meta.url);
 const coreFile = new URL('../dist/johankarrdbuildr/core-v64.js', import.meta.url);
@@ -389,8 +390,9 @@ if (index.indexOf('core-v64.js') > index.indexOf('app-v60.js')) throw new Error(
 
 await writeFile(file, source, 'utf8');
 for (const target of [file, coreFile, hardeningFile]) {
-  const check = spawnSync(process.execPath, ['--check', target.pathname], { encoding: 'utf8' });
-  if (check.status !== 0) throw new Error(check.stderr || `Johankarrd syntax check failed: ${target.pathname}`);
+  const targetPath = fileURLToPath(target);
+  const check = spawnSync(process.execPath, ['--check', targetPath], { encoding: 'utf8' });
+  if (check.status !== 0) throw new Error(check.stderr || `Johankarrd syntax check failed: ${targetPath}`);
 }
 
 console.log('Johankarrd PRIME QA passed: Apple-feel GPU drag, FLIP spacing, protected reorder, unified state, Spanish UI, export and publish.');

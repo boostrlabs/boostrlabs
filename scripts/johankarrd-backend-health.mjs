@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
@@ -18,7 +19,7 @@ const files = {
 const sources = Object.fromEntries(await Promise.all(Object.entries(files).map(async ([key, path]) => [key, await read(path)])));
 
 for (const [key, path] of Object.entries(files)) {
-  const check = spawnSync(process.execPath, ['--check', new URL(path, root).pathname], { encoding: 'utf8' });
+  const check = spawnSync(process.execPath, ['--check', fileURLToPath(new URL(path, root))], { encoding: 'utf8' });
   if (check.status !== 0) fail(`${key} has invalid syntax\n${check.stderr}`);
 }
 
