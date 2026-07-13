@@ -17,7 +17,7 @@ export async function onRequestGet({ env, params }) {
     const provisioned = await ensureOmniPlan(env, key);
     return json({
       ok: true,
-      build: "omni-self-heal-v2",
+      build: "omni-self-heal-v3",
       operator: "OMNI JR Parking",
       plan: {
         key: plan.key,
@@ -31,7 +31,7 @@ export async function onRequestGet({ env, params }) {
       payment_link: {
         id: provisioned.link.id,
         product_id: provisioned.link.product_id,
-        public_url: `/omni-jr/checkout/?id=${encodeURIComponent(provisioned.link.id)}&plan=${encodeURIComponent(plan.key)}`,
+        public_url: `/omni-jr/checkout-v3/?id=${encodeURIComponent(provisioned.link.id)}&plan=${encodeURIComponent(plan.key)}`,
         stable_url: `/parking/omni-jr/${encodeURIComponent(plan.key)}`
       }
     });
