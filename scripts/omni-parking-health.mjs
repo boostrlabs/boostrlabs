@@ -60,7 +60,7 @@ const checks = {
   "functions/_lib/smart-parking.js": ["parking_sessions", "syncParkingSession", "lookupParkingSession", "verification_token", "normalizePlate"],
   "functions/_lib/omni-parking.js": ["OMNI_PLANS", "ensureOmniCoreSchema", "ALTER TABLE", "ensureOmniPlan", "boostr_smart_parking_v4", "omni_jr_standard_8h", "omni_jr_large_8h", "omni_jr_monthly"],
   "functions/api/public/payment-links/[id].js": ["normalizeOmniMetadata", "workspace_slug", "operator: \"omni_jr\""],
-  "functions/api/public/payment-links/[id]/checkout.js": ["parking_plate_required", "normalizePlate", "normalizeOmniMetadata", "workspace_slug"],
+  "functions/api/public/payment-links/[id]/checkout.js": ["parking_plate_required", "normalizePlate", "normalizeOmniMetadata", "workspace_slug", "createEmbeddedSession", "ui_mode: \"embedded\"", "embedded_page", "payments.embedded.created"],
   "functions/api/public/omni-jr/plan/[plan].js": ["omni-self-heal-v3", "/omni-jr/checkout-v3/?id=", "ensureOmniPlan"],
   "functions/api/health/omni-jr.js": ["omni-self-heal-v3", "/omni-jr/checkout-v3/?id=", "workspace_slug"],
   "functions/api/smart-parking/provision.js": ["omni-self-heal-v3", "/omni-jr/checkout-v3/?id=", "ensureOmniPlan"],
@@ -69,7 +69,7 @@ const checks = {
   "functions/pay/[id].js": ["/omni-jr/checkout-v3/", "omniPlanKey", "activeLink", "target.searchParams.set(\"plan\", plan)"],
   "public/parking/omni-jr/index.html": ["Sedan / Sport / Coupe", "Truck / Big SUV", "$150 / mes"],
   "public/parking/omni-jr/qr/index.html": ["$20", "$25", "$150 / MES", "/api/public/qr"],
-  "public/omni-jr/checkout-v3/index.html": ["data-build=\"omni-self-heal-v3\"", "repairPlan", "/api/public/omni-jr/plan/", "Powered by BOOSTR Labs", "plate:$('plate')"],
+  "public/omni-jr/checkout-v3/index.html": ["data-build=\"omni-self-heal-v3\"", "repairPlan", "/api/public/omni-jr/plan/", "Powered by BOOSTR Labs", "plate:$('plate')", "initEmbeddedCheckout"],
   "scripts/omni-parking-live-smoke.mjs": ["omni-self-heal-v3", "/api/health/omni-jr", "/omni-jr/checkout-v3", "Link no disponible"],
   "public/assets/omni-jr/omni-jr-logo-black.svg": ["OMNI JR Parking — official logo", "viewBox=\"0 0 1254 1254\""]
 };
@@ -81,6 +81,10 @@ for (const [file, markers] of Object.entries(checks)) {
     if (!source.includes(marker)) failures.push(`${file} missing marker: ${marker}`);
   }
 }
+
+const checkoutSource = readFileSync("functions/api/public/payment-links/[id]/checkout.js", "utf8");
+if (checkoutSource.includes('ui_mode: "elements"')) failures.push("Stripe Checkout session still uses ui_mode=elements");
+if (checkoutSource.includes("boostr-elements-checkout")) failures.push("Stripe Checkout still uses the legacy elements idempotency key");
 
 try {
   const { onRequestGet } = await import("../functions/pay/[id].js");
