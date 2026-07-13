@@ -1,128 +1,132 @@
 <!doctype html>
-<html lang="es" data-build="0.9.1">
+<html lang="es" data-build="1.0.0">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#090909">
   <title>BOOSTR App</title>
-  <meta name="description" content="Accede a SMART PARKING y los próximos módulos de BOOSTR desde una sola app.">
+  <meta name="description" content="Usa servicios de negocios conectados a BOOSTR y entra a tu panel cuando tengas una cuenta o invitación.">
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <style>
-    :root{color-scheme:dark;--bg:#070707;--panel:rgba(255,255,255,.065);--panel-strong:rgba(255,255,255,.095);--line:rgba(255,255,255,.14);--text:#f8f8f5;--muted:rgba(255,255,255,.58);--champagne:#feedb9;--green:#74f4a4;--shadow:0 30px 100px rgba(0,0,0,.52)}
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{min-height:100%;background:var(--bg)}body{min-height:100dvh;margin:0;background:radial-gradient(circle at 88% 0,rgba(254,237,185,.12),transparent 27%),radial-gradient(circle at 5% 100%,rgba(116,244,164,.07),transparent 30%),linear-gradient(180deg,#0b0b0b,#030303);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,Arial,sans-serif}a{color:inherit;text-decoration:none}button{font:inherit}
-    .shell{width:min(760px,100%);min-height:100dvh;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(26px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:16px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:132px;max-width:44vw;max-height:44px;object-fit:contain;object-position:left center}.account{min-height:43px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.055);padding:0 15px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;white-space:nowrap}.account.active{border-color:rgba(116,244,164,.35);color:var(--green);background:rgba(116,244,164,.07)}
-    .hero{padding:20px 2px 2px}.eyebrow{margin:0 0 10px;color:var(--champagne);font:900 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase}.hero h1{max-width:630px;margin:0;font-family:Arial Black,-apple-system,BlinkMacSystemFont,sans-serif;font-size:clamp(48px,11vw,78px);line-height:.88;letter-spacing:-.075em;text-wrap:balance}.hero p{max-width:560px;margin:18px 0 0;color:var(--muted);font-size:16px;line-height:1.5}
-    .launcher{border:1px solid var(--line);border-radius:34px;background:linear-gradient(145deg,var(--panel-strong),var(--panel));box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08);padding:20px}.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.module-card{position:relative;min-height:176px;border:1px solid var(--line);border-radius:27px;background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.025));padding:16px;color:#fff;text-align:left;display:flex;flex-direction:column;overflow:hidden;cursor:pointer}.module-card:before{content:"";position:absolute;width:140px;height:140px;right:-62px;top:-66px;border-radius:50%;background:radial-gradient(circle,rgba(254,237,185,.18),transparent 68%);pointer-events:none}.module-card.live{border-color:rgba(254,237,185,.38);background:linear-gradient(145deg,rgba(254,237,185,.13),rgba(116,244,164,.055) 62%,rgba(255,255,255,.025))}.module-card.future{opacity:.82}.module-icon{font-size:36px;line-height:1}.status{position:absolute;top:13px;right:13px;border:1px solid rgba(255,255,255,.13);border-radius:999px;background:rgba(0,0,0,.28);padding:6px 8px;color:rgba(255,255,255,.58);font-size:8px;font-weight:1000;letter-spacing:.11em;text-transform:uppercase}.status.live{color:var(--green);border-color:rgba(116,244,164,.3);background:rgba(116,244,164,.07)}.module-card strong{margin-top:auto;font-size:18px;line-height:1;letter-spacing:-.035em}.module-card small{margin-top:7px;color:var(--muted);font-size:11px;line-height:1.38}.module-card em{margin-top:12px;color:var(--champagne);font-size:11px;font-style:normal;font-weight:950}
-    .guest{border:1px solid rgba(255,255,255,.12);border-radius:28px;background:rgba(255,255,255,.045);padding:20px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px}.guest h2,.private h2{margin:0;font-size:28px;line-height:1;letter-spacing:-.045em}.guest p,.private p{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.45}.primary{min-height:50px;border:0;border-radius:999px;background:#fff;color:#080808;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;font-weight:950;white-space:nowrap}
-    .private[hidden]{display:none}.private{border:1px solid rgba(116,244,164,.22);border-radius:30px;background:linear-gradient(145deg,rgba(116,244,164,.07),rgba(255,255,255,.035));padding:20px}.private-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.workspace-label{color:var(--green);font:900 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}.private-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.secondary{min-height:46px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.045);padding:0 16px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:16px}.workspace-card{min-height:118px;border:1px solid rgba(255,255,255,.1);border-radius:22px;background:rgba(0,0,0,.22);padding:14px;display:flex;flex-direction:column}.workspace-card b{font-size:15px}.workspace-card span{margin-top:7px;color:var(--muted);font-size:11px;line-height:1.4}.workspace-card em{margin-top:auto;padding-top:10px;color:var(--champagne);font-size:10px;font-style:normal;font-weight:900}
-    .toast{position:fixed;z-index:30;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translate(-50%,18px);width:min(calc(100% - 28px),460px);border:1px solid rgba(255,255,255,.16);background:rgba(12,12,13,.96);backdrop-filter:blur(20px);border-radius:22px;padding:14px 16px;box-shadow:0 25px 80px rgba(0,0,0,.48);opacity:0;visibility:hidden;transition:.22s}.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}.toast b{display:block;font-size:14px}.toast span{display:block;margin-top:4px;color:var(--muted);font-size:11px;line-height:1.4}.footer{margin-top:auto;padding:10px 2px 0;color:rgba(255,255,255,.32);font-size:9px;letter-spacing:.1em;text-transform:uppercase;text-align:center}
-    @media(max-width:560px){.shell{gap:13px}.hero{padding-top:12px}.hero h1{font-size:clamp(46px,14.4vw,66px)}.launcher{padding:13px;border-radius:29px}.module-grid{gap:8px}.module-card{min-height:154px;border-radius:23px;padding:13px}.module-card strong{font-size:15px}.module-icon{font-size:31px}.guest{grid-template-columns:1fr;border-radius:25px}.guest .primary{width:100%}.cards{grid-template-columns:1fr}.private-head{display:block}.private-actions a{width:100%}}
-    @media(max-width:360px){.module-grid{grid-template-columns:1fr}.module-card{min-height:142px}}
+    :root{color-scheme:dark;--bg:#070707;--panel:rgba(255,255,255,.06);--panel-strong:rgba(255,255,255,.095);--line:rgba(255,255,255,.14);--text:#f8f8f5;--muted:rgba(255,255,255,.59);--champagne:#feedb9;--green:#74f4a4;--shadow:0 30px 100px rgba(0,0,0,.5)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{min-height:100%;background:var(--bg)}body{min-height:100dvh;margin:0;background:radial-gradient(circle at 88% 0,rgba(254,237,185,.12),transparent 28%),radial-gradient(circle at 4% 100%,rgba(116,244,164,.065),transparent 30%),linear-gradient(180deg,#0b0b0b,#030303);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,Arial,sans-serif}a{color:inherit;text-decoration:none}button{font:inherit}
+    .shell{width:min(780px,100%);min-height:100dvh;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:16px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px}.brand img{width:132px;max-width:44vw;max-height:44px;object-fit:contain}.account{min-height:43px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.055);padding:0 15px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;white-space:nowrap}.account.active{border-color:rgba(116,244,164,.35);color:var(--green);background:rgba(116,244,164,.07)}
+    .hero{padding:22px 2px 5px}.eyebrow,.section-kicker{margin:0 0 10px;color:var(--champagne);font:900 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase}.hero h1{max-width:690px;margin:0;font-family:Arial Black,-apple-system,BlinkMacSystemFont,sans-serif;font-size:clamp(48px,11vw,80px);line-height:.88;letter-spacing:-.075em;text-wrap:balance}.hero p{max-width:630px;margin:18px 0 0;color:var(--muted);font-size:16px;line-height:1.5}
+    .live-service{border:1px solid rgba(254,237,185,.34);border-radius:34px;background:linear-gradient(145deg,rgba(254,237,185,.13),rgba(116,244,164,.05) 62%,rgba(255,255,255,.025));box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08);padding:22px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;overflow:hidden;position:relative}.live-service:after{content:"";position:absolute;width:230px;height:230px;right:-110px;top:-130px;border:1px solid rgba(254,237,185,.14);border-radius:50%;box-shadow:0 0 0 38px rgba(254,237,185,.018),0 0 0 76px rgba(254,237,185,.01)}.service-copy{position:relative;z-index:1}.service-status{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(116,244,164,.3);border-radius:999px;background:rgba(116,244,164,.07);padding:7px 9px;color:var(--green);font-size:9px;font-weight:1000;letter-spacing:.11em;text-transform:uppercase}.service-status i{width:7px;height:7px;border-radius:50%;background:currentColor}.live-service h2{margin:24px 0 8px;font-size:clamp(34px,7vw,58px);line-height:.92;letter-spacing:-.06em}.live-service p{max-width:520px;margin:0;color:var(--muted);font-size:14px;line-height:1.5}.facts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.fact{border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(0,0,0,.22);padding:8px 10px;color:rgba(255,255,255,.72);font-size:10px;font-weight:850}.primary{min-height:54px;border:0;border-radius:999px;background:#fff;color:#080808;padding:0 22px;display:inline-flex;align-items:center;justify-content:center;font-weight:950;white-space:nowrap;position:relative;z-index:1}
+    .future-section,.access-section,.member-section{border:1px solid var(--line);border-radius:30px;background:linear-gradient(145deg,var(--panel-strong),var(--panel));padding:20px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px}.section-head h2{margin:0;font-size:30px;line-height:1;letter-spacing:-.05em}.section-head p{max-width:390px;margin:0;color:var(--muted);font-size:12px;line-height:1.45;text-align:right}.future-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.future-card{min-height:142px;border:1px solid rgba(255,255,255,.11);border-radius:23px;background:rgba(255,255,255,.035);padding:14px;color:#fff;text-align:left;display:flex;flex-direction:column;cursor:pointer}.future-card .icon{font-size:28px}.future-card strong{margin-top:auto;font-size:15px}.future-card span{margin-top:6px;color:var(--muted);font-size:10px;line-height:1.4}.future-card em{margin-top:10px;color:var(--champagne);font-size:9px;font-style:normal;font-weight:950;text-transform:uppercase;letter-spacing:.08em}
+    .access-section{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}.access-section h2,.member-section h2{margin:0;font-size:30px;line-height:1;letter-spacing:-.05em}.access-section p,.member-section p{margin:9px 0 0;color:var(--muted);font-size:13px;line-height:1.5}.access-actions,.member-actions{display:flex;gap:8px;flex-wrap:wrap}.secondary{min-height:48px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.045);padding:0 17px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;white-space:nowrap}.member-section[hidden]{display:none}.member-section{border-color:rgba(116,244,164,.23);background:linear-gradient(145deg,rgba(116,244,164,.07),rgba(255,255,255,.035));display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}.role-line{margin-top:9px;color:var(--green);font:900 9px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}.why{border-top:1px solid rgba(255,255,255,.08);padding:4px 2px 0;color:rgba(255,255,255,.38);font-size:10px;line-height:1.5}.footer{margin-top:auto;padding:6px 2px 0;color:rgba(255,255,255,.32);font-size:9px;letter-spacing:.1em;text-transform:uppercase;text-align:center}
+    .toast{position:fixed;z-index:30;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translate(-50%,18px);width:min(calc(100% - 28px),470px);border:1px solid rgba(255,255,255,.16);background:rgba(12,12,13,.96);backdrop-filter:blur(20px);border-radius:22px;padding:14px 16px;box-shadow:0 25px 80px rgba(0,0,0,.48);opacity:0;visibility:hidden;transition:.22s}.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}.toast b{display:block;font-size:14px}.toast span{display:block;margin-top:4px;color:var(--muted);font-size:11px;line-height:1.4}
+    @media(max-width:620px){.shell{gap:13px}.hero{padding-top:12px}.hero h1{font-size:clamp(46px,14.2vw,66px)}.live-service,.access-section,.member-section{grid-template-columns:1fr;border-radius:28px}.live-service .primary,.access-actions,.member-actions,.access-actions a,.member-actions a{width:100%}.future-grid{grid-template-columns:1fr}.future-card{min-height:112px}.section-head{align-items:flex-start;flex-direction:column}.section-head p{text-align:left}.access-actions,.member-actions{display:grid}}
   </style>
 </head>
 <body>
   <main class="shell">
     <header class="top">
-      <a class="brand" href="/app/" aria-label="BOOSTR App"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></a>
-      <a class="account" id="accountButton" href="/login/?next=/app/">Entrar</a>
+      <a class="brand" href="/app/" aria-label="BOOSTR App"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"></a>
+      <a class="account" id="accountButton" href="/login/">Acceso</a>
     </header>
 
     <section class="hero">
-      <p class="eyebrow">BOOSTR SUPER APP</p>
-      <h1>¿Qué necesitas hoy?</h1>
-      <p>Elige un servicio. Tu cuenta y tus módulos privados aparecen únicamente después de iniciar sesión.</p>
+      <p class="eyebrow">SERVICIOS CONECTADOS</p>
+      <h1>¿Qué necesitas resolver hoy?</h1>
+      <p>Usa servicios de negocios que operan con tecnología BOOSTR. Puedes comprar, reservar o pagar como invitado cuando el servicio lo permita.</p>
     </section>
 
-    <section class="launcher" aria-label="Módulos BOOSTR">
-      <div class="module-grid">
-        <a class="module-card live" href="/parking/omni-jr/">
-          <span class="status live">Activo</span><span class="module-icon" aria-hidden="true">🚗</span>
-          <strong>SMART PARKING</strong><small>Selecciona el vehículo, registra la placa y paga parking.</small><em>Abrir módulo →</em>
-        </a>
-        <button class="module-card future" type="button" data-module="BOOSTR EATS">
-          <span class="status">Próximamente</span><span class="module-icon" aria-hidden="true">🍔</span>
-          <strong>BOOSTR EATS</strong><small>Pide comida, paga y sigue tu orden desde BOOSTR.</small><em>Vista previa →</em>
-        </button>
-        <button class="module-card future" type="button" data-module="BOOSTR RIDES">
-          <span class="status">Próximamente</span><span class="module-icon" aria-hidden="true">🚕</span>
-          <strong>BOOSTR RIDES</strong><small>Solicita transporte y controla el viaje desde la app.</small><em>Vista previa →</em>
-        </button>
-        <button class="module-card future" type="button" data-module="BOOSTR EXOTIC">
-          <span class="status">Próximamente</span><span class="module-icon" aria-hidden="true">🏎️</span>
-          <strong>BOOSTR EXOTIC</strong><small>Explora y reserva vehículos exóticos seleccionados.</small><em>Vista previa →</em>
-        </button>
+    <section class="live-service" aria-labelledby="parkingTitle">
+      <div class="service-copy">
+        <span class="service-status"><i></i> Disponible ahora</span>
+        <h2 id="parkingTitle">SMART PARKING 🚗</h2>
+        <p>Selecciona el tipo de vehículo, registra la placa y paga parking de OMNI JR sin crear una cuenta.</p>
+        <div class="facts"><span class="fact">Checkout invitado</span><span class="fact">Recibo + QR</span><span class="fact">Pago seguro</span></div>
+      </div>
+      <a class="primary" href="/parking/omni-jr/">Pagar parking →</a>
+    </section>
+
+    <section class="future-section" aria-labelledby="futureTitle">
+      <div class="section-head"><div><p class="section-kicker">EN CAMINO</p><h2 id="futureTitle">Próximos servicios.</h2></div><p>Estos botones reservan la dirección del producto. Todavía no prometen disponibilidad ni obligan a crear una cuenta.</p></div>
+      <div class="future-grid">
+        <button class="future-card" type="button" data-module="BOOSTR EATS" data-reason="Pedir y pagar comida de restaurantes conectados."><span class="icon">🍔</span><strong>BOOSTR EATS</strong><span>Pedir y pagar comida de restaurantes conectados.</span><em>Próximamente</em></button>
+        <button class="future-card" type="button" data-module="BOOSTR RIDES" data-reason="Solicitar transporte con operadores conectados."><span class="icon">🚕</span><strong>BOOSTR RIDES</strong><span>Solicitar transporte con operadores conectados.</span><em>Próximamente</em></button>
+        <button class="future-card" type="button" data-module="BOOSTR EXOTIC" data-reason="Reservar vehículos exóticos de partners verificados."><span class="icon">🏎️</span><strong>BOOSTR EXOTIC</strong><span>Reservar vehículos exóticos de partners verificados.</span><em>Próximamente</em></button>
       </div>
     </section>
 
-    <section class="guest" id="guestPanel">
-      <div><h2>Tu espacio privado.</h2><p>Inicia sesión para ver tu Custom OS, archivos, órdenes y módulos asignados.</p></div>
-      <a class="primary" href="/login/?next=/app/">Iniciar sesión →</a>
+    <section class="access-section" id="accessPanel">
+      <div><p class="section-kicker">ACCESO PRIVADO</p><h2>¿Trabajas con un negocio?</h2><p>Owners, managers, staff, empleados y clientes de BOOSTR entran aquí para abrir el panel que corresponde a su rol. Los consumidores no necesitan iniciar sesión para usar un servicio público.</p></div>
+      <div class="access-actions"><a class="primary" href="/login/">Entrar a mi panel →</a><a class="secondary" href="/accept-invite/">Tengo una invitación</a></div>
     </section>
 
-    <section class="private" id="privatePanel" hidden>
-      <div class="private-head"><div><span class="workspace-label">CUENTA CONECTADA</span><h2 id="workspaceTitle">Tu Custom OS</h2><p id="workspaceCopy">Cargando tu contexto privado.</p></div></div>
-      <div class="private-actions"><a class="primary" id="dashboardLink" href="/app/">Abrir mi Custom OS →</a><a class="secondary" href="/login/?logout=1">Cambiar cuenta</a></div>
-      <div class="cards" id="workspaceCards"></div>
+    <section class="member-section" id="memberPanel" hidden>
+      <div><p class="section-kicker">SESIÓN ACTIVA</p><h2 id="memberTitle">Tu acceso está listo.</h2><p id="memberCopy">Puedes usar servicios públicos o continuar a tu espacio privado.</p><div class="role-line" id="roleLine"></div></div>
+      <div class="member-actions"><a class="primary" id="continueButton" href="/app/workspace/">Abrir mi panel →</a><a class="secondary" href="/app/">Ver servicios</a></div>
     </section>
 
+    <p class="why">Una cuenta se solicita solo cuando el servicio necesita identidad, historial, acceso privado, rewards, recurrencia, licencias o administración. Los pagos simples pueden mantenerse como guest.</p>
     <footer class="footer">Powered by BOOSTR Labs</footer>
   </main>
 
-  <div class="toast" id="moduleToast" role="status" aria-live="polite"><b id="toastTitle">Módulo próximo</b><span>El frontend ya está reservado. El backend se activará en una fase posterior.</span></div>
+  <div class="toast" id="moduleToast" role="status" aria-live="polite"><b id="toastTitle">Próximamente</b><span id="toastCopy"></span></div>
 
   <script>
     const accountButton=document.getElementById('accountButton');
-    const guestPanel=document.getElementById('guestPanel');
-    const privatePanel=document.getElementById('privatePanel');
-    const workspaceTitle=document.getElementById('workspaceTitle');
-    const workspaceCopy=document.getElementById('workspaceCopy');
-    const workspaceCards=document.getElementById('workspaceCards');
-    const dashboardLink=document.getElementById('dashboardLink');
+    const accessPanel=document.getElementById('accessPanel');
+    const memberPanel=document.getElementById('memberPanel');
+    const memberTitle=document.getElementById('memberTitle');
+    const memberCopy=document.getElementById('memberCopy');
+    const roleLine=document.getElementById('roleLine');
+    const continueButton=document.getElementById('continueButton');
     const toast=document.getElementById('moduleToast');
     const toastTitle=document.getElementById('toastTitle');
+    const toastCopy=document.getElementById('toastCopy');
     let toastTimer;
 
     const tokenHeaders=()=>{const token=localStorage.getItem('boostr_auth_token')||'';return token?{Authorization:`Bearer ${token}`}:{}};
-    const safePath=value=>typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')?value:'/app/';
-    const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const safePath=value=>typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')?value:'/app/workspace/';
+    const unique=value=>[...new Set(value.filter(Boolean).map(item=>String(item).toLowerCase()))];
 
-    function showFuture(name){toastTitle.textContent=`${name} · próximamente`;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2800)}
-    document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>showFuture(button.dataset.module)));
+    function roleContext(session){
+      const roles=unique([session.role,session.user?.role,session.active_workspace?.role,...(session.roles||[])]);
+      const email=String(session.user?.email||'').toLowerCase();
+      if(email==='janko@boostrlabs.com')return{label:'Founder · BOOSTR Labs',destination:'/app/janko/'};
+      if(email==='johanka@boostrlabs.com')return{label:'BOOSTR Manager · Creative',destination:'/app/johanka/'};
+      if(roles.includes('admin'))return{label:'Administrador del ecosistema',destination:'/admin/'};
+      if(roles.includes('manager'))return{label:'Manager de operaciones',destination:'/manager/'};
+      if(roles.some(role=>['partner','owner','business_owner'].includes(role)))return{label:'Partner / Business owner',destination:'/partner-dashboard/'};
+      if(roles.some(role=>['staff','employee','operator','cashier','attendant','team_member','seller'].includes(role)))return{label:'Staff / Equipo del partner',destination:'/app/workspace/'};
+      if(roles.some(role=>['client','artist','producer','creator'].includes(role)))return{label:'Cliente de BOOSTR',destination:'/app/workspace/'};
+      if(roles.some(role=>['customer','fan','member'].includes(role)))return{label:'Cuenta de cliente',destination:'/app/workspace/'};
+      return{label:'Cuenta BOOSTR',destination:safePath(session.redirect||'/app/workspace/')};
+    }
 
-    function cardMarkup(cards=[]){return cards.slice(0,4).map(card=>{const title=escapeHtml(card.title||card.card_type||'Módulo');const summary=escapeHtml(card.summary||'Disponible en tu workspace.');const url=safePath(card.action_url||'/app/');const label=escapeHtml(card.action_label||'Abrir');return `<a class="workspace-card" href="${url}"><b>${title}</b><span>${summary}</span><em>${label} →</em></a>`}).join('')}
+    function showFuture(button){toastTitle.textContent=`${button.dataset.module} · próximamente`;toastCopy.textContent=button.dataset.reason||'El frontend está reservado; el backend se activará después.';toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),3000)}
+    document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>showFuture(button)));
 
-    async function loadPrivate(){
+    async function loadSession(){
       try{
-        const sessionResponse=await fetch('/api/session',{headers:tokenHeaders(),credentials:'same-origin',cache:'no-store'});
-        if(!sessionResponse.ok)return;
-        const session=await sessionResponse.json();
+        const response=await fetch('/api/session',{headers:tokenHeaders(),credentials:'same-origin',cache:'no-store'});
+        if(!response.ok)return;
+        const session=await response.json();
         if(!session?.ok&&!session?.user)return;
         const name=session.user?.name||session.username||session.user?.email||'Cuenta BOOSTR';
-        const destination=safePath(session.redirect||session.active_workspace?.dashboard_path||'/app/');
+        const context=roleContext(session);
+        const serverDestination=safePath(session.redirect||context.destination);
+        const destination=serverDestination==='/app/'?context.destination:serverDestination;
         accountButton.textContent=name.includes('@')?name.split('@')[0]:name;
         accountButton.href=destination;
         accountButton.classList.add('active');
-        guestPanel.hidden=true;
-        privatePanel.hidden=false;
-        dashboardLink.href=destination;
-        workspaceTitle.textContent=session.active_workspace?.name||'Tu Custom OS';
-        workspaceCopy.textContent='Solo tú ves este contexto, sus módulos y sus registros.';
-
-        try{
-          const dashboardResponse=await fetch('/api/dashboard',{headers:tokenHeaders(),credentials:'same-origin',cache:'no-store'});
-          if(!dashboardResponse.ok)return;
-          const dashboard=await dashboardResponse.json();
-          const cards=dashboard?.cards||[];
-          workspaceCards.innerHTML=cardMarkup(cards);
-          if(!cards.length)workspaceCards.innerHTML='<div class="workspace-card"><b>Sin módulos privados activos</b><span>Tu workspace está conectado, pero todavía no tiene registros asignados.</span></div>';
-          if(dashboard?.workspace?.name)workspaceTitle.textContent=dashboard.workspace.name;
-        }catch{}
+        accessPanel.hidden=true;
+        memberPanel.hidden=false;
+        memberTitle.textContent=`Hola, ${name.includes('@')?name.split('@')[0]:name}.`;
+        memberCopy.textContent=session.active_workspace?.name?`Tu contexto activo es ${session.active_workspace.name}. También puedes seguir usando los servicios públicos.`:'Puedes continuar a tu espacio privado o usar un servicio público como guest.';
+        roleLine.textContent=context.label;
+        continueButton.href=destination;
+        continueButton.textContent=`Abrir ${context.label} →`;
       }catch{}
     }
 
-    loadPrivate();
+    loadSession();
   </script>
 </body>
 </html>
