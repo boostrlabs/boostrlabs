@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 const serverFiles = [
   "functions/_lib/smart-parking.js",
   "functions/api/public/qr.js",
+  "functions/api/public/payment-links/[id].js",
   "functions/api/public/payment-links/[id]/checkout.js",
   "functions/api/public/stripe/session.js",
   "functions/api/public/stripe/webhook.js",
@@ -51,7 +52,8 @@ for (const file of htmlFiles) {
 const checks = {
   "functions/_lib/smart-parking.js": ["parking_sessions", "parking_verifications", "syncParkingSession", "lookupParkingSession", "verification_token", "normalizePlate"],
   "functions/api/public/qr.js": ["quickchart.io/qr", "api.qrserver.com", "cache-control"],
-  "functions/api/public/payment-links/[id]/checkout.js": ["parking_plate_required", "parking_vehicle_class", "parking_max_hours", "normalizePlate"],
+  "functions/api/public/payment-links/[id].js": ["normalizeOmniMetadata", "workspace_slug", "operator: \"omni_jr\"", "omni-jr-logo-black.svg"],
+  "functions/api/public/payment-links/[id]/checkout.js": ["parking_plate_required", "parking_vehicle_class", "parking_max_hours", "normalizePlate", "normalizeOmniMetadata", "workspace_slug"],
   "functions/api/public/stripe/session.js": ["syncParkingSession", "parking_ticket", "publicParkingTicket"],
   "functions/api/public/stripe/webhook.js": ["syncParkingSession", "parking_ticket", "Smart Parking sync failed"],
   "functions/api/smart-parking/provision.js": ["omni_jr_standard_8h", "omni_jr_large_8h", "omni_jr_monthly", "amount: 15000", "brand_logo_url", "boostr_smart_parking_v3"],
