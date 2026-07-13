@@ -1,1 +1,192 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>BOOSTR Smart Payment Link</title><meta name="description" content="Interactive BOOSTR Smart Payment Link prototype. No real payment processing."><link rel="icon" href="/assets/icons/09.-b-star-favicon.png"><style>:root{--bg:#020202;--ink:#fff;--muted:rgba(255,255,255,.62);--line:rgba(255,255,255,.14);--panel:rgba(255,255,255,.06);--gold:#feedb9;--green:#77ffac;--blue:#79bfff;--pink:#f8c7f3}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#020202;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif}body{background:radial-gradient(circle at 78% 0,rgba(254,237,185,.17),transparent 28%),radial-gradient(circle at 12% 86%,rgba(119,255,172,.12),transparent 28%),radial-gradient(circle at 50% 50%,rgba(121,191,255,.1),transparent 32%),#020202;overflow-x:hidden}@keyframes float{0%,100%{transform:translateY(0) rotateX(0)}50%{transform:translateY(-14px) rotateX(2deg)}}@keyframes pop{from{opacity:0;transform:translateY(20px) scale(.96);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}@keyframes sweep{from{transform:translateX(-130%)}to{transform:translateX(130%)}}@keyframes bars{from{transform:scaleY(.2)}to{transform:scaleY(1)}}.shell{min-height:100vh;display:grid;place-items:center;padding:16px}.wrap{width:min(100%,1180px);display:grid;grid-template-columns:.86fr 1.14fr;gap:18px}.panel{border:1px solid var(--line);border-radius:38px;background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035));box-shadow:0 44px 140px rgba(0,0,0,.78);overflow:hidden;position:relative;animation:pop .7s cubic-bezier(.2,.8,.2,1) both}.panel:after{content:"";position:absolute;inset:-60px auto auto -40%;width:38%;height:190%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);animation:sweep 6s ease-in-out infinite;pointer-events:none}.brand{padding:24px;min-height:100%;display:flex;flex-direction:column}.brand img{width:130px;max-height:70px;object-fit:contain}.eyebrow{display:inline-flex;width:max-content;border:1px solid rgba(254,237,185,.25);background:rgba(254,237,185,.075);color:var(--gold);border-radius:999px;padding:8px 11px;font:950 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;margin-top:28px}h1{font-family:Arial Black,Arial,sans-serif;font-size:clamp(48px,8vw,96px);line-height:.84;letter-spacing:-.08em;margin:15px 0 12px}.lead{color:var(--muted);font-size:15px;line-height:1.48;max-width:480px}.phone{width:min(72%,260px);aspect-ratio:9/18.4;border-radius:46px;background:linear-gradient(180deg,#111,#030303);border:1px solid rgba(255,255,255,.18);box-shadow:0 28px 100px rgba(0,0,0,.68),inset 0 0 0 8px rgba(255,255,255,.035);padding:18px;margin:28px auto;position:relative;overflow:hidden;animation:float 7s ease-in-out infinite}.phone:before{content:"";position:absolute;top:10px;left:50%;width:82px;height:22px;border-radius:999px;background:#000;transform:translateX(-50%)}.phone h3{margin:38px 0 8px;font-size:14px}.phone .amount{font-size:38px;font-weight:950;letter-spacing:-.08em}.mini-bars{display:flex;align-items:end;gap:8px;height:92px;margin-top:28px}.mini-bars i{flex:1;border-radius:999px 999px 6px 6px;background:linear-gradient(180deg,#fff,rgba(255,255,255,.16));transform-origin:bottom;animation:bars .9s cubic-bezier(.2,.8,.2,1) both}.mini-bars i:nth-child(1){height:34%}.mini-bars i:nth-child(2){height:62%;animation-delay:.08s}.mini-bars i:nth-child(3){height:45%;animation-delay:.16s}.mini-bars i:nth-child(4){height:86%;animation-delay:.24s}.status-grid{margin-top:auto;display:grid;gap:10px}.status{border:1px solid var(--line);border-radius:22px;background:var(--panel);padding:13px}.status b{font-size:12px}.status span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.checkout{padding:20px;display:grid;gap:14px}.offer{border:1px solid rgba(255,255,255,.15);border-radius:30px;background:rgba(0,0,0,.25);padding:18px}.offer-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.tag{border:1px solid rgba(119,255,172,.24);background:rgba(119,255,172,.08);color:var(--green);border-radius:999px;padding:7px 9px;font:900 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em}.price{font-family:Arial Black,Arial;font-size:clamp(54px,8vw,82px);letter-spacing:-.08em;margin:18px 0 4px}.sub{color:var(--muted);font-size:13px}.segments{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.seg{border:1px solid var(--line);background:rgba(255,255,255,.055);color:#fff;border-radius:999px;min-height:44px;font-weight:950;cursor:pointer}.seg.on{background:#fff;color:#000}.form{display:grid;gap:10px}.field{display:grid;gap:7px;color:rgba(255,255,255,.68);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:900}.field input,.field select{min-height:50px;border-radius:18px;border:1px solid var(--line);background:rgba(0,0,0,.32);color:#fff;padding:0 13px;font-weight:700}.qty{display:flex;gap:8px}.qty button{width:50px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.08);color:#fff;font-weight:950}.rule{border:1px solid rgba(111,140,255,.23);background:rgba(111,140,255,.07);border-radius:22px;padding:13px;color:var(--muted);font-size:13px;line-height:1.4}.rule b{color:#fff}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:1px solid var(--line);border-radius:999px;min-height:52px;background:rgba(255,255,255,.06);color:#fff;font-weight:950;cursor:pointer}.btn.primary{background:#fff;color:#000;border-color:#fff}.timeline{display:grid;gap:8px}.step{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035);padding:11px;font-size:12px;color:var(--muted)}.step strong{color:#fff}.footer{padding:0 20px 20px;color:rgba(255,255,255,.45);font-size:11px;text-transform:uppercase;letter-spacing:.1em}.footer strong{color:#fff}@media(max-width:860px){.shell{padding:8px}.wrap{grid-template-columns:1fr}.brand{min-height:auto}.status-grid{margin-top:24px}.actions,.segments{grid-template-columns:1fr}h1{font-size:50px}.phone{width:min(82%,250px)}}</style></head><body><main class="shell"><section class="wrap"><aside class="panel brand"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><span class="eyebrow">SMART PAYMENT LINK</span><h1>Sell with one link.</h1><p class="lead">A BOOSTR-powered payment route for offers, deposits, bookings and drops. This preview does not process real payments.</p><div class="phone"><h3>Payment Link</h3><div class="amount" id="phoneAmount">$150</div><div class="sub">Reserved preview</div><div class="mini-bars"><i></i><i></i><i></i><i></i></div></div><div class="status-grid"><div class="status"><b>Guest checkout</b><span>Allowed for simple low-risk purchases.</span></div><div class="status"><b>Account required</b><span>Used for VIP, private access, recurring, licenses or high-ticket history.</span></div><div class="status"><b>Stripe Connect</b><span>Prepared later after LLC/business setup.</span></div></div></aside><section class="panel checkout"><div class="offer"><div class="offer-top"><div><span class="tag">PREVIEW OFFER</span><h2>Creative Service Deposit</h2><p class="sub">Reserve a project slot. Final scope confirmed manually.</p></div><span class="tag" id="ruleTag">GUEST OK</span></div><div class="price" id="price">$150</div><div class="sub">Static prototype · no real payment</div></div><div class="segments"><button class="seg on" data-mode="guest">Guest</button><button class="seg" data-mode="account">Account required</button><button class="seg" data-mode="vip">VIP / private</button></div><form class="form" id="payForm"><label class="field">Offer type<select id="offer"><option value="150">Creative Service Deposit · $150</option><option value="300">Premium Production Slot · $300</option><option value="450">WEST GOLD Direction · $450</option></select></label><label class="field">Quantity<div class="qty"><button type="button" id="minus">−</button><input id="qty" value="1" inputmode="numeric"><button type="button" id="plus">+</button></div></label><label class="field">Name<input placeholder="Buyer name"></label><label class="field">Contact<input placeholder="Email, WhatsApp or Instagram"></label><div class="rule"><b>Checkout rule:</b> <span id="ruleText">this offer can start as guest checkout. Account claim can happen later if files/private access are needed.</span></div><div class="actions"><button class="btn primary" type="submit">Reserve / Continue</button><button class="btn" type="button" onclick="location.href='/audit'">Start Audit</button></div></form><div class="timeline"><div class="step"><strong>Offer status</strong><span id="offerState">draft preview</span></div><div class="step"><strong>Payment status</strong><span>not started</span></div><div class="step"><strong>Order status</strong><span id="state">new preview</span></div><div class="step"><strong>Fulfillment</strong><span id="note">not started</span></div></div><div class="footer">POWERED BY <strong>BOOSTR LABS</strong> · no real payment processing</div></section></section></main><script>const offer=document.getElementById('offer'),qty=document.getElementById('qty'),price=document.getElementById('price'),phoneAmount=document.getElementById('phoneAmount'),ruleTag=document.getElementById('ruleTag'),ruleText=document.getElementById('ruleText');function calc(){let total=(parseInt(offer.value)||150)*(parseInt(qty.value)||1);price.textContent='$'+total;phoneAmount.textContent='$'+total}document.getElementById('plus').onclick=()=>{qty.value=(parseInt(qty.value)||1)+1;calc()};document.getElementById('minus').onclick=()=>{qty.value=Math.max(1,(parseInt(qty.value)||1)-1);calc()};offer.onchange=calc;qty.oninput=calc;document.querySelectorAll('.seg').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.seg').forEach(b=>b.classList.remove('on'));btn.classList.add('on');let mode=btn.dataset.mode;if(mode==='guest'){ruleTag.textContent='GUEST OK';ruleText.textContent='this offer can start as guest checkout. Account claim can happen later if files/private access are needed.'}if(mode==='account'){ruleTag.textContent='ACCOUNT';ruleText.textContent='account required for history, files, high-ticket orders, licenses or private delivery.'}if(mode==='vip'){ruleTag.textContent='PRIVATE';ruleText.textContent='VIP/private access requires BOOSTR account, order history and fulfillment control.'}});document.getElementById('payForm').onsubmit=e=>{e.preventDefault();document.getElementById('offerState').textContent='active preview';document.getElementById('state').textContent='reserved preview';document.getElementById('note').textContent='Prototype state only. No card was charged.'}</script></body></html>
+<!doctype html>
+<html lang="en" data-build="1.1.0" data-boostr-surface="smart-payment-link" data-boostr-theme="night_blue" data-boostr-accent="blue">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0c1118">
+  <title>BOOSTR Smart Payment Link</title>
+  <meta name="description" content="Interactive BOOSTR Smart Payment Link prototype. No real payment processing.">
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="stylesheet" href="/assets/boostr-mother/mother.css?v=1.1.0">
+  <link id="boostr-system-theme-style" rel="stylesheet" href="/assets/boostr-theme/app-ui.css?v=1.1.0">
+  <link id="boostr-shared-ui-v2-style" rel="stylesheet" href="/assets/boostr-theme/shared-ui-v2.css?v=1.1.0">
+</head>
+<body data-boostr-shared-ui="true" data-boostr-surface="smart-payment-link">
+  <div class="boostr-app-shell">
+    <aside class="boostr-app-sidebar" aria-label="BOOSTR navigation">
+      <a class="boostr-brand" href="/home/">
+        <span class="boostr-brand-mark"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></span>
+        <span class="boostr-brand-copy"><b>BOOSTR Labs</b><span>Smart Payment Link</span></span>
+      </a>
+      <div class="boostr-profile"><div class="boostr-profile-avatar">$</div><div><b>Commerce route</b><span>Prototype · no charge</span></div></div>
+      <nav class="boostr-app-nav">
+        <a href="/home/"><span>Overview</span><b>⌂</b></a>
+        <a class="active" href="/smart-payment-link/" aria-current="page"><span>Payment Link</span><b>$</b></a>
+        <a href="/manager/payment-links/"><span>Payment Links</span><b>▦</b></a>
+        <a href="/manager/orders/"><span>Orders</span><b>◫</b></a>
+        <a href="/app/invoices/"><span>Invoices</span><b>◇</b></a>
+        <a href="/audit/"><span>Audit</span><b>✦</b></a>
+      </nav>
+      <div class="boostr-sidebar-foot"><a href="/modules/">Module Deck</a><a href="/login/">Account access</a></div>
+    </aside>
+
+    <main class="boostr-app-main">
+      <header class="boostr-app-topbar">
+        <div class="boostr-app-heading"><small>BOOSTR COMMERCE</small><strong>Smart Payment Link</strong></div>
+        <input class="boostr-app-search" type="search" placeholder="Search offer states..." aria-label="Search payment states">
+        <div class="boostr-app-actions"><a class="boostr-icon-button" href="/manager/payment-links/" title="Payment links">▦</a><a class="boostr-icon-button" href="/home/" title="Home">⌂</a></div>
+      </header>
+
+      <section class="boostr-hero-grid">
+        <article class="boostr-hero-card">
+          <span class="boostr-eyebrow">SMART PAYMENT LINK</span>
+          <h1>Sell with one link.</h1>
+          <p>A BOOSTR-powered route for offers, deposits, bookings and drops. This prototype demonstrates checkout rules and order states but does not process a real payment.</p>
+          <div class="boostr-actions"><button class="boostr-button primary" type="button" id="jumpToCheckout">Build preview</button><a class="boostr-button" href="/manager/payment-links/">Open Payment Links</a><a class="boostr-button" href="/audit/">Start Audit</a></div>
+        </article>
+        <article class="boostr-focus-card">
+          <div><span class="boostr-eyebrow">CURRENT OFFER</span><h2 id="focusOffer">Creative Service Deposit</h2></div>
+          <div class="boostr-focus-ring" id="amountRing"><div><strong id="focusAmount">$150</strong><span>preview total</span></div></div>
+          <span class="boostr-tag" id="focusRule">GUEST OK</span>
+        </article>
+      </section>
+
+      <section class="boostr-payment-grid" id="checkout">
+        <article class="boostr-payment-preview">
+          <span class="boostr-eyebrow">LIVE PREVIEW</span>
+          <h1>Offer screen.</h1>
+          <p>The visual preview updates when the offer, quantity or checkout rule changes.</p>
+          <div class="boostr-phone" aria-label="Payment link phone preview">
+            <h3>Payment Link</h3>
+            <div class="boostr-phone-total" id="phoneAmount">$150</div>
+            <div class="sub" id="phoneRule">Guest checkout</div>
+            <div class="boostr-phone-bars"><i></i><i></i><i></i><i></i></div>
+            <div class="boostr-pill-row"><span class="boostr-pill" id="phoneStatus">Draft preview</span></div>
+          </div>
+          <div class="boostr-board" style="grid-template-columns:1fr;margin-top:18px">
+            <div class="boostr-task-card"><div class="boostr-task-title"><span class="boostr-task-accent" style="background:#5ef36d"></span><span>Guest checkout</span></div><div class="boostr-task-meta"><span>Allowed for simple, low-risk purchases.</span></div></div>
+            <div class="boostr-task-card"><div class="boostr-task-title"><span class="boostr-task-accent" style="background:#ffad33"></span><span>Account required</span></div><div class="boostr-task-meta"><span>Used for files, history, licenses, recurring or private access.</span></div></div>
+          </div>
+        </article>
+
+        <article class="boostr-checkout-panel">
+          <div class="boostr-offer-card">
+            <div class="boostr-offer-head"><div><span class="boostr-tag">PREVIEW OFFER</span><h2 id="offerTitle">Creative Service Deposit</h2><p class="sub">Reserve a project slot. Final scope is confirmed manually.</p></div><span class="boostr-tag" id="ruleTag">GUEST OK</span></div>
+            <div class="boostr-price" id="price">$150</div>
+            <div class="sub">Static prototype · no real payment</div>
+          </div>
+
+          <div class="boostr-segments" role="tablist" aria-label="Checkout rule">
+            <button class="active" type="button" data-mode="guest">Guest</button>
+            <button type="button" data-mode="account">Account required</button>
+            <button type="button" data-mode="vip">VIP / private</button>
+          </div>
+
+          <form class="boostr-form" id="payForm">
+            <label class="boostr-field">Offer type
+              <select id="offer">
+                <option value="150" data-title="Creative Service Deposit">Creative Service Deposit · $150</option>
+                <option value="300" data-title="Premium Production Slot">Premium Production Slot · $300</option>
+                <option value="450" data-title="WEST GOLD Direction">WEST GOLD Direction · $450</option>
+              </select>
+            </label>
+            <label class="boostr-field">Quantity
+              <span class="boostr-qty"><button type="button" id="minus" aria-label="Decrease quantity">−</button><input id="qty" value="1" inputmode="numeric" aria-label="Quantity"><button type="button" id="plus" aria-label="Increase quantity">+</button></span>
+            </label>
+            <label class="boostr-field">Name<input id="buyerName" placeholder="Buyer name" autocomplete="name"></label>
+            <label class="boostr-field">Contact<input id="buyerContact" placeholder="Email, WhatsApp or Instagram" autocomplete="email"></label>
+            <div class="boostr-rule"><b>Checkout rule:</b> <span id="ruleText">This offer can start as guest checkout. Account claim can happen later if files or private access are needed.</span></div>
+            <div class="boostr-form-actions"><button class="boostr-button primary" type="submit">Reserve / Continue</button><a class="boostr-button" href="/audit/">Start Audit</a></div>
+          </form>
+
+          <div class="boostr-status-list" aria-live="polite">
+            <div class="boostr-status-row"><strong>Offer status</strong><span id="offerState">draft preview</span></div>
+            <div class="boostr-status-row"><strong>Payment status</strong><span>not started</span></div>
+            <div class="boostr-status-row"><strong>Order status</strong><span id="orderState">new preview</span></div>
+            <div class="boostr-status-row"><strong>Fulfillment</strong><span id="fulfillmentState">not started</span></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="boostr-showcase">
+        <article class="boostr-showcase-card"><span class="boostr-eyebrow">CHECKOUT</span><h3>Guest when possible</h3><p>Simple purchases can remain fast and low-friction without forcing an account.</p><div class="boostr-pill-row"><span class="boostr-pill">Name</span><span class="boostr-pill">Contact</span><span class="boostr-pill">Receipt</span></div></article>
+        <article class="boostr-showcase-card"><span class="boostr-eyebrow">IDENTITY</span><h3>Account when needed</h3><p>Private delivery, history, downloads, recurring access and licenses stay attached to a person.</p><div class="boostr-pill-row"><span class="boostr-pill">Files</span><span class="boostr-pill">History</span><span class="boostr-pill">Access</span></div></article>
+        <article class="boostr-showcase-card"><span class="boostr-eyebrow">BACKEND</span><h3>Stripe remains pending</h3><p>This page does not claim that a card was charged or that a production order exists.</p><div class="boostr-pill-row"><span class="boostr-pill">No charge</span><span class="boostr-pill">Prototype</span></div></article>
+      </section>
+
+      <footer class="footer">POWERED BY BOOSTR LABS · NO REAL PAYMENT PROCESSING</footer>
+    </main>
+  </div>
+
+  <nav class="boostr-local-dock" aria-label="Quick navigation" data-no-i18n="true"><a href="/home/" title="Home">⌂</a><a class="active" href="/smart-payment-link/" title="Payment">$</a><a href="/manager/payment-links/" title="Links">▦</a><a href="/manager/orders/" title="Orders">◫</a><a href="/login/" title="Account">◎</a></nav>
+  <div class="boostr-toast" id="paymentToast" role="status" aria-live="polite">Preview reserved. No card was charged.</div>
+
+  <script src="/assets/boostr-theme/theme-runtime.js?v=1.1.0" defer></script>
+  <script src="/assets/boostr-theme/shared-ui-runtime.js?v=1.1.0" defer></script>
+  <script>
+    const offer=document.getElementById('offer');
+    const qty=document.getElementById('qty');
+    const price=document.getElementById('price');
+    const phoneAmount=document.getElementById('phoneAmount');
+    const focusAmount=document.getElementById('focusAmount');
+    const offerTitle=document.getElementById('offerTitle');
+    const focusOffer=document.getElementById('focusOffer');
+    const ruleTag=document.getElementById('ruleTag');
+    const focusRule=document.getElementById('focusRule');
+    const ruleText=document.getElementById('ruleText');
+    const phoneRule=document.getElementById('phoneRule');
+    const toast=document.getElementById('paymentToast');
+
+    function total(){return (parseInt(offer.value,10)||150)*Math.max(1,parseInt(qty.value,10)||1)}
+    function calculate(){
+      const amount=total();
+      const label=offer.options[offer.selectedIndex].dataset.title||'Offer';
+      const formatted='$'+amount;
+      price.textContent=formatted;
+      phoneAmount.textContent=formatted;
+      focusAmount.textContent=formatted;
+      offerTitle.textContent=label;
+      focusOffer.textContent=label;
+      const fill=Math.min(94,42+Math.round(amount/10));
+      amountRing.style.background=`conic-gradient(var(--boostr-accent-2) 0 ${fill}%,rgba(255,255,255,.08) ${fill}% 100%)`;
+    }
+    plus.onclick=()=>{qty.value=Math.max(1,(parseInt(qty.value,10)||1)+1);calculate()};
+    minus.onclick=()=>{qty.value=Math.max(1,(parseInt(qty.value,10)||1)-1);calculate()};
+    offer.onchange=calculate;
+    qty.oninput=calculate;
+
+    document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
+      document.querySelectorAll('[data-mode]').forEach(item=>item.classList.toggle('active',item===button));
+      const mode=button.dataset.mode;
+      if(mode==='guest'){
+        ruleTag.textContent=focusRule.textContent='GUEST OK';
+        phoneRule.textContent='Guest checkout';
+        ruleText.textContent='This offer can start as guest checkout. Account claim can happen later if files or private access are needed.';
+      }
+      if(mode==='account'){
+        ruleTag.textContent=focusRule.textContent='ACCOUNT';
+        phoneRule.textContent='Account required';
+        ruleText.textContent='An account is required for history, files, high-ticket orders, licenses or private delivery.';
+      }
+      if(mode==='vip'){
+        ruleTag.textContent=focusRule.textContent='PRIVATE';
+        phoneRule.textContent='VIP / private access';
+        ruleText.textContent='VIP or private access requires a BOOSTR account, order history and fulfillment control.';
+      }
+    }));
+
+    jumpToCheckout.onclick=()=>checkout.scrollIntoView({behavior:'smooth',block:'start'});
+    payForm.onsubmit=event=>{
+      event.preventDefault();
+      offerState.textContent='active preview';
+      orderState.textContent='reserved preview';
+      fulfillmentState.textContent='prototype only';
+      phoneStatus.textContent='Reserved preview';
+      toast.classList.add('show');
+      clearTimeout(window.__paymentToastTimer);
+      window.__paymentToastTimer=setTimeout(()=>toast.classList.remove('show'),2300);
+    };
+    calculate();
+  </script>
+</body>
+</html>

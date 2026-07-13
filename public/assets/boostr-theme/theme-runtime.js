@@ -2,20 +2,26 @@
   if (window.__BOOSTR_THEME_RUNTIME__) return;
   window.__BOOSTR_THEME_RUNTIME__ = true;
 
-  const STORAGE_KEY = "boostr_system_theme_v1";
-  const DEFAULTS = Object.freeze({ theme_id: "night_blue", accent_id: "blue" });
+  const STORAGE_KEY = "boostr_system_theme_v2";
+  const LEGACY_STORAGE_KEY = "boostr_system_theme_v1";
+  const REVISION = 2;
+  const DEFAULTS = Object.freeze({ theme_id: "night_blue", accent_id: "blue", revision: REVISION });
   const THEMES = new Set(["night_blue", "smart_light", "mother_platinum"]);
   const ACCENTS = new Set(["blue", "violet", "rose", "emerald"]);
 
   const normalize = (input = {}) => ({
     theme_id: THEMES.has(input.theme_id) ? input.theme_id : DEFAULTS.theme_id,
     accent_id: ACCENTS.has(input.accent_id) ? input.accent_id : DEFAULTS.accent_id,
+    revision: Number(input.revision) >= REVISION ? Number(input.revision) : REVISION,
     updated_at: input.updated_at || null
   });
 
   function readCached() {
     try {
-      return normalize(JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"));
+      const current = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (current?.theme_id) return normalize(current);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      return { ...DEFAULTS };
     } catch {
       return { ...DEFAULTS };
     }
@@ -27,6 +33,7 @@
 
     root.dataset.boostrTheme = config.theme_id;
     root.dataset.boostrAccent = config.accent_id;
+    root.dataset.boostrThemeRevision = String(config.revision);
 
     const themeColor = config.theme_id === "smart_light" ? "#f3f3f1" : "#0c1118";
     let meta = document.querySelector('meta[name="theme-color"]');
@@ -38,7 +45,10 @@
     meta.content = themeColor;
 
     if (persist) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch {}
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+      } catch {}
     }
 
     window.BOOSTR_THEME_STATE = config;
@@ -72,9 +82,6 @@
 
   document.addEventListener("boostrThemeUpdated", (event) => apply(event.detail || DEFAULTS));
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", sync, { once: true });
-  } else {
-    sync();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", sync, { once: true });
+  else sync();
 })();
