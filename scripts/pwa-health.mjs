@@ -24,7 +24,7 @@ const assertions=[
   [manifest.start_url==='/?source=pwa','PWA starts at the official entry'],
   [manifest.display==='standalone','manifest uses standalone display'],
   [worker.includes("'/api/'")&&worker.includes("'/login'"),'service worker protects private routes'],
-  [worker.includes('boostr-pwa-v3'),'service worker cache version is current'],
+  [worker.includes('boostr-pwa-v4'),'service worker cache version is current'],
   [register.includes("serviceWorker.register('/service-worker.js'"),'service worker registration exists'],
   [entryCss.includes('@media(max-width:760px)'),'mobile binary layout exists'],
   [entryCss.includes('.binary-option'),'interactive option styling exists'],
