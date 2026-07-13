@@ -1,5 +1,5 @@
 const base = (process.env.BOOSTR_BASE_URL || "https://boostrlabs.pages.dev").replace(/\/$/, "");
-const expectedBuild = "omni-self-heal-v2";
+const expectedBuild = "omni-self-heal-v3";
 const attempts = Math.max(1, Number(process.env.OMNI_SMOKE_ATTEMPTS || 36));
 const delayMs = Math.max(1000, Number(process.env.OMNI_SMOKE_DELAY_MS || 10000));
 const expected = {
@@ -49,7 +49,7 @@ for (const [plan, rules] of Object.entries(expected)) {
   const rawLocation = stable.headers.get("location") || "";
   assert(rawLocation, `${plan}: stable route did not return a location`);
   const checkoutUrl = new URL(rawLocation, base);
-  assert(["/omni-jr/checkout", "/omni-jr/checkout/"].includes(checkoutUrl.pathname), `${plan}: redirected to ${checkoutUrl.pathname}`);
+  assert(["/omni-jr/checkout-v3", "/omni-jr/checkout-v3/"].includes(checkoutUrl.pathname), `${plan}: redirected to ${checkoutUrl.pathname}`);
   assert(checkoutUrl.searchParams.get("plan") === plan, `${plan}: checkout plan context missing`);
   const id = checkoutUrl.searchParams.get("id") || "";
   assert(id.length >= 20, `${plan}: payment link id missing`);
@@ -58,10 +58,10 @@ for (const [plan, rules] of Object.entries(expected)) {
   const checkoutHtml = await checkout.text();
   const finalCheckoutUrl = new URL(checkout.url);
   assert(checkout.status === 200, `${plan}: checkout HTML returned HTTP ${checkout.status} at ${checkout.url}`);
-  assert(["/omni-jr/checkout", "/omni-jr/checkout/"].includes(finalCheckoutUrl.pathname), `${plan}: checkout canonicalized to ${finalCheckoutUrl.pathname}`);
+  assert(["/omni-jr/checkout-v3", "/omni-jr/checkout-v3/"].includes(finalCheckoutUrl.pathname), `${plan}: checkout canonicalized to ${finalCheckoutUrl.pathname}`);
   assert(finalCheckoutUrl.searchParams.get("id") === id, `${plan}: payment link id was lost after canonical redirect`);
   assert(finalCheckoutUrl.searchParams.get("plan") === plan, `${plan}: plan was lost after canonical redirect`);
-  assert(checkoutHtml.includes('data-build="omni-self-heal-v2"'), `${plan}: current checkout build marker missing`);
+  assert(checkoutHtml.includes('data-build="omni-self-heal-v3"'), `${plan}: current checkout build marker missing`);
   assert(checkoutHtml.includes("OMNI JR PARKING"), `${plan}: OMNI branding missing`);
   assert(!checkoutHtml.includes("Link no disponible"), `${plan}: stale unavailable-link UI detected`);
 
