@@ -10,6 +10,7 @@ const themeRuntime = read('public/assets/boostr-theme/theme-runtime.js');
 const sharedRuntime = read('public/assets/boostr-theme/shared-ui-runtime.js');
 const sharedCss = read('public/assets/boostr-theme/shared-ui-v2.css');
 const themeLib = read('functions/_lib/theme.js');
+const app = read('public/app/index.html');
 const home = read('public/home/index.html');
 const payment = read('public/smart-payment-link/index.html');
 const modules = read('public/modules/index.html');
@@ -43,6 +44,12 @@ assert.match(sharedRuntime, /makeTablesScrollable/);
 assert.match(sharedCss, /\.boostr-app-shell/);
 assert.match(sharedCss, /\.boostr-payment-grid/);
 assert.match(sharedCss, /One shared mobile dock/);
+
+assert.match(app, /boostr-app-shell/);
+assert.match(app, /boostr-focus-card/);
+assert.match(app, /SMART PARKING/);
+assert.match(app, /function roleContext/);
+assert.doesNotMatch(app, /boostr-mother\/i18n\.js/);
 
 assert.match(home, /boostr-app-shell/);
 assert.match(home, /boostr-hero-grid/);
