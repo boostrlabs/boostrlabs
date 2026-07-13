@@ -58,6 +58,12 @@ for (const marker of ['ESPACIO PRIVADO', '/api/session', '/api/dashboard', '/log
 for (const marker of ['roleDestination(data)', "return'/app/workspace/'", 'Usar servicios como guest', 'Bienvenido<br>de vuelta.', '/assets/logos/boostr-logo-nav.png']) {
   if (!login.includes(marker)) failures.push(`Login role router or brand UI missing marker: ${marker}`);
 }
+for (const marker of ['autocomplete="off"', 'id="boostrLoginIdentifier"', 'name="boostr_login_identifier"', 'id="boostrLoginSecret"', 'name="boostr_login_secret"', 'class="masked-secret"', 'looksLikeSystemSecret', 'Ese valor parece una clave de sistema']) {
+  if (!login.includes(marker)) failures.push(`Dedicated login credential isolation missing marker: ${marker}`);
+}
+for (const forbidden of ['name="identifier" inputmode="email" autocomplete="username"', 'name="password" type="password" autocomplete="current-password"']) {
+  if (login.includes(forbidden)) failures.push(`Dedicated login still exposes rejected autofill configuration: ${forbidden}`);
+}
 
 for (const [name, html] of [['app', app], ['workspace', workspace], ['login', login]]) {
   const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
