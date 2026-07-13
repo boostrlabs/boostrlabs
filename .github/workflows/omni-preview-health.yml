@@ -34,4 +34,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Wait for Cloudflare and verify all OMNI JR payment routes
-        run: pnpm run health:omni-parking:live
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm run health:omni-parking:live 2>&1 | tee omni-preview-smoke.log
+      - name: Upload OMNI diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omni-preview-smoke-${{ github.run_attempt }}
+          path: omni-preview-smoke.log
+          if-no-files-found: warn
+          retention-days: 7
