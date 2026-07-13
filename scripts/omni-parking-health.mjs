@@ -70,7 +70,7 @@ const checks = {
   "public/parking/omni-jr/index.html": ["Sedan / Sport / Coupe", "Truck / Big SUV", "$150 / mes", "omni-jr-logo-black.svg"],
   "public/parking/omni-jr/qr/index.html": ["$20", "$25", "$150 / MES", "/api/public/qr", "omni-jr-logo-black.svg"],
   "public/pay/index.html": ["parking-theme", "Plate / Placa", "parking_ticket", "ticketQr", "brand_logo_url"],
-  "public/pay/omni/index.html": ["OMNI JR PARKING", "Preparando checkout seguro", "loader", "Powered by BOOSTR Labs", "parking_plate"],
+  "public/pay/omni/index.html": ["OMNI JR PARKING", "Preparando checkout seguro", "loader", "Powered by BOOSTR Labs", "plate:$('plate')"],
   "public/assets/omni-jr/omni-jr-logo-black.svg": ["OMNI JR Parking — official logo", "viewBox=\"0 0 1254 1254\"", "approved source artwork"]
 };
 
