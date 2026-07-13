@@ -15,6 +15,7 @@
     "health:boostr-live": "node scripts/boostr-live-smoke.mjs",
     "health:smart-documents": "node scripts/smart-documents-health.mjs",
     "health:omni-parking": "node scripts/omni-parking-health.mjs",
+    "health:omni-parking:live": "node scripts/omni-parking-live-smoke.mjs",
     "stability:check": "node scripts/ecosystem-stability.mjs && node scripts/omni-parking-health.mjs",
     "build": "vite build && node scripts/patch-johankarrd-v60.mjs && node scripts/johankarrd-dist-health.mjs",
     "preview": "vite preview --host 127.0.0.1",
