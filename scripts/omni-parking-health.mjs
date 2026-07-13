@@ -67,7 +67,7 @@ const checks = {
   "functions/api/public/stripe/session.js": ["syncParkingSession", "parking_ticket", "publicParkingTicket"],
   "functions/api/public/stripe/webhook.js": ["syncParkingSession", "parking_ticket", "Smart Parking sync failed"],
   "functions/api/health/omni-jr.js": ["omni-self-heal-v1", "ensureOmniPlan", "workspace_slug", "checkout_url"],
-  "functions/api/smart-parking/provision.js": ["omni_jr_standard_8h", "omni_jr_large_8h", "omni_jr_monthly", "amount: 15000", "brand_logo_url", "boostr_smart_parking_v3"],
+  "functions/api/smart-parking/provision.js": ["ensureOmniPlan", "OMNI_PLANS", "omni-self-heal-v1", "/pay/omni/?id=", "ensureManagerSchema"],
   "functions/api/smart-parking/omni-jr/manager-signup.js": ["maikfine", "invalid_manager_invite", "workspace_members", "role: \"manager\"", "/app/parking/omni-jr/manager/"],
   "functions/api/smart-parking/omni-jr/verify.js": ["parking_manager_access_denied", "recordParkingVerification", "recent", "plate", "token"],
   "functions/parking/omni-jr/[plan].js": ["ensureOmniPlan", "getOmniPlan", "/pay/omni/?id=", "plan="],
