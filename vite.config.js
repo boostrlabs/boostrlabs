@@ -2,8 +2,14 @@ import { defineConfig } from 'vite';
 
 const boostrPwaPlugin = {
   name: 'boostr-pwa-shell',
-  transformIndexHtml() {
+  transformIndexHtml(html) {
+    const enhancedHtml = html.replace(
+      /<meta\s+name=["']viewport["']\s+content=["'][^"']*["']\s*\/?>/i,
+      '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+    );
+
     return {
+      html: enhancedHtml,
       tags: [
         {
           tag: 'link',
