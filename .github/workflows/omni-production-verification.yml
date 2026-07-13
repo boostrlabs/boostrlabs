@@ -16,11 +16,11 @@ jobs:
     name: Verify OMNI JR production end to end
     if: github.head_ref == 'omni-production-verify'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     env:
       BOOSTR_BASE_URL: https://boostrlabs.pages.dev
-      OMNI_SMOKE_ATTEMPTS: 60
-      OMNI_SMOKE_DELAY_MS: 10000
+      OMNI_SMOKE_ATTEMPTS: 1
+      OMNI_SMOKE_DELAY_MS: 1000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -33,7 +33,20 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Wait for production and verify all OMNI JR routes
+      - name: Capture production responses
+        shell: bash
+        run: |
+          set -x
+          curl -sS -D production-health-headers.txt -o production-health-body.txt https://boostrlabs.pages.dev/api/health/omni-jr
+          curl -sS -D production-root-headers.txt -o production-root-body.txt https://boostrlabs.pages.dev/
+          curl -sS -D production-monthly-headers.txt -o production-monthly-body.txt https://boostrlabs.pages.dev/parking/omni-jr/monthly
+          printf '\n=== HEALTH HEADERS ===\n'; cat production-health-headers.txt
+          printf '\n=== HEALTH BODY (first 2000 bytes) ===\n'; head -c 2000 production-health-body.txt
+          printf '\n=== ROOT HEADERS ===\n'; cat production-root-headers.txt
+          printf '\n=== ROOT BUILD MARKERS ===\n'; grep -Eo 'data-build="[^"]+"|[a-f0-9]{7,40}|BOOSTR[^<]{0,80}' production-root-body.txt | head -50 || true
+          printf '\n=== MONTHLY HEADERS ===\n'; cat production-monthly-headers.txt
+          printf '\n=== MONTHLY BODY (first 2000 bytes) ===\n'; head -c 2000 production-monthly-body.txt
+      - name: Run one production smoke attempt
         shell: bash
         run: |
           set -o pipefail
@@ -43,6 +56,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: omni-production-smoke-${{ github.run_attempt }}
-          path: omni-production-smoke.log
+          path: |
+            omni-production-smoke.log
+            production-*-headers.txt
+            production-*-body.txt
           if-no-files-found: warn
           retention-days: 7
