@@ -63,11 +63,11 @@ const checks = {
   "functions/api/public/qr.js": ["quickchart.io/qr", "api.qrserver.com", "cache-control"],
   "functions/api/public/payment-links/[id].js": ["normalizeOmniMetadata", "workspace_slug", "operator: \"omni_jr\"", "omni-jr-logo-black.svg"],
   "functions/api/public/payment-links/[id]/checkout.js": ["parking_plate_required", "parking_vehicle_class", "parking_max_hours", "normalizePlate", "normalizeOmniMetadata", "workspace_slug"],
-  "functions/api/public/omni-jr/plan/[plan].js": ["ensureOmniPlan", "omni-self-heal-v1", "/omni-jr/checkout/?id=", "stable_url"],
+  "functions/api/public/omni-jr/plan/[plan].js": ["ensureOmniPlan", "omni-self-heal-v2", "/omni-jr/checkout/?id=", "stable_url"],
   "functions/api/public/stripe/session.js": ["syncParkingSession", "parking_ticket", "publicParkingTicket"],
   "functions/api/public/stripe/webhook.js": ["syncParkingSession", "parking_ticket", "Smart Parking sync failed"],
-  "functions/api/health/omni-jr.js": ["omni-self-heal-v1", "ensureOmniPlan", "workspace_slug", "/omni-jr/checkout/?id="],
-  "functions/api/smart-parking/provision.js": ["ensureOmniPlan", "OMNI_PLANS", "omni-self-heal-v1", "/omni-jr/checkout/?id=", "ensureManagerSchema"],
+  "functions/api/health/omni-jr.js": ["omni-self-heal-v2", "ensureOmniPlan", "workspace_slug", "/omni-jr/checkout/?id="],
+  "functions/api/smart-parking/provision.js": ["ensureOmniPlan", "OMNI_PLANS", "omni-self-heal-v2", "/omni-jr/checkout/?id=", "ensureManagerSchema"],
   "functions/api/smart-parking/omni-jr/manager-signup.js": ["maikfine", "invalid_manager_invite", "workspace_members", "role: \"manager\"", "/app/parking/omni-jr/manager/"],
   "functions/api/smart-parking/omni-jr/verify.js": ["parking_manager_access_denied", "recordParkingVerification", "recent", "plate", "token"],
   "functions/parking/omni-jr/[plan].js": ["ensureOmniPlan", "getOmniPlan", "/omni-jr/checkout/?id=", "plan="],
@@ -79,8 +79,8 @@ const checks = {
   "public/parking/omni-jr/index.html": ["Sedan / Sport / Coupe", "Truck / Big SUV", "$150 / mes", "omni-jr-logo-black.svg"],
   "public/parking/omni-jr/qr/index.html": ["$20", "$25", "$150 / MES", "/api/public/qr", "omni-jr-logo-black.svg"],
   "public/pay/index.html": ["parking-theme", "Plate / Placa", "parking_ticket", "ticketQr", "brand_logo_url"],
-  "public/omni-jr/checkout/index.html": ["data-build=\"omni-self-heal-v1\"", "repairPlan", "/api/public/omni-jr/plan/", "Reparar y reintentar", "Powered by BOOSTR Labs", "plate:$('plate')"],
-  "scripts/omni-parking-live-smoke.mjs": ["omni-self-heal-v1", "/api/health/omni-jr", "/omni-jr/checkout", "Link no disponible"],
+  "public/omni-jr/checkout/index.html": ["data-build=\"omni-self-heal-v2\"", "repairPlan", "/api/public/omni-jr/plan/", "Reparar y reintentar", "Powered by BOOSTR Labs", "plate:$('plate')"],
+  "scripts/omni-parking-live-smoke.mjs": ["omni-self-heal-v2", "/api/health/omni-jr", "/omni-jr/checkout", "Link no disponible"],
   "public/assets/omni-jr/omni-jr-logo-black.svg": ["OMNI JR Parking — official logo", "viewBox=\"0 0 1254 1254\"", "approved source artwork"]
 };
 
