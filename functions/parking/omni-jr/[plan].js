@@ -17,7 +17,11 @@ function redirect(location) {
   });
 }
 
-export async function onRequestGet({ env, params }) {
+function cleanPlate(value) {
+  return String(value || "").toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 12);
+}
+
+export async function onRequestGet({ request, env, params }) {
   const key = String(params?.plan || "").trim().toLowerCase();
   if (key === "8h") return redirect("/parking/omni-jr/");
 
@@ -30,13 +34,21 @@ export async function onRequestGet({ env, params }) {
     });
   }
 
+  const incoming = new URL(request.url);
+  const plate = cleanPlate(incoming.searchParams.get("plate"));
+
   try {
     const provisioned = await ensureOmniPlan(env, key);
-    const target = `/omni-jr/checkout-v3/?id=${encodeURIComponent(provisioned.link.id)}&plan=${encodeURIComponent(key)}`;
-    return redirect(target);
+    const target = new URL("/omni-jr/checkout-v3/", incoming.origin);
+    target.searchParams.set("id", provisioned.link.id);
+    target.searchParams.set("plan", key);
+    if (plate) target.searchParams.set("plate", plate);
+    return redirect(`${target.pathname}${target.search}`);
   } catch (error) {
     console.error("OMNI JR stable plan route failed", { plan: key, error: String(error?.message || error) });
-    return new Response(page(plan, "No se pudo preparar el checkout. El sistema intentará reparar el enlace al reintentar.", `/parking/omni-jr/${encodeURIComponent(key)}`), {
+    const retry = new URL(`/parking/omni-jr/${encodeURIComponent(key)}`, incoming.origin);
+    if (plate) retry.searchParams.set("plate", plate);
+    return new Response(page(plan, "No se pudo preparar el checkout. El sistema intentará reparar el enlace al reintentar.", `${retry.pathname}${retry.search}`), {
       status: 503,
       headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate, max-age=0" }
     });
