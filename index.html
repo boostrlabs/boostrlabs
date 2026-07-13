@@ -1,17 +1,17 @@
 <!doctype html>
-<html lang="es" data-build="1.0.0" data-session="loading">
+<html lang="es" data-build="1.1.0" data-session="loading">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#050607">
   <meta name="color-scheme" content="dark">
-  <title>BOOSTR Labs — Acceso o Audit</title>
-  <meta name="description" content="Inicia sesión en BOOSTR Labs o comienza el BOOSTR Audit para descubrir qué necesita tu operación.">
+  <title>BOOSTR Labs — Encuentra tu entrada</title>
+  <meta name="description" content="Responde opciones A o B para encontrar la entrada correcta a BOOSTR Labs.">
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png">
-  <link rel="stylesheet" href="/assets/boostr-entry/entry.css?v=1.0.0">
+  <link rel="stylesheet" href="/assets/boostr-entry/entry.css?v=1.1.0">
   <script src="/assets/boostr-mother/session-ui.js?v=0.9.0" defer></script>
-  <script src="/assets/boostr-entry/entry.js?v=1.0.0" defer></script>
+  <script src="/assets/boostr-entry/entry.js?v=1.1.0" defer></script>
 </head>
 <body class="boostr-entry">
   <div class="entry-ambient" aria-hidden="true"></div>
@@ -23,7 +23,7 @@
         <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
       </a>
       <div class="header-tools">
-        <span class="app-state" id="appState"><i></i><span data-i18n="status">BOOSTR ONLINE</span></span>
+        <span class="app-state"><i></i><span data-i18n="status">BOOSTR ONLINE</span></span>
         <div class="language-switch" role="group" aria-label="Language">
           <button type="button" data-language="es" aria-pressed="true">ES</button>
           <button type="button" data-language="en" aria-pressed="false">EN</button>
@@ -31,90 +31,44 @@
       </div>
     </header>
 
-    <section class="entry-stage" aria-labelledby="entryTitle">
-      <div class="entry-copy">
-        <span class="eyebrow" data-i18n="eyebrow">BOOSTR LABS</span>
-        <h1 id="entryTitle" data-i18n="title">Entra a BOOSTR.</h1>
-        <p class="lead" id="entryLead" data-i18n="lead">Inicia sesión si ya tienes acceso. Si todavía no sabes qué necesitas, comienza el BOOSTR Audit.</p>
+    <section class="decision-card" aria-live="polite" aria-labelledby="entryQuestion">
+      <div class="decision-topline">
+        <span data-i18n="routeLabel">ENCONTRANDO TU RUTA</span>
+        <b id="stepCounter">01</b>
+      </div>
 
-        <div class="choice-grid" id="choiceGrid">
-          <a class="choice choice-login" id="loginChoice" href="/login/">
-            <span class="choice-index">01</span>
-            <span class="choice-content">
-              <strong data-i18n="loginTitle">Iniciar sesión</strong>
-              <small data-i18n="loginBody">Para cuentas, equipos, partners y clientes con acceso.</small>
-            </span>
-            <span class="choice-arrow" aria-hidden="true">↗</span>
-          </a>
+      <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
 
-          <a class="choice choice-audit" id="auditChoice" href="/audit/">
-            <span class="choice-index">02</span>
-            <span class="choice-content">
-              <strong data-i18n="auditTitle">Comenzar BOOSTR Audit</strong>
-              <small data-i18n="auditBody">Para descubrir qué necesita tu operación.</small>
-            </span>
-            <span class="choice-arrow" aria-hidden="true">↗</span>
-          </a>
-        </div>
+      <div class="decision-mark" aria-hidden="true">
+        <span class="mark-ring ring-a"></span>
+        <span class="mark-ring ring-b"></span>
+        <img src="/assets/icons/09.-b-star-favicon.png" alt="">
+      </div>
 
-        <nav class="secondary-actions" aria-label="Other entry options">
-          <a href="/accept-invite/"><span data-i18n="invite">Recibí una invitación</span><b>↗</b></a>
-          <a href="/audit/"><span data-i18n="resume">Continuar Audit</span><b>↗</b></a>
-          <a href="/portfolio/"><span data-i18n="explore">Explorar BOOSTR</span><b>↗</b></a>
-        </nav>
+      <div class="question-stage" id="questionStage">
+        <span class="question-kicker" id="questionKicker">BOOSTR ENTRY</span>
+        <h1 id="entryQuestion">¿Ya tienes acceso a BOOSTR?</h1>
+        <p id="entryDescription">Cuenta activa o invitación privada.</p>
 
-        <div class="session-note" id="sessionNote" hidden>
-          <span class="session-pulse" aria-hidden="true"></span>
-          <div>
-            <strong id="sessionNoteTitle" data-i18n="sessionDetected">Sesión activa detectada.</strong>
-            <small id="sessionNoteBody" data-i18n="sessionReady">Tu acceso autorizado está listo.</small>
-          </div>
+        <div class="binary-options" id="binaryOptions">
+          <button class="binary-option option-a" id="choiceA" type="button">
+            <span class="option-letter">A</span>
+            <span class="option-copy"><strong id="choiceATitle">Sí</strong><small id="choiceABody">Tengo una cuenta o invitación.</small></span>
+            <span class="option-arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="binary-option option-b" id="choiceB" type="button">
+            <span class="option-letter">B</span>
+            <span class="option-copy"><strong id="choiceBTitle">No</strong><small id="choiceBBody">Todavía no pertenezco a BOOSTR.</small></span>
+            <span class="option-arrow" aria-hidden="true">→</span>
+          </button>
         </div>
       </div>
 
-      <aside class="entry-visual" aria-label="BOOSTR entry map">
-        <div class="visual-topline">
-          <span data-i18n="mapLabel">ENTRY MAP</span>
-          <b>01 / 02</b>
-        </div>
-
-        <div class="signal-map" aria-hidden="true">
-          <div class="signal-ring ring-one"></div>
-          <div class="signal-ring ring-two"></div>
-          <div class="signal-ring ring-three"></div>
-          <div class="signal-core">
-            <img src="/assets/icons/09.-b-star-favicon.png" alt="">
-          </div>
-          <div class="signal-node node-account"><span data-i18n="nodeAccount">ACCOUNT</span><b>ACCESS</b></div>
-          <div class="signal-node node-audit"><span>BOOSTR</span><b>AUDIT</b></div>
-          <div class="signal-node node-workspace"><span data-i18n="nodeWorkspace">AUTHORIZED</span><b>WORKSPACE</b></div>
-          <div class="signal-node node-diagnosis"><span data-i18n="nodeDiagnosis">OPERATION</span><b>DIAGNOSIS</b></div>
-        </div>
-
-        <div class="visual-footer">
-          <div>
-            <span data-i18n="identityLabel">IDENTITY</span>
-            <strong data-i18n="identityValue">Una cuenta</strong>
-          </div>
-          <div>
-            <span data-i18n="pathsLabel">PATHS</span>
-            <strong data-i18n="pathsValue">Acceso o Audit</strong>
-          </div>
-          <div>
-            <span data-i18n="resultLabel">RESULT</span>
-            <strong data-i18n="resultValue">Contexto correcto</strong>
-          </div>
-        </div>
-      </aside>
-    </section>
-
-    <section class="entry-principle">
-      <span class="principle-number">BOOSTR / 001</span>
-      <p data-i18n="principle">Quien ya pertenece a BOOSTR inicia sesión. Quien necesita orientación comienza el Audit.</p>
-      <button class="install-button" id="installButton" type="button" hidden>
-        <span data-i18n="install">Instalar BOOSTR</span>
-        <b>＋</b>
-      </button>
+      <div class="decision-footer">
+        <button class="text-action" id="backButton" type="button" hidden><span>←</span><span data-i18n="back">Volver</span></button>
+        <div class="route-memory" id="routeMemory" data-i18n="memoryEmpty">Dos opciones. Una ruta correcta.</div>
+        <button class="install-button" id="installButton" type="button" hidden><span data-i18n="install">Instalar</span><b>＋</b></button>
+      </div>
     </section>
 
     <footer class="entry-footer">
@@ -123,18 +77,26 @@
     </footer>
   </main>
 
+  <noscript>
+    <div class="noscript-fallback">
+      <a href="/login/">Iniciar sesión</a>
+      <a href="/audit/">Comenzar BOOSTR Audit</a>
+    </div>
+  </noscript>
+
   <dialog class="install-dialog" id="installDialog">
     <button class="dialog-close" id="installClose" type="button" aria-label="Close">×</button>
     <img src="/assets/icons/09.-b-star-favicon.png" alt="BOOSTR Labs">
-    <span class="eyebrow" data-i18n="installEyebrow">BOOSTR PWA</span>
+    <span class="question-kicker" data-i18n="installEyebrow">BOOSTR PWA</span>
     <h2 data-i18n="installTitle">Instala BOOSTR en tu iPhone.</h2>
     <p data-i18n="installBody">Abre esta página en Safari, toca Compartir y selecciona “Agregar a pantalla de inicio”.</p>
     <button class="dialog-action" id="installDone" type="button" data-i18n="installDone">Entendido</button>
   </dialog>
 
-  <div class="pwa-transition" id="pwaTransition" hidden aria-live="polite">
+  <div class="route-transition" id="routeTransition" hidden aria-live="polite">
     <img src="/assets/icons/09.-b-star-favicon.png" alt="BOOSTR Labs">
-    <span data-i18n="opening">Abriendo tu acceso autorizado…</span>
+    <strong id="routeTransitionTitle">Ruta encontrada.</strong>
+    <span id="routeTransitionBody">Abriendo BOOSTR…</span>
   </div>
 </body>
 </html>

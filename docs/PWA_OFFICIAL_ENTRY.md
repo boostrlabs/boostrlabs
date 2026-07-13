@@ -2,28 +2,43 @@
 
 Status: implementation candidate on `official-entry-pwa`.
 
-## Entry rule
+## Interaction model
 
-The public root and the installed PWA use one neutral entry:
+The root is a progressive binary router. It displays one question at a time and only two options: **A** or **B**.
 
-- **Iniciar sesión** for people who already have a BOOSTR account or invitation.
-- **Comenzar BOOSTR Audit** for people who need BOOSTR to discover what their operation needs.
+The questions identify:
 
-The root does not ask visitors to choose Manager, Client or Partner. Roles are resolved only after authentication.
+- whether the visitor has an account or invitation;
+- whether an Audit is already in progress;
+- how much the visitor knows about BOOSTR;
+- whether an active operation exists;
+- whether the need is already clear;
+- whether the visitor wants diagnosis, explanation or real examples.
+
+The visitor is routed only after BOOSTR has enough context. No visitor is forced into the Audit.
+
+## Resolved destinations
+
+- Existing account → `/login/`
+- Private invitation → `/accept-invite/`
+- New or resumed diagnosis → `/audit/`
+- BOOSTR explanation → `/ecosystem/`
+- Real work and examples → `/portfolio/`
+
+The entry stores only non-sensitive routing context in `boostr_entry_profile` so future onboarding can understand whether the visitor was new, familiar, clear or uncertain.
 
 ## Authenticated PWA launch
 
-When the root is opened as an installed PWA and `/api/session` confirms an active session, the app opens the authorized redirect returned by the session. Guest users remain on the neutral entry.
+When `/api/session` confirms an active session, the binary screen becomes:
 
-## Public secondary paths
+- **A — Continuar:** open the authorized account context.
+- **B — Hacer un Audit:** evaluate another operation or project.
 
-- Invitation: `/accept-invite/`
-- Continue Audit: `/audit/`
-- Explore work: `/portfolio/`
+An installed PWA with an active session continues directly to the authorized session redirect. Guests remain in the A/B router.
 
 ## Update and privacy behavior
 
 - Navigation is network first.
-- APIs, login, account dashboards, payments, orders, leads, invitations and authenticated requests are not cached.
+- APIs, login, account dashboards, payments, orders, leads and invitations are not cached.
 - Offline mode never displays cached private business records.
-- A new deployment can activate through the controlled **Actualizar BOOSTR** prompt.
+- New deployments activate through the controlled BOOSTR update prompt.
