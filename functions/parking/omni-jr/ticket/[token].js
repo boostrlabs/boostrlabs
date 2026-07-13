@@ -103,7 +103,7 @@ function updateStatus(){
   }
   const hours=Math.floor(remaining/3600000);
   const minutes=Math.max(0,Math.floor((remaining%3600000)/60000));
-  countdown.textContent=hours?` · ${hours}h ${minutes}m restantes`:` · ${minutes}m restantes`;
+  countdown.textContent=hours?' · '+hours+'h '+minutes+'m restantes':' · '+minutes+'m restantes';
 }
 updateClock();updateStatus();setInterval(updateClock,30000);setInterval(updateStatus,30000);
 </script>
