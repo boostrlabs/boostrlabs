@@ -110,7 +110,7 @@ const checks = {
   "functions/parking/omni-jr/ticket/[token].js": [
     "PARKING VÁLIDO",
     "/api/public/qr",
-    "manager_verify_url",
+    "/app/parking/omni-jr/manager/?token=",
     "omni-jr-logo-black.svg"
   ],
   "public/app/parking/omni-jr/index.html": [
