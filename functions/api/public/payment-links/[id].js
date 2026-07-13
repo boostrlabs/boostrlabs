@@ -34,6 +34,54 @@ function publicProductModelUrl(value, assetId = "") {
   return raw;
 }
 
+function isOmniParking(link, metadata) {
+  const operator = clean(metadata?.operator, 80).toLowerCase();
+  const parkingCode = clean(metadata?.parking_code, 120).toLowerCase();
+  const workspaceSlug = clean(link?.workspace_slug, 160).toLowerCase();
+  const workspaceName = clean(link?.workspace_name, 200).toLowerCase();
+  const title = clean(link?.title || link?.product_title, 300).toLowerCase();
+  return operator === "omni_jr"
+    || parkingCode.startsWith("omni_jr_")
+    || workspaceSlug === "omni-jr-parking"
+    || workspaceName === "omni jr parking"
+    || title.startsWith("omni jr parking");
+}
+
+function normalizeOmniMetadata(link, metadata) {
+  if (!isOmniParking(link, metadata)) return metadata;
+  const title = clean(link?.title || link?.product_title, 300).toLowerCase();
+  const monthly = clean(metadata?.plan_type, 40).toLowerCase() === "monthly"
+    || clean(link?.checkout_mode, 40).toLowerCase() === "subscription"
+    || title.includes("monthly")
+    || title.includes("mensual");
+  let vehicleClass = clean(metadata?.vehicle_class, 80).toLowerCase();
+  if (!vehicleClass) {
+    if (monthly) vehicleClass = "monthly";
+    else if (title.includes("truck") || title.includes("big suv") || title.includes("pickup")) vehicleClass = "truck_big_suv";
+    else vehicleClass = "sedan_sport_coupe";
+  }
+  const planType = monthly ? "monthly" : "single";
+  const parkingCode = clean(metadata?.parking_code, 120)
+    || (monthly ? "omni_jr_monthly" : vehicleClass === "truck_big_suv" ? "omni_jr_large_8h" : "omni_jr_standard_8h");
+  const stableKey = monthly ? "monthly" : vehicleClass === "truck_big_suv" ? "large" : "standard";
+  return {
+    ...metadata,
+    source: metadata?.source || "boostr_smart_parking_v3",
+    module: metadata?.module || "BOOSTR Smart Parking",
+    operator: "omni_jr",
+    operator_name: "OMNI JR Parking",
+    brand_name: "OMNI JR PARKING",
+    brand_logo_url: metadata?.brand_logo_url || "/assets/omni-jr/omni-jr-logo-black.svg",
+    checkout_theme: "light",
+    parking_code: parkingCode,
+    plan_type: planType,
+    vehicle_class: vehicleClass,
+    max_hours: monthly ? null : Number(metadata?.max_hours || 8),
+    subscription_interval: monthly ? clean(metadata?.subscription_interval, 40) || "month" : null,
+    stable_url: metadata?.stable_url || `/parking/omni-jr/${stableKey}`
+  };
+}
+
 export async function onRequestOptions() { return json({ ok: true }); }
 
 export async function onRequestGet({ env, params }) {
@@ -58,7 +106,8 @@ export async function onRequestGet({ env, params }) {
   ).bind(id).first();
   if (!link?.id) return jsonError("payment_link_not_found", "Smart Link not found or inactive.", 404);
 
-  const metadata = { ...parseJson(link.product_metadata_json), ...parseJson(link.metadata_json) };
+  const rawMetadata = { ...parseJson(link.product_metadata_json), ...parseJson(link.metadata_json) };
+  const metadata = normalizeOmniMetadata(link, rawMetadata);
   const disclosure = parseJson(link.disclosure_json);
   const imageUrl = publicProductImageUrl(
     metadata.image_url || metadata.hero_image_url || metadata.cover_url || metadata.image || "",
