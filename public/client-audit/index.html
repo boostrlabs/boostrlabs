@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es" data-build="1.0.0" data-no-marketplace="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#08111f">
+  <meta name="boostr-theme" content="custom">
+  <title>BOOSTR para clientes</title>
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <style>
+    :root{color-scheme:dark;--bg:#07101d;--panel:#111d2f;--line:rgba(255,255,255,.11);--text:#f7f9fc;--muted:#8d9bb0;--blue:#49bfff;--blue2:#4778ff;--green:#70f39a}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+    html{min-height:100%;background:var(--bg)}body{min-height:100dvh;margin:0;background:radial-gradient(circle at 84% 5%,rgba(73,191,255,.19),transparent 32%),linear-gradient(180deg,#0a1423,#05080e 78%);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+    a{color:inherit;text-decoration:none}button{font:inherit}
+    .page{min-height:100dvh;width:min(720px,100%);margin:auto;padding:max(18px,env(safe-area-inset-top)) 14px max(22px,env(safe-area-inset-bottom));display:grid;align-content:center;gap:16px}
+    .top{display:flex;align-items:center;justify-content:space-between}.top img{width:168px;max-height:52px}.back{width:46px;height:46px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.045);display:grid;place-items:center}.back svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.2}
+    .card{border:1px solid var(--line);border-radius:34px;background:linear-gradient(145deg,rgba(20,34,56,.93),rgba(8,14,24,.97));box-shadow:0 30px 95px rgba(0,0,0,.48);padding:clamp(24px,6vw,52px);min-height:480px;display:grid;align-content:space-between;gap:28px;overflow:hidden;position:relative}.card:after{content:"";position:absolute;width:300px;height:300px;right:-170px;top:-170px;border-radius:50%;background:radial-gradient(circle,rgba(73,191,255,.15),transparent 68%);pointer-events:none}
+    .step{display:none;position:relative;z-index:1}.step.active{display:block}.symbol{width:78px;height:78px;border-radius:24px;background:linear-gradient(145deg,rgba(73,191,255,.22),rgba(71,120,255,.12));border:1px solid rgba(73,191,255,.24);display:grid;place-items:center;color:var(--blue);margin-bottom:30px}.symbol svg{width:42px;height:42px;fill:none;stroke:currentColor;stroke-width:1.8}
+    .eyebrow{color:var(--blue);font-size:10px;font-weight:950;letter-spacing:.17em;text-transform:uppercase}.step h1{margin:12px 0 14px;font-size:clamp(42px,8vw,72px);line-height:.92;letter-spacing:-.065em}.step p{margin:0;color:var(--muted);font-size:clamp(15px,2.4vw,18px);line-height:1.55;max-width:570px}
+    .choices{display:grid;gap:10px;margin-top:28px}.choices a{min-height:58px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);display:flex;align-items:center;justify-content:space-between;padding:0 17px;font-weight:900}.choices a.primary{border:0;background:linear-gradient(135deg,var(--blue2),var(--blue));box-shadow:0 16px 36px rgba(73,191,255,.16)}.choices svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+    .controls{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px}.dots{display:flex;gap:7px}.dot{width:8px;height:8px;border:0;border-radius:50%;background:#3d4b60;padding:0}.dot.active{width:24px;border-radius:999px;background:var(--blue)}.nav{display:flex;gap:8px}.nav button{width:52px;height:52px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.05);color:#fff;display:grid;place-items:center}.nav button.primary{border:0;background:linear-gradient(135deg,var(--blue2),var(--blue))}.nav button[disabled]{opacity:.3}.nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2}
+    @media(max-width:560px){.page{padding:8px}.top{padding:4px 5px}.top img{width:145px}.card{min-height:calc(100dvh - 82px);border-radius:29px;padding:25px 19px}.step h1{font-size:48px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="top"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><a class="back" href="/app/" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></a></header>
+    <section class="card">
+      <div class="step active" data-step="0">
+        <div class="symbol"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"></path></svg></div>
+        <span class="eyebrow">BOOSTR PARA CLIENTES</span>
+        <h1>No es un marketplace.</h1>
+        <p>Entras desde un negocio, una invitación o un servicio conectado.</p>
+      </div>
+      <div class="step" data-step="1">
+        <div class="symbol"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M8 12h8M12 8v8"></path></svg></div>
+        <span class="eyebrow">UNA CUENTA</span>
+        <h1>Todo queda conectado.</h1>
+        <p>Pagos, reservas, compras, accesos, historial y beneficios cuando el servicio lo requiere.</p>
+      </div>
+      <div class="step" data-step="2">
+        <div class="symbol"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"></path><circle cx="12" cy="12" r="8"></circle></svg></div>
+        <span class="eyebrow">TU ENTRADA</span>
+        <h1>Empieza por tu acceso.</h1>
+        <div class="choices">
+          <a class="primary" href="/accept-invite/"><span>Tengo una invitación</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+          <a href="/login/"><span>Ya tengo cuenta</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+          <a href="/app/"><span>Volver a BOOSTR</span><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></a>
+        </div>
+      </div>
+      <footer class="controls">
+        <div class="dots" aria-label="Progreso"><button class="dot active" data-dot="0" aria-label="Paso 1"></button><button class="dot" data-dot="1" aria-label="Paso 2"></button><button class="dot" data-dot="2" aria-label="Paso 3"></button></div>
+        <div class="nav"><button id="prev" type="button" disabled aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></button><button class="primary" id="next" type="button" aria-label="Siguiente"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button></div>
+      </footer>
+    </section>
+  </main>
+  <script>
+    const steps=[...document.querySelectorAll('[data-step]')],dots=[...document.querySelectorAll('[data-dot]')],prev=document.getElementById('prev'),next=document.getElementById('next');let index=0;
+    function render(){steps.forEach((step,i)=>step.classList.toggle('active',i===index));dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));prev.disabled=index===0;next.hidden=index===steps.length-1}
+    prev.addEventListener('click',()=>{index=Math.max(0,index-1);render()});next.addEventListener('click',()=>{index=Math.min(steps.length-1,index+1);render()});dots.forEach((dot,i)=>dot.addEventListener('click',()=>{index=i;render()}));
+    document.addEventListener('gesturestart',event=>event.preventDefault(),{passive:false});document.addEventListener('gesturechange',event=>event.preventDefault(),{passive:false});document.addEventListener('touchmove',event=>{if(event.touches&&event.touches.length>1)event.preventDefault()},{passive:false});
+  </script>
+</body>
+</html>
