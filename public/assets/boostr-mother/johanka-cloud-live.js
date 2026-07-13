@@ -5,12 +5,50 @@
 
   const INTERVAL_VISIBLE = 6000;
   const INTERVAL_HIDDEN = 20000;
+  const MAX_ASSET_REQUESTS = 3;
   let timer = null;
   let syncing = false;
   let lastSignature = '';
-  let lastUpdatedAt = null;
+  let activeAssetRequests = 0;
+  const assetQueue = [];
+  const nativeFetch = window.fetch.bind(window);
 
   const byId = (id) => document.getElementById(id);
+
+  function assetRequestUrl(input) {
+    const value = typeof input === 'string' ? input : input?.url;
+    if (!value) return null;
+    try {
+      const url = new URL(value, location.origin);
+      if (url.origin !== location.origin || url.pathname !== '/api/cloud' || !url.searchParams.get('key')) return null;
+      url.pathname = '/api/cloud-asset';
+      return url.href;
+    } catch {
+      return null;
+    }
+  }
+
+  function pumpAssetQueue() {
+    while (activeAssetRequests < MAX_ASSET_REQUESTS && assetQueue.length) {
+      const job = assetQueue.shift();
+      activeAssetRequests += 1;
+      nativeFetch(job.url, job.init)
+        .then(job.resolve, job.reject)
+        .finally(() => {
+          activeAssetRequests -= 1;
+          pumpAssetQueue();
+        });
+    }
+  }
+
+  window.fetch = function boostrCloudFetch(input, init) {
+    const rewritten = assetRequestUrl(input);
+    if (!rewritten) return nativeFetch(input, init);
+    return new Promise((resolve, reject) => {
+      assetQueue.push({ url: rewritten, init, resolve, reject });
+      pumpAssetQueue();
+    });
+  };
 
   function signature(list = []) {
     return list.map((item) => `${item.id}:${item.updated_at || item.created_at || ''}`).join('|');
@@ -56,12 +94,11 @@
       if (changed) {
         assets = nextAssets;
         lastSignature = nextSignature;
-        lastUpdatedAt = new Date();
         if (typeof renderGallery === 'function') renderGallery();
       }
       setBadge(changed ? 'Actualizado' : 'En vivo');
       setTimeout(() => setBadge('En vivo'), 1100);
-    } catch (error) {
+    } catch {
       setBadge('Sin conexión', 'error');
     } finally {
       syncing = false;
@@ -77,12 +114,6 @@
     }, delay);
   }
 
-  function detectExistingAssets() {
-    try {
-      if (Array.isArray(assets)) lastSignature = signature(assets);
-    } catch {}
-  }
-
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') silentRefresh(true);
     schedule();
@@ -90,17 +121,17 @@
   window.addEventListener('focus', () => silentRefresh(true));
   window.addEventListener('online', () => silentRefresh(true));
 
+  const progress = byId('progress');
   const uploadObserver = new MutationObserver(() => {
     const progressText = byId('progressText')?.textContent || '';
     const uploading = /Preparando|Subiendo|Reintentando/i.test(progressText);
     document.body.dataset.cloudUploading = String(uploading);
     if (/Listo|Subida:/i.test(progressText)) setTimeout(() => silentRefresh(true), 400);
   });
-  const progress = byId('progress');
   if (progress) uploadObserver.observe(progress, { childList: true, subtree: true, characterData: true, attributes: true });
 
   setTimeout(() => {
-    detectExistingAssets();
+    try { if (Array.isArray(assets)) lastSignature = signature(assets); } catch {}
     ensureLiveBadge();
     silentRefresh(true);
     schedule();
