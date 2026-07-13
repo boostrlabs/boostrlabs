@@ -26,6 +26,9 @@ for (const marker of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EX
   if (!app.includes(marker)) failures.push(`BOOSTR App gateway missing ${marker}`);
 }
 if (!/Checkout invitado|guest checkout/i.test(app)) failures.push('BOOSTR App gateway missing guest checkout rule');
+for (const marker of ['/assets/logos/boostr-logo-nav.png', 'Tu cuenta.<br>Tu OS.', 'Entrar a BOOSTR']) {
+  if (!app.includes(marker)) failures.push(`BOOSTR App brand entry missing marker: ${marker}`);
+}
 
 for (const marker of ['id="accessPanel"', 'id="memberPanel" hidden', 'roleContext(session)', '/accept-invite/']) {
   if (!app.includes(marker)) failures.push(`BOOSTR App persona router missing marker: ${marker}`);
@@ -44,8 +47,8 @@ if (!productionShell.includes("'/app/workspace'")) failures.push('Private worksp
 for (const marker of ['ESPACIO PRIVADO', '/api/session', '/api/dashboard', '/login/?next=/app/workspace/']) {
   if (!workspace.includes(marker)) failures.push(`Private workspace missing marker: ${marker}`);
 }
-for (const marker of ['roleDestination(data)', "return'/app/workspace/'", 'Usar servicios como guest']) {
-  if (!login.includes(marker)) failures.push(`Login role router missing marker: ${marker}`);
+for (const marker of ['roleDestination(data)', "return'/app/workspace/'", 'Usar servicios como guest', 'Bienvenido<br>de vuelta.', '/assets/logos/boostr-logo-nav.png']) {
+  if (!login.includes(marker)) failures.push(`Login role router or brand UI missing marker: ${marker}`);
 }
 
 for (const [name, html] of [['app', app], ['workspace', workspace], ['login', login]]) {

@@ -45,8 +45,9 @@ assert.match(sharedCss, /\.boostr-app-shell/);
 assert.match(sharedCss, /\.boostr-payment-grid/);
 assert.match(sharedCss, /One shared mobile dock/);
 
-assert.match(app, /boostr-app-shell/);
-assert.match(app, /boostr-focus-card/);
+assert.match(app, /class="app"/);
+assert.match(app, /class="card login-preview"/);
+assert.match(app, /assets\/logos\/boostr-logo-nav\.png/);
 assert.match(app, /SMART PARKING/);
 assert.match(app, /function roleContext/);
 assert.doesNotMatch(app, /boostr-mother\/i18n\.js/);

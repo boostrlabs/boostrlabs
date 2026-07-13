@@ -1,122 +1,87 @@
 <!doctype html>
-<html lang="es" data-build="1.1.0" data-boostr-surface="app" data-boostr-theme="night_blue" data-boostr-accent="blue">
+<html lang="es" data-build="1.2.0" data-boostr-surface="app" data-boostr-theme="night_blue" data-boostr-accent="blue">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0c1118">
+  <meta name="theme-color" content="#070b12">
   <title>BOOSTR App</title>
-  <meta name="description" content="Usa servicios de negocios conectados a BOOSTR y entra a tu panel cuando tengas una cuenta o invitación.">
+  <meta name="description" content="Servicios, pagos y espacios privados conectados a BOOSTR.">
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="stylesheet" href="/assets/boostr-mother/mother.css?v=1.1.0">
-  <link id="boostr-system-theme-style" rel="stylesheet" href="/assets/boostr-theme/app-ui.css?v=1.1.0">
-  <link id="boostr-shared-ui-v2-style" rel="stylesheet" href="/assets/boostr-theme/shared-ui-v2.css?v=1.1.0">
+  <style>
+    :root{color-scheme:dark;--bg:#070b12;--panel:#101827;--panel2:#142139;--line:rgba(255,255,255,.12);--text:#f7f9fc;--muted:#94a1b5;--blue:#38b9ff;--blue2:#4778ff;--green:#64f58f;--shadow:0 28px 90px rgba(0,0,0,.48)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{min-height:100%;background:var(--bg)}body{min-height:100dvh;margin:0;background:radial-gradient(circle at 82% 5%,rgba(56,185,255,.19),transparent 32%),radial-gradient(circle at 0 38%,rgba(71,120,255,.14),transparent 34%),linear-gradient(180deg,#0a101b,#05070b 78%);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input{font:inherit}
+    .app{width:min(1240px,100%);margin:0 auto;padding:max(16px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) calc(112px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+    .top{display:grid;grid-template-columns:auto minmax(220px,1fr) auto;gap:14px;align-items:center;position:sticky;top:0;z-index:20;padding:12px 14px;border:1px solid var(--line);border-radius:28px;background:rgba(10,16,27,.78);backdrop-filter:blur(24px);box-shadow:0 18px 50px rgba(0,0,0,.2)}
+    .brand{display:flex;align-items:center;gap:13px;min-width:0}.brand img{width:154px;max-width:38vw;max-height:48px;object-fit:contain;filter:drop-shadow(0 0 20px rgba(56,185,255,.12))}.brand-copy{display:none}.brand-copy b{display:block;font-size:15px}.brand-copy span{display:block;margin-top:2px;color:var(--muted);font-size:10px}
+    .search{min-height:48px;border:1px solid rgba(255,255,255,.08);border-radius:17px;background:rgba(0,0,0,.25);color:#fff;padding:0 16px;outline:none}.search::placeholder{color:#78869a}.search:focus{border-color:rgba(56,185,255,.48);box-shadow:0 0 0 4px rgba(56,185,255,.08)}
+    .account{min-height:48px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.055);padding:0 14px;display:flex;align-items:center;gap:10px;font-weight:900}.account i{width:29px;height:29px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue2),var(--blue));font-style:normal;color:white}.account span{font-size:12px}.account.active{border-color:rgba(100,245,143,.32)}
+    .hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:16px;margin-top:18px}.card{border:1px solid var(--line);border-radius:32px;background:linear-gradient(145deg,rgba(20,33,57,.88),rgba(11,17,28,.94));box-shadow:var(--shadow);overflow:hidden;position:relative}.hero-main{padding:clamp(24px,5vw,54px)}.hero-main:after{content:"";position:absolute;width:360px;height:360px;border:1px solid rgba(56,185,255,.14);border-radius:50%;right:-180px;top:-175px;box-shadow:0 0 0 44px rgba(56,185,255,.025),0 0 0 92px rgba(71,120,255,.016)}
+    .eyebrow{position:relative;z-index:1;color:var(--blue);font:950 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase}.hero-main h1{position:relative;z-index:1;max-width:760px;margin:22px 0 18px;font-size:clamp(52px,8vw,104px);line-height:.88;letter-spacing:-.075em;text-wrap:balance}.hero-main p{position:relative;z-index:1;max-width:700px;margin:0;color:var(--muted);font-size:clamp(15px,2vw,20px);line-height:1.55}.actions{position:relative;z-index:1;display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}.btn{min-height:54px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.055);padding:0 19px;display:inline-flex;align-items:center;justify-content:center;font-weight:950}.btn.primary{border:0;background:linear-gradient(135deg,var(--blue2),var(--blue));box-shadow:0 16px 38px rgba(56,185,255,.2)}
+    .login-preview{padding:22px;display:flex;flex-direction:column;min-height:100%}.login-preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.mini-logo{width:110px}.status{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.status:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 16px currentColor}.login-preview h2{margin:34px 0 8px;font-size:36px;line-height:.95;letter-spacing:-.05em}.login-preview p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}.login-fields{display:grid;gap:10px;margin-top:24px}.fake-field{min-height:53px;border:1px solid rgba(255,255,255,.09);border-radius:17px;background:rgba(0,0,0,.24);padding:0 15px;display:flex;align-items:center;justify-content:space-between;color:#8d9aaf;font-size:12px}.fake-field b{color:#d8deea;font-size:11px}.login-preview .btn{margin-top:auto;width:100%}.login-links{display:flex;justify-content:space-between;gap:10px;margin-top:13px;color:var(--muted);font-size:10px;font-weight:800}
+    .section{margin-top:16px;padding:22px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:16px}.section-head h2{margin:4px 0 0;font-size:34px;letter-spacing:-.045em}.section-head p{margin:0;color:var(--muted);font-size:12px}.live-badge{border:1px solid rgba(100,245,143,.28);border-radius:999px;background:rgba(100,245,143,.07);padding:8px 10px;color:var(--green);font-size:9px;font-weight:950;letter-spacing:.1em}
+    .service-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.service-main{min-height:260px;border:1px solid rgba(255,255,255,.09);border-radius:25px;background:radial-gradient(circle at 78% 18%,rgba(56,185,255,.18),transparent 31%),rgba(255,255,255,.035);padding:22px;display:flex;flex-direction:column}.service-main h3{margin:10px 0 7px;font-size:42px;letter-spacing:-.055em}.service-main p{max-width:560px;margin:0;color:var(--muted);font-size:13px;line-height:1.55}.service-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}.pill{border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(0,0,0,.2);padding:7px 9px;color:#b4bfd0;font-size:9px;font-weight:850}.service-main .btn{margin-top:auto;align-self:flex-start}
+    .routes{display:grid;gap:9px}.route{min-height:78px;border:1px solid rgba(255,255,255,.09);border-radius:21px;background:rgba(255,255,255,.03);padding:13px;display:grid;grid-template-columns:44px 1fr auto;gap:11px;align-items:center;color:inherit;text-align:left}.route-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:rgba(56,185,255,.1);color:var(--blue);font-weight:1000}.route b{display:block;font-size:13px}.route span span{display:block;margin-top:4px;color:var(--muted);font-size:10px}.route em{font-style:normal;color:#7f8ca1}
+    .access-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.access-card{padding:22px;min-height:205px;display:flex;flex-direction:column}.access-card h3{margin:10px 0 7px;font-size:30px;letter-spacing:-.045em}.access-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.access-card .actions{margin-top:auto}.access-card[hidden]{display:none}
+    .footer{padding:24px 0 0;text-align:center;color:#556176;font-size:9px;letter-spacing:.13em;text-transform:uppercase}
+    .dock{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;width:min(440px,calc(100% - 28px));min-height:76px;border:1px solid rgba(255,255,255,.11);border-radius:28px;background:rgba(8,13,22,.9);backdrop-filter:blur(24px);box-shadow:0 24px 70px rgba(0,0,0,.56);padding:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.dock a{border-radius:21px;display:grid;place-items:center;color:#8e9bb0;font-size:13px;font-weight:950}.dock a.active{background:linear-gradient(135deg,var(--blue2),var(--blue));color:white}.toast{position:fixed;z-index:60;left:50%;bottom:104px;transform:translate(-50%,16px);width:min(440px,calc(100% - 28px));border:1px solid var(--line);border-radius:20px;background:#111a2a;padding:14px 16px;opacity:0;visibility:hidden;transition:.2s;box-shadow:var(--shadow)}.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}.toast b{display:block}.toast span{display:block;margin-top:4px;color:var(--muted);font-size:11px}
+    @media(max-width:820px){.app{padding-left:10px;padding-right:10px}.top{grid-template-columns:1fr auto;padding:11px}.search{grid-column:1/-1;grid-row:2}.brand img{width:142px;max-width:48vw}.account span{display:none}.hero{grid-template-columns:1fr}.hero-main{padding:28px 20px}.hero-main h1{font-size:clamp(51px,14vw,75px)}.login-preview{min-height:370px}.service-grid,.access-grid{grid-template-columns:1fr}.section{padding:18px}.section-head{align-items:flex-start;flex-direction:column}.service-main{min-height:285px}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.login-preview .btn{margin-top:28px}.footer{padding-bottom:12px}}
+  </style>
 </head>
-<body data-boostr-shared-ui="true" data-boostr-surface="app">
-  <div class="boostr-app-shell">
-    <aside class="boostr-app-sidebar" aria-label="BOOSTR App navigation">
-      <a class="boostr-brand" href="/app/">
-        <span class="boostr-brand-mark"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"></span>
-        <span class="boostr-brand-copy"><b>BOOSTR App</b><span>Servicios conectados</span></span>
-      </a>
+<body>
+  <main class="app">
+    <header class="top">
+      <a class="brand" href="/app/" aria-label="BOOSTR App"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><span class="brand-copy"><b>BOOSTR App</b><span>Servicios conectados</span></span></a>
+      <input class="search" data-filter="[data-search-item]" type="search" placeholder="Buscar servicios..." aria-label="Buscar servicios">
+      <a class="account" id="topAccount" href="/login/"><i id="profileInitial">B</i><span id="profileName">Entrar</span></a>
+    </header>
 
-      <div class="boostr-profile">
-        <div class="boostr-profile-avatar" id="profileInitial">B</div>
-        <div><b id="profileName">Guest</b><span id="profileRole">Public services</span></div>
-      </div>
+    <section class="hero">
+      <article class="card hero-main">
+        <span class="eyebrow">SERVICIOS CONECTADOS</span>
+        <h1>¿Qué necesitas resolver hoy?</h1>
+        <p>Compra, reserva o paga desde negocios que operan con tecnología BOOSTR. Usa servicios simples como guest o entra a tu panel privado según tu rol y workspace.</p>
+        <div class="actions"><a class="btn primary" href="/parking/omni-jr/">Pagar parking</a><a class="btn" href="/audit/">Iniciar Audit</a><a class="btn" href="/login/">Entrar a BOOSTR</a></div>
+      </article>
 
-      <nav class="boostr-app-nav">
-        <a class="active" href="/app/" aria-current="page"><span>Servicios</span><b>⌂</b></a>
-        <a href="/parking/omni-jr/"><span>Smart Parking</span><b>P</b></a>
-        <a href="/audit/"><span>BOOSTR Audit</span><b>✦</b></a>
-        <a href="/login/"><span>Mi panel</span><b>OS</b></a>
-        <a href="/accept-invite/"><span>Invitación</span><b>+</b></a>
-      </nav>
+      <article class="card login-preview">
+        <div class="login-preview-head"><img class="mini-logo" src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="status">System online</span></div>
+        <h2>Tu cuenta.<br>Tu OS.</h2>
+        <p>Una sola identidad abre el espacio correcto para Founder, Admin, Manager, Partner, Staff o Client.</p>
+        <div class="login-fields"><div class="fake-field"><span>Cuenta BOOSTR</span><b>email / user / phone</b></div><div class="fake-field"><span>Acceso seguro</span><b>••••••••</b></div></div>
+        <a class="btn primary" id="accountButton" href="/login/">Abrir login</a>
+        <div class="login-links"><a href="/accept-invite/">Tengo invitación</a><a href="/password-reset/">Recuperar acceso</a></div>
+      </article>
+    </section>
 
-      <div class="boostr-sidebar-foot">
-        <a href="/home/">Ecosystem Launcher</a>
-        <a id="accountButton" href="/login/">Acceso privado</a>
-      </div>
-    </aside>
-
-    <main class="boostr-app-main">
-      <header class="boostr-app-topbar">
-        <div class="boostr-app-heading"><small>BOOSTR APP</small><strong>Servicios conectados</strong></div>
-        <input class="boostr-app-search" data-filter="[data-search-item]" type="search" placeholder="Buscar servicios..." aria-label="Buscar servicios">
-        <div class="boostr-app-actions"><a class="boostr-icon-button" href="/audit/" title="Audit">✦</a><a class="boostr-icon-button" id="topAccount" href="/login/" title="Cuenta">◎</a></div>
-      </header>
-
-      <section class="boostr-hero-grid">
-        <article class="boostr-hero-card">
-          <span class="boostr-eyebrow">SERVICIOS CONECTADOS</span>
-          <h1>¿Qué necesitas resolver hoy?</h1>
-          <p>Compra, reserva o paga desde negocios que operan con tecnología BOOSTR. Los servicios simples pueden funcionar como guest; los paneles privados se abren según tu cuenta, rol y workspace.</p>
-          <div class="boostr-actions"><a class="boostr-button primary" href="/parking/omni-jr/">Pagar parking</a><a class="boostr-button" href="/audit/">Iniciar Audit</a><a class="boostr-button" href="/login/">Entrar a mi panel</a></div>
-        </article>
-
-        <article class="boostr-focus-card">
-          <div><span class="boostr-eyebrow">DISPONIBLE AHORA</span><h2>Smart Parking</h2></div>
-          <div class="boostr-focus-ring"><div><strong>LIVE</strong><span>guest checkout</span></div></div>
-          <a class="boostr-button primary" href="/parking/omni-jr/">Abrir servicio</a>
-        </article>
-      </section>
-
-      <section class="boostr-section">
-        <div class="boostr-section-head"><div><h2>Servicio activo</h2><p>Una transacción real disponible sin obligar a crear una cuenta.</p></div><span class="boostr-tag">LIVE</span></div>
-        <div class="boostr-board" style="grid-template-columns:minmax(0,1fr)">
-          <a class="boostr-task-card" data-search-item href="/parking/omni-jr/" style="min-height:210px">
-            <div class="boostr-task-title"><span class="boostr-task-accent" style="background:#5ef36d"></span><span>SMART PARKING · OMNI JR</span></div>
-            <div class="boostr-task-meta"><span>Selecciona vehículo</span><span>Registra la placa</span><span>Paga como guest</span><span>Recibo + QR</span></div>
-            <p style="margin:4px 0 0;color:var(--ui-muted);line-height:1.55">Completa el parking desde el teléfono sin entrar a un dashboard ni crear una cuenta innecesaria.</p>
-            <div class="boostr-task-foot"><span>Disponible ahora</span><b>→</b></div>
-          </a>
+    <section class="card section">
+      <div class="section-head"><div><span class="eyebrow">DISPONIBLE AHORA</span><h2>Smart Parking</h2><p>Checkout invitado, placa, recibo y QR.</p></div><span class="live-badge">LIVE · guest checkout</span></div>
+      <div class="service-grid">
+        <a class="service-main" data-search-item href="/parking/omni-jr/">
+          <span class="eyebrow">SMART PARKING · OMNI JR</span><h3>Paga y sigue.</h3><p>Selecciona el vehículo, registra la placa y completa el parking desde el teléfono sin crear una cuenta innecesaria.</p>
+          <div class="service-meta"><span class="pill">Vehículo</span><span class="pill">Placa</span><span class="pill">Pago seguro</span><span class="pill">Recibo + QR</span></div><span class="btn primary">Abrir servicio</span>
+        </a>
+        <div class="routes">
+          <button class="route" data-search-item data-module="BOOSTR EATS" data-reason="Pedir y pagar comida de restaurantes conectados." type="button"><span class="route-icon">E</span><span><b>BOOSTR EATS</b><span>Pedidos y pagos conectados.</span></span><em>…</em></button>
+          <button class="route" data-search-item data-module="BOOSTR RIDES" data-reason="Solicitar transporte con operadores conectados." type="button"><span class="route-icon">R</span><span><b>BOOSTR RIDES</b><span>Transporte y seguimiento.</span></span><em>…</em></button>
+          <button class="route" data-search-item data-module="BOOSTR EXOTIC" data-reason="Reservar vehículos exóticos de partners verificados." type="button"><span class="route-icon">X</span><span><b>BOOSTR EXOTIC</b><span>Reservas de partners verificados.</span></span><em>…</em></button>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section class="boostr-dual-grid">
-        <article class="boostr-calendar-panel">
-          <div class="boostr-section-head"><div><span class="boostr-eyebrow">PRÓXIMOS SERVICIOS</span><h2>En camino</h2><p>Direcciones de producto reservadas, todavía sin disponibilidad simulada.</p></div></div>
-          <div class="boostr-route-list">
-            <button class="boostr-route-row" data-search-item data-module="BOOSTR EATS" data-reason="Pedir y pagar comida de restaurantes conectados." type="button" style="width:100%;text-align:left;color:inherit;cursor:pointer"><span class="boostr-route-number">E</span><span><b>BOOSTR EATS</b><span>Pedidos y pagos de restaurantes conectados.</span></span><em>…</em></button>
-            <button class="boostr-route-row" data-search-item data-module="BOOSTR RIDES" data-reason="Solicitar transporte con operadores conectados." type="button" style="width:100%;text-align:left;color:inherit;cursor:pointer"><span class="boostr-route-number">R</span><span><b>BOOSTR RIDES</b><span>Solicitudes de transporte y seguimiento.</span></span><em>…</em></button>
-            <button class="boostr-route-row" data-search-item data-module="BOOSTR EXOTIC" data-reason="Reservar vehículos exóticos de partners verificados." type="button" style="width:100%;text-align:left;color:inherit;cursor:pointer"><span class="boostr-route-number">X</span><span><b>BOOSTR EXOTIC</b><span>Inventario y reservas de partners verificados.</span></span><em>…</em></button>
-          </div>
-        </article>
+    <section class="access-grid">
+      <article class="card access-card" id="accessPanel"><span class="eyebrow">ACCESO PRIVADO</span><h3>Entra a tu espacio.</h3><p>BOOSTR reconoce tu cuenta, rol y workspace para abrir el panel correcto. Los consumidores pueden seguir usando servicios públicos sin login.</p><div class="actions"><a class="btn primary" href="/login/">Iniciar sesión</a><a class="btn" href="/accept-invite/">Activar invitación</a></div></article>
+      <article class="card access-card"><span class="eyebrow">BOOSTR AUDIT</span><h3>¿Aún no tienes sistema?</h3><p>Empieza por el diagnóstico público. El Audit identifica qué necesita tu negocio antes de crear acceso privado.</p><div class="actions"><a class="btn" href="/audit/">Iniciar Audit</a></div></article>
+      <article class="card access-card" id="memberPanel" hidden><span class="eyebrow">SESIÓN ACTIVA</span><h3 id="memberTitle">Tu acceso está listo.</h3><p id="memberCopy">Puedes continuar a tu espacio privado.</p><div id="roleLine" style="margin-top:12px;color:var(--green);font-size:10px;font-weight:900"></div><div class="actions"><a class="btn primary" id="continueButton" href="/app/workspace/"><b>Abrir mi panel</b></a><a class="btn" href="/parking/omni-jr/">Usar Smart Parking</a></div></article>
+    </section>
 
-        <article class="boostr-control-panel" id="accessPanel">
-          <div class="boostr-section-head"><div><span class="boostr-eyebrow">ACCESO PRIVADO</span><h2>¿Trabajas con un negocio?</h2><p>Owners, managers, staff y clientes de BOOSTR abren aquí el panel asignado a su rol.</p></div></div>
-          <div class="boostr-control-grid">
-            <a class="boostr-control-card active" href="/login/"><span class="boostr-control-state"></span><div><b>Entrar a mi panel</b><small>La sesión resuelve tu destino.</small></div></a>
-            <a class="boostr-control-card" href="/accept-invite/"><span class="boostr-control-state"></span><div><b>Tengo una invitación</b><small>Activa una relación y un rol.</small></div></a>
-          </div>
-        </article>
+    <footer class="footer">POWERED BY BOOSTR LABS · ONE IDENTITY · MULTIPLE OPERATING SYSTEMS</footer>
+  </main>
 
-        <article class="boostr-control-panel" id="memberPanel" hidden>
-          <div class="boostr-section-head"><div><span class="boostr-eyebrow">SESIÓN ACTIVA</span><h2 id="memberTitle">Tu acceso está listo.</h2><p id="memberCopy">Puedes usar servicios públicos o continuar a tu espacio privado.</p></div></div>
-          <div class="boostr-route-list">
-            <a class="boostr-route-row" id="continueButton" href="/app/workspace/"><span class="boostr-route-number">OS</span><span><b>Abrir mi panel</b><span id="roleLine">Cuenta BOOSTR</span></span><em>→</em></a>
-            <a class="boostr-route-row" href="/parking/omni-jr/"><span class="boostr-route-number">P</span><span><b>Usar Smart Parking</b><span>Continúa como servicio público.</span></span><em>→</em></a>
-          </div>
-        </article>
-      </section>
+  <nav class="dock" aria-label="Navegación rápida" data-no-i18n="true"><a class="active" href="/app/" title="Inicio">⌂</a><a href="/parking/omni-jr/" title="Parking">P</a><a href="/audit/" title="Audit">✦</a><a href="/login/" title="Cuenta">OS</a></nav>
+  <div class="toast" id="moduleToast" role="status" aria-live="polite"><b id="toastTitle">Próximamente</b><span id="toastCopy"></span></div>
 
-      <section class="boostr-showcase">
-        <article class="boostr-showcase-card"><span class="boostr-eyebrow">GUEST</span><h3>Menos fricción</h3><p>Una compra simple no exige identidad persistente cuando no hace falta.</p><div class="boostr-pill-row"><span class="boostr-pill">Parking</span><span class="boostr-pill">Pago simple</span></div></article>
-        <article class="boostr-showcase-card"><span class="boostr-eyebrow">ACCOUNT</span><h3>Historial cuando importa</h3><p>VIP, licencias, archivos, recurring y acceso privado permanecen vinculados a una cuenta.</p><div class="boostr-pill-row"><span class="boostr-pill">Files</span><span class="boostr-pill">Orders</span><span class="boostr-pill">Access</span></div></article>
-        <article class="boostr-showcase-card"><span class="boostr-eyebrow">WORKSPACE</span><h3>El rol decide</h3><p>Después del login, BOOSTR abre Founder, Admin, Manager, Partner o Workspace OS.</p><div class="boostr-pill-row"><span class="boostr-pill">Role-aware</span><span class="boostr-pill">Private</span></div></article>
-      </section>
-
-      <p style="margin:0;color:var(--ui-muted);font-size:11px;line-height:1.5">Una cuenta se solicita solo cuando el servicio necesita identidad, historial, acceso privado, rewards, recurrencia, licencias o administración.</p>
-      <footer class="footer">POWERED BY BOOSTR LABS · CONNECTED SERVICES</footer>
-    </main>
-  </div>
-
-  <nav class="boostr-local-dock" aria-label="Quick navigation" data-no-i18n="true"><a class="active" href="/app/" title="Services">⌂</a><a href="/parking/omni-jr/" title="Parking">P</a><a href="/audit/" title="Audit">✦</a><a href="/login/" title="Account">OS</a></nav>
-  <div class="boostr-toast" id="moduleToast" role="status" aria-live="polite"><b id="toastTitle">Próximamente</b><span id="toastCopy"></span></div>
-
-  <script src="/assets/boostr-theme/theme-runtime.js?v=1.1.0" defer></script>
-  <script src="/assets/boostr-theme/shared-ui-runtime.js?v=1.1.0" defer></script>
   <script>
     const accountButton=document.getElementById('accountButton');
     const topAccount=document.getElementById('topAccount');
@@ -128,16 +93,13 @@
     const continueButton=document.getElementById('continueButton');
     const profileName=document.getElementById('profileName');
     const profileInitial=document.getElementById('profileInitial');
-    const profileRole=document.getElementById('profileRole');
     const toast=document.getElementById('moduleToast');
     const toastTitle=document.getElementById('toastTitle');
     const toastCopy=document.getElementById('toastCopy');
     let toastTimer;
-
     const tokenHeaders=()=>{const token=localStorage.getItem('boostr_auth_token')||'';return token?{Authorization:`Bearer ${token}`}:{}};
     const safePath=value=>typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')?value:'/app/workspace/';
     const unique=value=>[...new Set(value.filter(Boolean).map(item=>String(item).toLowerCase()))];
-
     function roleContext(session){
       const roles=unique([session.role,session.user?.role,session.active_workspace?.role,...(session.roles||[])]);
       const email=String(session.user?.email||'').toLowerCase();
@@ -151,40 +113,15 @@
       if(roles.some(role=>['customer','fan','member'].includes(role)))return{label:'Cuenta de cliente',destination:'/app/workspace/'};
       return{label:'Cuenta BOOSTR',destination:safePath(session.redirect||'/app/workspace/')};
     }
-
-    function showFuture(button){
-      toastTitle.textContent=`${button.dataset.module} · próximamente`;
-      toastCopy.textContent=button.dataset.reason||'El frontend está reservado; el backend se activará después.';
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer=setTimeout(()=>toast.classList.remove('show'),3000);
-    }
+    function showFuture(button){toastTitle.textContent=`${button.dataset.module} · próximamente`;toastCopy.textContent=button.dataset.reason||'El servicio todavía no está disponible.';toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),3000)}
     document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>showFuture(button)));
-
+    document.querySelector('.search')?.addEventListener('input',event=>{const q=event.target.value.trim().toLowerCase();document.querySelectorAll('[data-search-item]').forEach(item=>item.style.display=!q||item.textContent.toLowerCase().includes(q)?'':'none')});
     async function loadSession(){
       try{
-        const response=await fetch('/api/session',{headers:tokenHeaders(),credentials:'same-origin',cache:'no-store'});
-        if(!response.ok)return;
-        const session=await response.json();
-        if(!session?.ok&&!session?.user)return;
-        const name=session.user?.name||session.username||session.user?.email||'Cuenta BOOSTR';
-        const shortName=name.includes('@')?name.split('@')[0]:name;
-        const context=roleContext(session);
-        const serverDestination=safePath(session.redirect||context.destination);
-        const destination=serverDestination==='/app/'?context.destination:serverDestination;
-        accountButton.textContent=shortName;
-        accountButton.href=destination;
-        topAccount.href=destination;
-        profileName.textContent=shortName;
-        profileInitial.textContent=shortName.trim().charAt(0).toUpperCase()||'B';
-        profileRole.textContent=context.label;
-        accessPanel.hidden=true;
-        memberPanel.hidden=false;
-        memberTitle.textContent=`Hola, ${shortName}.`;
-        memberCopy.textContent=session.active_workspace?.name?`Tu contexto activo es ${session.active_workspace.name}. También puedes seguir usando los servicios públicos.`:'Puedes continuar a tu espacio privado o usar un servicio público como guest.';
-        roleLine.textContent=context.label;
-        continueButton.href=destination;
-        continueButton.querySelector('b').textContent=`Abrir ${context.label}`;
+        const response=await fetch('/api/session',{headers:tokenHeaders(),credentials:'same-origin',cache:'no-store'});if(!response.ok)return;
+        const session=await response.json();if(!session?.ok&&!session?.user)return;
+        const name=session.user?.name||session.username||session.user?.email||'Cuenta BOOSTR';const shortName=name.includes('@')?name.split('@')[0]:name;const context=roleContext(session);const serverDestination=safePath(session.redirect||context.destination);const destination=serverDestination==='/app/'?context.destination:serverDestination;
+        accountButton.textContent=`Abrir ${shortName}`;accountButton.href=destination;topAccount.href=destination;topAccount.classList.add('active');profileName.textContent=shortName;profileInitial.textContent=shortName.trim().charAt(0).toUpperCase()||'B';accessPanel.hidden=true;memberPanel.hidden=false;memberTitle.textContent=`Hola, ${shortName}.`;memberCopy.textContent=session.active_workspace?.name?`Tu contexto activo es ${session.active_workspace.name}.`:'Puedes continuar a tu espacio privado o usar servicios públicos.';roleLine.textContent=context.label;continueButton.href=destination;continueButton.querySelector('b').textContent=`Abrir ${context.label}`;
       }catch{}
     }
     loadSession();
