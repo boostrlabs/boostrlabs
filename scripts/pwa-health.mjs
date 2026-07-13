@@ -1,8 +1,13 @@
 import { readFile, access } from 'node:fs/promises';
 import { constants } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 
 const requiredFiles=['index.html','public/manifest.webmanifest','public/service-worker.js','public/pwa-register.js','public/pwa.css','public/offline.html','public/assets/boostr-entry/entry.css','public/assets/boostr-entry/entry.js','public/assets/boostr-mother/session-ui.js','public/ecosystem/index.html','public/assets/boostr-ecosystem/ecosystem.css','public/assets/boostr-ecosystem/ecosystem.js'];
 for(const file of requiredFiles)await access(file,constants.R_OK);
+for(const file of ['public/assets/boostr-entry/entry.js','public/assets/boostr-mother/session-ui.js','public/assets/boostr-ecosystem/ecosystem.js']){
+  const result=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});
+  if(result.status!==0){console.error(`JavaScript syntax failed: ${file}`);console.error((result.stderr||result.stdout).trim());process.exit(1)}
+}
 const[index,manifestText,worker,register,entryJs,entryCss,sessionUi,ecosystemHtml,ecosystemCss,ecosystemJs,viteConfig]=await Promise.all([readFile('index.html','utf8'),readFile('public/manifest.webmanifest','utf8'),readFile('public/service-worker.js','utf8'),readFile('public/pwa-register.js','utf8'),readFile('public/assets/boostr-entry/entry.js','utf8'),readFile('public/assets/boostr-entry/entry.css','utf8'),readFile('public/assets/boostr-mother/session-ui.js','utf8'),readFile('public/ecosystem/index.html','utf8'),readFile('public/assets/boostr-ecosystem/ecosystem.css','utf8'),readFile('public/assets/boostr-ecosystem/ecosystem.js','utf8'),readFile('vite.config.js','utf8')]);
 const manifest=JSON.parse(manifestText);
 const assertions=[

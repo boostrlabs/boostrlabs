@@ -215,7 +215,7 @@
       node.disabled = !isActive;
       node.setAttribute('aria-disabled', String(!isActive));
     });
-    document.querySelectorAll('.map-lines line').forEach((line) => line.classList.toggle('active', active.has(line.dataset.link))));
+    document.querySelectorAll('.map-lines line').forEach((line) => line.classList.toggle('active', active.has(line.dataset.link)));
   }
 
   function renderDetail(module) {
