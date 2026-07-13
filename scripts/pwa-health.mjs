@@ -11,7 +11,7 @@ async function read(path) {
   }
 }
 
-const [manifestSource, worker, registration, pwaCss, offline, headers, viteConfig, landing, app, invitation] = await Promise.all([
+const [manifestSource, worker, registration, pwaCss, offline, headers, viteConfig, landing, app, workspace, middleware, productionShell, login, invitation] = await Promise.all([
   read('public/manifest.webmanifest'),
   read('public/service-worker.js'),
   read('public/pwa-register.js'),
@@ -21,6 +21,10 @@ const [manifestSource, worker, registration, pwaCss, offline, headers, viteConfi
   read('vite.config.js'),
   read('index.html'),
   read('public/app/index.html'),
+  read('public/app/workspace/index.html'),
+  read('functions/_middleware.js'),
+  read('public/assets/boostr-mother/production-shell.js'),
+  read('public/login/index.html'),
   read('public/accept-invite/index.html')
 ]);
 
@@ -36,7 +40,7 @@ if (manifest) {
   if (manifest.short_name !== 'BOOSTR') failures.push('manifest short_name must be BOOSTR');
   if (manifest.display !== 'standalone') failures.push('manifest display must be standalone');
   if (manifest.scope !== '/') failures.push('manifest scope must be /');
-  if (manifest.start_url !== '/app/?source=pwa') failures.push('manifest must launch the BOOSTR App module launcher');
+  if (manifest.start_url !== '/app/?source=pwa') failures.push('manifest must launch the BOOSTR public app gateway');
   if (!Array.isArray(manifest.icons) || manifest.icons.length < 1) failures.push('manifest requires at least one icon');
 }
 
@@ -54,7 +58,7 @@ const workerRequirements = [
   "request.mode === 'navigate'",
   'cache.match(OFFLINE_URL)',
   "event.data?.type === 'SKIP_WAITING'",
-  "boostr-pwa-v2"
+  'boostr-pwa-v3'
 ];
 
 for (const requirement of workerRequirements) {
@@ -65,7 +69,7 @@ for (const requirement of ["location.replace(target)", "'/app/?source=pwa'", 'Ab
   if (!landing.includes(requirement)) failures.push(`PWA root redirect missing requirement: ${requirement}`);
 }
 
-for (const requirement of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EXOTIC', 'id="guestPanel"', 'id="privatePanel" hidden', "fetch('/api/session'", "cache:'no-store'", '/login/?next=/app/']) {
+for (const requirement of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EXOTIC', 'SERVICIOS CONECTADOS', 'Checkout invitado', 'id="accessPanel"', 'id="memberPanel" hidden', 'roleContext(session)']) {
   if (!app.includes(requirement)) failures.push(`BOOSTR App missing requirement: ${requirement}`);
 }
 
@@ -73,10 +77,18 @@ for (const forbidden of ['boostr-mother/console.js', 'class="sidebar', 'Rutas de
   if (app.includes(forbidden)) failures.push(`BOOSTR App exposes internal guest UI: ${forbidden}`);
 }
 
-const inlineScripts = [...app.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
-for (const [index, script] of inlineScripts.entries()) {
-  try { new Function(script); }
-  catch (error) { failures.push(`BOOSTR App inline script ${index + 1} failed: ${error.message}`); }
+if (!middleware.includes('const isPublicAppGateway = path === "/app"')) failures.push('middleware does not keep exact /app public');
+if (!middleware.includes('const isNestedAppSurface = path.startsWith("/app/")')) failures.push('middleware does not protect nested app routes');
+if (!productionShell.includes("const isPublicAppGateway = path === '/app'")) failures.push('production shell still gates exact /app');
+if (!workspace.includes('ESPACIO PRIVADO') || !workspace.includes('/api/dashboard')) failures.push('private workspace route is missing');
+if (!login.includes('roleDestination(data)') || !login.includes('Usar servicios como guest')) failures.push('login does not route by role or preserve guest access');
+
+for (const [name, html] of [['app', app], ['workspace', workspace], ['login', login]]) {
+  const inlineScripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  for (const [index, script] of inlineScripts.entries()) {
+    try { new Function(script); }
+    catch (error) { failures.push(`${name} inline script ${index + 1} failed: ${error.message}`); }
+  }
 }
 
 const invitationRequirements = [
