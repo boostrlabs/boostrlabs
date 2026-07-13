@@ -1,0 +1,59 @@
+name: OMNI Embedded Checkout Production Verification
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify live embedded Checkout session
+    if: github.head_ref == 'verify/omni-embedded-production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Wait for production deployment
+        run: sleep 60
+      - name: Create a non-charged OMNI Checkout session and verify its UI mode
+        env:
+          BASE_URL: https://boostrlabs.pages.dev
+        run: |
+          node <<'NODE'
+          const base = process.env.BASE_URL;
+          const stable = await fetch(`${base}/parking/omni-jr/standard`, { redirect: 'manual', cache: 'no-store' });
+          if (![301, 302, 303, 307, 308].includes(stable.status)) {
+            throw new Error(`Stable route returned HTTP ${stable.status}`);
+          }
+          const location = stable.headers.get('location');
+          if (!location) throw new Error('Stable route did not return a location');
+          const checkoutUrl = new URL(location, base);
+          const id = checkoutUrl.searchParams.get('id');
+          if (!id) throw new Error('Stable route did not return a payment-link id');
+
+          const response = await fetch(`${base}/api/public/payment-links/${encodeURIComponent(id)}/checkout`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email: 'qa+omni-embedded@boostrlabs.com', plate: 'QA1234' })
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok) {
+            throw new Error(`Checkout API failed HTTP ${response.status}: ${data.error || data.message || 'unknown error'}`);
+          }
+          const checkout = data.checkout || {};
+          if (!['embedded', 'embedded_page'].includes(checkout.ui_mode)) {
+            throw new Error(`Invalid Stripe Checkout UI mode: ${checkout.ui_mode || 'missing'}`);
+          }
+          if (!checkout.session_id || !checkout.client_secret || !checkout.publishable_key) {
+            throw new Error('Checkout session is missing required embedded fields');
+          }
+          console.log(JSON.stringify({
+            ok: true,
+            payment_link_id: id,
+            session_id_prefix: String(checkout.session_id).slice(0, 12),
+            ui_mode: checkout.ui_mode,
+            has_client_secret: true,
+            has_publishable_key: true
+          }, null, 2));
+          NODE
