@@ -1,1 +1,204 @@
-<!doctype html><html lang="es" data-build="1.4.1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#070b12"><title>BOOSTR App</title><link rel="icon" href="/assets/icons/09.-b-star-favicon.png"><link rel="manifest" href="/manifest.webmanifest"><style>:root{color-scheme:dark;--line:rgba(255,255,255,.12);--blue:#38b9ff;--blue2:#4778ff;--green:#64f58f}*{box-sizing:border-box;touch-action:manipulation;-webkit-tap-highlight-color:transparent}body{min-height:100dvh;margin:0;background:radial-gradient(circle at 82% 5%,rgba(56,185,255,.19),transparent 32%),linear-gradient(180deg,#0a101b,#05070b 78%);color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}a{color:inherit;text-decoration:none}.app{width:min(1240px,100%);margin:auto;padding:16px 14px 112px}.top,.card{border:1px solid var(--line);background:rgba(10,16,27,.82);backdrop-filter:blur(24px);box-shadow:0 24px 70px rgba(0,0,0,.35)}.top{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;position:sticky;top:0;z-index:10;padding:12px 14px;border-radius:28px}.brand img{width:154px;max-height:48px}.search{min-height:48px;border:1px solid rgba(255,255,255,.08);border-radius:17px;background:rgba(0,0,0,.25);color:#fff;padding:0 16px;font-size:16px}.account{width:48px;height:48px;border:1px solid var(--line);border-radius:17px;display:grid;place-items:center}.account img{width:25px}.card{margin-top:18px;border-radius:32px}.access{min-height:350px;display:grid;place-items:center;padding:28px}.access-inner{display:grid;place-items:center;gap:34px}.hero-logo{width:min(410px,78vw);max-height:135px}.enter-logo{width:78px;height:78px;border-radius:27px;background:linear-gradient(135deg,var(--blue2),var(--blue));display:grid;place-items:center}.enter-logo img{width:34px}.member{padding:26px;display:flex;align-items:center;justify-content:space-between}.member[hidden]{display:none}.member img{width:170px}.member-open{width:58px;height:58px;border-radius:20px;background:linear-gradient(135deg,var(--blue2),var(--blue));display:grid;place-items:center;font-size:26px}.section{padding:24px}.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.section-head img{width:155px}.count{width:11px;height:11px;border-radius:50%;background:var(--green)}.services{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.service-card{min-height:220px;border:1px solid rgba(255,255,255,.09);border-radius:25px;background:rgba(255,255,255,.035);padding:20px;display:flex;flex-direction:column}.service-card.disabled{opacity:.35}.service-icon{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:rgba(56,185,255,.1);font-size:34px}.service-brand{margin-top:auto;display:flex;align-items:center;justify-content:space-between}.service-brand img{max-width:145px;max-height:42px}.service-open{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue2),var(--blue))}.dock{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(330px,calc(100% - 28px));min-height:72px;border:1px solid var(--line);border-radius:28px;background:rgba(8,13,22,.9);backdrop-filter:blur(24px);padding:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.dock a{border-radius:21px;display:grid;place-items:center;color:#8e9bb0;font-size:20px}.dock a.active{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff}@media(max-width:680px){.top{grid-template-columns:1fr auto}.search{grid-column:1/-1;grid-row:2}.services{grid-template-columns:1fr}}</style></head><body><main class="app"><header class="top"><a class="brand" href="/app/"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"></a><input class="search" type="search" placeholder="⌕" aria-label="Buscar"><a class="account" id="topAccount" href="/login/"><img src="/assets/icons/09.-b-star-favicon.png" alt=""></a></header><section class="card access" id="accessPanel"><div class="access-inner"><img class="hero-logo" src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><a class="enter-logo" href="/login/" aria-label="Entrar"><img src="/assets/icons/09.-b-star-favicon.png" alt=""></a></div></section><section class="card member" id="memberPanel" hidden><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><a class="member-open" id="continueButton" href="/app/workspace/">→</a></section><section class="card section" id="services"><div class="section-head"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="count"></span></div><div class="services"><a class="service-card" data-search-item href="/parking/omni-jr/" aria-label="OMNI JR Parking"><div class="service-icon">🅿️</div><div class="service-brand"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="service-open">→</span></div></a><button class="service-card disabled" data-search-item disabled aria-label="BOOSTR Eats"><div class="service-icon">🍽️</div><div class="service-brand"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="service-open">…</span></div></button><button class="service-card disabled" data-search-item disabled aria-label="BOOSTR Rides"><div class="service-icon">🚘</div><div class="service-brand"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="service-open">…</span></div></button><button class="service-card disabled" data-search-item disabled aria-label="BOOSTR Exotic"><div class="service-icon">🏎️</div><div class="service-brand"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="service-open">…</span></div></button></div></section></main><nav class="dock"><a class="active" href="/app/">⌂</a><a href="#services">▦</a><a href="/login/">◉</a></nav><script>const h=()=>{const t=localStorage.getItem('boostr_auth_token')||'';return t?{Authorization:`Bearer ${t}`}:{}};function d(s){const e=String(s.user?.email||'').toLowerCase(),r=[s.role,s.user?.role,...(s.roles||[])].filter(Boolean).map(v=>String(v).toLowerCase());if(s.redirect&&s.redirect.startsWith('/')&&!s.redirect.startsWith('//'))return s.redirect;if(e==='janko@boostrlabs.com')return'/app/janko/';if(e==='johanka@boostrlabs.com')return'/app/johanka/';if(r.includes('admin'))return'/admin/';if(r.includes('manager'))return'/manager/';if(r.some(x=>['partner','owner','business_owner'].includes(x)))return'/partner-dashboard/';return'/app/workspace/'}async function loadSession(){try{const r=await fetch('/api/session',{headers:h(),credentials:'same-origin',cache:'no-store'});if(!r.ok)return;const s=await r.json();if(!s?.ok&&!s?.user)return;accessPanel.hidden=true;memberPanel.hidden=false;continueButton.href=d(s);topAccount.href=d(s)}catch{}}document.querySelector('.search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('[data-search-item]').forEach(i=>i.style.display=!q||i.getAttribute('aria-label').toLowerCase().includes(q)?'':'none')});document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});loadSession();</script></body></html>
+<!doctype html>
+<html lang="es" data-build="1.5.0" data-no-marketplace="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#08111f">
+  <meta name="boostr-theme" content="custom">
+  <meta name="description" content="Launcher de sistemas operativos BOOSTR. El acceso a módulos privados depende de la cuenta, el workspace y los permisos asignados.">
+  <title>BOOSTR</title>
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#07101d;
+      --panel:#101b2b;
+      --panel-2:#132238;
+      --line:rgba(255,255,255,.105);
+      --line-strong:rgba(255,255,255,.17);
+      --text:#f7f9fc;
+      --muted:#8998ad;
+      --blue:#48bfff;
+      --blue-2:#4778ff;
+      --green:#70f39a;
+      --shadow:0 24px 80px rgba(0,0,0,.42);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+    html{min-height:100%;background:var(--bg);scroll-behavior:smooth}
+    body{min-height:100dvh;margin:0;overflow-x:hidden;background:radial-gradient(circle at 90% 0,rgba(72,191,255,.17),transparent 31%),radial-gradient(circle at 0 34%,rgba(71,120,255,.12),transparent 30%),linear-gradient(180deg,#0a1423,#05080e 78%);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+    a{color:inherit;text-decoration:none}
+    button,input{font:inherit}
+    .app{width:min(900px,100%);margin:auto;padding:max(14px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(34px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+    .topbar{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:auto minmax(150px,1fr) auto;gap:12px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:26px;background:rgba(8,16,29,.82);backdrop-filter:blur(26px);box-shadow:0 18px 55px rgba(0,0,0,.27)}
+    .brand{display:flex;align-items:center}.brand img{width:154px;max-width:34vw;max-height:46px;object-fit:contain}
+    .search-wrap{position:relative}.search-wrap svg{position:absolute;left:15px;top:50%;width:19px;height:19px;transform:translateY(-50%);fill:none;stroke:#6d7e94;stroke-width:2;pointer-events:none}
+    .search{width:100%;min-height:48px;border:1px solid rgba(255,255,255,.075);border-radius:17px;background:rgba(0,0,0,.22);color:#fff;padding:0 14px 0 43px;outline:0;font-size:16px}.search::placeholder{color:#65758a}.search:focus{border-color:rgba(72,191,255,.45);box-shadow:0 0 0 4px rgba(72,191,255,.075)}
+    .account{width:48px;height:48px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.045);display:grid;place-items:center;position:relative}.account img{width:25px;height:25px;object-fit:contain}.account.online:after{content:"";position:absolute;right:5px;bottom:5px;width:9px;height:9px;border:2px solid #101827;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(112,243,154,.8)}
+    .launcher{margin-top:20px;border:1px solid var(--line);border-radius:31px;background:linear-gradient(145deg,rgba(18,31,51,.88),rgba(8,14,24,.94));box-shadow:var(--shadow);padding:clamp(17px,3vw,28px)}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:17px}.section-head h1{margin:0;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#68c8ff;font-weight:950}.session-mark{width:10px;height:10px;border-radius:50%;background:#405066}.session-mark.online{background:var(--green);box-shadow:0 0 16px rgba(112,243,154,.7)}
+    .os-grid{display:grid;gap:12px}
+    .os-card{--accent:#48bfff;min-height:112px;width:100%;border:1px solid rgba(255,255,255,.085);border-radius:25px;background:rgba(255,255,255,.035);padding:14px;display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:14px;align-items:center;color:inherit;text-align:left;position:relative;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+    .os-card[href]:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 38%,transparent);background:rgba(255,255,255,.055)}
+    .os-card:before{content:"";position:absolute;width:190px;height:190px;right:-95px;top:-110px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 16%,transparent),transparent 65%);pointer-events:none}
+    .os-card[data-accent="violet"]{--accent:#ad8cff}.os-card[data-accent="blue"]{--accent:#4d8dff}.os-card[data-accent="cyan"]{--accent:#43d5ff}.os-card[data-accent="amber"]{--accent:#efb568}.os-card[data-accent="indigo"]{--accent:#7b8cff}.os-card[data-accent="rose"]{--accent:#ff7699}.os-card[data-accent="green"]{--accent:#71ee9a}.os-card[data-accent="pink"]{--accent:#f594d8}
+    .os-card.is-locked,.os-card.is-soon{opacity:.48;filter:saturate(.68)}
+    .os-logo{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 28%,#101a29),rgba(255,255,255,.035));border:1px solid color-mix(in srgb,var(--accent) 28%,rgba(255,255,255,.08));color:var(--accent);box-shadow:inset 0 1px rgba(255,255,255,.08)}
+    .os-logo svg{width:40px;height:40px;overflow:visible}
+    .os-copy{min-width:0}.os-name{margin:0;font-size:clamp(18px,3.3vw,25px);line-height:1;letter-spacing:-.045em;font-weight:950}.os-cta{display:block;margin-top:8px;color:#8fa0b7;font-size:10px;font-weight:850;letter-spacing:.025em}.os-card.is-live .os-cta,.os-card.is-login .os-cta,.os-card.is-active .os-cta{color:#b7c6d9}
+    .partner-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px}.partner-badge{height:31px;min-width:72px;max-width:164px;border:1px solid rgba(255,255,255,.095);border-radius:10px;background:rgba(0,0,0,.2);padding:5px 8px;display:grid;place-items:center}.partner-badge.light{background:#f4f0e8;border-color:rgba(255,255,255,.18)}.partner-badge img{display:block;max-width:100%;max-height:21px;object-fit:contain}
+    .os-action{position:relative;z-index:1;display:grid;justify-items:end;gap:10px}.state-pill{border:1px solid rgba(255,255,255,.11);border-radius:999px;padding:6px 8px;color:#77869a;font-size:8px;font-weight:1000;letter-spacing:.11em;text-transform:uppercase}.is-live .state-pill,.is-active .state-pill{color:var(--green);border-color:rgba(112,243,154,.24)}.is-login .state-pill{color:#85cfff;border-color:rgba(72,191,255,.25)}
+    .arrow{width:42px;height:42px;border-radius:15px;background:rgba(255,255,255,.055);display:grid;place-items:center;color:#8695aa}.is-live .arrow,.is-active .arrow,.is-login .arrow{background:linear-gradient(135deg,var(--blue-2),var(--blue));color:#fff;box-shadow:0 13px 30px rgba(72,191,255,.15)}.arrow svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.3}
+    .new-user{margin-top:15px;border:1px solid var(--line);border-radius:28px;background:rgba(10,17,29,.72);padding:18px}.new-user[hidden]{display:none}.new-user h2{margin:0 0 13px;font-size:18px;letter-spacing:-.035em}.new-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.new-actions a{min-height:58px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);display:flex;align-items:center;justify-content:center;gap:10px;font-weight:900}.new-actions a:first-child{background:linear-gradient(135deg,rgba(71,120,255,.22),rgba(72,191,255,.12));border-color:rgba(72,191,255,.22)}.new-actions svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
+    .empty{display:none;padding:28px;text-align:center;color:#718097;font-size:12px}.empty.show{display:block}
+    @media(max-width:650px){.app{padding-left:8px;padding-right:8px}.topbar{grid-template-columns:1fr auto;padding:10px}.search-wrap{grid-column:1/-1;grid-row:2}.brand img{width:144px;max-width:55vw}.launcher{padding:15px;border-radius:27px}.os-card{grid-template-columns:62px minmax(0,1fr) auto;padding:12px;gap:11px;border-radius:22px}.os-logo{width:62px;height:62px;border-radius:19px}.os-logo svg{width:34px;height:34px}.os-name{font-size:20px}.partner-badge{height:28px;max-width:135px}.partner-badge img{max-height:18px}.state-pill{display:none}.arrow{width:38px;height:38px}.new-actions{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="brand" href="/app/" aria-label="BOOSTR"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></a>
+      <label class="search-wrap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+        <input class="search" id="launcherSearch" type="search" placeholder="Buscar OS" aria-label="Buscar sistema operativo" autocomplete="off">
+      </label>
+      <a class="account" id="accountButton" href="/login/" aria-label="Cuenta BOOSTR"><img src="/assets/icons/09.-b-star-favicon.png" alt=""></a>
+    </header>
+
+    <section class="launcher" aria-labelledby="launcherTitle">
+      <div class="section-head"><h1 id="launcherTitle">Operating Systems</h1><span class="session-mark" id="sessionMark" aria-hidden="true"></span></div>
+      <div class="os-grid" id="osGrid" data-launcher-level="os-only"></div>
+      <div class="empty" id="emptyState">No hay resultados.</div>
+    </section>
+
+    <section class="new-user" id="newUserPanel">
+      <h2>¿Nuevo en BOOSTR?</h2>
+      <div class="new-actions">
+        <a href="/audit/" aria-label="Soy negocio">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 21v-6h8v6M8 9h.01M12 9h.01M16 9h.01"></path></svg>
+          <span>Soy negocio</span>
+        </a>
+        <a href="/client-audit/" aria-label="Soy cliente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-5 4-7 8-7s7 2 8 7"></path></svg>
+          <span>Soy cliente</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script src="/assets/boostr-launcher/registry.js?v=1.0.0"></script>
+  <script>
+    const grid = document.getElementById('osGrid');
+    const search = document.getElementById('launcherSearch');
+    const emptyState = document.getElementById('emptyState');
+    const accountButton = document.getElementById('accountButton');
+    const sessionMark = document.getElementById('sessionMark');
+    const newUserPanel = document.getElementById('newUserPanel');
+    let currentSystems = [];
+
+    const tokenHeaders = () => {
+      const token = localStorage.getItem('boostr_auth_token') || '';
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    };
+
+    const safeRoute = (value, fallback = '/app/workspace/') => {
+      const route = String(value || '');
+      return route.startsWith('/') && !route.startsWith('//') && !route.includes('\\') ? route : fallback;
+    };
+
+    const arrowIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>';
+    const lockIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>';
+    const dotsIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.2" fill="currentColor" stroke="none"></circle></svg>';
+
+    function stateCopy(system) {
+      if (system.id === 'worker') return 'Entrar al BOOSTR WORKER OS';
+      if (system.state === 'public') return 'Abrir servicio conectado';
+      if (system.state === 'active') return 'Abrir mi módulo';
+      if (system.state === 'locked') return 'Disponible para miembros';
+      return 'Próximamente';
+    }
+
+    function stateLabel(system) {
+      if (system.state === 'public') return 'LIVE';
+      if (system.state === 'active') return 'OPEN';
+      if (system.state === 'login') return 'ACCESS';
+      if (system.state === 'locked') return 'MEMBERS';
+      return 'SOON';
+    }
+
+    function partnerMarkup(partners) {
+      return partners.length ? `<div class="partner-row">${partners.map((partner) => `<span class="partner-badge ${partner.tone === 'light' ? 'light' : ''}" title="${partner.name}"><img src="${partner.logo}" alt="${partner.name}"></span>`).join('')}</div>` : '';
+    }
+
+    function cardMarkup(system) {
+      const actionable = Boolean(system.route);
+      const tag = actionable ? 'a' : 'article';
+      const href = actionable ? ` href="${safeRoute(system.route, '/login/')}"` : '';
+      const icon = system.state === 'locked' ? lockIcon : system.state === 'soon' ? dotsIcon : arrowIcon;
+      const aria = actionable ? ` aria-label="Abrir ${system.name}"` : ` aria-label="${system.name} no disponible"`;
+      return `<${tag} class="os-card is-${system.state}" data-os-id="${system.id}" data-accent="${system.accent}" data-search="${[system.name, ...system.partners.map((partner) => partner.name)].join(' ').toLowerCase()}"${href}${aria}>
+        <span class="os-logo" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="/assets/boostr-launcher/os-symbols.svg#${system.symbol}"></use></svg></span>
+        <span class="os-copy"><strong class="os-name">${system.name}</strong><span class="os-cta">${stateCopy(system)}</span>${partnerMarkup(system.partners)}</span>
+        <span class="os-action"><span class="state-pill">${stateLabel(system)}</span><span class="arrow">${icon}</span></span>
+      </${tag}>`;
+    }
+
+    function render(systems) {
+      currentSystems = systems;
+      grid.innerHTML = systems.map(cardMarkup).join('');
+      applySearch();
+    }
+
+    function applySearch() {
+      const query = search.value.trim().toLowerCase();
+      let visible = 0;
+      grid.querySelectorAll('[data-os-id]').forEach((card) => {
+        const match = !query || card.dataset.search.includes(query);
+        card.hidden = !match;
+        if (match) visible += 1;
+      });
+      emptyState.classList.toggle('show', visible === 0);
+    }
+
+    function renderGuest() {
+      render(window.BOOSTR_OS_LAUNCHER.resolveSystems(null));
+      accountButton.href = '/login/';
+      accountButton.classList.remove('online');
+      sessionMark.classList.remove('online');
+      newUserPanel.hidden = false;
+    }
+
+    async function loadSession() {
+      renderGuest();
+      try {
+        const response = await fetch('/api/session', { headers: tokenHeaders(), credentials: 'same-origin', cache: 'no-store' });
+        if (!response.ok) return;
+        const session = await response.json();
+        if (!session?.ok && !session?.user) return;
+        const systems = window.BOOSTR_OS_LAUNCHER.resolveSystems(session);
+        render(systems);
+        accountButton.href = safeRoute(session.redirect);
+        accountButton.classList.add('online');
+        sessionMark.classList.add('online');
+        newUserPanel.hidden = true;
+      } catch (_) {
+        renderGuest();
+      }
+    }
+
+    search.addEventListener('input', applySearch);
+    document.addEventListener('gesturestart', (event) => event.preventDefault(), { passive: false });
+    document.addEventListener('gesturechange', (event) => event.preventDefault(), { passive: false });
+    document.addEventListener('touchmove', (event) => {
+      if (event.touches && event.touches.length > 1) event.preventDefault();
+    }, { passive: false });
+    document.addEventListener('wheel', (event) => {
+      if (event.ctrlKey) event.preventDefault();
+    }, { passive: false });
+
+    loadSession();
+  </script>
+</body>
+</html>

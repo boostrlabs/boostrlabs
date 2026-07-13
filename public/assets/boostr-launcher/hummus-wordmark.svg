@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 112" role="img" aria-labelledby="title desc">
+  <title id="title">Hummus Mediterranean Food</title>
+  <desc id="desc">Compact Hummus Mediterranean Food wordmark used inside the BOOSTR Restaurant OS launcher card.</desc>
+  <rect width="420" height="112" rx="22" fill="#f5e5c8"/>
+  <circle cx="55" cy="56" r="31" fill="#27352a"/>
+  <circle cx="55" cy="56" r="17" fill="#f5e5c8"/>
+  <circle cx="55" cy="56" r="6" fill="#d89b55"/>
+  <text x="102" y="58" fill="#1b241d" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" letter-spacing="1">HUMMUS</text>
+  <text x="104" y="82" fill="#667064" font-family="Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="4">MEDITERRANEAN FOOD</text>
+</svg>
