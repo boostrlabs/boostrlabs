@@ -19,7 +19,14 @@
 <main class="compact-main">
   <section class="card glass">
     <div class="section-head"><div><span class="eyebrow">Module Deck</span><h1>BOOSTR surfaces.</h1><p class="micro">Core, Payments, Smart Documents and custom worlds on one infrastructure.</p></div><a class="btn primary" href="/audit/">Start Audit</a></div>
-    <input class="search boostr-app-search" data-filter="[data-search-item]" type="search" placeholder="Search modules..." aria-label="Search modules" style="max-width:100%;width:100%;margin-bottom:16px">
+    <select class="search" id="moduleContext" aria-label="Module context" style="max-width:100%;width:100%;margin-bottom:10px">
+      <option value="core">BOOSTR Core</option>
+      <option value="payments">BOOSTR Payments</option>
+      <option value="documents">Smart Documents</option>
+      <option value="worlds">Branded Worlds</option>
+    </select>
+    <input class="search boostr-app-search" data-filter="[data-search-item]" type="search" placeholder="Search selected context..." aria-label="Search modules" style="max-width:100%;width:100%;margin-bottom:16px">
+    <div data-module-group="core">
     <span class="eyebrow">CORE</span>
     <div class="network-grid" style="margin-bottom:18px">
       <div class="module" data-search-item><b>BOOSTR CORE</b><p class="micro">Main system entry.</p><a href="/home/">Open →</a></div>
@@ -29,6 +36,8 @@
       <div class="module" data-search-item><b>Partners</b><p class="micro">Partner routes.</p><a href="/partner-dashboard/">Open →</a></div>
       <div class="module" data-search-item><b>BOOSTR CORE / Admin</b><p class="micro">System controls.</p><a href="/admin/">Open →</a></div>
     </div>
+    </div>
+    <div data-module-group="payments" hidden>
     <span class="eyebrow">BOOSTR PAYMENTS</span>
     <div class="network-grid" style="margin-bottom:18px">
       <div class="module" data-search-item><b>BOOSTR Payments</b><p class="micro">Create charges and generate the Smart Payment Page.</p><a href="/manager/payment-links/">Open →</a></div>
@@ -37,12 +46,16 @@
       <div class="module" data-search-item><b>Dashboard Orders</b><p class="micro">Client order view.</p><a href="/app/orders/">Open →</a></div>
       <div class="module" data-search-item><b>Files</b><p class="micro">Workspace deliverables.</p><a href="/app/files/">Open →</a></div>
     </div>
+    </div>
+    <div data-module-group="documents" hidden>
     <span class="eyebrow">SMART DOCUMENTS</span>
     <div class="network-grid" style="margin-bottom:18px">
       <div class="module" data-search-item><b>BOOSTR Smart Documents</b><p class="micro">Invoices, receipts, tickets, contracts, licenses and living experiences.</p><a href="/app/documents/">Open →</a></div>
       <div class="module" data-search-item><b>Invoices</b><p class="micro">Invoice records connected to living documents.</p><a href="/app/invoices/">Open →</a></div>
       <div class="module" data-search-item><b>Public Document</b><p class="micro">Permanent /d/... pages with media, QR and live timeline.</p><a href="/app/documents/">Create →</a></div>
     </div>
+    </div>
+    <div data-module-group="worlds" hidden>
     <span class="eyebrow">BRANDED WORLDS</span>
     <div class="network-grid">
       <div class="module" data-search-item><b>82NGEL OS</b><p class="micro">Artist route.</p><a href="/82ngel/">Open →</a></div>
@@ -52,10 +65,14 @@
       <div class="module" data-search-item><b>Proof</b><p class="micro">Selected work.</p><a href="/portfolio/">Open →</a></div>
       <div class="module" data-search-item><b>Smart Link OS</b><p class="micro">Artist and creator link systems.</p><a href="/jankodiorr/">Example →</a></div>
     </div>
+    </div>
   </section>
   <footer class="footer">POWERED BY BOOSTR LABS · Module Deck</footer>
 </main>
 </div>
 <script src="/assets/boostr-mother/console.js"></script>
+<script>
+  moduleContext.onchange=()=>document.querySelectorAll('[data-module-group]').forEach(group=>group.hidden=group.dataset.moduleGroup!==moduleContext.value);
+</script>
 </body>
 </html>
