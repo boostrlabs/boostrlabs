@@ -1,0 +1,67 @@
+:root {
+  --boostr-safe-top: env(safe-area-inset-top, 0px);
+  --boostr-safe-right: env(safe-area-inset-right, 0px);
+  --boostr-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --boostr-safe-left: env(safe-area-inset-left, 0px);
+}
+html { min-height: 100%; background: #050607; }
+body {
+  min-height: 100dvh;
+  padding-top: var(--boostr-safe-top);
+  padding-right: var(--boostr-safe-right);
+  padding-left: var(--boostr-safe-left);
+  -webkit-tap-highlight-color: transparent;
+}
+.boostr-standalone body { min-height: 100dvh; overscroll-behavior-y: none; }
+.boostr-standalone .mobile-tabs,
+.boostr-standalone .bottom-tabs { padding-bottom: max(10px, var(--boostr-safe-bottom)); }
+@media (max-width: 900px) {
+  input, select, textarea, button { font-size: max(16px, 1em); }
+}
+#boostr-pwa-banner {
+  position: fixed;
+  z-index: 2147483647;
+  right: max(14px, var(--boostr-safe-right));
+  bottom: max(14px, calc(var(--boostr-safe-bottom) + 10px));
+  left: max(14px, var(--boostr-safe-left));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 16px;
+  background: rgba(8, 8, 8, .96);
+  color: #fff;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font: 600 13px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, sans-serif;
+}
+#boostr-pwa-banner span { flex: 1; }
+#boostr-pwa-banner button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #050505;
+  font: inherit;
+  cursor: pointer;
+}
+#boostr-pwa-banner .boostr-pwa-close {
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  font-size: 20px;
+}
+@media (min-width: 760px) {
+  #boostr-pwa-banner {
+    left: 50%;
+    width: min(680px, calc(100vw - 48px));
+    transform: translateX(-50%);
+  }
+}
