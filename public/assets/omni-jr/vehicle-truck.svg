@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" role="img" aria-labelledby="title desc">
+<title id="title">Truck</title><desc id="desc">Modern silver pickup truck for OMNI JR Parking</desc>
+<defs><linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#e4e6e7"/><stop offset="1" stop-color="#b9bdc0"/></linearGradient><linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#171d21"/><stop offset="1" stop-color="#657075"/></linearGradient><filter id="shadow" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="12"/></filter></defs>
+<ellipse cx="360" cy="342" rx="310" ry="22" fill="#000" opacity=".14" filter="url(#shadow)"/>
+<g stroke="#94999c" stroke-width="3" stroke-linejoin="round">
+<path fill="url(#body)" d="M42 255c4-39 25-66 63-78l124-31 51-78c15-23 38-35 68-35h121c43 0 76 15 100 48l43 59h73c18 0 30 10 32 29l6 77c2 25-10 39-35 42l-62 7H96c-38 0-56-13-54-40Z"/>
+<path fill="url(#glass)" stroke="#202629" d="m255 144 48-73c10-15 25-23 44-23h116c31 0 54 10 72 35l40 58-320 3Z"/>
+<path fill="#202629" stroke="none" d="m392 49 8 94h15l-5-94z" opacity=".9"/>
+<path fill="#202629" stroke="none" d="m516 79 10 63h13l-7-53z" opacity=".75"/>
+<path fill="#121719" stroke="#242a2d" d="M55 213h188l22 18-23 42H56z"/>
+<path fill="#f6f7f7" d="M53 198h182l-29-25-103 25z"/>
+<path fill="#f0f1f1" d="M569 154h120l5 74H582z"/>
+<path fill="#d9dcdd" d="M95 281h503l-15 31H89z"/>
+<path fill="none" d="M281 151v124M431 149v128M550 149l-2 128" opacity=".55"/>
+<path fill="#dedede" d="M344 171h43a8 8 0 0 1 0 16h-43a8 8 0 0 1 0-16Zm131 0h43a8 8 0 0 1 0 16h-43a8 8 0 0 1 0-16Z"/>
+<path fill="#111619" stroke="#282d30" d="M75 219h156v18H75zm0 29h139v15H75z"/>
+</g>
+<g><circle cx="171" cy="302" r="62" fill="#171a1c"/><circle cx="171" cy="302" r="40" fill="#d6d8da" stroke="#697074" stroke-width="5"/><circle cx="171" cy="302" r="10" fill="#555b5e"/><g stroke="#666d70" stroke-width="7"><path d="m171 263v78M132 302h78M143 274l56 56M199 274l-56 56"/></g><circle cx="584" cy="302" r="62" fill="#171a1c"/><circle cx="584" cy="302" r="40" fill="#d6d8da" stroke="#697074" stroke-width="5"/><circle cx="584" cy="302" r="10" fill="#555b5e"/><g stroke="#666d70" stroke-width="7"><path d="m584 263v78M545 302h78M556 274l56 56M612 274l-56 56"/></g></g>
+<path d="M68 207h42" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".9"/><path d="M687 182h15" stroke="#d63d3d" stroke-width="12" stroke-linecap="round"/>
+</svg>
