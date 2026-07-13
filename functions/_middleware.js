@@ -1,4 +1,4 @@
-const VERSION = "0.9.11";
+const VERSION = "0.9.12";
 const languageScript = `<script src="/assets/boostr-mother/language-engine.js?v=${VERSION}" defer></script>`;
 const productionScript = `<script src="/assets/boostr-mother/production-shell.js?v=${VERSION}" defer></script>`;
 const johankaCloudScript = `<script src="/assets/boostr-mother/johanka-cloud-link.js?v=${VERSION}" defer></script>`;
@@ -36,8 +36,10 @@ export async function onRequest(context) {
   const url = new URL(context.request.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
   const isDemo = path.startsWith("/demo/");
+  const isPublicAppGateway = path === "/app";
+  const isNestedAppSurface = path.startsWith("/app/");
   const isPublicJohankarrd = path === "/johankarrd" || path.startsWith("/johankarrd/");
-  const isPublicExperience = matches(path, [
+  const isPublicExperience = isPublicAppGateway || matches(path, [
     "/3d",
     "/jankodiorr",
     "/82ngel",
@@ -45,9 +47,10 @@ export async function onRequest(context) {
     "/d",
     "/portfolio",
     "/partner",
+    "/parking",
     "/omgbeauty"
   ]);
-  const isPrivate = matches(path, ["/app", "/manager", "/admin", "/partner-dashboard"]);
+  const isPrivate = isNestedAppSurface || matches(path, ["/manager", "/admin", "/partner-dashboard"]);
   const isInternalSurface = isPrivate || matches(path, [
     "/home",
     "/modules",
@@ -84,6 +87,10 @@ export async function onRequest(context) {
   }
 
   if (matches(path, ["/d"])) {
+    init.headers.set("cache-control", "no-store, no-cache, must-revalidate, max-age=0");
+  }
+
+  if (isPublicAppGateway) {
     init.headers.set("cache-control", "no-store, no-cache, must-revalidate, max-age=0");
   }
 

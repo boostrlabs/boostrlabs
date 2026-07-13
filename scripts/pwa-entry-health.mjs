@@ -4,7 +4,11 @@ const failures = [];
 const manifest = JSON.parse(readFileSync('public/manifest.webmanifest', 'utf8'));
 const root = readFileSync('index.html', 'utf8');
 const sessionUi = readFileSync('public/assets/boostr-mother/session-ui.js', 'utf8');
+const productionShell = readFileSync('public/assets/boostr-mother/production-shell.js', 'utf8');
+const middleware = readFileSync('functions/_middleware.js', 'utf8');
 const app = readFileSync('public/app/index.html', 'utf8');
+const workspace = readFileSync('public/app/workspace/index.html', 'utf8');
+const login = readFileSync('public/login/index.html', 'utf8');
 
 if (manifest.start_url !== '/app/?source=pwa') failures.push(`Unexpected PWA start_url: ${manifest.start_url}`);
 if (manifest.scope !== '/') failures.push(`Unexpected PWA scope: ${manifest.scope}`);
@@ -13,20 +17,37 @@ if (!root.includes('(display-mode: standalone)')) failures.push('Root page does 
 if (!root.includes('/app/?source=pwa')) failures.push('Root page does not redirect standalone launches to BOOSTR App');
 if (!sessionUi.includes('redirectInstalledLaunch')) failures.push('Shared session UI does not repair legacy installed PWA entry routes');
 if (!sessionUi.includes('/manifest.webmanifest')) failures.push('Shared session UI does not expose the PWA manifest');
-for (const marker of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EXOTIC']) {
-  if (!app.includes(marker)) failures.push(`BOOSTR App launcher missing ${marker}`);
+
+for (const marker of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EXOTIC', 'SERVICIOS CONECTADOS', 'Checkout invitado']) {
+  if (!app.includes(marker)) failures.push(`BOOSTR App gateway missing ${marker}`);
 }
-for (const marker of ['id="guestPanel"', 'id="privatePanel" hidden', 'loadPrivate()', '/login/?next=/app/']) {
-  if (!app.includes(marker)) failures.push(`BOOSTR App guest gate missing marker: ${marker}`);
+for (const marker of ['id="accessPanel"', 'id="memberPanel" hidden', 'roleContext(session)', '/accept-invite/']) {
+  if (!app.includes(marker)) failures.push(`BOOSTR App persona router missing marker: ${marker}`);
 }
 for (const forbidden of ['boostr-mother/console.js', 'class="sidebar', 'Rutas del ecosistema', 'Manager Missions', 'Creative Missions']) {
-  if (app.includes(forbidden)) failures.push(`BOOSTR App still exposes internal guest UI: ${forbidden}`);
+  if (app.includes(forbidden)) failures.push(`BOOSTR App still exposes internal UI: ${forbidden}`);
 }
 
-const scripts = [...app.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
-for (const [index, script] of scripts.entries()) {
-  try { new Function(script); }
-  catch (error) { failures.push(`BOOSTR App inline script ${index + 1} failed: ${error.message}`); }
+if (!middleware.includes('const isPublicAppGateway = path === "/app"')) failures.push('Middleware does not classify exact /app as public');
+if (!middleware.includes('const isNestedAppSurface = path.startsWith("/app/")')) failures.push('Middleware does not protect nested /app routes');
+if (!middleware.includes('const isPublicExperience = isPublicAppGateway')) failures.push('Public app gateway can still receive the private runtime');
+if (!productionShell.includes("const isPublicAppGateway = path === '/app'")) failures.push('Production shell does not exempt exact /app');
+if (!productionShell.includes("const isNestedAppSurface = path.startsWith('/app/')")) failures.push('Production shell does not protect nested app routes');
+if (!productionShell.includes("'/app/workspace'")) failures.push('Private workspace is not recognized by the production shell');
+
+for (const marker of ['ESPACIO PRIVADO', '/api/session', '/api/dashboard', '/login/?next=/app/workspace/']) {
+  if (!workspace.includes(marker)) failures.push(`Private workspace missing marker: ${marker}`);
+}
+for (const marker of ['roleDestination(data)', "return'/app/workspace/'", 'Usar servicios como guest']) {
+  if (!login.includes(marker)) failures.push(`Login role router missing marker: ${marker}`);
+}
+
+for (const [name, html] of [['app', app], ['workspace', workspace], ['login', login]]) {
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  for (const [index, script] of scripts.entries()) {
+    try { new Function(script); }
+    catch (error) { failures.push(`${name} inline script ${index + 1} failed: ${error.message}`); }
+  }
 }
 
 if (failures.length) {

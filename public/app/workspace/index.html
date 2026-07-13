@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es" data-build="1.0.0">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090909">
+  <meta name="boostr-shell" content="workspace">
+  <title>Mi espacio BOOSTR</title>
+  <meta name="description" content="Panel privado para clientes, staff y miembros de un workspace BOOSTR.">
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <style>
+    :root{color-scheme:dark;--bg:#070707;--panel:rgba(255,255,255,.06);--line:rgba(255,255,255,.13);--text:#f8f8f5;--muted:rgba(255,255,255,.58);--green:#74f4a4;--champagne:#feedb9}*{box-sizing:border-box}html{background:var(--bg)}body{min-height:100dvh;margin:0;background:radial-gradient(circle at 88% 0,rgba(254,237,185,.1),transparent 28%),linear-gradient(180deg,#0b0b0b,#030303);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,Arial,sans-serif}a{color:inherit;text-decoration:none}.shell{width:min(900px,100%);margin:0 auto;padding:max(22px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:grid;gap:16px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px}.top img{width:132px;max-height:44px;object-fit:contain}.back{min-height:43px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.05);padding:0 15px;display:inline-flex;align-items:center;font-size:12px;font-weight:900}.hero,.panel{border:1px solid var(--line);border-radius:32px;background:rgba(255,255,255,.055);padding:22px}.kicker{margin:0 0 10px;color:var(--green);font:900 10px ui-monospace,Menlo,monospace;letter-spacing:.15em;text-transform:uppercase}.hero h1{margin:0;font-size:clamp(42px,8vw,72px);line-height:.9;letter-spacing:-.07em}.hero p,.panel p{color:var(--muted);line-height:1.5}.identity{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.22);padding:8px 10px;font-size:10px;font-weight:850;color:rgba(255,255,255,.72)}.panel h2{margin:0;font-size:29px;letter-spacing:-.045em}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px}.card{min-height:140px;border:1px solid rgba(255,255,255,.11);border-radius:23px;background:rgba(0,0,0,.22);padding:15px;display:flex;flex-direction:column}.card b{font-size:17px}.card span{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.45}.card em{margin-top:auto;padding-top:12px;color:var(--champagne);font-size:11px;font-style:normal;font-weight:900}.empty{border:1px dashed var(--line);border-radius:22px;padding:18px;color:var(--muted)}.footer{text-align:center;color:rgba(255,255,255,.3);font-size:9px;letter-spacing:.1em;text-transform:uppercase}@media(max-width:620px){.cards{grid-template-columns:1fr}.hero,.panel{border-radius:27px;padding:18px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="top"><a href="/app/"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"></a><a class="back" href="/app/">Servicios</a></header>
+    <section class="hero"><p class="kicker">ESPACIO PRIVADO</p><h1 id="title">Cargando tu workspace.</h1><p id="copy">Esta pantalla muestra únicamente módulos y registros asignados a tu cuenta.</p><div class="identity" id="identity"><span class="chip">Verificando sesión</span></div></section>
+    <section class="panel"><h2>Mis accesos</h2><p>Los botones aparecen desde datos reales del backend. No se muestran módulos internos que no estén asignados.</p><div class="cards" id="cards"><div class="empty">Cargando módulos asignados…</div></div></section>
+    <footer class="footer">Powered by BOOSTR Labs</footer>
+  </main>
+  <script>
+    const title=document.getElementById('title'),copy=document.getElementById('copy'),identity=document.getElementById('identity'),cards=document.getElementById('cards');
+    const headers=()=>{const token=localStorage.getItem('boostr_auth_token')||'';return token?{Authorization:`Bearer ${token}`}:{}};
+    const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const safePath=value=>typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')?value:'#';
+    function renderCards(items=[]){if(!items.length){cards.innerHTML='<div class="empty">Tu cuenta está activa, pero todavía no tiene módulos privados asignados.</div>';return}cards.innerHTML=items.slice(0,8).map(item=>`<a class="card" href="${safePath(item.action_url||'#')}"><b>${esc(item.title||item.card_type||'Módulo')}</b><span>${esc(item.summary||'Disponible en tu workspace.')}</span><em>${esc(item.action_label||'Abrir')} →</em></a>`).join('')}
+    async function load(){try{const sessionResponse=await fetch('/api/session',{headers:headers(),credentials:'same-origin',cache:'no-store'});if(!sessionResponse.ok)throw new Error('session');const session=await sessionResponse.json();const name=session.user?.name||session.user?.email||'Cuenta BOOSTR';const workspace=session.active_workspace?.name||'Mi espacio BOOSTR';title.textContent=workspace;copy.textContent=`Hola, ${name.includes('@')?name.split('@')[0]:name}. Aquí ves solo lo asignado a tu rol y workspace.`;const roles=[session.role,...(session.roles||[])].filter(Boolean);identity.innerHTML=[session.user?.email,workspace,...new Set(roles)].filter(Boolean).map(value=>`<span class="chip">${esc(value)}</span>`).join('');const dashboardResponse=await fetch('/api/dashboard',{headers:headers(),credentials:'same-origin',cache:'no-store'});if(!dashboardResponse.ok){renderCards([]);return}const dashboard=await dashboardResponse.json();renderCards(dashboard.cards||[])}catch{location.replace('/login/?next=/app/workspace/')}}
+    load();
+  </script>
+</body>
+</html>
