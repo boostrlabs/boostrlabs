@@ -12,14 +12,17 @@
   }
 
   function dashboardFor(session) {
-    if (session?.redirect) return session.redirect;
     const email = (session?.user?.email || '').toLowerCase();
-    if (email === 'janko@boostrlabs.com') return '/app/janko/?v=0.8.0';
-    if (email === 'johanka@boostrlabs.com') return '/app/johanka/?v=0.8.0';
-    if ((session?.roles || []).includes('admin')) return '/admin/';
-    if ((session?.roles || []).includes('manager')) return '/manager/';
-    if ((session?.roles || []).includes('partner')) return '/partner-dashboard/';
-    return '/app/';
+    if (email === 'janko@boostrlabs.com') return '/app/janko/?v=1.0.0';
+    if (email === 'johanka@boostrlabs.com') return '/app/johanka/?v=1.0.0';
+    const roles = [session?.role, session?.user?.role, session?.active_workspace?.role, ...(session?.roles || [])]
+      .filter(Boolean)
+      .map((value) => String(value).toLowerCase());
+    if (roles.includes('admin')) return '/admin/';
+    if (roles.includes('manager')) return '/manager/';
+    if (roles.some((role) => ['partner', 'owner', 'business_owner'].includes(role))) return '/partner-dashboard/';
+    if (session?.redirect && !['/app', '/app/'].includes(session.redirect)) return session.redirect;
+    return '/app/workspace/';
   }
 
   function paintSession(session) {
@@ -76,7 +79,7 @@
         username: session.username || session.user?.name,
         role: session.role,
         workspace: session.active_workspace?.name,
-        redirect: session.redirect,
+        redirect: dashboardFor(session),
         createdAt: new Date().toISOString()
       }));
       paintSession(session);
