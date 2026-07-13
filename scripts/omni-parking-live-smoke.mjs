@@ -49,18 +49,16 @@ for (const [plan, rules] of Object.entries(expected)) {
   const rawLocation = stable.headers.get("location") || "";
   assert(rawLocation, `${plan}: stable route did not return a location`);
   const checkoutUrl = new URL(rawLocation, base);
-  assert(["/pay/omni", "/pay/omni/"].includes(checkoutUrl.pathname), `${plan}: redirected to ${checkoutUrl.pathname}`);
+  assert(["/omni-jr/checkout", "/omni-jr/checkout/"].includes(checkoutUrl.pathname), `${plan}: redirected to ${checkoutUrl.pathname}`);
   assert(checkoutUrl.searchParams.get("plan") === plan, `${plan}: checkout plan context missing`);
   const id = checkoutUrl.searchParams.get("id") || "";
   assert(id.length >= 20, `${plan}: payment link id missing`);
 
-  // Cloudflare Pages may canonicalize directory URLs with one additional 301/302.
-  // Follow that platform redirect and validate the final rendered page instead.
   const checkout = await fetch(checkoutUrl, { redirect: "follow", cache: "no-store" });
   const checkoutHtml = await checkout.text();
   const finalCheckoutUrl = new URL(checkout.url);
   assert(checkout.status === 200, `${plan}: checkout HTML returned HTTP ${checkout.status} at ${checkout.url}`);
-  assert(["/pay/omni", "/pay/omni/"].includes(finalCheckoutUrl.pathname), `${plan}: checkout canonicalized to ${finalCheckoutUrl.pathname}`);
+  assert(["/omni-jr/checkout", "/omni-jr/checkout/"].includes(finalCheckoutUrl.pathname), `${plan}: checkout canonicalized to ${finalCheckoutUrl.pathname}`);
   assert(finalCheckoutUrl.searchParams.get("id") === id, `${plan}: payment link id was lost after canonical redirect`);
   assert(finalCheckoutUrl.searchParams.get("plan") === plan, `${plan}: plan was lost after canonical redirect`);
   assert(checkoutHtml.includes('data-build="omni-self-heal-v1"'), `${plan}: current checkout build marker missing`);
