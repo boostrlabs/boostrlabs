@@ -38,6 +38,7 @@ Safari must be used for installation. Opening the URL inside Instagram, Gmail, o
 - Static visual assets may use a cache fallback when the network is unavailable.
 - A service-worker upgrade displays **Update BOOSTR**. Activating it switches to the new service worker and reloads once.
 - No App Store update or device reinstall is required for normal frontend deployments.
+- For a landing-only change, fully close and reopen the installed PWA. If the prior page remains visible, open the branch URL once in Safari and then reopen the home-screen app.
 
 ## Offline behavior
 
