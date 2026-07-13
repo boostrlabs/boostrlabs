@@ -12,7 +12,9 @@ on:
       - 'public/pwa-register.js'
       - 'public/pwa.css'
       - 'public/offline.html'
+      - 'public/ecosystem/**'
       - 'public/assets/boostr-entry/**'
+      - 'public/assets/boostr-ecosystem/**'
       - 'public/assets/boostr-mother/session-ui.js'
       - 'public/_headers'
       - 'scripts/pwa-health.mjs'
@@ -28,7 +30,9 @@ on:
       - 'public/pwa-register.js'
       - 'public/pwa.css'
       - 'public/offline.html'
+      - 'public/ecosystem/**'
       - 'public/assets/boostr-entry/**'
+      - 'public/assets/boostr-ecosystem/**'
       - 'public/assets/boostr-mother/session-ui.js'
       - 'public/_headers'
       - 'scripts/pwa-health.mjs'
@@ -64,7 +68,7 @@ jobs:
       - run: pnpm run health:pwa
       - run: pnpm run stability:check
       - run: pnpm run build
-      - name: Verify built PWA entry
+      - name: Verify built PWA entry and ecosystem
         run: |
           test -f dist/manifest.webmanifest
           test -f dist/service-worker.js
@@ -73,6 +77,9 @@ jobs:
           test -f dist/offline.html
           test -f dist/assets/boostr-entry/entry.css
           test -f dist/assets/boostr-entry/entry.js
+          test -f dist/ecosystem/index.html
+          test -f dist/assets/boostr-ecosystem/ecosystem.css
+          test -f dist/assets/boostr-ecosystem/ecosystem.js
           grep -q '/manifest.webmanifest' dist/index.html
           grep -q '/pwa-register.js' dist/index.html
           grep -q 'apple-mobile-web-app-capable' dist/index.html
@@ -80,3 +87,5 @@ jobs:
           grep -q 'id="choiceA"' dist/index.html
           grep -q 'id="choiceB"' dist/index.html
           grep -q 'id="questionStage"' dist/index.html
+          grep -q 'id="ecoChoiceA"' dist/ecosystem/index.html
+          grep -q 'id="systemMap"' dist/ecosystem/index.html
