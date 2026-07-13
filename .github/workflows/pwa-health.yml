@@ -6,6 +6,7 @@ on:
       - pwa-pilot
     paths:
       - 'index.html'
+      - 'public/app/index.html'
       - 'public/accept-invite/index.html'
       - 'public/manifest.webmanifest'
       - 'public/service-worker.js'
@@ -21,6 +22,7 @@ on:
   pull_request:
     paths:
       - 'index.html'
+      - 'public/app/index.html'
       - 'public/accept-invite/index.html'
       - 'public/manifest.webmanifest'
       - 'public/service-worker.js'
@@ -66,16 +68,21 @@ jobs:
           test -f dist/pwa-register.js
           test -f dist/pwa.css
           test -f dist/offline.html
+          test -f dist/app/index.html
           test -f dist/accept-invite/index.html
           grep -q '/manifest.webmanifest' dist/index.html
           grep -q '/pwa-register.js' dist/index.html
           grep -q 'apple-mobile-web-app-capable' dist/index.html
           grep -q 'viewport-fit=cover' dist/index.html
-          grep -q 'Construimos el sistema operativo de tu negocio.' dist/index.html
-          grep -q 'Descubre qué necesita tu negocio.' dist/index.html
-          grep -q '¿Ya tienes acceso?' dist/index.html
-          grep -q 'href="/audit/"' dist/index.html
-          grep -q 'href="/login/"' dist/index.html
-          grep -q 'href="/accept-invite/"' dist/index.html
+          grep -q '/app/?source=pwa' dist/index.html
+          grep -q 'Abriendo BOOSTR App' dist/index.html
+          grep -q 'SMART PARKING' dist/app/index.html
+          grep -q 'BOOSTR EATS' dist/app/index.html
+          grep -q 'BOOSTR RIDES' dist/app/index.html
+          grep -q 'BOOSTR EXOTIC' dist/app/index.html
+          grep -q 'id="guestPanel"' dist/app/index.html
+          grep -q 'id="privatePanel" hidden' dist/app/index.html
+          ! grep -q 'boostr-mother/console.js' dist/app/index.html
+          ! grep -q 'Rutas del ecosistema' dist/app/index.html
           grep -q 'Tu espacio BOOSTR está listo.' dist/accept-invite/index.html
           grep -q 'No necesitas ingresar información de pago.' dist/accept-invite/index.html
