@@ -41,17 +41,12 @@ export async function onRequestGet({ request, env, params }) {
   if (!id) return new Response("Smart Payment Link missing.", { status: 400 });
 
   const incoming = new URL(request.url);
-  const legacyRoute = LEGACY_OMNI_LINKS[id];
-  if (legacyRoute) {
-    const target = new URL(legacyRoute, incoming.origin);
-    for (const [key, value] of incoming.searchParams.entries()) target.searchParams.append(key, value);
-    return redirect(`${target.pathname}${target.search}`);
-  }
-
+  let activeLink = null;
   let omni = false;
+
   if (env.DB) {
     try {
-      const link = await env.DB.prepare(`
+      activeLink = await env.DB.prepare(`
         SELECT payment_links.title, payment_links.metadata_json,
                products.metadata_json AS product_metadata_json,
                workspaces.name AS workspace_name, workspaces.slug AS workspace_slug
@@ -60,12 +55,24 @@ export async function onRequestGet({ request, env, params }) {
         LEFT JOIN workspaces ON workspaces.id = payment_links.workspace_id
         WHERE payment_links.id = ? AND payment_links.status = 'active' LIMIT 1
       `).bind(id).first();
-      if (link) {
-        const metadata = { ...parseJson(link.product_metadata_json), ...parseJson(link.metadata_json) };
-        omni = isOmniParking(link, metadata);
+
+      if (activeLink) {
+        const metadata = { ...parseJson(activeLink.product_metadata_json), ...parseJson(activeLink.metadata_json) };
+        omni = isOmniParking(activeLink, metadata);
       }
     } catch (error) {
       console.error("Payment brand lookup failed", error);
+    }
+  }
+
+  // An active payment link always wins. Legacy fallback is used only when the old
+  // UUID no longer exists, preventing /parking -> /pay -> /parking redirect loops.
+  if (!activeLink) {
+    const legacyRoute = LEGACY_OMNI_LINKS[id];
+    if (legacyRoute) {
+      const target = new URL(legacyRoute, incoming.origin);
+      for (const [key, value] of incoming.searchParams.entries()) target.searchParams.append(key, value);
+      return redirect(`${target.pathname}${target.search}`);
     }
   }
 
