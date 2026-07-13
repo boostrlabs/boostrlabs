@@ -1,11 +1,11 @@
-const CACHE_VERSION = 'boostr-pwa-v3';
+const CACHE_VERSION = 'boostr-pwa-v4';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const OFFLINE_URL = '/offline.html';
 const PRECACHE_URLS = [
   OFFLINE_URL,
   '/pwa.css',
   '/assets/boostr-entry/entry.css?v=1.1.0',
-  '/assets/boostr-entry/entry.js?v=1.1.0',
+  '/assets/boostr-entry/entry.js?v=1.1.1',
   '/assets/icons/09.-b-star-favicon.png',
   '/assets/logos/boostr-logo-nav.png'
 ];
