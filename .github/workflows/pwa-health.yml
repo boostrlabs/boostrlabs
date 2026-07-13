@@ -1,0 +1,91 @@
+name: BOOSTR PWA Health
+
+on:
+  push:
+    branches:
+      - official-entry-pwa
+      - main
+    paths:
+      - 'index.html'
+      - 'public/manifest.webmanifest'
+      - 'public/service-worker.js'
+      - 'public/pwa-register.js'
+      - 'public/pwa.css'
+      - 'public/offline.html'
+      - 'public/ecosystem/**'
+      - 'public/assets/boostr-entry/**'
+      - 'public/assets/boostr-ecosystem/**'
+      - 'public/assets/boostr-mother/session-ui.js'
+      - 'public/_headers'
+      - 'scripts/pwa-health.mjs'
+      - 'vite.config.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/pwa-health.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'public/manifest.webmanifest'
+      - 'public/service-worker.js'
+      - 'public/pwa-register.js'
+      - 'public/pwa.css'
+      - 'public/offline.html'
+      - 'public/ecosystem/**'
+      - 'public/assets/boostr-entry/**'
+      - 'public/assets/boostr-ecosystem/**'
+      - 'public/assets/boostr-mother/session-ui.js'
+      - 'public/_headers'
+      - 'scripts/pwa-health.mjs'
+      - 'vite.config.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/pwa-health.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boostr-pwa-health-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run health:pwa
+      - run: pnpm run stability:check
+      - run: pnpm run build
+      - name: Verify built PWA entry and ecosystem
+        run: |
+          test -f dist/manifest.webmanifest
+          test -f dist/service-worker.js
+          test -f dist/pwa-register.js
+          test -f dist/pwa.css
+          test -f dist/offline.html
+          test -f dist/assets/boostr-entry/entry.css
+          test -f dist/assets/boostr-entry/entry.js
+          test -f dist/ecosystem/index.html
+          test -f dist/assets/boostr-ecosystem/ecosystem.css
+          test -f dist/assets/boostr-ecosystem/ecosystem.js
+          grep -q '/manifest.webmanifest' dist/index.html
+          grep -q '/pwa-register.js' dist/index.html
+          grep -q 'apple-mobile-web-app-capable' dist/index.html
+          grep -q 'viewport-fit=cover' dist/index.html
+          grep -q 'id="choiceA"' dist/index.html
+          grep -q 'id="choiceB"' dist/index.html
+          grep -q 'id="questionStage"' dist/index.html
+          grep -q 'id="ecoChoiceA"' dist/ecosystem/index.html
+          grep -q 'id="systemMap"' dist/ecosystem/index.html

@@ -1,1 +1,121 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BOOSTR Ecosystem</title><link rel="icon" href="/assets/icons/09.-b-star-favicon.png"><link rel="stylesheet" href="/assets/boostr-mother/mother.css"></head><body><div class="ambient"></div><div class="compact-shell"><aside class="compact-side"><a class="brand" href="/home"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><span><strong>BOOSTR Labs</strong><small>Mother UI v0.2.8</small></span></a><nav class="side-nav"><a class="" href="/home">Home<span>/</span></a><a class="True" href="/ecosystem">Ecosystem<span>map</span></a><a class="" href="/manager">Manager OS<span>ops</span></a><a class="" href="/app">Client OS<span>app</span></a><a class="" href="/partner-dashboard">Partner OS<span>partner</span></a><a class="" href="/login">Login<span>auth</span></a><a class="" href="/audit">Audit<span>lead</span></a><a class="" href="/82store">82 Store<span>store</span></a><a class="" href="/portfolio">Portfolio<span>work</span></a></nav><div class="card glass"><b>Rule</b><p class="micro">BOOSTR UI is the system layer. Custom client pages stay custom.</p></div></aside><main class="compact-main"><section class="card glass"><span class="eyebrow">Ecosystem Map</span><h1>One system layer. Custom worlds around it.</h1><p class="micro">BOOSTR UI handles system routes. Custom UI remains for client-specific pages, stores, artists and dashboards.</p><div class="actions"><a class="btn primary" href="/login">Role Access</a></div></section><section class="grid" style="margin-top:14px"><a class="card span4" href="/manager"><span class="chip gold">System</span><h3>Manager OS</h3><p class="micro">Internal operations.</p></a><a class="card span4" href="/app"><span class="chip gold">System</span><h3>Client OS</h3><p class="micro">Client workspaces.</p></a><a class="card span4" href="/partner-dashboard"><span class="chip gold">System</span><h3>Partner OS</h3><p class="micro">Partner network.</p></a><a class="card span4" href="/audit"><span class="chip live">Entry</span><h3>Audit</h3><p class="micro">Guest lead capture.</p></a><a class="card span4" href="/82store"><span class="chip">Custom</span><h3>82 Store</h3><p class="micro">Client commerce UI.</p></a><a class="card span4" href="/jankodiorr"><span class="chip">Custom</span><h3>Smart Links</h3><p class="micro">Artist/client worlds.</p></a></section><footer class="footer">BOOSTR Labs</footer></main></div><nav class="mobile-tabs"><a class="" href="/manager">Manager</a><a class="" href="/app">Client</a><a class="" href="/partner-dashboard">Partner</a><a href="/audit">Audit</a><a class="" href="/login">Login</a></nav></body></html>
+<!doctype html>
+<html lang="es" data-eco-view="guide" data-session="loading">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#050506">
+  <meta name="color-scheme" content="dark">
+  <title>BOOSTR Ecosystem — Entiende cómo funciona</title>
+  <meta name="description" content="Explora cómo BOOSTR conecta clientes, pagos, operaciones, datos y herramientas en una sola experiencia.">
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="stylesheet" href="/assets/boostr-ecosystem/ecosystem.css?v=1.0.0">
+  <script src="/assets/boostr-mother/session-ui.js?v=0.9.0" defer></script>
+  <script src="/assets/boostr-ecosystem/ecosystem.js?v=1.0.0" defer></script>
+</head>
+<body class="boostr-ecosystem-page">
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <header class="eco-header">
+    <a class="eco-brand" href="/" aria-label="BOOSTR Labs">
+      <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
+    </a>
+    <div class="eco-header-actions">
+      <span class="session-chip" id="sessionChip" hidden data-i18n="sessionActive">Sesión activa</span>
+      <a class="access-link" id="accessLink" href="/login/" data-i18n="accessLink">Ya tengo acceso</a>
+      <div class="language-switch" role="group" data-i18n-aria-label="languageLabel" aria-label="Idioma">
+        <button type="button" data-language="es" aria-pressed="true">ES</button>
+        <button type="button" data-language="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="eco-shell">
+    <section class="eco-card" aria-labelledby="ecoQuestion">
+      <div class="eco-copy-column">
+        <div class="eco-progress-block">
+          <div class="eco-progress-meta">
+            <span id="ecoKicker">ECOSISTEMA BOOSTR</span>
+            <span id="stepCounter">01 / 02</span>
+          </div>
+          <div class="eco-progress-track"><span id="progressBar"></span></div>
+        </div>
+
+        <div class="guide-stage" id="guideStage" aria-live="polite">
+          <h1 id="ecoQuestion">¿Qué quieres entender primero?</h1>
+          <p id="ecoDescription">Dos decisiones son suficientes para mostrarte la parte correcta de BOOSTR.</p>
+
+          <div class="binary-grid" id="binaryGrid">
+            <button class="binary-option" id="ecoChoiceA" type="button" data-choice="a">
+              <span class="option-letter">A</span>
+              <span class="option-copy"><strong id="ecoChoiceATitle">Qué hace BOOSTR</strong><small id="ecoChoiceABody">Entender la función del sistema.</small></span>
+              <span class="option-arrow" aria-hidden="true">→</span>
+            </button>
+            <button class="binary-option" id="ecoChoiceB" type="button" data-choice="b">
+              <span class="option-letter">B</span>
+              <span class="option-copy"><strong id="ecoChoiceBTitle">Cómo conecta una operación</strong><small id="ecoChoiceBBody">Ver la lógica funcionando.</small></span>
+              <span class="option-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="result-stage" id="resultStage" hidden aria-live="polite">
+          <span class="result-label" data-i18n="resultLabel">TU MAPA BOOSTR</span>
+          <h1 id="resultTitle">BOOSTR conecta los puntos.</h1>
+          <p id="resultBody">Una sola capa organiza lo que hoy vive separado.</p>
+          <div class="result-actions">
+            <a class="primary-action" id="auditLink" href="/audit/?source=ecosystem" data-i18n="auditAction">Evaluar mi operación</a>
+            <a class="secondary-action" id="portfolioLink" href="/portfolio/?source=ecosystem" data-i18n="portfolioAction">Ver sistemas reales</a>
+          </div>
+        </div>
+
+        <div class="eco-bottom-actions">
+          <button class="back-button" id="backButton" type="button" hidden><span aria-hidden="true">←</span><span data-i18n="back">Volver</span></button>
+          <button class="reset-button" id="resetButton" type="button" hidden data-i18n="restart">Empezar de nuevo</button>
+        </div>
+      </div>
+
+      <div class="eco-map-column">
+        <div class="map-topline">
+          <span data-i18n="mapLabel">MAPA VIVO</span>
+          <span class="map-status"><i></i><b id="mapStatus" data-i18n="mapListening">ESCUCHANDO</b></span>
+        </div>
+
+        <div class="system-map" id="systemMap" data-map-state="idle">
+          <svg class="map-lines" viewBox="0 0 100 100" aria-hidden="true">
+            <line data-link="identity" x1="50" y1="50" x2="50" y2="10"></line>
+            <line data-link="clients" x1="50" y1="50" x2="15" y2="29"></line>
+            <line data-link="payments" x1="50" y1="50" x2="85" y2="29"></line>
+            <line data-link="operations" x1="50" y1="50" x2="15" y2="72"></line>
+            <line data-link="data" x1="50" y1="50" x2="85" y2="72"></line>
+            <line data-link="communication" x1="50" y1="50" x2="50" y2="91"></line>
+          </svg>
+
+          <div class="map-core" aria-label="BOOSTR">
+            <img src="/assets/icons/09.-b-star-favicon.png" alt="">
+            <span>BOOSTR</span>
+          </div>
+
+          <button class="map-node node-identity" type="button" data-module="identity"><span>01</span><strong data-i18n="moduleIdentity">Identidad</strong></button>
+          <button class="map-node node-clients" type="button" data-module="clients"><span>02</span><strong data-i18n="moduleClients">Clientes</strong></button>
+          <button class="map-node node-payments" type="button" data-module="payments"><span>03</span><strong data-i18n="modulePayments">Pagos</strong></button>
+          <button class="map-node node-operations" type="button" data-module="operations"><span>04</span><strong data-i18n="moduleOperations">Operación</strong></button>
+          <button class="map-node node-data" type="button" data-module="data"><span>05</span><strong data-i18n="moduleData">Datos</strong></button>
+          <button class="map-node node-communication" type="button" data-module="communication"><span>06</span><strong data-i18n="moduleCommunication">Comunicación</strong></button>
+        </div>
+
+        <div class="module-detail" id="moduleDetail">
+          <span id="moduleDetailLabel" data-i18n="detailLabel">SELECCIONA UN PUNTO</span>
+          <p id="moduleDetailText" data-i18n="detailIdle">BOOSTR te mostrará cómo se relaciona cada parte de la operación.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="eco-footer">
+      <span>BOOSTR Labs</span>
+      <p data-i18n="principle">Primero BOOSTR entiende. Después BOOSTR configura.</p>
+    </footer>
+  </main>
+</body>
+</html>

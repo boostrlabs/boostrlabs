@@ -1,0 +1,46 @@
+{
+  "id": "/?source=pwa",
+  "name": "BOOSTR Labs",
+  "short_name": "BOOSTR",
+  "description": "Acceso a BOOSTR Labs y BOOSTR Audit para descubrir qué necesita cada operación.",
+  "lang": "es",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#050607",
+  "theme_color": "#050607",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/assets/icons/09.-b-star-favicon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/09.-b-star-favicon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Iniciar sesión",
+      "short_name": "Login",
+      "url": "/login/?source=pwa-shortcut"
+    },
+    {
+      "name": "BOOSTR Audit",
+      "short_name": "Audit",
+      "url": "/audit/?source=pwa-shortcut"
+    },
+    {
+      "name": "Explorar BOOSTR",
+      "short_name": "Explorar",
+      "url": "/portfolio/?source=pwa-shortcut"
+    }
+  ]
+}
