@@ -1,5 +1,6 @@
 import {
   authCanSeeAll,
+  canAccessModule,
   clean,
   defaultWorkspaceId,
   json,
@@ -16,10 +17,13 @@ function bucket(env) {
 
 function cloudError(error, stage) {
   console.error(`BOOSTR Cloud failed during ${stage}:`, error);
-  return jsonError("cloud_operation_failed", "No se pudo completar la operación de BOOSTR Cloud.", 500, {
-    stage,
-    detail: clean(error?.message || error, 500)
-  });
+  return jsonError(
+    "cloud_operation_failed",
+    "No se pudo completar la operación de BOOSTR Cloud.",
+    500,
+    { stage, detail: clean(error?.message || error, 500) },
+    { "Content-Type": "application/json; charset=utf-8" }
+  );
 }
 
 async function ensureCloudSchema(env) {
@@ -64,6 +68,7 @@ async function ensureCloudSchema(env) {
   `).run();
 
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace ON workspace_files(workspace_id, created_at DESC)").run();
+  await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_workspace_files_related ON workspace_files(related_type, related_id)").run();
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status)").run();
 }
 
@@ -136,15 +141,30 @@ async function findRecordByKey(env, key) {
   return (candidates.results || []).find((item) => parseMetadata(item).r2_key === key) || null;
 }
 
-async function canReadRecord(auth, record) {
+async function canReadRecord(auth, env, record) {
   if (!record?.workspace_id) return false;
   if (authCanSeeAll(auth)) return true;
   const workspaceAccess = requireWorkspaceAccess(auth, record.workspace_id);
   if (!workspaceAccess.ok) return false;
   if (record.uploaded_by_user_id === auth.user.id) return true;
+
   const metadata = parseMetadata(record);
   const visibility = clean(record.visibility || metadata.visibility || "workspace", 30).toLowerCase();
-  return visibility === "workspace";
+  if (visibility === "private") return false;
+  if (visibility === "workspace") return true;
+  if (visibility === "role") {
+    const allowed = Array.isArray(metadata.allowed_roles) ? metadata.allowed_roles : [];
+    return auth.roles?.some((role) => allowed.includes(role)) || false;
+  }
+  if (visibility === "users") {
+    const allowed = Array.isArray(metadata.allowed_user_ids) ? metadata.allowed_user_ids : [];
+    return allowed.includes(auth.user.id);
+  }
+  if (visibility === "module") {
+    const moduleSlug = clean(metadata.module_slug || record.related_id, 120);
+    return moduleSlug ? canAccessModule(env, record.workspace_id, moduleSlug) : false;
+  }
+  return false;
 }
 
 export async function onRequestOptions() {
@@ -167,7 +187,8 @@ export async function onRequestGet({ request, env }) {
       stage = "asset_lookup";
       const record = await findRecordByKey(env, key);
       if (!record?.id) return jsonError("asset_not_found", "Asset not found.", 404);
-      if (!(await canReadRecord(auth, record))) return jsonError("cloud_access_denied", "No tienes acceso a este archivo.", 403);
+      if (!(await canReadRecord(auth, env, record))) return jsonError("cloud_access_denied", "No tienes acceso a este archivo.", 403);
+      stage = "asset_read";
       const store = bucket(env);
       if (!store) return jsonError("r2_missing", "Cloud storage is not configured.", 503);
       const object = await store.get(key);
@@ -179,6 +200,7 @@ export async function onRequestGet({ request, env }) {
       headers.set("x-content-type-options", "nosniff");
       headers.set("content-disposition", "inline");
       if (!headers.get("content-type")) headers.set("content-type", "application/octet-stream");
+      if (object.size) headers.set("content-length", String(object.size));
       return new Response(object.body, { headers });
     }
 
@@ -187,12 +209,14 @@ export async function onRequestGet({ request, env }) {
     if (!workspace.ok) return workspace.response;
     const q = clean(url.searchParams.get("q"), 120).toLowerCase().replace(/[%_]/g, "");
     const category = clean(url.searchParams.get("category"), 80);
+    const moduleSlug = clean(url.searchParams.get("module_slug"), 120);
     const filters = ["workspace_id = ?", "status = 'active'", "related_type = 'cloud_asset'"];
     const binds = [workspace.workspace_id];
     if (q) {
       filters.push("lower(title) LIKE ?");
       binds.push(`%${q}%`);
     }
+    stage = "list";
     const result = await env.DB.prepare(
       `SELECT id, workspace_id, uploaded_by_user_id, related_id, title, file_url, file_type, visibility, metadata_json, created_at, updated_at
        FROM workspace_files WHERE ${filters.join(" AND ")} ORDER BY created_at DESC LIMIT 400`
@@ -201,7 +225,8 @@ export async function onRequestGet({ request, env }) {
     for (const item of result.results || []) {
       const metadata = parseMetadata(item);
       if (category && metadata.category !== category) continue;
-      if (await canReadRecord(auth, item)) visible.push({ ...item, metadata });
+      if (moduleSlug && clean(metadata.module_slug || item.related_id, 120) !== moduleSlug) continue;
+      if (await canReadRecord(auth, env, item)) visible.push({ ...item, metadata });
     }
     return json({ ok: true, workspace_id: workspace.workspace_id, assets: visible.slice(0, 200) });
   } catch (error) {
