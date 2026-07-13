@@ -12,6 +12,15 @@ body {
   padding-left: var(--boostr-safe-left);
   -webkit-tap-highlight-color: transparent;
 }
+
+body.boostr-entry {
+  padding: 0;
+}
+body.boostr-entry .entry-shell {
+  padding-left: max(12px, var(--boostr-safe-left));
+  padding-right: max(12px, var(--boostr-safe-right));
+}
+
 .boostr-standalone body { min-height: 100dvh; overscroll-behavior-y: none; }
 .boostr-standalone .mobile-tabs,
 .boostr-standalone .bottom-tabs { padding-bottom: max(10px, var(--boostr-safe-bottom)); }
