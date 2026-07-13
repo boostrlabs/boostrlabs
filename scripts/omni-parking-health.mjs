@@ -32,7 +32,9 @@ const htmlFiles = [
 
 const supportFiles = [
   "scripts/omni-parking-live-smoke.mjs",
-  "public/assets/omni-jr/omni-jr-logo-black.svg"
+  "public/assets/omni-jr/omni-jr-logo-black.svg",
+  "public/assets/omni-jr/vehicle-sedan.svg",
+  "public/assets/omni-jr/vehicle-truck.svg"
 ];
 const failures = [];
 
@@ -64,14 +66,16 @@ const checks = {
   "functions/api/public/omni-jr/plan/[plan].js": ["omni-self-heal-v3", "/omni-jr/checkout-v3/?id=", "ensureOmniPlan"],
   "functions/api/health/omni-jr.js": ["omni-self-heal-v3", "/omni-jr/checkout-v3/?id=", "workspace_slug"],
   "functions/api/smart-parking/provision.js": ["omni-self-heal-v3", "/omni-jr/checkout-v3/?id=", "ensureOmniPlan"],
-  "functions/parking/omni-jr/[plan].js": ["/omni-jr/checkout-v3/?id=", "ensureOmniPlan", "plan="],
+  "functions/parking/omni-jr/[plan].js": ["new URL(\"/omni-jr/checkout-v3/\"", "target.searchParams.set(\"id\"", "target.searchParams.set(\"plan\"", "target.searchParams.set(\"plate\"", "cleanPlate"],
   "functions/parking/omni-jr/ticket/[token].js": ["PARKING ACTIVO", "/api/public/qr", "omni-jr-logo-black.svg"],
   "functions/pay/[id].js": ["/omni-jr/checkout-v3/", "omniPlanKey", "activeLink", "target.searchParams.set(\"plan\", plan)"],
-  "public/parking/omni-jr/index.html": ["Sedan / Sport / Coupe", "Truck / Big SUV", "$150 / mes"],
+  "public/parking/omni-jr/index.html": ["data-build=\"omni-jr-public-v3\"", "vehicle-sedan.svg", "vehicle-truck.svg", "data-plan=\"standard\"", "data-plan=\"large\"", "Continuar al pago", "Cash App", "$150 / mes"],
   "public/parking/omni-jr/qr/index.html": ["$20", "$25", "$150 / MES", "/api/public/qr"],
-  "public/omni-jr/checkout-v3/index.html": ["data-build=\"omni-self-heal-v3\"", "repairPlan", "/api/public/omni-jr/plan/", "Powered by BOOSTR Labs", "plate:$('plate')", "initEmbeddedCheckout"],
+  "public/omni-jr/checkout-v3/index.html": ["data-build=\"omni-self-heal-v3\"", "repairPlan", "/api/public/omni-jr/plan/", "Powered by BOOSTR Labs", "plate:$(\'plate\')", "initEmbeddedCheckout", "initialPlate"],
   "scripts/omni-parking-live-smoke.mjs": ["omni-self-heal-v3", "/api/health/omni-jr", "/omni-jr/checkout-v3", "Link no disponible"],
-  "public/assets/omni-jr/omni-jr-logo-black.svg": ["OMNI JR Parking — official logo", "viewBox=\"0 0 1254 1254\""]
+  "public/assets/omni-jr/omni-jr-logo-black.svg": ["OMNI JR Parking — official logo", "viewBox=\"0 0 1254 1254\""],
+  "public/assets/omni-jr/vehicle-sedan.svg": ["Modern silver sedan", "linearGradient", "circle cx=\"178\""],
+  "public/assets/omni-jr/vehicle-truck.svg": ["Modern silver pickup truck", "linearGradient", "circle cx=\"171\""]
 };
 
 for (const [file, markers] of Object.entries(checks)) {
