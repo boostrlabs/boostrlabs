@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" role="img" aria-labelledby="title desc">
+<title id="title">Sedan</title><desc id="desc">Modern silver sedan for OMNI JR Parking</desc>
+<defs><linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".52" stop-color="#e7e8e8"/><stop offset="1" stop-color="#bfc2c4"/></linearGradient><linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1b2227"/><stop offset="1" stop-color="#5f696e"/></linearGradient><filter id="shadow" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="10"/></filter></defs>
+<ellipse cx="360" cy="274" rx="298" ry="19" fill="#000" opacity=".13" filter="url(#shadow)"/>
+<g stroke="#969a9c" stroke-width="3" stroke-linejoin="round">
+<path fill="url(#body)" d="M52 218c5-34 24-57 58-68l112-25 74-67c19-17 43-25 69-25h105c41 0 75 12 103 41l55 58 54 13c25 6 38 22 40 48l2 30c1 18-9 29-27 31l-48 5H101c-34 0-51-14-49-41Z"/>
+<path fill="url(#glass)" stroke="#202629" d="m246 121 67-60c13-12 29-17 47-17h108c32 0 57 9 81 31l49 50-352-4Z"/>
+<path fill="#202629" stroke="none" d="m406 44 8 78h13l-5-78z" opacity=".9"/>
+<path fill="#f5f6f6" d="M56 193h75l18-30-42 8c-27 6-44 14-51 22Z"/>
+<path fill="#111619" stroke="#252a2d" d="M534 148h126l27 9-18 27-122-3z"/>
+<path fill="#e9ecec" d="M119 229h470l-14 27H116z"/>
+<path fill="none" d="M240 128v97M424 127v99M583 138l-7 88" opacity=".55"/>
+<path fill="#ddd" d="M333 145h46a8 8 0 0 1 0 16h-46a8 8 0 0 1 0-16Zm184 2h42a7 7 0 0 1 0 14h-42a7 7 0 0 1 0-14Z"/>
+</g>
+<g><circle cx="178" cy="242" r="55" fill="#171a1c"/><circle cx="178" cy="242" r="36" fill="#d7d9da" stroke="#6e7477" stroke-width="4"/><circle cx="178" cy="242" r="9" fill="#555b5e"/><g stroke="#6b7174" stroke-width="6"><path d="m178 207v70M143 242h70M153 217l50 50M203 217l-50 50"/></g><circle cx="571" cy="242" r="55" fill="#171a1c"/><circle cx="571" cy="242" r="36" fill="#d7d9da" stroke="#6e7477" stroke-width="4"/><circle cx="571" cy="242" r="9" fill="#555b5e"/><g stroke="#6b7174" stroke-width="6"><path d="m571 207v70M536 242h70M546 217l50 50M596 217l-50 50"/></g></g>
+<path d="M632 193h56" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".8"/><path d="M65 205h28" stroke="#d73e3e" stroke-width="9" stroke-linecap="round"/>
+</svg>
