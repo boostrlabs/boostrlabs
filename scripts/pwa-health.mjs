@@ -67,6 +67,7 @@ if (!headers.includes('/api/*') || !headers.includes('no-store')) failures.push(
 if (!viteConfig.includes("href: '/manifest.webmanifest'")) failures.push('manifest is not injected into the root page');
 if (!viteConfig.includes("src: '/pwa-register.js'")) failures.push('PWA registration script is not injected into the root page');
 if (!viteConfig.includes('apple-mobile-web-app-capable')) failures.push('Apple standalone metadata is missing');
+if (!viteConfig.includes('viewport-fit=cover')) failures.push('iPhone viewport safe-area support is missing');
 
 if (failures.length) {
   console.error('BOOSTR PWA HEALTH: FAILED');
