@@ -1,5 +1,6 @@
 import { clean, json, jsonError, now, requireDb } from "../../../_lib/api.js";
 import { syncInteractiveReceipt } from "../../../_lib/payment-receipts.js";
+import { publicParkingTicket, syncParkingSession } from "../../../_lib/smart-parking.js";
 import { ensureStripeSchema, getStripeCredentials, recordStripeActivity, stripeRequest } from "../../../_lib/stripe.js";
 
 export async function onRequestOptions() {
@@ -48,12 +49,13 @@ export async function onRequestGet({ request, env }) {
     }
 
     let document = null;
+    let parkingSession = null;
     if (status === "paid") {
-      try {
-        document = await syncInteractiveReceipt(env, existing.id, "paid");
-      } catch {}
+      try { document = await syncInteractiveReceipt(env, existing.id, "paid"); } catch {}
+      try { parkingSession = await syncParkingSession(env, existing.id, "paid"); } catch (error) { console.error("Smart Parking session failed", error); }
     }
 
+    const origin = new URL(request.url).origin;
     return json({
       ok: true,
       payment: {
@@ -70,7 +72,8 @@ export async function onRequestGet({ request, env }) {
         document_number: document.document_number,
         public_url: document.public_url,
         status: document.status
-      } : null
+      } : null,
+      parking_ticket: parkingSession ? publicParkingTicket(parkingSession, origin) : null
     });
   } catch (error) {
     return jsonError(error.code || "stripe_session_failed", clean(error.message, 500) || "No se pudo verificar el pago.", error.status || 502);
