@@ -18,9 +18,11 @@ if (!root.includes('/app/?source=pwa')) failures.push('Root page does not redire
 if (!sessionUi.includes('redirectInstalledLaunch')) failures.push('Shared session UI does not repair legacy installed PWA entry routes');
 if (!sessionUi.includes('/manifest.webmanifest')) failures.push('Shared session UI does not expose the PWA manifest');
 
-for (const marker of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EXOTIC', 'SERVICIOS CONECTADOS', 'Checkout invitado']) {
+for (const marker of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EXOTIC', 'SERVICIOS CONECTADOS']) {
   if (!app.includes(marker)) failures.push(`BOOSTR App gateway missing ${marker}`);
 }
+if (!/Checkout invitado|guest checkout/i.test(app)) failures.push('BOOSTR App gateway missing guest checkout rule');
+
 for (const marker of ['id="accessPanel"', 'id="memberPanel" hidden', 'roleContext(session)', '/accept-invite/']) {
   if (!app.includes(marker)) failures.push(`BOOSTR App persona router missing marker: ${marker}`);
 }
