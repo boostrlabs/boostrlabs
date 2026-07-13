@@ -5,6 +5,7 @@ on:
     branches:
       - pwa-pilot
     paths:
+      - 'index.html'
       - 'public/manifest.webmanifest'
       - 'public/service-worker.js'
       - 'public/pwa-register.js'
@@ -18,6 +19,7 @@ on:
       - '.github/workflows/pwa-health.yml'
   pull_request:
     paths:
+      - 'index.html'
       - 'public/manifest.webmanifest'
       - 'public/service-worker.js'
       - 'public/pwa-register.js'
@@ -55,7 +57,7 @@ jobs:
       - run: pnpm run health:pwa
       - run: pnpm run stability:check
       - run: pnpm run build
-      - name: Verify built PWA assets
+      - name: Verify built PWA assets and gateway
         run: |
           test -f dist/manifest.webmanifest
           test -f dist/service-worker.js
@@ -66,3 +68,7 @@ jobs:
           grep -q '/pwa-register.js' dist/index.html
           grep -q 'apple-mobile-web-app-capable' dist/index.html
           grep -q 'viewport-fit=cover' dist/index.html
+          grep -q '¿Qué necesitas hacer hoy?' dist/index.html
+          grep -q 'href="/audit/"' dist/index.html
+          grep -q 'href="/login/"' dist/index.html
+          grep -q 'href="/accept-invite/"' dist/index.html
