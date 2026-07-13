@@ -6,6 +6,7 @@ on:
       - pwa-pilot
     paths:
       - 'index.html'
+      - 'public/accept-invite/index.html'
       - 'public/manifest.webmanifest'
       - 'public/service-worker.js'
       - 'public/pwa-register.js'
@@ -20,6 +21,7 @@ on:
   pull_request:
     paths:
       - 'index.html'
+      - 'public/accept-invite/index.html'
       - 'public/manifest.webmanifest'
       - 'public/service-worker.js'
       - 'public/pwa-register.js'
@@ -57,18 +59,23 @@ jobs:
       - run: pnpm run health:pwa
       - run: pnpm run stability:check
       - run: pnpm run build
-      - name: Verify built PWA assets and gateway
+      - name: Verify built PWA assets and entry flows
         run: |
           test -f dist/manifest.webmanifest
           test -f dist/service-worker.js
           test -f dist/pwa-register.js
           test -f dist/pwa.css
           test -f dist/offline.html
+          test -f dist/accept-invite/index.html
           grep -q '/manifest.webmanifest' dist/index.html
           grep -q '/pwa-register.js' dist/index.html
           grep -q 'apple-mobile-web-app-capable' dist/index.html
           grep -q 'viewport-fit=cover' dist/index.html
-          grep -q '¿Qué necesitas hacer hoy?' dist/index.html
+          grep -q 'Construimos el sistema operativo de tu negocio.' dist/index.html
+          grep -q 'Descubre qué necesita tu negocio.' dist/index.html
+          grep -q '¿Ya tienes acceso?' dist/index.html
           grep -q 'href="/audit/"' dist/index.html
           grep -q 'href="/login/"' dist/index.html
           grep -q 'href="/accept-invite/"' dist/index.html
+          grep -q 'Tu espacio BOOSTR está listo.' dist/accept-invite/index.html
+          grep -q 'No necesitas ingresar información de pago.' dist/accept-invite/index.html
