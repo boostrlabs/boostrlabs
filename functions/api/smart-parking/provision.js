@@ -66,26 +66,26 @@ export async function onRequestPost({ request, env }) {
 
     return json({
       ok: true,
-      build: "omni-self-heal-v2",
+      build: "omni-self-heal-v3",
       module: "BOOSTR Smart Parking",
       operator: "OMNI JR Parking",
       workspace,
       payment_links: {
         standard: {
           id: provisioned.standard.link.id,
-          public_url: `/omni-jr/checkout/?id=${encodeURIComponent(provisioned.standard.link.id)}&plan=standard`,
+          public_url: `/omni-jr/checkout-v3/?id=${encodeURIComponent(provisioned.standard.link.id)}&plan=standard`,
           stable_url: "/parking/omni-jr/standard",
           amount_cents: OMNI_PLANS.standard.amount
         },
         large: {
           id: provisioned.large.link.id,
-          public_url: `/omni-jr/checkout/?id=${encodeURIComponent(provisioned.large.link.id)}&plan=large`,
+          public_url: `/omni-jr/checkout-v3/?id=${encodeURIComponent(provisioned.large.link.id)}&plan=large`,
           stable_url: "/parking/omni-jr/large",
           amount_cents: OMNI_PLANS.large.amount
         },
         monthly: {
           id: provisioned.monthly.link.id,
-          public_url: `/omni-jr/checkout/?id=${encodeURIComponent(provisioned.monthly.link.id)}&plan=monthly`,
+          public_url: `/omni-jr/checkout-v3/?id=${encodeURIComponent(provisioned.monthly.link.id)}&plan=monthly`,
           stable_url: "/parking/omni-jr/monthly",
           amount_cents: OMNI_PLANS.monthly.amount
         }
