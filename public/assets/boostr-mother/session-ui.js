@@ -2,6 +2,52 @@
   const token = localStorage.getItem('boostr_auth_token') || '';
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
+  function ensurePwaMetadata() {
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const manifest = document.createElement('link');
+      manifest.rel = 'manifest';
+      manifest.href = '/manifest.webmanifest';
+      document.head.appendChild(manifest);
+    }
+
+    const metas = [
+      ['apple-mobile-web-app-capable', 'yes'],
+      ['apple-mobile-web-app-status-bar-style', 'black-translucent'],
+      ['apple-mobile-web-app-title', 'BOOSTR']
+    ];
+
+    metas.forEach(([name, content]) => {
+      if (document.querySelector(`meta[name="${name}"]`)) return;
+      const meta = document.createElement('meta');
+      meta.name = name;
+      meta.content = content;
+      document.head.appendChild(meta);
+    });
+  }
+
+  function redirectInstalledLaunch() {
+    const standalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (!standalone) return false;
+
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    const landingPaths = new Set(['/', '/home', '/welcome', '/start']);
+    const authenticatedEntryPaths = new Set(['/login', '/signup']);
+    const externalOrColdEntry = !document.referrer || (() => {
+      try { return new URL(document.referrer).origin !== window.location.origin; }
+      catch { return true; }
+    })();
+
+    if (!externalOrColdEntry) return false;
+    if (landingPaths.has(path) || (token && authenticatedEntryPaths.has(path))) {
+      window.location.replace('/app/?source=pwa');
+      return true;
+    }
+    return false;
+  }
+
+  ensurePwaMetadata();
+  if (redirectInstalledLaunch()) return;
+
   function disableWrongAutofill(root = document) {
     root.querySelectorAll('input, textarea, select').forEach((field) => {
       if (field.closest('#loginForm, #form, [data-auth-form]')) return;
