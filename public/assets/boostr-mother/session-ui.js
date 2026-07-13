@@ -2,6 +2,52 @@
   const token = localStorage.getItem('boostr_auth_token') || '';
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
+  function ensurePwaMetadata() {
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const manifest = document.createElement('link');
+      manifest.rel = 'manifest';
+      manifest.href = '/manifest.webmanifest';
+      document.head.appendChild(manifest);
+    }
+
+    const metas = [
+      ['apple-mobile-web-app-capable', 'yes'],
+      ['apple-mobile-web-app-status-bar-style', 'black-translucent'],
+      ['apple-mobile-web-app-title', 'BOOSTR']
+    ];
+
+    metas.forEach(([name, content]) => {
+      if (document.querySelector(`meta[name="${name}"]`)) return;
+      const meta = document.createElement('meta');
+      meta.name = name;
+      meta.content = content;
+      document.head.appendChild(meta);
+    });
+  }
+
+  function redirectInstalledLaunch() {
+    const standalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (!standalone) return false;
+
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    const landingPaths = new Set(['/', '/home', '/welcome', '/start']);
+    const authenticatedEntryPaths = new Set(['/login', '/signup']);
+    const externalOrColdEntry = !document.referrer || (() => {
+      try { return new URL(document.referrer).origin !== window.location.origin; }
+      catch { return true; }
+    })();
+
+    if (!externalOrColdEntry) return false;
+    if (landingPaths.has(path) || (token && authenticatedEntryPaths.has(path))) {
+      window.location.replace('/app/?source=pwa');
+      return true;
+    }
+    return false;
+  }
+
+  ensurePwaMetadata();
+  if (redirectInstalledLaunch()) return;
+
   function disableWrongAutofill(root = document) {
     root.querySelectorAll('input, textarea, select').forEach((field) => {
       if (field.closest('#loginForm, #form, [data-auth-form]')) return;
@@ -12,14 +58,17 @@
   }
 
   function dashboardFor(session) {
-    if (session?.redirect) return session.redirect;
     const email = (session?.user?.email || '').toLowerCase();
-    if (email === 'janko@boostrlabs.com') return '/app/janko/?v=0.8.0';
-    if (email === 'johanka@boostrlabs.com') return '/app/johanka/?v=0.8.0';
-    if ((session?.roles || []).includes('admin')) return '/admin/';
-    if ((session?.roles || []).includes('manager')) return '/manager/';
-    if ((session?.roles || []).includes('partner')) return '/partner-dashboard/';
-    return '/app/';
+    if (email === 'janko@boostrlabs.com') return '/app/janko/?v=1.0.0';
+    if (email === 'johanka@boostrlabs.com') return '/app/johanka/?v=1.0.0';
+    const roles = [session?.role, session?.user?.role, session?.active_workspace?.role, ...(session?.roles || [])]
+      .filter(Boolean)
+      .map((value) => String(value).toLowerCase());
+    if (roles.includes('admin')) return '/admin/';
+    if (roles.includes('manager')) return '/manager/';
+    if (roles.some((role) => ['partner', 'owner', 'business_owner'].includes(role))) return '/partner-dashboard/';
+    if (session?.redirect && !['/app', '/app/'].includes(session.redirect)) return session.redirect;
+    return '/app/workspace/';
   }
 
   function paintSession(session) {
@@ -76,7 +125,7 @@
         username: session.username || session.user?.name,
         role: session.role,
         workspace: session.active_workspace?.name,
-        redirect: session.redirect,
+        redirect: dashboardFor(session),
         createdAt: new Date().toISOString()
       }));
       paintSession(session);

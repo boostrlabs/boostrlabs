@@ -1,0 +1,43 @@
+{
+  "version": "0.4",
+  "storage": {
+    "provider": "cloudflare-r2",
+    "binding": "BOOSTR_ASSETS",
+    "bucket": "boostr-labs-assets-prod",
+    "base_key": "public/3dmodels/"
+  },
+  "models": [
+    {
+      "id": "glizzy",
+      "title": "GS Glizzy",
+      "filename": "gs_glizzy.ply",
+      "format": "ply",
+      "route": "/3d/glizzy/",
+      "status": "active"
+    },
+    {
+      "id": "malta",
+      "title": "GS Malta",
+      "filename": "gs_malta.ply",
+      "format": "ply",
+      "route": "/3d/malta/",
+      "status": "active"
+    },
+    {
+      "id": "johanka-ply",
+      "title": "Johanka 3D · PLY",
+      "filename_candidates": ["prueba.ply", "johanka.ply", "johanka_3d.ply"],
+      "format": "ply",
+      "route": "/3d/johanka-ply/",
+      "status": "discover_from_r2"
+    },
+    {
+      "id": "johanka-luma",
+      "title": "Johanka 3D · Luma",
+      "filename_candidates": ["unreal engine johanka.luma", "unreal_engine_johanka.luma", "johanka.luma"],
+      "format": "luma",
+      "route": "/3d/johanka-luma/",
+      "status": "discover_from_r2"
+    }
+  ]
+}

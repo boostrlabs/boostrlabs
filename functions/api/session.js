@@ -21,8 +21,8 @@ export async function onRequestOptions() {
 
 function resolveDashboard(user, memberships = []) {
   const email = clean(user?.email, 180).toLowerCase();
-  if (email === "janko@boostrlabs.com") return "/app/janko/?v=0.8.2";
-  if (email === "johanka@boostrlabs.com") return "/app/johanka/?v=0.8.2";
+  if (email === "janko@boostrlabs.com") return "/app/janko/";
+  if (email === "johanka@boostrlabs.com") return "/app/johanka/";
 
   const roles = new Set([user?.role, ...memberships.map((item) => item.role)].filter(Boolean));
   if (roles.has("admin")) return "/admin/";
@@ -31,9 +31,70 @@ function resolveDashboard(user, memberships = []) {
   return "/app/";
 }
 
+async function resolveActiveWorkspace(env, auth) {
+  let activeWorkspaceId = clean(auth.active_workspace_id, 120) || null;
+  let membership = auth.memberships.find((item) => item.workspace_id === activeWorkspaceId) || null;
+  let workspace = membership
+    ? {
+        id: membership.workspace_id,
+        name: membership.workspace_name,
+        type: membership.workspace_type,
+        slug: membership.workspace_slug
+      }
+    : null;
+
+  if (activeWorkspaceId && !workspace) {
+    const canSeeAll = authCanSeeAll(auth);
+    const row = await env.DB.prepare(
+      "SELECT id, name, type, slug, status FROM workspaces WHERE id = ? LIMIT 1"
+    ).bind(activeWorkspaceId).first();
+
+    if (row?.id && (canSeeAll || auth.memberships.some((item) => item.workspace_id === row.id))) {
+      workspace = row;
+    } else {
+      activeWorkspaceId = auth.memberships[0]?.workspace_id || null;
+      membership = auth.memberships.find((item) => item.workspace_id === activeWorkspaceId) || null;
+      workspace = membership
+        ? {
+            id: membership.workspace_id,
+            name: membership.workspace_name,
+            type: membership.workspace_type,
+            slug: membership.workspace_slug
+          }
+        : null;
+      if (auth.session?.id) {
+        await env.DB.prepare(
+          "UPDATE sessions SET active_workspace_id = ?, updated_at = ? WHERE id = ?"
+        ).bind(activeWorkspaceId, now(), auth.session.id).run();
+      }
+    }
+  }
+
+  if (!activeWorkspaceId && auth.memberships[0]?.workspace_id) {
+    activeWorkspaceId = auth.memberships[0].workspace_id;
+    membership = auth.memberships[0];
+    workspace = {
+      id: membership.workspace_id,
+      name: membership.workspace_name,
+      type: membership.workspace_type,
+      slug: membership.workspace_slug
+    };
+    if (auth.session?.id) {
+      await env.DB.prepare(
+        "UPDATE sessions SET active_workspace_id = ?, updated_at = ? WHERE id = ?"
+      ).bind(activeWorkspaceId, now(), auth.session.id).run();
+    }
+  }
+
+  return { activeWorkspaceId, membership, workspace };
+}
+
 async function sessionPayload(env, auth) {
-  const activeWorkspaceId = auth.active_workspace_id;
-  const activeMembership = auth.memberships.find((item) => item.workspace_id === activeWorkspaceId) || null;
+  const resolved = await resolveActiveWorkspace(env, auth);
+  const activeWorkspaceId = resolved.activeWorkspaceId;
+  const activeMembership = resolved.membership;
+  const activeWorkspace = resolved.workspace;
+
   const moduleQuery = activeWorkspaceId
     ? env.DB.prepare(
         `SELECT modules.slug, modules.name, modules.category,
@@ -51,21 +112,22 @@ async function sessionPayload(env, auth) {
       );
 
   const modules = await moduleQuery.all();
+  const managerRole = auth.roles.includes("admin") || auth.roles.includes("manager");
   const personas = activeWorkspaceId
     ? await env.DB.prepare(
         `SELECT id, workspace_id, user_id, persona_type, display_name, status, metadata_json, created_at, updated_at
          FROM personas
          WHERE workspace_id = ?
-           AND (user_id = ? OR ? IN ('admin', 'manager'))
+           AND (user_id = ? OR ? = 1)
          ORDER BY created_at ASC`
       )
-        .bind(activeWorkspaceId, auth.user.id, activeMembership?.role || auth.roles[0] || auth.user.role)
+        .bind(activeWorkspaceId, auth.user.id, managerRole ? 1 : 0)
         .all()
     : { results: [] };
 
   return {
     user: auth.user,
-    role: activeMembership?.role || auth.roles[0] || auth.user.role,
+    role: activeMembership?.role || auth.user.role || auth.roles[0] || null,
     roles: auth.roles,
     workspaces: auth.memberships.map((item) => ({
       id: item.workspace_id,
@@ -74,13 +136,13 @@ async function sessionPayload(env, auth) {
       slug: item.workspace_slug,
       role: item.role
     })),
-    active_workspace: activeWorkspaceId
+    active_workspace: activeWorkspaceId && activeWorkspace
       ? {
           id: activeWorkspaceId,
-          name: activeMembership?.workspace_name || null,
-          type: activeMembership?.workspace_type || null,
-          slug: activeMembership?.workspace_slug || null,
-          role: activeMembership?.role || auth.user.role
+          name: activeWorkspace.name || null,
+          type: activeWorkspace.type || null,
+          slug: activeWorkspace.slug || null,
+          role: activeMembership?.role || auth.user.role || auth.roles[0] || null
         }
       : null,
     personas: personas.results || [],
@@ -155,9 +217,10 @@ export async function onRequestPost({ request, env }) {
     `SELECT workspace_members.workspace_id, workspace_members.role, workspace_members.status,
             workspaces.name AS workspace_name, workspaces.type AS workspace_type, workspaces.slug AS workspace_slug
      FROM workspace_members
-     LEFT JOIN workspaces ON workspaces.id = workspace_members.workspace_id
+     JOIN workspaces ON workspaces.id = workspace_members.workspace_id
      WHERE workspace_members.user_id = ?
        AND workspace_members.status = 'active'
+       AND workspaces.status = 'active'
      ORDER BY workspace_members.created_at ASC`
   )
     .bind(user.id)
@@ -173,7 +236,7 @@ export async function onRequestPost({ request, env }) {
     if (!allowed) return jsonError("workspace_access_denied", "Workspace access denied.", 403);
   }
   if (requestedWorkspaceId && authCanSeeAll(authPreview)) {
-    const workspace = await env.DB.prepare("SELECT id FROM workspaces WHERE id = ? LIMIT 1").bind(requestedWorkspaceId).first();
+    const workspace = await env.DB.prepare("SELECT id FROM workspaces WHERE id = ? AND status = 'active' LIMIT 1").bind(requestedWorkspaceId).first();
     if (!workspace?.id) return jsonError("workspace_not_found", "Workspace not found.", 404);
   }
 

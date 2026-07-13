@@ -1,0 +1,32 @@
+import { readFileSync } from 'node:fs';
+const fail=[];
+const read=p=>readFileSync(p,'utf8');
+const manifest=JSON.parse(read('public/manifest.webmanifest'));
+const root=read('index.html');
+const app=read('public/app/index.html');
+const login=read('public/login/index.html');
+const workspace=read('public/app/workspace/index.html');
+const middleware=read('functions/_middleware.js');
+const shell=read('public/assets/boostr-mother/production-shell.js');
+const sessionUi=read('public/assets/boostr-mother/session-ui.js');
+const need=(source,markers,label)=>markers.forEach(m=>{if(!source.includes(m))fail.push(`${label}: ${m}`)});
+const forbid=(source,markers,label)=>markers.forEach(m=>{if(source.includes(m))fail.push(`${label}: ${m}`)});
+if(manifest.start_url!=='/app/?source=pwa')fail.push('manifest start_url');
+if(manifest.scope!=='/')fail.push('manifest scope');
+if(manifest.display!=='standalone')fail.push('manifest display');
+need(root,['(display-mode: standalone)',"const target = standalone ? '/app/?source=pwa' : '/app/'",'window.location.replace(target)'],'root');
+need(sessionUi,['redirectInstalledLaunch','/manifest.webmanifest'],'session ui');
+need(app,['class="app"','/assets/logos/boostr-logo-nav.png','/parking/omni-jr/','🍽️','🚘','🏎️','id="accessPanel"','id="memberPanel" hidden',"fetch('/api/session'",'maximum-scale=1','user-scalable=no',"addEventListener('gesturestart'", "addEventListener('touchmove'"],'app');
+forbid(app,['id="quickLoginForm"','boostrIdentifier','boostrPassword','Inicia sesión con tus credenciales BOOSTR.','¿Qué necesitas resolver hoy?','href="/audit/"'],'app forbidden');
+need(login,['/assets/logos/boostr-logo-nav.png','data-autofill-proof="contenteditable"','contenteditable="plaintext-only"','id="boostrLoginIdentifier"','id="boostrLoginSecret"','class="editor secret"','validIdentifier','looksLikeSecret',"method:'POST'",'maximum-scale=1','user-scalable=no',"addEventListener('gesturestart'", "addEventListener('gesturechange'", "addEventListener('touchmove'"],'login');
+const start=login.indexOf('data-autofill-proof="contenteditable"');
+const end=login.indexOf('<nav class="actions"',start);
+const block=start>=0&&end>start?login.slice(start,end):'';
+if(!block)fail.push('credential block');
+forbid(block,['<input','<form','autocomplete=','type="password"','Bienvenido','Entrar a BOOSTR','Olvidé mi clave'],'login forbidden');
+need(workspace,['ESPACIO PRIVADO','/api/session','/api/dashboard','/login/?next=/app/workspace/'],'workspace');
+need(middleware,['const isPublicAppGateway = path === "/app"','const isNestedAppSurface = path.startsWith("/app/")','const isPublicExperience = isPublicAppGateway'],'middleware');
+need(shell,["const isPublicAppGateway = path === '/app'","const isNestedAppSurface = path.startsWith('/app/')","'/app/workspace'"],'shell');
+for(const [name,html] of [['app',app],['login',login],['workspace',workspace]])for(const [i,m] of [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].entries())try{new Function(m[1])}catch(e){fail.push(`${name} script ${i+1}: ${e.message}`)}
+if(fail.length){console.error('BOOSTR PWA ENTRY HEALTH: FAILED');fail.forEach(x=>console.error('- '+x));process.exit(1)}
+console.log('BOOSTR PWA ENTRY HEALTH: PASS');

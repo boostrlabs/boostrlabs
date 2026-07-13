@@ -72,10 +72,12 @@ async function ensureTables(env) {
 }
 
 async function ensureWorkspace(env, world, email, timestamp) {
-  const existing = await env.DB.prepare("SELECT id FROM workspaces WHERE slug = ? LIMIT 1")
-    .bind(world.workspace.slug)
-    .first();
+  const existing = await env.DB.prepare(
+    "SELECT id, name, slug, type, owner_email, status FROM workspaces WHERE slug = ? LIMIT 1"
+  ).bind(world.workspace.slug).first();
   const workspaceId = existing?.id || world.workspace.id;
+  let changed = false;
+
   if (!existing?.id) {
     await env.DB.prepare(`
       INSERT INTO workspaces (id, type, name, slug, owner_email, status, created_at, updated_at)
@@ -89,68 +91,91 @@ async function ensureWorkspace(env, world, email, timestamp) {
       timestamp,
       timestamp
     ).run();
+    changed = true;
   } else {
-    await env.DB.prepare("UPDATE workspaces SET name = ?, type = ?, owner_email = COALESCE(owner_email, ?), status = 'active', updated_at = ? WHERE id = ?")
-      .bind(world.workspace.name, world.workspace.type, email, timestamp, workspaceId)
-      .run();
+    const needsUpdate = existing.name !== world.workspace.name
+      || existing.type !== world.workspace.type
+      || !existing.owner_email
+      || existing.status !== "active";
+    if (needsUpdate) {
+      await env.DB.prepare(
+        "UPDATE workspaces SET name = ?, type = ?, owner_email = COALESCE(owner_email, ?), status = 'active', updated_at = ? WHERE id = ?"
+      ).bind(world.workspace.name, world.workspace.type, email, timestamp, workspaceId).run();
+      changed = true;
+    }
   }
-  return workspaceId;
+
+  return { workspaceId, changed };
 }
 
 async function ensureMembership(env, workspaceId, userId, role, timestamp) {
-  const existing = await env.DB.prepare("SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ? LIMIT 1")
-    .bind(workspaceId, userId)
-    .first();
+  const existing = await env.DB.prepare(
+    "SELECT id, role, status FROM workspace_members WHERE workspace_id = ? AND user_id = ? LIMIT 1"
+  ).bind(workspaceId, userId).first();
+
   if (existing?.id) {
+    if (existing.role === role && existing.status === "active") return false;
     await env.DB.prepare("UPDATE workspace_members SET role = ?, status = 'active', updated_at = ? WHERE id = ?")
-      .bind(role, timestamp, existing.id)
-      .run();
-    return;
+      .bind(role, timestamp, existing.id).run();
+    return true;
   }
+
   await env.DB.prepare(`
     INSERT INTO workspace_members (id, workspace_id, user_id, role, status, created_at, updated_at)
     VALUES (?, ?, ?, ?, 'active', ?, ?)
   `).bind(crypto.randomUUID(), workspaceId, userId, role, timestamp, timestamp).run();
+  return true;
 }
 
 async function ensurePersonas(env, workspaceId, userId, personas, timestamp) {
+  let changed = false;
   for (const [type, label] of personas) {
     const existing = await env.DB.prepare(
-      "SELECT id FROM personas WHERE workspace_id = ? AND user_id = ? AND persona_type = ? AND display_name = ? LIMIT 1"
+      "SELECT id, status, metadata_json FROM personas WHERE workspace_id = ? AND user_id = ? AND persona_type = ? AND display_name = ? LIMIT 1"
     ).bind(workspaceId, userId, type, label).first();
     const metadata = JSON.stringify({ source: "founder_identity_sync", world: "artist_os" });
     if (existing?.id) {
-      await env.DB.prepare("UPDATE personas SET status = 'active', metadata_json = ?, updated_at = ? WHERE id = ?")
-        .bind(metadata, timestamp, existing.id)
-        .run();
+      if (existing.status !== "active" || existing.metadata_json !== metadata) {
+        await env.DB.prepare("UPDATE personas SET status = 'active', metadata_json = ?, updated_at = ? WHERE id = ?")
+          .bind(metadata, timestamp, existing.id).run();
+        changed = true;
+      }
     } else {
       await env.DB.prepare(`
         INSERT INTO personas (id, user_id, workspace_id, persona_type, display_name, status, metadata_json, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)
       `).bind(crypto.randomUUID(), userId, workspaceId, type, label, metadata, timestamp, timestamp).run();
+      changed = true;
     }
   }
+  return changed;
 }
 
 async function ensureModules(env, workspaceId, userId, timestamp) {
   const moduleIds = ["mod_artist_os", "mod_smart_links"];
+  let changed = false;
   for (const moduleId of moduleIds) {
     const module = await env.DB.prepare("SELECT id FROM modules WHERE id = ? LIMIT 1").bind(moduleId).first().catch(() => null);
     if (!module?.id) continue;
-    const existing = await env.DB.prepare("SELECT id FROM workspace_modules WHERE workspace_id = ? AND module_id = ? LIMIT 1")
-      .bind(workspaceId, moduleId)
-      .first();
+    const existing = await env.DB.prepare(
+      "SELECT id, status, activated_at, activated_by FROM workspace_modules WHERE workspace_id = ? AND module_id = ? LIMIT 1"
+    ).bind(workspaceId, moduleId).first();
     if (existing?.id) {
-      await env.DB.prepare("UPDATE workspace_modules SET status = 'active', activated_at = COALESCE(activated_at, ?), activated_by = COALESCE(activated_by, ?), updated_at = ? WHERE id = ?")
-        .bind(timestamp, userId, timestamp, existing.id)
-        .run();
+      if (existing.status !== "active" || !existing.activated_at || !existing.activated_by) {
+        await env.DB.prepare(
+          "UPDATE workspace_modules SET status = 'active', activated_at = COALESCE(activated_at, ?), activated_by = COALESCE(activated_by, ?), updated_at = ? WHERE id = ?"
+        ).bind(timestamp, userId, timestamp, existing.id).run();
+        changed = true;
+      }
     } else {
       await env.DB.prepare(`
         INSERT INTO workspace_modules (id, workspace_id, module_id, status, activated_at, activated_by, created_at, updated_at)
         VALUES (?, ?, ?, 'active', ?, ?, ?, ?)
       `).bind(crypto.randomUUID(), workspaceId, moduleId, timestamp, userId, timestamp, timestamp).run();
+      changed = true;
     }
   }
+  return changed;
 }
 
 export async function ensureFounderIdentity(env, user) {
@@ -160,10 +185,14 @@ export async function ensureFounderIdentity(env, user) {
 
   const timestamp = new Date().toISOString();
   await ensureTables(env);
-  const workspaceId = await ensureWorkspace(env, world, email, timestamp);
-  await ensureMembership(env, workspaceId, user.id, world.membershipRole, timestamp);
-  await ensurePersonas(env, workspaceId, user.id, world.personas, timestamp);
-  await ensureModules(env, workspaceId, user.id, timestamp);
+  const workspace = await ensureWorkspace(env, world, email, timestamp);
+  const membershipChanged = await ensureMembership(env, workspace.workspaceId, user.id, world.membershipRole, timestamp);
+  const personasChanged = await ensurePersonas(env, workspace.workspaceId, user.id, world.personas, timestamp);
+  const modulesChanged = await ensureModules(env, workspace.workspaceId, user.id, timestamp);
 
-  return { changed: true, workspace_id: workspaceId, slug: world.workspace.slug };
+  return {
+    changed: workspace.changed || membershipChanged || personasChanged || modulesChanged,
+    workspace_id: workspace.workspaceId,
+    slug: world.workspace.slug
+  };
 }

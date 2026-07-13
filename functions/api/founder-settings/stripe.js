@@ -1,0 +1,195 @@
+import { authCanSeeAll, clean, json, jsonError, now, requireDb, requireSession } from "../../_lib/api.js";
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function encryptionSeed(env) {
+  return env.BOOSTR_ENCRYPTION_KEY || env.AUTH_SECRET || env.JWT_SECRET || env.SESSION_SECRET || env.BOOSTR_AUTH_SECRET || null;
+}
+
+async function ensureKeyring(env) {
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS boostr_keyring (
+      key_name TEXT PRIMARY KEY,
+      key_material TEXT NOT NULL,
+      created_at TEXT,
+      updated_at TEXT
+    )
+  `).run();
+}
+
+async function databaseManagedSeed(env) {
+  await ensureKeyring(env);
+  let row = await env.DB.prepare(
+    "SELECT key_material FROM boostr_keyring WHERE key_name = 'founder_settings_v1' LIMIT 1"
+  ).first();
+  if (row?.key_material) return row.key_material;
+
+  const material = bytesToBase64(crypto.getRandomValues(new Uint8Array(32)));
+  const timestamp = now();
+  await env.DB.prepare(`
+    INSERT INTO boostr_keyring (key_name, key_material, created_at, updated_at)
+    VALUES ('founder_settings_v1', ?, ?, ?)
+    ON CONFLICT(key_name) DO NOTHING
+  `).bind(material, timestamp, timestamp).run();
+
+  row = await env.DB.prepare(
+    "SELECT key_material FROM boostr_keyring WHERE key_name = 'founder_settings_v1' LIMIT 1"
+  ).first();
+  return row?.key_material || material;
+}
+
+async function encryptionKey(env) {
+  const seed = encryptionSeed(env) || await databaseManagedSeed(env);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(seed)));
+  return crypto.subtle.importKey("raw", digest, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+async function encryptValue(env, value) {
+  const key = await encryptionKey(env);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(value));
+  return `${bytesToBase64(iv)}.${bytesToBase64(new Uint8Array(encrypted))}`;
+}
+
+function maskKey(value = "") {
+  const text = String(value);
+  if (!text) return null;
+  const prefix = text.split("_").slice(0, 2).join("_") || text.slice(0, 7);
+  return `${prefix}_••••${text.slice(-4)}`;
+}
+
+async function ensureSchema(env) {
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS founder_secure_settings (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      provider TEXT NOT NULL,
+      publishable_value TEXT,
+      secret_value_encrypted TEXT,
+      secret_mask TEXT,
+      webhook_secret_encrypted TEXT,
+      webhook_secret_mask TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      UNIQUE(user_id, provider)
+    )
+  `).run();
+  try { await env.DB.prepare("ALTER TABLE founder_secure_settings ADD COLUMN webhook_secret_encrypted TEXT").run(); } catch {}
+  try { await env.DB.prepare("ALTER TABLE founder_secure_settings ADD COLUMN webhook_secret_mask TEXT").run(); } catch {}
+}
+
+async function authorize(request, env) {
+  const auth = await requireSession(request, env);
+  if (!auth.ok) return auth;
+  const email = String(auth.user?.email || "").toLowerCase();
+  if (!authCanSeeAll(auth) && email !== "janko@boostrlabs.com" && email !== "juan@boostrlabs.com") {
+    return { ok: false, response: jsonError("founder_only", "Solo Janko o un administrador puede cambiar estas credenciales.", 403) };
+  }
+  return auth;
+}
+
+export async function onRequestGet({ request, env }) {
+  const db = requireDb(env);
+  if (!db.ok) return db.response;
+  const auth = await authorize(request, env);
+  if (!auth.ok) return auth.response;
+  await ensureSchema(env);
+  const row = await env.DB.prepare(
+    "SELECT publishable_value, secret_mask, webhook_secret_mask, updated_at FROM founder_secure_settings WHERE user_id = ? AND provider = 'stripe' LIMIT 1"
+  ).bind(auth.user.id).first();
+  return json({
+    ok: true,
+    stripe: {
+      publishable_key: row?.publishable_value || "",
+      secret_configured: Boolean(row?.secret_mask),
+      secret_mask: row?.secret_mask || null,
+      webhook_secret_configured: Boolean(row?.webhook_secret_mask),
+      webhook_secret_mask: row?.webhook_secret_mask || null,
+      updated_at: row?.updated_at || null
+    }
+  });
+}
+
+export async function onRequestPost({ request, env }) {
+  const db = requireDb(env);
+  if (!db.ok) return db.response;
+  const auth = await authorize(request, env);
+  if (!auth.ok) return auth.response;
+  await ensureSchema(env);
+  const payload = await request.json().catch(() => null);
+  const publishableKey = clean(payload?.publishable_key, 300);
+  const secretKey = clean(payload?.secret_key, 500);
+  const webhookSecret = clean(payload?.webhook_secret, 500);
+
+  if (publishableKey && !publishableKey.startsWith("pk_")) {
+    return jsonError("invalid_publishable_key", "La publishable key debe comenzar con pk_", 400);
+  }
+  if (secretKey && !(secretKey.startsWith("sk_") || secretKey.startsWith("rk_"))) {
+    return jsonError("invalid_secret_key", "La clave privada debe comenzar con sk_ o rk_", 400);
+  }
+  if (webhookSecret && !webhookSecret.startsWith("whsec_")) {
+    return jsonError("invalid_webhook_secret", "El webhook secret debe comenzar con whsec_", 400);
+  }
+
+  const existing = await env.DB.prepare(
+    "SELECT id, secret_value_encrypted, secret_mask, webhook_secret_encrypted, webhook_secret_mask FROM founder_secure_settings WHERE user_id = ? AND provider = 'stripe' LIMIT 1"
+  ).bind(auth.user.id).first();
+
+  let encrypted = existing?.secret_value_encrypted || null;
+  let secretMask = existing?.secret_mask || null;
+  let webhookEncrypted = existing?.webhook_secret_encrypted || null;
+  let webhookMask = existing?.webhook_secret_mask || null;
+  try {
+    if (secretKey) {
+      encrypted = await encryptValue(env, secretKey);
+      secretMask = maskKey(secretKey);
+    }
+    if (webhookSecret) {
+      webhookEncrypted = await encryptValue(env, webhookSecret);
+      webhookMask = maskKey(webhookSecret);
+    }
+  } catch (error) {
+    return jsonError("encryption_unavailable", "No se pudo inicializar el cifrado seguro.", 503, { detail: String(error?.message || error) });
+  }
+
+  const timestamp = now();
+  const id = existing?.id || crypto.randomUUID();
+  await env.DB.prepare(`
+    INSERT INTO founder_secure_settings
+      (id, user_id, provider, publishable_value, secret_value_encrypted, secret_mask, webhook_secret_encrypted, webhook_secret_mask, created_at, updated_at)
+    VALUES (?, ?, 'stripe', ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(user_id, provider) DO UPDATE SET
+      publishable_value = excluded.publishable_value,
+      secret_value_encrypted = excluded.secret_value_encrypted,
+      secret_mask = excluded.secret_mask,
+      webhook_secret_encrypted = excluded.webhook_secret_encrypted,
+      webhook_secret_mask = excluded.webhook_secret_mask,
+      updated_at = excluded.updated_at
+  `).bind(id, auth.user.id, publishableKey || "", encrypted, secretMask, webhookEncrypted, webhookMask, timestamp, timestamp).run();
+
+  return json({
+    ok: true,
+    stripe: {
+      publishable_key: publishableKey || "",
+      secret_configured: Boolean(secretMask),
+      secret_mask: secretMask,
+      webhook_secret_configured: Boolean(webhookMask),
+      webhook_secret_mask: webhookMask,
+      updated_at: timestamp
+    }
+  });
+}
+
+export async function onRequestDelete({ request, env }) {
+  const db = requireDb(env);
+  if (!db.ok) return db.response;
+  const auth = await authorize(request, env);
+  if (!auth.ok) return auth.response;
+  await ensureSchema(env);
+  await env.DB.prepare("DELETE FROM founder_secure_settings WHERE user_id = ? AND provider = 'stripe'").bind(auth.user.id).run();
+  return json({ ok: true, deleted: true });
+}

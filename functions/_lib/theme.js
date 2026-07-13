@@ -1,0 +1,98 @@
+import { clean, now } from "./api.js";
+
+export const BOOSTR_THEME_REVISION = 2;
+
+export const BOOSTR_THEME_DEFAULT = Object.freeze({
+  theme_id: "night_blue",
+  accent_id: "blue",
+  revision: BOOSTR_THEME_REVISION,
+  updated_at: null
+});
+
+export const BOOSTR_THEME_IDS = new Set([
+  "night_blue",
+  "smart_light",
+  "mother_platinum"
+]);
+
+export const BOOSTR_ACCENT_IDS = new Set([
+  "blue",
+  "violet",
+  "rose",
+  "emerald"
+]);
+
+export function normalizeThemeConfig(value = {}) {
+  const themeId = clean(value.theme_id, 80);
+  const accentId = clean(value.accent_id, 80);
+  return {
+    theme_id: BOOSTR_THEME_IDS.has(themeId) ? themeId : BOOSTR_THEME_DEFAULT.theme_id,
+    accent_id: BOOSTR_ACCENT_IDS.has(accentId) ? accentId : BOOSTR_THEME_DEFAULT.accent_id,
+    revision: Number(value.revision) >= BOOSTR_THEME_REVISION ? Number(value.revision) : BOOSTR_THEME_REVISION,
+    updated_at: value.updated_at || null
+  };
+}
+
+export async function ensureThemeSchema(env) {
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS boostr_ui_settings (
+      id TEXT PRIMARY KEY,
+      theme_id TEXT NOT NULL,
+      accent_id TEXT NOT NULL,
+      revision INTEGER NOT NULL DEFAULT 2,
+      updated_by TEXT,
+      created_at TEXT,
+      updated_at TEXT
+    )
+  `).run();
+  try { await env.DB.prepare("ALTER TABLE boostr_ui_settings ADD COLUMN revision INTEGER NOT NULL DEFAULT 1").run(); } catch {}
+}
+
+export async function readSystemTheme(env) {
+  await ensureThemeSchema(env);
+  const row = await env.DB.prepare(`
+    SELECT theme_id, accent_id, revision, updated_at
+    FROM boostr_ui_settings
+    WHERE id = 'global'
+    LIMIT 1
+  `).first();
+
+  if (!row) return { ...BOOSTR_THEME_DEFAULT };
+
+  if (Number(row.revision || 0) < BOOSTR_THEME_REVISION) {
+    const timestamp = now();
+    await env.DB.prepare(`
+      UPDATE boostr_ui_settings
+      SET theme_id = ?, accent_id = ?, revision = ?, updated_at = ?
+      WHERE id = 'global'
+    `).bind(
+      BOOSTR_THEME_DEFAULT.theme_id,
+      BOOSTR_THEME_DEFAULT.accent_id,
+      BOOSTR_THEME_REVISION,
+      timestamp
+    ).run();
+    return { ...BOOSTR_THEME_DEFAULT, updated_at: timestamp };
+  }
+
+  return normalizeThemeConfig(row);
+}
+
+export async function writeSystemTheme(env, input, userId) {
+  const config = normalizeThemeConfig(input);
+  const timestamp = now();
+
+  await ensureThemeSchema(env);
+  await env.DB.prepare(`
+    INSERT INTO boostr_ui_settings
+      (id, theme_id, accent_id, revision, updated_by, created_at, updated_at)
+    VALUES ('global', ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      theme_id = excluded.theme_id,
+      accent_id = excluded.accent_id,
+      revision = excluded.revision,
+      updated_by = excluded.updated_by,
+      updated_at = excluded.updated_at
+  `).bind(config.theme_id, config.accent_id, BOOSTR_THEME_REVISION, userId, timestamp, timestamp).run();
+
+  return { ...config, revision: BOOSTR_THEME_REVISION, updated_at: timestamp };
+}
