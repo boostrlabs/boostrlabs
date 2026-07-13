@@ -6,7 +6,12 @@ on:
       - pwa-pilot
     paths:
       - 'index.html'
+      - 'functions/_middleware.js'
       - 'public/app/index.html'
+      - 'public/app/workspace/index.html'
+      - 'public/assets/boostr-mother/production-shell.js'
+      - 'public/assets/boostr-mother/session-ui.js'
+      - 'public/login/index.html'
       - 'public/accept-invite/index.html'
       - 'public/manifest.webmanifest'
       - 'public/service-worker.js'
@@ -22,7 +27,12 @@ on:
   pull_request:
     paths:
       - 'index.html'
+      - 'functions/_middleware.js'
       - 'public/app/index.html'
+      - 'public/app/workspace/index.html'
+      - 'public/assets/boostr-mother/production-shell.js'
+      - 'public/assets/boostr-mother/session-ui.js'
+      - 'public/login/index.html'
       - 'public/accept-invite/index.html'
       - 'public/manifest.webmanifest'
       - 'public/service-worker.js'
@@ -69,6 +79,8 @@ jobs:
           test -f dist/pwa.css
           test -f dist/offline.html
           test -f dist/app/index.html
+          test -f dist/app/workspace/index.html
+          test -f dist/login/index.html
           test -f dist/accept-invite/index.html
           grep -q '/manifest.webmanifest' dist/index.html
           grep -q '/pwa-register.js' dist/index.html
@@ -76,12 +88,16 @@ jobs:
           grep -q 'viewport-fit=cover' dist/index.html
           grep -q '/app/?source=pwa' dist/index.html
           grep -q 'Abriendo BOOSTR App' dist/index.html
+          grep -q 'SERVICIOS CONECTADOS' dist/app/index.html
           grep -q 'SMART PARKING' dist/app/index.html
+          grep -q 'Checkout invitado' dist/app/index.html
           grep -q 'BOOSTR EATS' dist/app/index.html
           grep -q 'BOOSTR RIDES' dist/app/index.html
           grep -q 'BOOSTR EXOTIC' dist/app/index.html
-          grep -q 'id="guestPanel"' dist/app/index.html
-          grep -q 'id="privatePanel" hidden' dist/app/index.html
+          grep -q 'id="accessPanel"' dist/app/index.html
+          grep -q 'id="memberPanel" hidden' dist/app/index.html
+          grep -q 'ESPACIO PRIVADO' dist/app/workspace/index.html
+          grep -q 'Usar servicios como guest' dist/login/index.html
           ! grep -q 'boostr-mother/console.js' dist/app/index.html
           ! grep -q 'Rutas del ecosistema' dist/app/index.html
           grep -q 'Tu espacio BOOSTR está listo.' dist/accept-invite/index.html
