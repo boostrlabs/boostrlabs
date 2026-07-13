@@ -1,4 +1,5 @@
 import { clean, json, jsonError, now, requireDb } from "../../../../_lib/api.js";
+import { normalizePlate } from "../../../../_lib/smart-parking.js";
 import { ensureStripeSchema, getStripeCredentials, recordStripeActivity, stripeForm, stripeRequest } from "../../../../_lib/stripe.js";
 
 function parseJson(value) {
@@ -35,6 +36,13 @@ export async function onRequestPost({ request, env, params }) {
     return jsonError("amount_required", "Este link necesita un monto válido antes de cobrar.", 400);
   }
 
+  const isParking = clean(metadata.operator, 80).toLowerCase() === "omni_jr";
+  const plateDisplay = clean(payload?.plate, 24).toUpperCase();
+  const plate = normalizePlate(plateDisplay);
+  if (isParking && (plate.length < 2 || plate.length > 12)) {
+    return jsonError("parking_plate_required", "Escribe una placa válida antes de continuar.", 400, { fields: ["plate"] });
+  }
+
   let credentials;
   try {
     credentials = await getStripeCredentials(env);
@@ -51,6 +59,19 @@ export async function onRequestPost({ request, env, params }) {
   const currency = clean(link.currency || "USD", 12).toLowerCase();
   const origin = new URL(request.url).origin;
   const stripeMode = saleType === "subscription" ? "subscription" : "payment";
+  const paymentMetadata = {
+    source: "boostr_payment_link",
+    workspace_name: link.workspace_name || null,
+    sale_type: saleType,
+    stripe_mode: stripeMode,
+    ui_mode: "elements",
+    operator: isParking ? "omni_jr" : null,
+    parking_plate: isParking ? plateDisplay : null,
+    parking_plate_normalized: isParking ? plate : null,
+    parking_vehicle_class: isParking ? clean(metadata.vehicle_class, 80) || null : null,
+    parking_plan_type: isParking ? clean(metadata.plan_type || (saleType === "subscription" ? "monthly" : "single"), 40) : null,
+    parking_max_hours: isParking ? Number(metadata.max_hours || 8) : null
+  };
 
   await env.DB.prepare(
     `INSERT INTO stripe_payments
@@ -64,13 +85,7 @@ export async function onRequestPost({ request, env, params }) {
     Number(link.amount_cents),
     currency,
     credentials.mode,
-    JSON.stringify({
-      source: "boostr_payment_link",
-      workspace_name: link.workspace_name || null,
-      sale_type: saleType,
-      stripe_mode: stripeMode,
-      ui_mode: "elements"
-    }),
+    JSON.stringify(paymentMetadata),
     timestamp,
     timestamp
   ).run();
@@ -89,7 +104,10 @@ export async function onRequestPost({ request, env, params }) {
     "metadata[boostr_payment_id]": paymentId,
     "metadata[payment_link_id]": link.id,
     "metadata[workspace_id]": link.workspace_id,
-    "metadata[sale_type]": saleType
+    "metadata[sale_type]": saleType,
+    "metadata[operator]": isParking ? "omni_jr" : undefined,
+    "metadata[parking_plate]": isParking ? plate : undefined,
+    "metadata[parking_vehicle_class]": isParking ? clean(metadata.vehicle_class, 80) || "monthly" : undefined
   };
 
   if (stripeMode === "subscription") {
@@ -97,6 +115,10 @@ export async function onRequestPost({ request, env, params }) {
     formPayload["line_items[0][price_data][recurring][interval]"] = interval;
     formPayload["subscription_data][metadata][boostr_payment_id]"] = paymentId;
     formPayload["subscription_data][metadata][payment_link_id]"] = link.id;
+    if (isParking) {
+      formPayload["subscription_data][metadata][operator]"] = "omni_jr";
+      formPayload["subscription_data][metadata][parking_plate]"] = plate;
+    }
   }
 
   try {
@@ -125,7 +147,9 @@ export async function onRequestPost({ request, env, params }) {
         session_id: session.id,
         mode: credentials.mode,
         sale_type: saleType,
-        ui_mode: "elements"
+        ui_mode: "elements",
+        operator: isParking ? "omni_jr" : null,
+        plate: isParking ? plate : null
       }
     });
 
