@@ -22,16 +22,21 @@ for (const legacyMarker of ['The system layer behind modern businesses.', 'Mothe
 if (!sessionUi.includes('redirectInstalledLaunch')) failures.push('Shared session UI does not repair legacy installed PWA entry routes');
 if (!sessionUi.includes('/manifest.webmanifest')) failures.push('Shared session UI does not expose the PWA manifest');
 
-for (const marker of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EXOTIC', 'SERVICIOS CONECTADOS']) {
+for (const marker of ['SMART PARKING', 'BOOSTR EATS', 'BOOSTR RIDES', 'BOOSTR EXOTIC', 'SERVICIOS', 'OMNI JR Parking']) {
   if (!app.includes(marker)) failures.push(`BOOSTR App gateway missing ${marker}`);
 }
-if (!/Checkout invitado|guest checkout/i.test(app)) failures.push('BOOSTR App gateway missing guest checkout rule');
-for (const marker of ['/assets/logos/boostr-logo-nav.png', 'Tu cuenta.<br>Tu OS.', 'Entrar a BOOSTR']) {
-  if (!app.includes(marker)) failures.push(`BOOSTR App brand entry missing marker: ${marker}`);
+for (const marker of ['/assets/logos/boostr-logo-nav.png', 'Inicia sesión con tus credenciales BOOSTR.', 'id="quickLoginForm"', 'También puedes abrir un servicio disponible sin iniciar sesión.']) {
+  if (!app.includes(marker)) failures.push(`BOOSTR App brand or access entry missing marker: ${marker}`);
+}
+for (const marker of ['🍽️', '🚘', '🏎️', 'PRÓXIMAMENTE', 'aria-disabled="true"']) {
+  if (!app.includes(marker)) failures.push(`BOOSTR App unavailable-service presentation missing marker: ${marker}`);
+}
+for (const forbidden of ['¿Qué necesitas resolver hoy?', 'Pagar parking', 'Iniciar Audit', 'Tu cuenta.<br>Tu OS.', 'Entra a tu espacio.', '¿Aún no tienes sistema?', 'href="/audit/"']) {
+  if (app.includes(forbidden)) failures.push(`BOOSTR App still exposes rejected landing content: ${forbidden}`);
 }
 
-for (const marker of ['id="accessPanel"', 'id="memberPanel" hidden', 'roleContext(session)', '/accept-invite/']) {
-  if (!app.includes(marker)) failures.push(`BOOSTR App persona router missing marker: ${marker}`);
+for (const marker of ['id="accessPanel"', 'id="memberPanel" hidden', 'roleContext(session)', '/accept-invite/', "fetch('/api/session'", "method:'POST'"]) {
+  if (!app.includes(marker)) failures.push(`BOOSTR App persona router or inline login missing marker: ${marker}`);
 }
 for (const forbidden of ['boostr-mother/console.js', 'class="sidebar', 'Rutas del ecosistema', 'Manager Missions', 'Creative Missions']) {
   if (app.includes(forbidden)) failures.push(`BOOSTR App still exposes internal UI: ${forbidden}`);

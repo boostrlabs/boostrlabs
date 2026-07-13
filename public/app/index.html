@@ -1,105 +1,121 @@
 <!doctype html>
-<html lang="es" data-build="1.2.0" data-boostr-surface="app" data-boostr-theme="night_blue" data-boostr-accent="blue">
+<html lang="es" data-build="1.3.0" data-boostr-surface="app" data-boostr-theme="night_blue" data-boostr-accent="blue">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070b12">
   <title>BOOSTR App</title>
-  <meta name="description" content="Servicios, pagos y espacios privados conectados a BOOSTR.">
+  <meta name="description" content="Acceso a tu cuenta BOOSTR y a los servicios conectados disponibles.">
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <style>
     :root{color-scheme:dark;--bg:#070b12;--panel:#101827;--panel2:#142139;--line:rgba(255,255,255,.12);--text:#f7f9fc;--muted:#94a1b5;--blue:#38b9ff;--blue2:#4778ff;--green:#64f58f;--shadow:0 28px 90px rgba(0,0,0,.48)}
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{min-height:100%;background:var(--bg)}body{min-height:100dvh;margin:0;background:radial-gradient(circle at 82% 5%,rgba(56,185,255,.19),transparent 32%),radial-gradient(circle at 0 38%,rgba(71,120,255,.14),transparent 34%),linear-gradient(180deg,#0a101b,#05070b 78%);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input{font:inherit}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{min-height:100%;background:var(--bg);scroll-behavior:smooth}body{min-height:100dvh;margin:0;background:radial-gradient(circle at 82% 5%,rgba(56,185,255,.19),transparent 32%),radial-gradient(circle at 0 38%,rgba(71,120,255,.14),transparent 34%),linear-gradient(180deg,#0a101b,#05070b 78%);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input{font:inherit}
     .app{width:min(1240px,100%);margin:0 auto;padding:max(16px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) calc(112px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
     .top{display:grid;grid-template-columns:auto minmax(220px,1fr) auto;gap:14px;align-items:center;position:sticky;top:0;z-index:20;padding:12px 14px;border:1px solid var(--line);border-radius:28px;background:rgba(10,16,27,.78);backdrop-filter:blur(24px);box-shadow:0 18px 50px rgba(0,0,0,.2)}
-    .brand{display:flex;align-items:center;gap:13px;min-width:0}.brand img{width:154px;max-width:38vw;max-height:48px;object-fit:contain;filter:drop-shadow(0 0 20px rgba(56,185,255,.12))}.brand-copy{display:none}.brand-copy b{display:block;font-size:15px}.brand-copy span{display:block;margin-top:2px;color:var(--muted);font-size:10px}
-    .search{min-height:48px;border:1px solid rgba(255,255,255,.08);border-radius:17px;background:rgba(0,0,0,.25);color:#fff;padding:0 16px;outline:none}.search::placeholder{color:#78869a}.search:focus{border-color:rgba(56,185,255,.48);box-shadow:0 0 0 4px rgba(56,185,255,.08)}
+    .brand{display:flex;align-items:center;gap:13px;min-width:0}.brand img{width:154px;max-width:38vw;max-height:48px;object-fit:contain;filter:drop-shadow(0 0 20px rgba(56,185,255,.12))}.search{min-height:48px;border:1px solid rgba(255,255,255,.08);border-radius:17px;background:rgba(0,0,0,.25);color:#fff;padding:0 16px;outline:none}.search::placeholder{color:#78869a}.search:focus{border-color:rgba(56,185,255,.48);box-shadow:0 0 0 4px rgba(56,185,255,.08)}
     .account{min-height:48px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.055);padding:0 14px;display:flex;align-items:center;gap:10px;font-weight:900}.account i{width:29px;height:29px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue2),var(--blue));font-style:normal;color:white}.account span{font-size:12px}.account.active{border-color:rgba(100,245,143,.32)}
-    .hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:16px;margin-top:18px}.card{border:1px solid var(--line);border-radius:32px;background:linear-gradient(145deg,rgba(20,33,57,.88),rgba(11,17,28,.94));box-shadow:var(--shadow);overflow:hidden;position:relative}.hero-main{padding:clamp(24px,5vw,54px)}.hero-main:after{content:"";position:absolute;width:360px;height:360px;border:1px solid rgba(56,185,255,.14);border-radius:50%;right:-180px;top:-175px;box-shadow:0 0 0 44px rgba(56,185,255,.025),0 0 0 92px rgba(71,120,255,.016)}
-    .eyebrow{position:relative;z-index:1;color:var(--blue);font:950 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase}.hero-main h1{position:relative;z-index:1;max-width:760px;margin:22px 0 18px;font-size:clamp(52px,8vw,104px);line-height:.88;letter-spacing:-.075em;text-wrap:balance}.hero-main p{position:relative;z-index:1;max-width:700px;margin:0;color:var(--muted);font-size:clamp(15px,2vw,20px);line-height:1.55}.actions{position:relative;z-index:1;display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}.btn{min-height:54px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.055);padding:0 19px;display:inline-flex;align-items:center;justify-content:center;font-weight:950}.btn.primary{border:0;background:linear-gradient(135deg,var(--blue2),var(--blue));box-shadow:0 16px 38px rgba(56,185,255,.2)}
-    .login-preview{padding:22px;display:flex;flex-direction:column;min-height:100%}.login-preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.mini-logo{width:110px}.status{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.status:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 16px currentColor}.login-preview h2{margin:34px 0 8px;font-size:36px;line-height:.95;letter-spacing:-.05em}.login-preview p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}.login-fields{display:grid;gap:10px;margin-top:24px}.fake-field{min-height:53px;border:1px solid rgba(255,255,255,.09);border-radius:17px;background:rgba(0,0,0,.24);padding:0 15px;display:flex;align-items:center;justify-content:space-between;color:#8d9aaf;font-size:12px}.fake-field b{color:#d8deea;font-size:11px}.login-preview .btn{margin-top:auto;width:100%}.login-links{display:flex;justify-content:space-between;gap:10px;margin-top:13px;color:var(--muted);font-size:10px;font-weight:800}
-    .section{margin-top:16px;padding:22px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:16px}.section-head h2{margin:4px 0 0;font-size:34px;letter-spacing:-.045em}.section-head p{margin:0;color:var(--muted);font-size:12px}.live-badge{border:1px solid rgba(100,245,143,.28);border-radius:999px;background:rgba(100,245,143,.07);padding:8px 10px;color:var(--green);font-size:9px;font-weight:950;letter-spacing:.1em}
-    .service-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.service-main{min-height:260px;border:1px solid rgba(255,255,255,.09);border-radius:25px;background:radial-gradient(circle at 78% 18%,rgba(56,185,255,.18),transparent 31%),rgba(255,255,255,.035);padding:22px;display:flex;flex-direction:column}.service-main h3{margin:10px 0 7px;font-size:42px;letter-spacing:-.055em}.service-main p{max-width:560px;margin:0;color:var(--muted);font-size:13px;line-height:1.55}.service-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}.pill{border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(0,0,0,.2);padding:7px 9px;color:#b4bfd0;font-size:9px;font-weight:850}.service-main .btn{margin-top:auto;align-self:flex-start}
-    .routes{display:grid;gap:9px}.route{min-height:78px;border:1px solid rgba(255,255,255,.09);border-radius:21px;background:rgba(255,255,255,.03);padding:13px;display:grid;grid-template-columns:44px 1fr auto;gap:11px;align-items:center;color:inherit;text-align:left}.route-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:rgba(56,185,255,.1);color:var(--blue);font-weight:1000}.route b{display:block;font-size:13px}.route span span{display:block;margin-top:4px;color:var(--muted);font-size:10px}.route em{font-style:normal;color:#7f8ca1}
-    .access-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.access-card{padding:22px;min-height:205px;display:flex;flex-direction:column}.access-card h3{margin:10px 0 7px;font-size:30px;letter-spacing:-.045em}.access-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.access-card .actions{margin-top:auto}.access-card[hidden]{display:none}
-    .footer{padding:24px 0 0;text-align:center;color:#556176;font-size:9px;letter-spacing:.13em;text-transform:uppercase}
-    .dock{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;width:min(440px,calc(100% - 28px));min-height:76px;border:1px solid rgba(255,255,255,.11);border-radius:28px;background:rgba(8,13,22,.9);backdrop-filter:blur(24px);box-shadow:0 24px 70px rgba(0,0,0,.56);padding:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.dock a{border-radius:21px;display:grid;place-items:center;color:#8e9bb0;font-size:13px;font-weight:950}.dock a.active{background:linear-gradient(135deg,var(--blue2),var(--blue));color:white}.toast{position:fixed;z-index:60;left:50%;bottom:104px;transform:translate(-50%,16px);width:min(440px,calc(100% - 28px));border:1px solid var(--line);border-radius:20px;background:#111a2a;padding:14px 16px;opacity:0;visibility:hidden;transition:.2s;box-shadow:var(--shadow)}.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}.toast b{display:block}.toast span{display:block;margin-top:4px;color:var(--muted);font-size:11px}
-    @media(max-width:820px){.app{padding-left:10px;padding-right:10px}.top{grid-template-columns:1fr auto;padding:11px}.search{grid-column:1/-1;grid-row:2}.brand img{width:142px;max-width:48vw}.account span{display:none}.hero{grid-template-columns:1fr}.hero-main{padding:28px 20px}.hero-main h1{font-size:clamp(51px,14vw,75px)}.login-preview{min-height:370px}.service-grid,.access-grid{grid-template-columns:1fr}.section{padding:18px}.section-head{align-items:flex-start;flex-direction:column}.service-main{min-height:285px}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.login-preview .btn{margin-top:28px}.footer{padding-bottom:12px}}
+    .card{border:1px solid var(--line);border-radius:32px;background:linear-gradient(145deg,rgba(20,33,57,.88),rgba(11,17,28,.94));box-shadow:var(--shadow);overflow:hidden;position:relative}.eyebrow{color:var(--blue);font:950 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase}.btn{min-height:54px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.055);padding:0 19px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:950;cursor:pointer}.btn.primary{border:0;background:linear-gradient(135deg,var(--blue2),var(--blue));box-shadow:0 16px 38px rgba(56,185,255,.2)}.btn:disabled{cursor:not-allowed}
+    .login-preview{margin-top:18px;padding:clamp(24px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.78fr);gap:clamp(24px,5vw,70px);align-items:center}.login-preview[hidden],.member-panel[hidden]{display:none}.login-copy{min-width:0}.login-logo{width:158px;max-width:56vw;max-height:54px;object-fit:contain;margin-bottom:30px}.login-copy h1{max-width:720px;margin:12px 0 16px;font-size:clamp(44px,6.5vw,82px);line-height:.94;letter-spacing:-.065em;text-wrap:balance}.login-copy p{max-width:650px;margin:0;color:var(--muted);font-size:clamp(14px,1.8vw,18px);line-height:1.55}.guest-note{display:flex;align-items:center;gap:10px;margin-top:24px;color:#bac5d6;font-size:12px}.guest-note:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 18px rgba(100,245,143,.7)}
+    .auth-box{border:1px solid rgba(255,255,255,.1);border-radius:26px;background:rgba(4,8,14,.5);padding:20px}.auth-box form{display:grid;gap:12px}.auth-box label{display:grid;gap:7px;color:#8f9caf;font-size:10px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}.auth-box input{width:100%;min-height:54px;border:1px solid rgba(255,255,255,.1);border-radius:17px;background:rgba(255,255,255,.045);color:#fff;padding:0 14px;outline:none}.auth-box input:focus{border-color:rgba(56,185,255,.55);box-shadow:0 0 0 4px rgba(56,185,255,.08)}.password-row{display:grid;grid-template-columns:1fr auto;gap:8px}.show-pass{min-width:64px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.055);color:#dce4ef;font-size:10px;font-weight:900;cursor:pointer}.auth-status{min-height:18px;color:#8f9caf;font-size:11px;line-height:1.4}.auth-status.success{color:var(--green)}.auth-status.error{color:#ff8697}.login-links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;color:#9eabbe;font-size:10px;font-weight:850}.login-links a:hover{color:#fff}
+    .member-panel{margin-top:18px;padding:30px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}.member-panel h2{margin:8px 0 6px;font-size:clamp(34px,5vw,58px);letter-spacing:-.05em}.member-panel p{margin:0;color:var(--muted);line-height:1.55}.member-actions{display:flex;gap:10px;flex-wrap:wrap}.role-line{margin-top:12px;color:var(--green);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .section{margin-top:16px;padding:24px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:18px}.section-head h2{margin:5px 0 0;font-size:38px;letter-spacing:-.045em}.section-head p{margin:6px 0 0;color:var(--muted);font-size:12px}.service-count{border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:8px 11px;color:#9ca9bc;font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}
+    .services{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.service-card{min-height:270px;border:1px solid rgba(255,255,255,.09);border-radius:25px;background:rgba(255,255,255,.035);padding:20px;display:flex;flex-direction:column;position:relative;overflow:hidden;text-align:left;color:inherit}.service-card.live{background:radial-gradient(circle at 80% 12%,rgba(56,185,255,.21),transparent 32%),rgba(255,255,255,.04)}.service-card.disabled{opacity:.48;filter:saturate(.62);cursor:not-allowed}.service-card.disabled:after{content:"PRÓXIMAMENTE";position:absolute;right:14px;top:14px;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 8px;color:#b2bdcc;font-size:8px;font-weight:950;letter-spacing:.1em}.service-icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:rgba(56,185,255,.1);font-size:30px;margin-bottom:30px}.service-card.live .service-icon{background:linear-gradient(135deg,rgba(71,120,255,.35),rgba(56,185,255,.22));box-shadow:0 16px 40px rgba(56,185,255,.12)}.service-card h3{margin:0;font-size:25px;letter-spacing:-.04em}.service-card p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.service-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:22px}.service-status{font-size:9px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.service-status.live{color:var(--green)}.service-status.soon{color:#9ba7b8}.service-open{width:38px;height:38px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue2),var(--blue));font-weight:1000}.service-card.disabled .service-open{background:rgba(255,255,255,.07);color:#8793a5}
+    .footer{padding:26px 0 0;text-align:center;color:#556176;font-size:9px;letter-spacing:.13em;text-transform:uppercase}.dock{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;width:min(440px,calc(100% - 28px));min-height:76px;border:1px solid rgba(255,255,255,.11);border-radius:28px;background:rgba(8,13,22,.9);backdrop-filter:blur(24px);box-shadow:0 24px 70px rgba(0,0,0,.56);padding:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.dock a{border-radius:21px;display:grid;place-items:center;color:#8e9bb0;font-size:13px;font-weight:950}.dock a.active{background:linear-gradient(135deg,var(--blue2),var(--blue));color:white}
+    @media(max-width:980px){.services{grid-template-columns:repeat(2,minmax(0,1fr))}.login-preview{grid-template-columns:1fr}.auth-box{max-width:620px}.member-panel{grid-template-columns:1fr}.member-actions{justify-content:flex-start}}
+    @media(max-width:680px){.app{padding-left:10px;padding-right:10px}.top{grid-template-columns:1fr auto;padding:11px}.search{grid-column:1/-1;grid-row:2}.brand img{width:142px;max-width:48vw}.account span{display:none}.login-preview{padding:24px 18px}.login-copy h1{font-size:clamp(42px,13vw,62px)}.login-logo{margin-bottom:22px}.auth-box{padding:16px}.services{grid-template-columns:1fr}.section{padding:18px}.section-head{align-items:flex-start;flex-direction:column}.service-card{min-height:230px}.member-actions{display:grid;grid-template-columns:1fr}.member-actions .btn{width:100%}.footer{padding-bottom:12px}}
   </style>
 </head>
 <body>
   <main class="app">
     <header class="top">
-      <a class="brand" href="/app/" aria-label="BOOSTR App"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><span class="brand-copy"><b>BOOSTR App</b><span>Servicios conectados</span></span></a>
-      <input class="search" data-filter="[data-search-item]" type="search" placeholder="Buscar servicios..." aria-label="Buscar servicios">
+      <a class="brand" href="/app/" aria-label="BOOSTR App"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></a>
+      <input class="search" type="search" placeholder="Buscar servicios..." aria-label="Buscar servicios">
       <a class="account" id="topAccount" href="/login/"><i id="profileInitial">B</i><span id="profileName">Entrar</span></a>
     </header>
 
-    <section class="hero">
-      <article class="card hero-main">
-        <span class="eyebrow">SERVICIOS CONECTADOS</span>
-        <h1>¿Qué necesitas resolver hoy?</h1>
-        <p>Compra, reserva o paga desde negocios que operan con tecnología BOOSTR. Usa servicios simples como guest o entra a tu panel privado según tu rol y workspace.</p>
-        <div class="actions"><a class="btn primary" href="/parking/omni-jr/">Pagar parking</a><a class="btn" href="/audit/">Iniciar Audit</a><a class="btn" href="/login/">Entrar a BOOSTR</a></div>
-      </article>
-
-      <article class="card login-preview">
-        <div class="login-preview-head"><img class="mini-logo" src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR"><span class="status">System online</span></div>
-        <h2>Tu cuenta.<br>Tu OS.</h2>
-        <p>Una sola identidad abre el espacio correcto para Founder, Admin, Manager, Partner, Staff o Client.</p>
-        <div class="login-fields"><div class="fake-field"><span>Cuenta BOOSTR</span><b>email / user / phone</b></div><div class="fake-field"><span>Acceso seguro</span><b>••••••••</b></div></div>
-        <a class="btn primary" id="accountButton" href="/login/">Abrir login</a>
-        <div class="login-links"><a href="/accept-invite/">Tengo invitación</a><a href="/password-reset/">Recuperar acceso</a></div>
-      </article>
-    </section>
-
-    <section class="card section">
-      <div class="section-head"><div><span class="eyebrow">DISPONIBLE AHORA</span><h2>Smart Parking</h2><p>Checkout invitado, placa, recibo y QR.</p></div><span class="live-badge">LIVE · guest checkout</span></div>
-      <div class="service-grid">
-        <a class="service-main" data-search-item href="/parking/omni-jr/">
-          <span class="eyebrow">SMART PARKING · OMNI JR</span><h3>Paga y sigue.</h3><p>Selecciona el vehículo, registra la placa y completa el parking desde el teléfono sin crear una cuenta innecesaria.</p>
-          <div class="service-meta"><span class="pill">Vehículo</span><span class="pill">Placa</span><span class="pill">Pago seguro</span><span class="pill">Recibo + QR</span></div><span class="btn primary">Abrir servicio</span>
-        </a>
-        <div class="routes">
-          <button class="route" data-search-item data-module="BOOSTR EATS" data-reason="Pedir y pagar comida de restaurantes conectados." type="button"><span class="route-icon">E</span><span><b>BOOSTR EATS</b><span>Pedidos y pagos conectados.</span></span><em>…</em></button>
-          <button class="route" data-search-item data-module="BOOSTR RIDES" data-reason="Solicitar transporte con operadores conectados." type="button"><span class="route-icon">R</span><span><b>BOOSTR RIDES</b><span>Transporte y seguimiento.</span></span><em>…</em></button>
-          <button class="route" data-search-item data-module="BOOSTR EXOTIC" data-reason="Reservar vehículos exóticos de partners verificados." type="button"><span class="route-icon">X</span><span><b>BOOSTR EXOTIC</b><span>Reservas de partners verificados.</span></span><em>…</em></button>
-        </div>
+    <section class="card login-preview" id="accessPanel">
+      <div class="login-copy">
+        <img class="login-logo" src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
+        <span class="eyebrow">ACCESO BOOSTR</span>
+        <h1>Inicia sesión con tus credenciales BOOSTR.</h1>
+        <p>Tu cuenta abre automáticamente el panel asignado a tu rol y workspace.</p>
+        <div class="guest-note">También puedes abrir un servicio disponible sin iniciar sesión.</div>
+      </div>
+      <div class="auth-box">
+        <form id="quickLoginForm" autocomplete="on">
+          <label><span>Email, usuario o teléfono</span><input name="identifier" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+          <label><span>Contraseña</span><div class="password-row"><input name="password" type="password" autocomplete="current-password" required><button class="show-pass" id="showPass" type="button">VER</button></div></label>
+          <button class="btn primary" id="submitBtn" type="submit">Iniciar sesión</button>
+          <div class="auth-status" id="authStatus">Usaremos tus credenciales para abrir el acceso correcto.</div>
+        </form>
+        <div class="login-links"><a href="/accept-invite/">Tengo una invitación</a><a href="/password-reset/">Recuperar acceso</a></div>
       </div>
     </section>
 
-    <section class="access-grid">
-      <article class="card access-card" id="accessPanel"><span class="eyebrow">ACCESO PRIVADO</span><h3>Entra a tu espacio.</h3><p>BOOSTR reconoce tu cuenta, rol y workspace para abrir el panel correcto. Los consumidores pueden seguir usando servicios públicos sin login.</p><div class="actions"><a class="btn primary" href="/login/">Iniciar sesión</a><a class="btn" href="/accept-invite/">Activar invitación</a></div></article>
-      <article class="card access-card"><span class="eyebrow">BOOSTR AUDIT</span><h3>¿Aún no tienes sistema?</h3><p>Empieza por el diagnóstico público. El Audit identifica qué necesita tu negocio antes de crear acceso privado.</p><div class="actions"><a class="btn" href="/audit/">Iniciar Audit</a></div></article>
-      <article class="card access-card" id="memberPanel" hidden><span class="eyebrow">SESIÓN ACTIVA</span><h3 id="memberTitle">Tu acceso está listo.</h3><p id="memberCopy">Puedes continuar a tu espacio privado.</p><div id="roleLine" style="margin-top:12px;color:var(--green);font-size:10px;font-weight:900"></div><div class="actions"><a class="btn primary" id="continueButton" href="/app/workspace/"><b>Abrir mi panel</b></a><a class="btn" href="/parking/omni-jr/">Usar Smart Parking</a></div></article>
+    <section class="card member-panel" id="memberPanel" hidden>
+      <div><span class="eyebrow">SESIÓN ACTIVA</span><h2 id="memberTitle">Tu acceso está listo.</h2><p id="memberCopy">Puedes continuar a tu espacio privado.</p><div class="role-line" id="roleLine"></div></div>
+      <div class="member-actions"><a class="btn primary" id="continueButton" href="/app/workspace/"><b>Abrir mi panel</b></a><a class="btn" href="#services">Ver servicios</a></div>
+    </section>
+
+    <section class="card section" id="services">
+      <div class="section-head"><div><span class="eyebrow">SERVICIOS</span><h2>Disponibles y próximos.</h2><p>Elige un servicio. Solo los que están activos se pueden abrir.</p></div><span class="service-count">1 disponible · 3 próximos</span></div>
+      <div class="services">
+        <a class="service-card live" data-search-item href="/parking/omni-jr/">
+          <div class="service-icon" aria-hidden="true">🅿️</div>
+          <span class="eyebrow">SMART PARKING</span>
+          <h3>OMNI JR Parking</h3>
+          <p>Abre este estacionamiento específico para registrar la placa y completar el pago.</p>
+          <div class="service-meta"><span class="service-status live">Disponible</span><span class="service-open">→</span></div>
+        </a>
+        <button class="service-card disabled" data-search-item type="button" disabled aria-disabled="true">
+          <div class="service-icon" aria-hidden="true">🍽️</div>
+          <span class="eyebrow">BOOSTR EATS</span>
+          <h3>Comida y pedidos</h3>
+          <p>Explora restaurantes conectados, arma tu orden y paga desde BOOSTR.</p>
+          <div class="service-meta"><span class="service-status soon">No disponible</span><span class="service-open">…</span></div>
+        </button>
+        <button class="service-card disabled" data-search-item type="button" disabled aria-disabled="true">
+          <div class="service-icon" aria-hidden="true">🚘</div>
+          <span class="eyebrow">BOOSTR RIDES</span>
+          <h3>Transporte</h3>
+          <p>Solicita un traslado y sigue el recorrido con operadores conectados.</p>
+          <div class="service-meta"><span class="service-status soon">No disponible</span><span class="service-open">…</span></div>
+        </button>
+        <button class="service-card disabled" data-search-item type="button" disabled aria-disabled="true">
+          <div class="service-icon" aria-hidden="true">🏎️</div>
+          <span class="eyebrow">BOOSTR EXOTIC</span>
+          <h3>Vehículos exóticos</h3>
+          <p>Consulta inventario y reserva vehículos de partners verificados.</p>
+          <div class="service-meta"><span class="service-status soon">No disponible</span><span class="service-open">…</span></div>
+        </button>
+      </div>
     </section>
 
     <footer class="footer">POWERED BY BOOSTR LABS · ONE IDENTITY · MULTIPLE OPERATING SYSTEMS</footer>
   </main>
 
-  <nav class="dock" aria-label="Navegación rápida" data-no-i18n="true"><a class="active" href="/app/" title="Inicio">⌂</a><a href="/parking/omni-jr/" title="Parking">P</a><a href="/audit/" title="Audit">✦</a><a href="/login/" title="Cuenta">OS</a></nav>
-  <div class="toast" id="moduleToast" role="status" aria-live="polite"><b id="toastTitle">Próximamente</b><span id="toastCopy"></span></div>
+  <nav class="dock" aria-label="Navegación rápida" data-no-i18n="true"><a class="active" href="/app/" title="Inicio">⌂</a><a href="#services" title="Servicios">▦</a><a href="/accept-invite/" title="Invitación">+</a><a href="/login/" title="Cuenta">OS</a></nav>
 
   <script>
-    const accountButton=document.getElementById('accountButton');
-    const topAccount=document.getElementById('topAccount');
     const accessPanel=document.getElementById('accessPanel');
     const memberPanel=document.getElementById('memberPanel');
     const memberTitle=document.getElementById('memberTitle');
     const memberCopy=document.getElementById('memberCopy');
     const roleLine=document.getElementById('roleLine');
     const continueButton=document.getElementById('continueButton');
+    const topAccount=document.getElementById('topAccount');
     const profileName=document.getElementById('profileName');
     const profileInitial=document.getElementById('profileInitial');
-    const toast=document.getElementById('moduleToast');
-    const toastTitle=document.getElementById('toastTitle');
-    const toastCopy=document.getElementById('toastCopy');
-    let toastTimer;
-    const tokenHeaders=()=>{const token=localStorage.getItem('boostr_auth_token')||'';return token?{Authorization:`Bearer ${token}`}:{}};
-    const safePath=value=>typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')?value:'/app/workspace/';
+    const quickForm=document.getElementById('quickLoginForm');
+    const submitBtn=document.getElementById('submitBtn');
+    const authStatus=document.getElementById('authStatus');
+    const showPass=document.getElementById('showPass');
+    const tokenHeaders=()=>{const token=localStorage.getItem('boostr_auth_token')||'';return token?{Authorization:`Bearer ${token}`}:{} };
+    const validPath=value=>typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\');
     const unique=value=>[...new Set(value.filter(Boolean).map(item=>String(item).toLowerCase()))];
+
     function roleContext(session){
       const roles=unique([session.role,session.user?.role,session.active_workspace?.role,...(session.roles||[])]);
       const email=String(session.user?.email||'').toLowerCase();
@@ -111,19 +127,18 @@
       if(roles.some(role=>['staff','employee','operator','cashier','attendant','team_member','seller'].includes(role)))return{label:'Staff / Equipo del partner',destination:'/app/workspace/'};
       if(roles.some(role=>['client','artist','producer','creator'].includes(role)))return{label:'Cliente de BOOSTR',destination:'/app/workspace/'};
       if(roles.some(role=>['customer','fan','member'].includes(role)))return{label:'Cuenta de cliente',destination:'/app/workspace/'};
-      return{label:'Cuenta BOOSTR',destination:safePath(session.redirect||'/app/workspace/')};
+      return{label:'Cuenta BOOSTR',destination:'/app/workspace/'};
     }
-    function showFuture(button){toastTitle.textContent=`${button.dataset.module} · próximamente`;toastCopy.textContent=button.dataset.reason||'El servicio todavía no está disponible.';toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),3000)}
-    document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>showFuture(button)));
+
+    function destinationFor(session){const server=session?.redirect;return validPath(server)&&server!=='/app/'&&server!=='/app'?server:roleContext(session||{}).destination}
+    function saveSession(identifier,data){const user=data.user||{},workspace=data.active_workspace||data.workspace||{};if(data.token)localStorage.setItem('boostr_auth_token',data.token);localStorage.setItem('boostr_session',JSON.stringify({email:user.email||identifier,username:data.username||user.username||user.name||identifier,role:user.role||data.role||'client',workspace:workspace.name||null,redirect:destinationFor(data),createdAt:new Date().toISOString()}))}
+    function paintSession(session){const name=session.user?.name||session.username||session.user?.email||'Cuenta BOOSTR';const shortName=name.includes('@')?name.split('@')[0]:name;const context=roleContext(session);const destination=destinationFor(session);accessPanel.hidden=true;memberPanel.hidden=false;memberTitle.textContent=`Hola, ${shortName}.`;memberCopy.textContent=session.active_workspace?.name?`Tu contexto activo es ${session.active_workspace.name}.`:'Tu cuenta está lista para abrir el acceso asignado.';roleLine.textContent=context.label;continueButton.href=destination;continueButton.querySelector('b').textContent=`Abrir ${context.label}`;topAccount.href=destination;topAccount.classList.add('active');profileName.textContent=shortName;profileInitial.textContent=shortName.trim().charAt(0).toUpperCase()||'B'}
+
+    async function loadSession(){try{const response=await fetch('/api/session',{headers:tokenHeaders(),credentials:'same-origin',cache:'no-store'});if(!response.ok)return;const session=await response.json();if(!session?.ok&&!session?.user)return;paintSession(session)}catch{}}
+
+    quickForm.addEventListener('submit',async event=>{event.preventDefault();authStatus.className='auth-status';authStatus.textContent='Verificando tu cuenta...';submitBtn.disabled=true;const identifier=quickForm.identifier.value.trim();try{const response=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({identifier,password:quickForm.password.value})});const data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw data;saveSession(identifier,data);authStatus.className='auth-status success';authStatus.textContent='Sesión iniciada. Abriendo tu espacio...';location.replace(destinationFor(data))}catch(error){authStatus.className='auth-status error';authStatus.textContent=error?.message||error?.error||'No se pudo iniciar sesión. Revisa tus credenciales.';submitBtn.disabled=false}});
+    showPass.addEventListener('click',()=>{const field=quickForm.password;field.type=field.type==='password'?'text':'password';showPass.textContent=field.type==='password'?'VER':'OCULTAR'});
     document.querySelector('.search')?.addEventListener('input',event=>{const q=event.target.value.trim().toLowerCase();document.querySelectorAll('[data-search-item]').forEach(item=>item.style.display=!q||item.textContent.toLowerCase().includes(q)?'':'none')});
-    async function loadSession(){
-      try{
-        const response=await fetch('/api/session',{headers:tokenHeaders(),credentials:'same-origin',cache:'no-store'});if(!response.ok)return;
-        const session=await response.json();if(!session?.ok&&!session?.user)return;
-        const name=session.user?.name||session.username||session.user?.email||'Cuenta BOOSTR';const shortName=name.includes('@')?name.split('@')[0]:name;const context=roleContext(session);const serverDestination=safePath(session.redirect||context.destination);const destination=serverDestination==='/app/'?context.destination:serverDestination;
-        accountButton.textContent=`Abrir ${shortName}`;accountButton.href=destination;topAccount.href=destination;topAccount.classList.add('active');profileName.textContent=shortName;profileInitial.textContent=shortName.trim().charAt(0).toUpperCase()||'B';accessPanel.hidden=true;memberPanel.hidden=false;memberTitle.textContent=`Hola, ${shortName}.`;memberCopy.textContent=session.active_workspace?.name?`Tu contexto activo es ${session.active_workspace.name}.`:'Puedes continuar a tu espacio privado o usar servicios públicos.';roleLine.textContent=context.label;continueButton.href=destination;continueButton.querySelector('b').textContent=`Abrir ${context.label}`;
-      }catch{}
-    }
     loadSession();
   </script>
 </body>
