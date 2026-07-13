@@ -66,7 +66,7 @@ export async function onRequestPost({ request, env }) {
 
     return json({
       ok: true,
-      build: "omni-self-heal-v1",
+      build: "omni-self-heal-v2",
       module: "BOOSTR Smart Parking",
       operator: "OMNI JR Parking",
       workspace,
