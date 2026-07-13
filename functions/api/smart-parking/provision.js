@@ -73,19 +73,19 @@ export async function onRequestPost({ request, env }) {
       payment_links: {
         standard: {
           id: provisioned.standard.link.id,
-          public_url: `/pay/omni/?id=${encodeURIComponent(provisioned.standard.link.id)}&plan=standard`,
+          public_url: `/omni-jr/checkout/?id=${encodeURIComponent(provisioned.standard.link.id)}&plan=standard`,
           stable_url: "/parking/omni-jr/standard",
           amount_cents: OMNI_PLANS.standard.amount
         },
         large: {
           id: provisioned.large.link.id,
-          public_url: `/pay/omni/?id=${encodeURIComponent(provisioned.large.link.id)}&plan=large`,
+          public_url: `/omni-jr/checkout/?id=${encodeURIComponent(provisioned.large.link.id)}&plan=large`,
           stable_url: "/parking/omni-jr/large",
           amount_cents: OMNI_PLANS.large.amount
         },
         monthly: {
           id: provisioned.monthly.link.id,
-          public_url: `/pay/omni/?id=${encodeURIComponent(provisioned.monthly.link.id)}&plan=monthly`,
+          public_url: `/omni-jr/checkout/?id=${encodeURIComponent(provisioned.monthly.link.id)}&plan=monthly`,
           stable_url: "/parking/omni-jr/monthly",
           amount_cents: OMNI_PLANS.monthly.amount
         }
