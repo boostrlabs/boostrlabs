@@ -8,6 +8,19 @@ The PWA pilot installs the existing BOOSTR Labs web system on an iPhone home scr
 
 The installed experience continues to use the deployed Cloudflare frontend, Pages Functions, and remote database. Primary business records are not stored as an offline replica on the phone.
 
+## Landing gateway
+
+The root landing is the public decision layer for the installed PWA. It must not look like an internal dashboard or assume that every visitor already understands BOOSTR.
+
+It presents two independent paths with equal visibility:
+
+- **BOOSTR Audit** for a visitor who does not yet know what system, module, or solution the business needs.
+- **BOOSTR Login** for a person who already has an account, workspace, private invitation, or direct access.
+
+The landing does not force login visitors through the Audit. It also does not describe BOOSTR as “my system” to an unknown visitor.
+
+When `/api/session` confirms an active session, the login path changes to **Continue in BOOSTR** and uses the safe same-origin destination returned by the session. Session detection is non-blocking and uses `cache: no-store`; a backend failure cannot prevent the Audit and Login links from working.
+
 ## Install on iPhone
 
 1. Open the deployed BOOSTR Labs URL in Safari.
@@ -41,6 +54,19 @@ The service worker bypasses caching for:
 - URLs containing `pin` or `token`
 - requests containing authorization or manager PIN headers
 - all non-GET requests
+
+## Landing QA
+
+Before merge, verify from the installed iPhone PWA:
+
+1. The first screen shows Audit and Login without exposing internal Manager/Client navigation.
+2. Audit opens `/audit/`.
+3. Login opens `/login/`.
+4. Private invitation opens `/accept-invite/`.
+5. Spanish/English switching survives reopen.
+6. An authenticated account sees **Continue in BOOSTR**.
+7. An unavailable `/api/session` request does not break either public path.
+8. The layout clears the notch, Dynamic Island, keyboard, and home indicator.
 
 ## Rollback
 
