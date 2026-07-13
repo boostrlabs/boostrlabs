@@ -12,7 +12,8 @@ const serverFiles = [
   "functions/api/smart-parking/omni-jr/manager-signup.js",
   "functions/api/smart-parking/omni-jr/verify.js",
   "functions/parking/omni-jr/[plan].js",
-  "functions/parking/omni-jr/ticket/[token].js"
+  "functions/parking/omni-jr/ticket/[token].js",
+  "functions/pay/[id].js"
 ];
 
 const htmlFiles = [
@@ -22,7 +23,8 @@ const htmlFiles = [
   "public/join/omni-jr/maikfine/index.html",
   "public/parking/omni-jr/index.html",
   "public/parking/omni-jr/qr/index.html",
-  "public/pay/index.html"
+  "public/pay/index.html",
+  "public/pay/omni/index.html"
 ];
 
 const assetFiles = ["public/assets/omni-jr/omni-jr-logo-black.svg"];
@@ -61,12 +63,14 @@ const checks = {
   "functions/api/smart-parking/omni-jr/verify.js": ["parking_manager_access_denied", "recordParkingVerification", "recent", "plate", "token"],
   "functions/parking/omni-jr/[plan].js": ["amount: 2000", "amount: 2500", "amount: 15000", "checkout_theme", "/pay/"],
   "functions/parking/omni-jr/ticket/[token].js": ["PARKING ACTIVO", "/api/public/qr", "/app/parking/omni-jr/manager/?token=", "omni-jr-logo-black.svg"],
+  "functions/pay/[id].js": ["isOmniParking", "/pay/omni/", "workspace_slug", "no-store"],
   "public/app/parking/omni-jr/index.html": ["OMNI JR PARKING", "$20", "$25", "$150", "/api/public/qr", "/app/parking/omni-jr/manager/", "omni-jr-logo-black.svg"],
   "public/app/parking/omni-jr/manager/index.html": ["Verificar parking · Escanear QR", "Consultar plate", "BarcodeDetector", "/api/smart-parking/omni-jr/verify", "MAIKFINE · MANAGER"],
   "public/join/omni-jr/maikfine/index.html": ["maikfine", "Número de teléfono", "Correo electrónico", "/api/smart-parking/omni-jr/manager-signup"],
   "public/parking/omni-jr/index.html": ["Sedan / Sport / Coupe", "Truck / Big SUV", "$150 / mes", "omni-jr-logo-black.svg"],
   "public/parking/omni-jr/qr/index.html": ["$20", "$25", "$150 / MES", "/api/public/qr", "omni-jr-logo-black.svg"],
   "public/pay/index.html": ["parking-theme", "Plate / Placa", "parking_ticket", "ticketQr", "brand_logo_url"],
+  "public/pay/omni/index.html": ["OMNI JR PARKING", "Preparando checkout seguro", "loader", "Powered by BOOSTR Labs", "parking_plate"],
   "public/assets/omni-jr/omni-jr-logo-black.svg": ["OMNI JR Parking — official logo", "viewBox=\"0 0 1254 1254\"", "approved source artwork"]
 };
 
