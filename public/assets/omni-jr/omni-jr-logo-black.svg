@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title id="title">OMNI JR Parking</title>
+<desc id="desc">Circular OMNI JR Parking logo with parking sign and sports car.</desc>
+<g fill="none" stroke="#111" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="512" cy="512" r="468" stroke-width="18"/>
+  <circle cx="512" cy="512" r="438" stroke-width="5"/>
+  <path d="M138 552h748" stroke-width="8"/>
+  <rect x="220" y="220" width="244" height="244" rx="24" stroke-width="18"/>
+  <path d="M298 406V278h76c54 0 88 27 88 68 0 44-34 70-88 70h-36" stroke-width="30"/>
+  <path d="M342 456v96M276 552h132" stroke-width="13"/>
+  <path d="M493 438l42-86c10-21 27-34 52-38 74-12 150-12 224 0 25 4 42 17 52 38l43 86" stroke-width="14"/>
+  <path d="M526 438h349c30 0 51 17 58 48l14 70c4 23-10 42-34 42H502c-24 0-38-19-34-42l14-70c7-31 28-48 44-48z" stroke-width="16"/>
+  <path d="M501 470l95 29h220l95-29M614 499l44 63h96l44-63" stroke-width="12"/>
+  <path d="M506 550h74M831 550h74" stroke-width="17"/>
+</g>
+<g fill="#111" font-family="Arial Black,Arial,sans-serif" text-anchor="middle">
+  <text x="512" y="740" font-size="118" letter-spacing="22">OMNI JR</text>
+  <text x="512" y="838" font-size="66" letter-spacing="28">PARKING</text>
+</g>
+<path d="M238 812h105M681 812h105" stroke="#111" stroke-width="8" stroke-linecap="round"/>
+</svg>

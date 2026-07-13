@@ -1,5 +1,6 @@
 import { clean, json, jsonError, now, requireDb } from "../../../_lib/api.js";
 import { syncInteractiveReceipt } from "../../../_lib/payment-receipts.js";
+import { publicParkingTicket, syncParkingSession } from "../../../_lib/smart-parking.js";
 import { ensureStripeSchema, getStripeWebhookSecret, recordStripeActivity } from "../../../_lib/stripe.js";
 
 function parseSignature(header = "") {
@@ -38,7 +39,7 @@ async function verifyStripeSignature(rawBody, header, secret, toleranceSeconds =
   return parsed.signatures.some((signature) => constantTimeEqual(signature, expected));
 }
 
-async function updatePayment(env, event) {
+async function updatePayment(env, event, origin) {
   const object = event?.data?.object || {};
   const timestamp = now();
   const paymentId = clean(object?.metadata?.boostr_payment_id, 160);
@@ -123,15 +124,19 @@ async function updatePayment(env, event) {
 
   let document = null;
   if (status === "paid" || status === "refunded") {
-    try {
-      document = await syncInteractiveReceipt(env, payment.id, status);
-    } catch {}
+    try { document = await syncInteractiveReceipt(env, payment.id, status); } catch {}
+  }
+
+  let parkingSession = null;
+  if (["paid", "refunded", "failed", "canceled", "expired"].includes(status)) {
+    try { parkingSession = await syncParkingSession(env, payment.id, status); } catch (error) { console.error("Smart Parking sync failed", error); }
   }
 
   return {
     id: payment.id,
     status,
-    document: document ? { id: document.id, public_url: document.public_url, document_number: document.document_number } : null
+    document: document ? { id: document.id, public_url: document.public_url, document_number: document.document_number } : null,
+    parking_ticket: parkingSession ? publicParkingTicket(parkingSession, origin) : null
   };
 }
 
@@ -151,6 +156,6 @@ export async function onRequestPost({ request, env }) {
   }
   const event = JSON.parse(rawBody);
   await ensureStripeSchema(env);
-  const payment = await updatePayment(env, event);
+  const payment = await updatePayment(env, event, new URL(request.url).origin);
   return json({ ok: true, received: true, event_id: event.id, event_type: event.type, payment });
 }
