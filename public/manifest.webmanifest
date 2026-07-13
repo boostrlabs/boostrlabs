@@ -1,16 +1,16 @@
 {
-  "id": "/?source=pwa",
-  "name": "BOOSTR Labs",
+  "id": "/app/?source=pwa",
+  "name": "BOOSTR",
   "short_name": "BOOSTR",
-  "description": "BOOSTR Labs operating systems, dashboards, audits, stores and partner tools.",
-  "lang": "en",
+  "description": "BOOSTR Super App with SMART PARKING and connected service modules.",
+  "lang": "es",
   "dir": "ltr",
-  "start_url": "/?source=pwa",
+  "start_url": "/app/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "background_color": "#050505",
-  "theme_color": "#050505",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#070707",
+  "theme_color": "#090909",
   "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
@@ -28,19 +28,14 @@
   ],
   "shortcuts": [
     {
-      "name": "Manager",
-      "short_name": "Manager",
-      "url": "/manager?source=pwa-shortcut"
+      "name": "SMART PARKING",
+      "short_name": "Parking",
+      "url": "/parking/omni-jr/?source=pwa-shortcut"
     },
     {
-      "name": "Client",
-      "short_name": "Client",
-      "url": "/app?source=pwa-shortcut"
-    },
-    {
-      "name": "BOOSTR Audit",
-      "short_name": "Audit",
-      "url": "/audit?source=pwa-shortcut"
+      "name": "BOOSTR App",
+      "short_name": "App",
+      "url": "/app/?source=pwa-shortcut"
     }
   ]
 }
