@@ -14,7 +14,11 @@ if (manifest.start_url !== '/app/?source=pwa') failures.push(`Unexpected PWA sta
 if (manifest.scope !== '/') failures.push(`Unexpected PWA scope: ${manifest.scope}`);
 if (manifest.display !== 'standalone') failures.push(`Unexpected PWA display mode: ${manifest.display}`);
 if (!root.includes('(display-mode: standalone)')) failures.push('Root page does not detect standalone launch mode');
-if (!root.includes('/app/?source=pwa')) failures.push('Root page does not redirect standalone launches to BOOSTR App');
+if (!root.includes("const target = standalone ? '/app/?source=pwa' : '/app/'")) failures.push('Root domain does not route every launch to BOOSTR App');
+if (!root.includes('window.location.replace(target)')) failures.push('Root page does not replace the legacy landing with BOOSTR App');
+for (const legacyMarker of ['The system layer behind modern businesses.', 'Mother UI', 'Backend/auth/data pending Codex']) {
+  if (root.includes(legacyMarker)) failures.push(`Root domain still exposes legacy landing marker: ${legacyMarker}`);
+}
 if (!sessionUi.includes('redirectInstalledLaunch')) failures.push('Shared session UI does not repair legacy installed PWA entry routes');
 if (!sessionUi.includes('/manifest.webmanifest')) failures.push('Shared session UI does not expose the PWA manifest');
 
