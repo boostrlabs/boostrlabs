@@ -18,7 +18,7 @@
         <span class="boostr-brand-mark"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></span>
         <span class="boostr-brand-copy"><b>BOOSTR Labs</b><span>Smart Payment Link</span></span>
       </a>
-      <div class="boostr-profile"><div class="boostr-profile-avatar">$</div><div><b>Commerce route</b><span>Prototype · no charge</span></div></div>
+      <div class="boostr-profile"><div class="boostr-profile-avatar">$</div><div><b>BOOSTR Money</b><span>Stripe-ready commerce</span></div></div>
       <nav class="boostr-app-nav">
         <a href="/home/"><span>Overview</span><b>⌂</b></a>
         <a class="active" href="/smart-payment-link/" aria-current="page"><span>Payment Link</span><b>$</b></a>
@@ -40,8 +40,8 @@
       <section class="boostr-hero-grid">
         <article class="boostr-hero-card">
           <span class="boostr-eyebrow">SMART PAYMENT LINK</span>
-          <h1>Sell with one link.</h1>
-          <p>A BOOSTR-powered route for offers, deposits, bookings and drops. This prototype demonstrates checkout rules and order states but does not process a real payment.</p>
+          <h1>Cobra con contexto.</h1>
+          <p>Crea ofertas, deposits, bookings y drops con reglas claras. Stripe confirma el pago; BOOSTR mantiene el contexto, el order status y el fulfillment.</p>
           <div class="boostr-actions"><button class="boostr-button primary" type="button" id="jumpToCheckout">Build preview</button><a class="boostr-button" href="/manager/payment-links/">Open Payment Links</a><a class="boostr-button" href="/audit/">Start Audit</a></div>
         </article>
         <article class="boostr-focus-card">
@@ -73,7 +73,7 @@
           <div class="boostr-offer-card">
             <div class="boostr-offer-head"><div><span class="boostr-tag">PREVIEW OFFER</span><h2 id="offerTitle">Creative Service Deposit</h2><p class="sub">Reserve a project slot. Final scope is confirmed manually.</p></div><span class="boostr-tag" id="ruleTag">GUEST OK</span></div>
             <div class="boostr-price" id="price">$150</div>
-            <div class="sub">Static prototype · no real payment</div>
+            <div class="sub">Checkout controlado por estado y contexto</div>
           </div>
 
           <div class="boostr-segments" role="tablist" aria-label="Checkout rule">
@@ -111,10 +111,10 @@
       <section class="boostr-showcase">
         <article class="boostr-showcase-card"><span class="boostr-eyebrow">CHECKOUT</span><h3>Guest when possible</h3><p>Simple purchases can remain fast and low-friction without forcing an account.</p><div class="boostr-pill-row"><span class="boostr-pill">Name</span><span class="boostr-pill">Contact</span><span class="boostr-pill">Receipt</span></div></article>
         <article class="boostr-showcase-card"><span class="boostr-eyebrow">IDENTITY</span><h3>Account when needed</h3><p>Private delivery, history, downloads, recurring access and licenses stay attached to a person.</p><div class="boostr-pill-row"><span class="boostr-pill">Files</span><span class="boostr-pill">History</span><span class="boostr-pill">Access</span></div></article>
-        <article class="boostr-showcase-card"><span class="boostr-eyebrow">BACKEND</span><h3>Stripe remains pending</h3><p>This page does not claim that a card was charged or that a production order exists.</p><div class="boostr-pill-row"><span class="boostr-pill">No charge</span><span class="boostr-pill">Prototype</span></div></article>
+        <article class="boostr-showcase-card"><span class="boostr-eyebrow">BACKEND</span><h3>Stripe is source of truth</h3><p>BOOSTR only marks payment states after Stripe/webhook confirmation, then routes fulfillment to the active workspace.</p><div class="boostr-pill-row"><span class="boostr-pill">Stripe</span><span class="boostr-pill">Orders</span></div></article>
       </section>
 
-      <footer class="footer">POWERED BY BOOSTR LABS · NO REAL PAYMENT PROCESSING</footer>
+      <footer class="footer">POWERED BY BOOSTR LABS · STRIPE-CONNECTED COMMERCE</footer>
     </main>
   </div>
 
