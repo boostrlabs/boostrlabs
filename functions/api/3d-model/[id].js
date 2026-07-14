@@ -1,8 +1,23 @@
 import { jsonError } from "../../_lib/api.js";
 
 const MODELS = {
+  burli: {
+    filenames: ["BURLi.glb", "burli.glb", "burli-3d.glb", "burli-cartoon.glb"],
+    extension: ".glb",
+    terms: ["burli"]
+  },
   glizzy: { filenames: ["gs_glizzy.ply"], extension: ".ply" },
   malta: { filenames: ["gs_malta.ply"], extension: ".ply" },
+  janko: {
+    filenames: ["janko.glb", "janko-diorr.glb", "janko_3d.glb", "janko-diorr-3d.glb"],
+    extension: ".glb",
+    terms: ["janko", "diorr"]
+  },
+  gemese: {
+    filenames: ["gemese.glb", "gemese-nne.glb", "gemese_3d.glb", "gemese-nne-3d.glb"],
+    extension: ".glb",
+    terms: ["gemese", "nne"]
+  },
   "johanka-ply": {
     filenames: ["prueba.ply", "johanka.ply", "johanka_3d.ply", "johanka 3d.ply"],
     extension: ".ply",
@@ -131,7 +146,7 @@ async function serve({ request, env, params }, headOnly = false) {
 
   const common = new Headers(corsHeaders());
   resolved.metadata?.writeHttpMetadata?.(common);
-  common.set("Content-Type", "application/octet-stream");
+  common.set("Content-Type", model.extension === ".glb" ? "model/gltf-binary" : "application/octet-stream");
   common.set("Content-Disposition", `inline; filename="${resolved.key.split("/").pop()}"`);
   common.set("Accept-Ranges", "bytes");
   common.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
@@ -154,7 +169,7 @@ async function serve({ request, env, params }, headOnly = false) {
   if (!object) return jsonError("model_disappeared", "The 3D model was found but could not be read.", 404, { key: resolved.key });
 
   object.writeHttpMetadata(common);
-  common.set("Content-Type", "application/octet-stream");
+  common.set("Content-Type", model.extension === ".glb" ? "model/gltf-binary" : "application/octet-stream");
   common.set("Content-Disposition", `inline; filename="${resolved.key.split("/").pop()}"`);
   common.set("X-BOOSTR-R2-Key", resolved.key);
   common.set("X-BOOSTR-Format", model.extension.slice(1));
