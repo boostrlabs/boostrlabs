@@ -1,6 +1,6 @@
 import { jsonError } from "../_lib/api.js";
 
-const FILENAMES = ["Gemese-3D.glb", "gemese-3d.glb", "gemese.glb", "gemese-nne.glb"];
+const FILENAMES = ["Gemese-3D.glb", "Gemese-3D(1).glb", "gemese-3d.glb", "gemese.glb", "gemese-nne.glb"];
 const storage = (env) => env.BOOSTR_ASSETS || env.JOHANKARRD_ASSETS || env.ASSETS_BUCKET || env.R2_BUCKET || null;
 const cors = () => ({
   "Access-Control-Allow-Origin": "*",
@@ -29,7 +29,7 @@ async function serve({ env }, head = false) {
   const bucket = storage(env);
   if (!bucket) return jsonError("r2_missing", "3D model storage is not configured.", 503);
   const found = await resolve(bucket);
-  if (!found) return jsonError("model_not_uploaded", "Gemese GLB is not available in R2.", 404, { expected_path: "public/3dmodels/Gemese-3D.glb" });
+  if (!found) return jsonError("model_not_uploaded", "Gemese GLB is not available in R2.", 404, { expected_path: "public/3dmodels/Gemese-3D.glb", accepted_filenames: FILENAMES });
   const headers = new Headers(cors());
   headers.set("Content-Type", "model/gltf-binary");
   headers.set("Content-Disposition", `inline; filename="${found.key.split("/").pop()}"`);
