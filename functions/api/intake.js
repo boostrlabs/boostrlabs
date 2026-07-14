@@ -1,6 +1,7 @@
 import { addLeadEvent, clean, isValidEmail, isValidPhone, json, jsonError, normalizeArray, normalizePhone, readJson } from "../_lib/api.js";
 
 const requiredFields = ["contact_name", "business_name", "industry", "project_goal", "current_status"];
+const ORLANDO_SOURCE = "boostr-event-os-orlando-jul-25";
 
 const escapeHtml = (value) =>
   String(value || "")
@@ -9,6 +10,20 @@ const escapeHtml = (value) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
+async function ensureEventWorkspace(env, source, createdAt) {
+  if (!env.DB || source !== ORLANDO_SOURCE) return null;
+  const slug = "event-orlando-jul-25";
+  const existing = await env.DB.prepare("SELECT id FROM workspaces WHERE slug = ? LIMIT 1").bind(slug).first();
+  if (existing?.id) return existing.id;
+
+  const id = crypto.randomUUID();
+  await env.DB.prepare(
+    `INSERT INTO workspaces (id, type, name, slug, owner_email, status, created_at, updated_at)
+     VALUES (?, 'event', 'Fuerte Promotions · Orlando Jul 25', ?, NULL, 'active', ?, ?)`
+  ).bind(id, slug, createdAt, createdAt).run();
+  return id;
+}
 
 const leadFromPayload = (payload) => ({
   id: crypto.randomUUID(),
@@ -45,13 +60,9 @@ const emailHtml = (lead) => `
   <h2>Business</h2>
   <p><strong>Business:</strong> ${escapeHtml(lead.business_name)}</p>
   <p><strong>Industry:</strong> ${escapeHtml(lead.industry)}</p>
-  <p><strong>Website:</strong> ${escapeHtml(lead.current_website_url)}</p>
-  <p><strong>Socials:</strong> ${escapeHtml(lead.social_links)}</p>
   <h2>Project</h2>
   <p><strong>Goal:</strong> ${escapeHtml(lead.project_goal)}</p>
   <p><strong>Requested modules:</strong> ${escapeHtml(lead.requested_modules.join(", "))}</p>
-  <p><strong>Current status:</strong> ${escapeHtml(lead.current_status)}</p>
-  <p><strong>Biggest problem:</strong> ${escapeHtml(lead.biggest_problem)}</p>
   <h2>Timeline / Budget</h2>
   <p><strong>Timeline:</strong> ${escapeHtml(lead.timeline)}</p>
   <p><strong>Budget:</strong> ${escapeHtml(lead.budget_range)}</p>
@@ -88,15 +99,17 @@ export async function onRequestPost({ request, env }) {
   const lead = leadFromPayload(payload);
 
   if (env.DB) {
+    const workspaceId = await ensureEventWorkspace(env, lead.source, lead.created_at);
     await env.DB.prepare(
       `INSERT INTO leads (
-        id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
+        id, workspace_id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
         business_name, industry, project_goal, budget_range, timeline, current_status,
         message, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)`
     )
       .bind(
         lead.id,
+        workspaceId,
         lead.source,
         lead.contact_name,
         lead.contact_email,
@@ -109,8 +122,6 @@ export async function onRequestPost({ request, env }) {
         lead.timeline,
         lead.current_status,
         JSON.stringify({
-          current_website_url: lead.current_website_url,
-          social_links: lead.social_links,
           requested_modules: lead.requested_modules,
           biggest_problem: lead.biggest_problem,
           manual_or_confusing: lead.manual_or_confusing,
@@ -125,6 +136,7 @@ export async function onRequestPost({ request, env }) {
       .run();
 
     await addLeadEvent(env, {
+      workspace_id: workspaceId,
       lead_id: lead.id,
       event_type: "intake.submitted",
       payload: {
