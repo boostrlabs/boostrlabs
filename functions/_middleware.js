@@ -146,6 +146,7 @@ export async function onRequest(context) {
     "/app/janko",
     "/app/johanka",
     "/app/82ngel",
+    "/app/automotive",
     "/app/parking",
     "/app/cloud"
   ]);

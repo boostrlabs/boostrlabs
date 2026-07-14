@@ -3,6 +3,7 @@
 
   const PARTNERS = {
     boostr: { id: 'boostr', name: 'BOOSTR Labs', logo: '/assets/logos/boostr-logo-nav.png', tone: 'dark' },
+    solve: { id: 'solve', name: 'SOLVE Automotive', label: 'SOLVE', tone: 'dark' },
     omni: { id: 'omni', name: 'OMNI JR Parking', logo: '/assets/omni-jr/omni-jr-logo-black.svg', tone: 'light' },
     hummus: { id: 'hummus', name: 'Hummus Mediterranean Food', logo: '/assets/boostr-launcher/hummus-wordmark.svg', tone: 'light' },
     janko: { id: 'janko', name: 'JANKO', logo: '/assets/link/janko/janko-logo-white-hd.png', tone: 'dark' },
@@ -54,10 +55,11 @@
       name: 'AUTOMOTIVE OS',
       symbol: 'automotive',
       accent: 'indigo',
-      guestState: 'soon',
+      guestState: 'login',
+      publicRoute: '/login/?next=/app/automotive/',
       moduleSlugs: ['automotive-os'],
-      workspaceTerms: ['automotive', 'dealer', 'honda', 'toyota', 'cars'],
-      partners: []
+      workspaceTerms: ['automotive', 'dealer', 'honda', 'toyota', 'cars', 'solve'],
+      partners: ['solve']
     },
     {
       id: 'artist',
@@ -146,6 +148,7 @@
     if (system.id === 'worker') return sessionRedirect;
     if (system.id === 'core') return context.founder ? '/app/janko/' : '/admin/';
     if (system.id === 'parking') return hasWorkspace(context, system.workspaceTerms) || context.elevated ? '/app/parking/omni-jr/' : '/parking/omni-jr/';
+    if (system.id === 'automotive') return '/app/automotive/';
     if (system.id === 'restaurant') {
       if (context.founder) return '/hummusfl/manager-missions/';
       if (context.johanka) return '/hummusfl/creative-missions/';

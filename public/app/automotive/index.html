@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="es" data-build="automotive-os-1.0.0" data-no-marketplace="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07100d">
+  <meta name="boostr-theme" content="custom">
+  <meta name="description" content="Automotive OS dentro del ecosistema BOOSTR, powered by SOLVE.">
+  <title>Automotive OS - BOOSTR Labs</title>
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#050807;
+      --panel:#101513;
+      --panel-2:#141b18;
+      --line:rgba(255,255,255,.12);
+      --line-strong:rgba(255,255,255,.2);
+      --text:#f7f6ef;
+      --muted:#a4aaa3;
+      --soft:#d4d8d2;
+      --blue:#34b8ff;
+      --green:#74f2a6;
+      --amber:#ffe29a;
+      --shadow:0 26px 90px rgba(0,0,0,.46);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html{min-height:100%;background:var(--bg);scroll-behavior:smooth}
+    body{
+      min-height:100dvh;
+      margin:0;
+      overflow-x:hidden;
+      background:
+        radial-gradient(circle at 12% 10%,rgba(116,242,166,.16),transparent 28rem),
+        radial-gradient(circle at 88% 0,rgba(52,184,255,.18),transparent 30rem),
+        linear-gradient(130deg,#07100d 0%,#0c1114 52%,#050607 100%);
+      color:var(--text);
+      font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+    }
+    a{color:inherit;text-decoration:none}
+    button,select,input{font:inherit}
+    img{max-width:100%;display:block}
+    .shell{width:min(1460px,100%);margin:0 auto;padding:24px}
+    .topbar{
+      min-height:86px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:16px 18px;
+      border:1px solid var(--line);
+      border-radius:26px;
+      background:rgba(9,13,13,.78);
+      box-shadow:0 18px 70px rgba(0,0,0,.28);
+      backdrop-filter:blur(24px);
+      position:sticky;
+      top:14px;
+      z-index:10;
+    }
+    .brand{display:flex;align-items:center;gap:16px;min-width:0}
+    .brand img{width:154px;height:auto}
+    .brand-copy{display:grid;gap:3px;min-width:0}
+    .brand-copy strong{font-size:1.08rem;line-height:1.05}
+    .brand-copy span{font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:0}
+    .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .control,.button{
+      min-height:46px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      color:var(--text);
+      background:rgba(255,255,255,.045);
+      padding:0 15px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:850;
+      white-space:nowrap;
+    }
+    .control{min-width:210px;outline:0}
+    .button.primary{border-color:rgba(52,184,255,.35);background:linear-gradient(135deg,#3d7cff,#34b8ff);box-shadow:0 20px 46px rgba(52,184,255,.17)}
+    .button.subtle{color:var(--soft)}
+    .layout{display:grid;grid-template-columns:310px minmax(0,1fr);gap:22px;margin-top:22px}
+    .side,.panel{
+      border:1px solid var(--line);
+      border-radius:30px;
+      background:linear-gradient(145deg,rgba(18,27,24,.9),rgba(9,12,12,.88));
+      box-shadow:var(--shadow);
+    }
+    .side{padding:22px;height:calc(100dvh - 142px);position:sticky;top:122px;overflow:auto}
+    .profile{display:flex;align-items:center;gap:13px;margin-bottom:22px}
+    .avatar{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(145deg,rgba(116,242,166,.92),rgba(52,184,255,.8));
+      color:#04100c;
+      font-weight:1000;
+      font-size:1.08rem;
+    }
+    .profile h1{margin:0;font-size:1.3rem;line-height:1}
+    .profile p{margin:.35rem 0 0;color:var(--muted);line-height:1.25}
+    .mark-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:22px}
+    .mark{
+      min-height:74px;
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:rgba(0,0,0,.18);
+      display:grid;
+      place-items:center;
+      padding:12px;
+      text-align:center;
+      font-weight:1000;
+    }
+    .mark.solve{color:#fff}
+    .mark.boostr img{max-width:120px;max-height:34px;object-fit:contain}
+    .side-label{margin:22px 0 9px;color:var(--muted);font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:0}
+    .nav-list{display:grid;gap:9px}
+    .nav-list button{
+      width:100%;
+      min-height:54px;
+      border:1px solid var(--line);
+      border-radius:17px;
+      color:var(--text);
+      background:rgba(255,255,255,.035);
+      text-align:left;
+      padding:0 14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .nav-list button.is-active{border-color:rgba(52,184,255,.42);background:linear-gradient(135deg,rgba(52,184,255,.16),rgba(116,242,166,.08))}
+    .micro-card{
+      margin-top:22px;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:22px;
+      padding:16px;
+      color:var(--soft);
+      background:rgba(255,255,255,.035);
+      line-height:1.45;
+    }
+    .micro-card b{display:block;margin-bottom:7px;color:#fff}
+    .main{display:grid;gap:22px}
+    .hero{padding:30px}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:26px;align-items:stretch}
+    .eyebrow{margin:0 0 12px;color:#58d7ff;font-size:.78rem;font-weight:1000;text-transform:uppercase;letter-spacing:0}
+    .hero h2{margin:0;font-size:5rem;line-height:.92;letter-spacing:0;max-width:900px}
+    .hero p{max-width:780px;margin:20px 0 0;color:var(--soft);font-size:1.08rem;line-height:1.55}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+    .metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:26px}
+    .metric{
+      border:1px solid var(--line);
+      border-radius:18px;
+      min-height:95px;
+      padding:16px;
+      background:rgba(0,0,0,.16);
+    }
+    .metric span{display:block;color:var(--muted);font-size:.78rem;text-transform:uppercase;font-weight:950;letter-spacing:0}
+    .metric b{display:block;margin-top:11px;font-size:2rem;line-height:1}
+    .visual{
+      min-height:380px;
+      border:1px solid var(--line);
+      border-radius:26px;
+      overflow:hidden;
+      background:#0b1012;
+      position:relative;
+    }
+    .visual img{width:100%;height:100%;object-fit:cover;filter:saturate(.92) contrast(1.04)}
+    .visual:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.66))}
+    .visual-caption{position:absolute;left:18px;right:18px;bottom:18px;z-index:1;display:flex;align-items:end;justify-content:space-between;gap:12px}
+    .visual-caption strong{font-size:1.4rem;line-height:1}
+    .status{border:1px solid rgba(116,242,166,.28);border-radius:999px;padding:8px 11px;color:#8dffb7;font-size:.8rem;font-weight:950;background:rgba(10,18,14,.72);white-space:nowrap}
+    .section{padding:26px}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:18px}
+    .section h3{margin:0;font-size:2rem;line-height:1.05}
+    .section-head p{max-width:620px;margin:0;color:var(--muted);line-height:1.45}
+    .surface-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .surface-card{
+      min-height:210px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:rgba(255,255,255,.035);
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      transition:transform .18s ease,border-color .18s ease,background .18s ease;
+    }
+    .surface-card:hover{transform:translateY(-2px);border-color:rgba(52,184,255,.32);background:rgba(255,255,255,.055)}
+    .surface-card[hidden]{display:none}
+    .tag{width:max-content;max-width:100%;border:1px solid rgba(52,184,255,.22);border-radius:999px;padding:6px 10px;color:#91dcff;font-size:.76rem;font-weight:950;text-transform:uppercase;letter-spacing:0}
+    .surface-card h4{margin:0;font-size:1.36rem;line-height:1.08}
+    .surface-card p{margin:0;color:var(--muted);line-height:1.44}
+    .surface-card a{margin-top:auto;color:#a8d8ff;font-weight:950}
+    .surface-card.disabled{opacity:.72}
+    .surface-card.disabled a{color:var(--amber)}
+    .map-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .map-card{
+      min-height:168px;
+      border:1px solid var(--line);
+      border-radius:21px;
+      padding:18px;
+      background:rgba(0,0,0,.18);
+    }
+    .map-card b{display:block;font-size:1.2rem;margin-bottom:10px}
+    .map-card p{margin:0;color:var(--muted);line-height:1.43}
+    .proof-strip{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:12px}
+    .proof{
+      min-height:220px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:#0b0f10;
+      overflow:hidden;
+      position:relative;
+    }
+    .proof img{width:100%;height:100%;object-fit:cover}
+    .proof span{
+      position:absolute;
+      left:14px;
+      bottom:14px;
+      right:14px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:8px 10px;
+      background:rgba(0,0,0,.62);
+      color:#fff;
+      font-weight:900;
+      text-align:center;
+    }
+    .phase-list{display:grid;gap:10px}
+    .phase{
+      display:grid;
+      grid-template-columns:112px minmax(0,1fr) auto;
+      gap:14px;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:rgba(255,255,255,.03);
+    }
+    .phase strong{font-size:.9rem;color:#8dffb7;text-transform:uppercase;letter-spacing:0}
+    .phase b{font-size:1.1rem}
+    .phase p{margin:4px 0 0;color:var(--muted);line-height:1.35}
+    .phase span{color:var(--amber);font-weight:950;white-space:nowrap}
+    .compliance{
+      border:1px solid rgba(255,226,154,.22);
+      border-radius:22px;
+      padding:18px;
+      color:#eadfbf;
+      background:rgba(255,226,154,.06);
+      line-height:1.45;
+    }
+    .footer{padding:8px 4px 24px;color:#757e78;font-weight:850;text-transform:uppercase;font-size:.78rem}
+    @media(max-width:1120px){
+      .layout{grid-template-columns:1fr}
+      .side{position:relative;top:auto;height:auto}
+      .hero-grid{grid-template-columns:1fr}
+      .hero h2{font-size:4rem}
+      .surface-grid,.map-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:720px){
+      .shell{padding:12px}
+      .topbar{position:relative;top:auto;align-items:flex-start;border-radius:22px}
+      .brand{width:100%}
+      .brand img{width:132px}
+      .topbar,.top-actions{flex-direction:column}
+      .top-actions,.control,.button{width:100%}
+      .layout{gap:14px;margin-top:14px}
+      .side,.panel{border-radius:24px}
+      .hero,.section{padding:20px}
+      .hero h2{font-size:3rem}
+      .metric-row,.surface-grid,.map-grid,.proof-strip{grid-template-columns:1fr}
+      .phase{grid-template-columns:1fr}
+      .phase span{white-space:normal}
+    }
+    @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/app/" aria-label="Volver al launcher BOOSTR">
+        <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
+        <span class="brand-copy">
+          <strong>Automotive OS</strong>
+          <span>Powered by SOLVE</span>
+        </span>
+      </a>
+      <div class="top-actions">
+        <select class="control" id="surfaceSelect" aria-label="Superficie Automotive">
+          <option value="overview">Overview</option>
+          <option value="intake">Intake</option>
+          <option value="offer">Offer Review</option>
+          <option value="partner">Partner</option>
+          <option value="manager">Manager</option>
+          <option value="client">Client</option>
+        </select>
+        <a class="button subtle" href="/modules/">Module Deck</a>
+        <a class="button primary" href="https://solveautomotive.com/apply">Start Intake</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="side" aria-label="Automotive OS navigation">
+        <div class="profile">
+          <span class="avatar">AOS</span>
+          <div>
+            <h1>SOLVE</h1>
+            <p>Automotive company inside BOOSTR Labs.</p>
+          </div>
+        </div>
+        <div class="mark-row">
+          <div class="mark boostr"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></div>
+          <div class="mark solve">SOLVE</div>
+        </div>
+        <p class="side-label">Surface</p>
+        <div class="nav-list" id="surfaceNav">
+          <button type="button" data-surface-nav="overview" class="is-active">Overview</button>
+          <button type="button" data-surface-nav="intake">Public Intake</button>
+          <button type="button" data-surface-nav="offer">Offer Review</button>
+          <button type="button" data-surface-nav="partner">Partner Workspace</button>
+          <button type="button" data-surface-nav="manager">Manager / Deal OS</button>
+          <button type="button" data-surface-nav="client">Client View</button>
+        </div>
+        <div class="micro-card">
+          <b>Regla de marca</b>
+          Automotive OS no es un dealer, broker, lender ni promesa de aprobacion. Es la capa BOOSTR para intake, escenarios, rutas y seguimiento customer-safe.
+        </div>
+      </aside>
+
+      <section class="main">
+        <section class="panel hero">
+          <div class="hero-grid">
+            <div>
+              <p class="eyebrow">BOOSTR LABS / AUTOMOTIVE</p>
+              <h2 id="heroTitle">SOLVE dentro de BOOSTR.</h2>
+              <p id="heroText">Automotive OS convierte el ecosistema SOLVE en un modulo general para operaciones que necesitan lead intake, offer review, partner routing, manager tools, client-safe status e inventory context.</p>
+              <div class="hero-actions">
+                <a class="button primary" id="primaryAction" href="https://solveautomotive.com/apply">Open Public Intake</a>
+                <a class="button subtle" id="secondaryAction" href="https://os.solveautomotive.com/login">Open Manager OS</a>
+              </div>
+              <div class="metric-row" aria-label="Automotive OS status">
+                <div class="metric"><span>Surface</span><b id="metricSurface">6</b></div>
+                <div class="metric"><span>Status</span><b id="metricStatus">Live</b></div>
+                <div class="metric"><span>Data</span><b>D1</b></div>
+                <div class="metric"><span>Owner</span><b>BOOSTR</b></div>
+              </div>
+            </div>
+            <div class="visual">
+              <img id="heroImage" src="/assets/cases/solve-finance.png" alt="SOLVE offer review interface">
+              <div class="visual-caption"><strong id="visualLabel">Offer Review</strong><span class="status">ONLINE</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel section" id="surfaces">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Operating surfaces</p>
+              <h3>Automotive tools only.</h3>
+            </div>
+            <p>Este dashboard no mezcla JANKO, Hummus, Parking ni otros partners. Cada card pertenece a SOLVE / Automotive OS.</p>
+          </div>
+          <div class="surface-grid" id="surfaceGrid">
+            <article class="surface-card" data-surface-card="intake overview">
+              <span class="tag">Public</span>
+              <h4>SOLVE Public Intake</h4>
+              <p>Entrada para personas que buscan carro, quieren revisar numeros o necesitan abrir un buying case.</p>
+              <a href="https://solveautomotive.com/apply">Open intake</a>
+            </article>
+            <article class="surface-card" data-surface-card="offer overview">
+              <span class="tag">Money</span>
+              <h4>Offer Explorer</h4>
+              <p>Payment explorer y scenario review para mirar down payment, term, estimate y contexto customer-safe.</p>
+              <a href="https://payment.solveautomotive.com">Open payment surface</a>
+            </article>
+            <article class="surface-card" data-surface-card="partner overview">
+              <span class="tag">Partner</span>
+              <h4>Partner Workspace</h4>
+              <p>Workspace para dealers, inventory partners o rutas externas que necesitan casos y ofertas organizadas.</p>
+              <a href="https://partner.solveautomotive.com/login">Open partner</a>
+            </article>
+            <article class="surface-card" data-surface-card="manager overview">
+              <span class="tag">Manager</span>
+              <h4>Manager / Deal OS</h4>
+              <p>OS interno para leads, partner applications, route comparison, deal cases y estados operativos.</p>
+              <a href="https://os.solveautomotive.com/login">Open manager</a>
+            </article>
+            <article class="surface-card" data-surface-card="client overview">
+              <span class="tag">Client</span>
+              <h4>Client Deal View</h4>
+              <p>Vista customer-safe del caso. Muestra progreso y resumen sin exponer herramientas internas.</p>
+              <a href="#migration">Pending token routing</a>
+            </article>
+            <article class="surface-card" data-surface-card="intake partner overview">
+              <span class="tag">Inventory</span>
+              <h4>SOLVE Inventory</h4>
+              <p>Referencia publica de inventario y vehiculos conectados al flujo de compra y evaluacion.</p>
+              <a href="https://solveautomotive.com/inventory.html">Open inventory</a>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">BOOSTR map</p>
+              <h3>Donde vive cada funcion.</h3>
+            </div>
+            <p>La integracion mantiene SOLVE como compania hija, pero organiza sus funciones como un modulo de BOOSTR.</p>
+          </div>
+          <div class="map-grid">
+            <article class="map-card"><b>Capture</b><p>BOOSTR Audit y SOLVE Intake reciben la intencion del comprador o partner.</p></article>
+            <article class="map-card"><b>Money</b><p>Offer Explorer traduce escenarios sin convertir la app en lender o approval promise.</p></article>
+            <article class="map-card"><b>Documents</b><p>Document Center queda como fase backend para uploads, client view y R2.</p></article>
+            <article class="map-card"><b>Workspace</b><p>Partner y Manager OS separan trabajo interno, partner data y vista de cliente.</p></article>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">SOLVE proof</p>
+              <h3>Assets que ya existen en BOOSTR.</h3>
+            </div>
+            <p>Estos previews vienen del set SOLVE ya presente en el ecosistema BOOSTR.</p>
+          </div>
+          <div class="proof-strip">
+            <a class="proof" href="/assets/cases/solve-finance.png"><img src="/assets/cases/solve-finance.png" alt="SOLVE finance interface"><span>Deal structurer</span></a>
+            <a class="proof" href="/assets/cases/solve-docs.png"><img src="/assets/cases/solve-docs.png" alt="SOLVE document flow"><span>Secure docs</span></a>
+            <a class="proof" href="/assets/cases/solve-compare.png"><img src="/assets/cases/solve-compare.png" alt="SOLVE compare paths"><span>Compare paths</span></a>
+          </div>
+        </section>
+
+        <section class="panel section" id="migration">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Migration plan</p>
+              <h3>Fases sin mezclar data.</h3>
+            </div>
+            <p>Esta fase integra la experiencia. La migracion de workers, schemas, secrets y D1 se queda separada para revisar contratos.</p>
+          </div>
+          <div class="phase-list">
+            <div class="phase"><strong>Phase 1</strong><div><b>Module hub</b><p>Launcher, Module Deck y dashboard Automotive dentro de BOOSTR.</p></div><span>Done here</span></div>
+            <div class="phase"><strong>Phase 2</strong><div><b>D1 contract review</b><p>Comparar schema SOLVE con BOOSTR antes de copiar migrations o datos.</p></div><span>Next</span></div>
+            <div class="phase"><strong>Phase 3</strong><div><b>Worker routing</b><p>Mapear Public, Leads, Manager, Partner, Client y Payment workers como servicios.</p></div><span>Next</span></div>
+            <div class="phase"><strong>Phase 4</strong><div><b>Access and automations</b><p>R2 docs, Resend, Stripe, Access policies y production monitoring.</p></div><span>Later</span></div>
+          </div>
+        </section>
+
+        <div class="compliance">
+          Automotive OS organiza informacion, escenarios y seguimiento. No garantiza aprobaciones, no reemplaza evaluacion financiera, no actua como dealer, broker o lender, y no debe mostrar datos privados fuera de la superficie correcta.
+        </div>
+        <footer class="footer">POWERED BY BOOSTR LABS / SOLVE AUTOMOTIVE OS</footer>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const select = document.getElementById('surfaceSelect');
+      const nav = [...document.querySelectorAll('[data-surface-nav]')];
+      const cards = [...document.querySelectorAll('[data-surface-card]')];
+      const heroTitle = document.getElementById('heroTitle');
+      const heroText = document.getElementById('heroText');
+      const metricSurface = document.getElementById('metricSurface');
+      const metricStatus = document.getElementById('metricStatus');
+      const heroImage = document.getElementById('heroImage');
+      const visualLabel = document.getElementById('visualLabel');
+      const primaryAction = document.getElementById('primaryAction');
+      const secondaryAction = document.getElementById('secondaryAction');
+
+      const states = {
+        overview: {
+          title: 'SOLVE dentro de BOOSTR.',
+          text: 'Automotive OS convierte el ecosistema SOLVE en un modulo general para operaciones que necesitan lead intake, offer review, partner routing, manager tools, client-safe status e inventory context.',
+          metric: '6',
+          status: 'Live',
+          image: '/assets/cases/solve-finance.png',
+          label: 'Offer Review',
+          primary: ['Open Public Intake', 'https://solveautomotive.com/apply'],
+          secondary: ['Open Manager OS', 'https://os.solveautomotive.com/login']
+        },
+        intake: {
+          title: 'Intake claro para compradores.',
+          text: 'Captura la intencion del cliente, vehicle needs, trade context y follow-up path sin mezclarlo con dashboards internos.',
+          metric: 'Lead',
+          status: 'Public',
+          image: '/assets/cases/solve-academy.png',
+          label: 'Public Intake',
+          primary: ['Open intake', 'https://solveautomotive.com/apply'],
+          secondary: ['Open inventory', 'https://solveautomotive.com/inventory.html']
+        },
+        offer: {
+          title: 'Offer review sin promesas falsas.',
+          text: 'Superficie para escenarios, pago estimado, down payment y term logic con lenguaje customer-safe.',
+          metric: 'Money',
+          status: 'Live',
+          image: '/assets/cases/solve-finance.png',
+          label: 'Payment Surface',
+          primary: ['Open payment surface', 'https://payment.solveautomotive.com'],
+          secondary: ['Review migration plan', '#migration']
+        },
+        partner: {
+          title: 'Partner workspace separado.',
+          text: 'Dealers, inventory partners y rutas externas trabajan en su espacio sin tocar dashboards de otros modulos BOOSTR.',
+          metric: 'Partner',
+          status: 'Login',
+          image: '/assets/cases/solve-compare.png',
+          label: 'Route Compare',
+          primary: ['Open partner', 'https://partner.solveautomotive.com/login'],
+          secondary: ['Open manager', 'https://os.solveautomotive.com/login']
+        },
+        manager: {
+          title: 'Manager OS para deal flow.',
+          text: 'Leads, partner applications, route comparison, casos y status operativo viven en la superficie manager.',
+          metric: 'Ops',
+          status: 'Login',
+          image: '/assets/cases/solve-pdf.png',
+          label: 'Deal OS',
+          primary: ['Open manager', 'https://os.solveautomotive.com/login'],
+          secondary: ['Module Deck', '/modules/']
+        },
+        client: {
+          title: 'Client view customer-safe.',
+          text: 'La vista de cliente muestra progreso, resumen y proximos pasos sin filtrar data interna o partner-only.',
+          metric: 'Client',
+          status: 'Planned',
+          image: '/assets/cases/solve-docs.png',
+          label: 'Secure Docs',
+          primary: ['Review phases', '#migration'],
+          secondary: ['Open public site', 'https://solveautomotive.com']
+        }
+      };
+
+      function applySurface(surface) {
+        const state = states[surface] || states.overview;
+        select.value = surface;
+        nav.forEach((button) => button.classList.toggle('is-active', button.dataset.surfaceNav === surface));
+        cards.forEach((card) => {
+          card.hidden = !card.dataset.surfaceCard.split(' ').includes(surface);
+        });
+        heroTitle.textContent = state.title;
+        heroText.textContent = state.text;
+        metricSurface.textContent = state.metric;
+        metricStatus.textContent = state.status;
+        heroImage.src = state.image;
+        visualLabel.textContent = state.label;
+        primaryAction.textContent = state.primary[0];
+        primaryAction.href = state.primary[1];
+        secondaryAction.textContent = state.secondary[0];
+        secondaryAction.href = state.secondary[1];
+      }
+
+      select.addEventListener('change', () => applySurface(select.value));
+      nav.forEach((button) => button.addEventListener('click', () => applySurface(button.dataset.surfaceNav)));
+      applySurface('overview');
+    })();
+  </script>
+</body>
+</html>
