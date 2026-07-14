@@ -1,4 +1,5 @@
 const scenes = {
+  burli: { title: 'BURLi 3D', url: '/api/3d-model/burli', format: 'glb' },
   janko: { title: 'Janko Diorr 3D', url: '/api/3d-model/janko', format: 'glb' },
   gemese: { title: 'GEMESE 3D', url: '/api/3d-model/gemese', format: 'glb' },
   glizzy: { title: 'GS Glizzy', url: '/api/3d-model/glizzy', format: 'ply' },
