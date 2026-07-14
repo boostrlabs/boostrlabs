@@ -1142,6 +1142,18 @@ const appSystems = [
     accent: 'pink',
     locked: true,
     logos: []
+  },
+  {
+    category: 'Laboratorios',
+    title: 'Experimentos 3D',
+    description: 'Modelos, scans y visores experimentales del ecosistema BOOSTR.',
+    status: 'Labs',
+    icon: 'sparkle',
+    accent: 'green',
+    href: '/3d/',
+    logos: [
+      { name: 'BOOSTR Labs', src: '/assets/logos/boostr-logo-nav.png', href: '/3d/' }
+    ]
   }
 ];
 

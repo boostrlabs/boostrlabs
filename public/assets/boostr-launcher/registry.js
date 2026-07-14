@@ -90,6 +90,17 @@
       moduleSlugs: ['beauty-os'],
       workspaceTerms: ['beauty', 'omg beauty', 'nail'],
       partners: []
+    },
+    {
+      id: 'labs',
+      name: 'LABORATORIOS',
+      symbol: 'core',
+      accent: 'green',
+      guestState: 'public',
+      publicRoute: '/3d/',
+      moduleSlugs: [],
+      workspaceTerms: [],
+      partners: ['boostr']
     }
   ];
 
@@ -146,6 +157,7 @@
       : '/app/workspace/';
 
     if (system.id === 'worker') return sessionRedirect;
+    if (system.id === 'labs') return '/3d/';
     if (system.id === 'core') return context.founder ? '/app/janko/' : '/admin/';
     if (system.id === 'parking') return hasWorkspace(context, system.workspaceTerms) || context.elevated ? '/app/parking/omni-jr/' : '/parking/omni-jr/';
     if (system.id === 'automotive') return '/app/automotive/';
