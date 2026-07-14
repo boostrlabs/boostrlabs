@@ -1238,6 +1238,15 @@ const renderAppLauncherPage = () => {
           </a>
         </div>
       </section>
+
+      <section class="app-role-panel app-labs-panel" aria-labelledby="boostr-labs-title">
+        <h2 id="boostr-labs-title">Laboratorios</h2>
+        <p>Experimentos internos, prototipos visuales y pruebas 3D del ecosistema.</p>
+        <a class="app-labs-card" href="/3d/">
+          ${appIconTemplate('sparkle')}
+          <span>Experimentos 3D</span>
+        </a>
+      </section>
     </main>
   `;
 };

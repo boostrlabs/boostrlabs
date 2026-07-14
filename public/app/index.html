@@ -51,6 +51,7 @@
     .os-action{position:relative;z-index:1;display:grid;justify-items:end;gap:10px}.state-pill{border:1px solid rgba(255,255,255,.11);border-radius:999px;padding:6px 8px;color:#77869a;font-size:8px;font-weight:1000;letter-spacing:.11em;text-transform:uppercase}.is-live .state-pill,.is-active .state-pill{color:var(--green);border-color:rgba(112,243,154,.24)}.is-login .state-pill{color:#85cfff;border-color:rgba(72,191,255,.25)}
     .arrow{width:42px;height:42px;border-radius:15px;background:rgba(255,255,255,.055);display:grid;place-items:center;color:#8695aa}.is-live .arrow,.is-active .arrow,.is-login .arrow{background:linear-gradient(135deg,var(--blue-2),var(--blue));color:#fff;box-shadow:0 13px 30px rgba(72,191,255,.15)}.arrow svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.3}
     .new-user{margin-top:15px;border:1px solid var(--line);border-radius:28px;background:rgba(10,17,29,.72);padding:18px}.new-user[hidden]{display:none}.new-user h2{margin:0 0 13px;font-size:18px;letter-spacing:-.035em}.new-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.new-actions a{min-height:58px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);display:flex;align-items:center;justify-content:center;gap:10px;font-weight:900}.new-actions a:first-child{background:linear-gradient(135deg,rgba(71,120,255,.22),rgba(72,191,255,.12));border-color:rgba(72,191,255,.22)}.new-actions svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
+    .labs{margin-top:15px;border:1px solid var(--line);border-radius:28px;background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(8,16,29,.72));padding:18px}.labs h2{margin:0 0 5px;font-size:18px;letter-spacing:-.035em}.labs p{margin:0 0 13px;color:#8fa0b7;font-size:12px;line-height:1.45}.labs a{min-height:58px;border:1px solid rgba(72,191,255,.22);border-radius:18px;background:linear-gradient(135deg,rgba(72,191,255,.16),rgba(112,243,154,.08));display:flex;align-items:center;justify-content:center;gap:10px;font-weight:950}.labs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
     .empty{display:none;padding:28px;text-align:center;color:#718097;font-size:12px}.empty.show{display:block}
     @media(max-width:650px){.app{padding-left:8px;padding-right:8px}.topbar{grid-template-columns:1fr auto;padding:10px}.search-wrap{grid-column:1/-1;grid-row:2}.brand img{width:144px;max-width:55vw}.launcher{padding:15px;border-radius:27px}.os-card{grid-template-columns:62px minmax(0,1fr) auto;padding:12px;gap:11px;border-radius:22px}.os-logo{width:62px;height:62px;border-radius:19px}.os-logo svg{width:34px;height:34px}.os-name{font-size:20px}.partner-badge{height:28px;max-width:135px}.partner-badge img{max-height:18px}.state-pill{display:none}.arrow{width:38px;height:38px}.new-actions{grid-template-columns:1fr}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
@@ -89,6 +90,15 @@
           <span>Soy manager BOOSTR</span>
         </a>
       </div>
+    </section>
+
+    <section class="labs" aria-labelledby="labsTitle">
+      <h2 id="labsTitle">Laboratorios</h2>
+      <p>Experimentos internos, prototipos visuales y pruebas 3D del ecosistema.</p>
+      <a href="/3d/" aria-label="Abrir Experimentos 3D">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3z"></path><path d="M12 12 4.5 7.7M12 12l7.5-4.3M12 12v8.5"></path></svg>
+        <span>Experimentos 3D</span>
+      </a>
     </section>
   </main>
 

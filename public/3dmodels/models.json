@@ -16,6 +16,14 @@
       "status": "external_embed_temporary"
     },
     {
+      "id": "gemese",
+      "title": "GEMESE 3D",
+      "embed_url": "https://supavoxel.com/embed/cmrjxm6ea106r8rmevdzcsmmw",
+      "format": "supavoxel",
+      "route": "/3d/gemese/",
+      "status": "external_embed_temporary"
+    },
+    {
       "id": "glizzy",
       "title": "GS Glizzy",
       "filename": "gs_glizzy.ply",
