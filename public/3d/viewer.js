@@ -1,5 +1,5 @@
 const scenes = {
-  burli: { title: 'BURLi 3D', url: '/api/3d-model/burli', format: 'glb' },
+  burli: { title: 'BURLi 3D', url: '/api/burli-glb', format: 'glb' },
   janko: { title: 'Janko Diorr 3D', url: '/api/3d-model/janko', format: 'glb' },
   gemese: { title: 'GEMESE 3D', url: '/api/3d-model/gemese', format: 'glb' },
   glizzy: { title: 'GS Glizzy', url: '/api/3d-model/glizzy', format: 'ply' },
@@ -141,9 +141,11 @@ async function loadGltf(sceneConfig) {
   const base = await createThreeBase();
   const { GLTFLoader } = await import('https://esm.sh/three@0.172.0/examples/jsm/loaders/GLTFLoader.js');
   const loader = new GLTFLoader();
-  const gltf = await loader.loadAsync(sceneConfig.url, (event) => {
-    if (event.total) setStatus(`Cargando ${sceneConfig.title}…`, (event.loaded / event.total) * 100);
-  });
+  const response = await fetch(`${sceneConfig.url}?v=${Date.now()}`, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`No se pudo descargar ${sceneConfig.title} (${response.status}).`);
+  const buffer = await response.arrayBuffer();
+  setStatus(`Procesando ${sceneConfig.title}…`, 90);
+  const gltf = await new Promise((resolve, reject) => loader.parse(buffer, '', resolve, reject));
   base.scene.add(gltf.scene);
   base.scene.add(new base.THREE.HemisphereLight(0xffffff, 0x222222, 2));
   const directional = new base.THREE.DirectionalLight(0xffffff, 3);
