@@ -1,6 +1,8 @@
 import { clean, hashPassword, json, jsonError, now, readJson, requireDb, requireRole } from "../../../_lib/api.js";
 
 const WORKSPACE_SLUG = "event-orlando-jul-25";
+const SOURCE = "boostr-event-os-orlando-jul-25";
+const LEGACY_SOURCE = "boostr-event-os-rowma-orlando-presale";
 
 export async function onRequestOptions() {
   return json({ ok: true });
@@ -45,6 +47,14 @@ export async function onRequestPost({ request, env }) {
 
   const timestamp = now();
   const workspace = await ensureWorkspace(env, timestamp);
+
+  const migration = await env.DB.prepare(
+    `UPDATE leads
+     SET workspace_id = ?, source = ?, updated_at = ?
+     WHERE source IN (?, ?)
+       AND (workspace_id IS NULL OR workspace_id = '' OR workspace_id = ?)`
+  ).bind(workspace.id, SOURCE, timestamp, SOURCE, LEGACY_SOURCE, workspace.id).run();
+
   const passwordHash = await hashPassword(password);
   const existing = await env.DB.prepare("SELECT id FROM users WHERE lower(email) = ? OR username = ? LIMIT 1")
     .bind(email, username)
@@ -103,6 +113,7 @@ export async function onRequestPost({ request, env }) {
     ok: true,
     user: { id: userId, email, username, name, role: "partner" },
     workspace,
+    migrated_leads: Number(migration.meta?.changes || 0),
     dashboard: "/events/orlando-jul-25/control/"
   }, 201);
 }
