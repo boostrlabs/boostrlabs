@@ -13,6 +13,10 @@ async function workspace(env) {
     .first();
 }
 
+const parseJson = (value) => {
+  try { return JSON.parse(value || "{}"); } catch { return {}; }
+};
+
 export async function onRequestGet({ request, env }) {
   const db = requireDb(env);
   if (!db.ok) return db.response;
@@ -52,13 +56,13 @@ export async function onRequestGet({ request, env }) {
   ).bind(...binds).all();
 
   const rows = (result.results || []).map((row) => {
-    let metadata = {};
-    try { metadata = JSON.parse(row.message || "{}"); } catch {}
+    const metadata = parseJson(row.message);
+    const eventData = parseJson(metadata.extra_message);
     return {
       ...row,
       metadata,
-      quantity: Number(metadata?.extra_message ? JSON.parse(metadata.extra_message || "{}").quantity : 0) || null,
-      reference: metadata?.referral_code || null
+      quantity: Number(eventData.quantity || 0) || null,
+      reference: metadata.referral_code || eventData.presale_reference || null
     };
   });
 
