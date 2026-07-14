@@ -116,11 +116,14 @@ need(clientAudit, [
 
 need(login, [
   '/assets/logos/boostr-logo-nav.png',
-  'data-autofill-proof="contenteditable"',
-  'contenteditable="plaintext-only"',
+  'data-autofill-proof="native-input"',
   'id="boostrLoginIdentifier"',
   'id="boostrLoginSecret"',
   'class="editor secret"',
+  'type="text"',
+  'type="password"',
+  'autocomplete="username"',
+  'autocomplete="current-password"',
   'validIdentifier',
   'looksLikeSecret',
   "method:'POST'",
@@ -130,11 +133,11 @@ need(login, [
   "addEventListener('gesturechange'",
   "addEventListener('touchmove'"
 ], 'login');
-const credentialStart = login.indexOf('data-autofill-proof="contenteditable"');
+const credentialStart = login.indexOf('data-autofill-proof="native-input"');
 const credentialEnd = login.indexOf('<nav class="actions"', credentialStart);
 const credentialBlock = credentialStart >= 0 && credentialEnd > credentialStart ? login.slice(credentialStart, credentialEnd) : '';
 if (!credentialBlock) failures.push('credential block');
-forbid(credentialBlock, ['<input', '<form', 'autocomplete=', 'type="password"', 'Bienvenido', 'Entrar a BOOSTR', 'Olvidé mi clave'], 'login forbidden');
+forbid(credentialBlock, ['<form', 'contenteditable', 'plaintext-only', 'Bienvenido', 'Entrar a BOOSTR', 'Olvidé mi clave'], 'login forbidden');
 
 need(workspace, ['ESPACIO PRIVADO', '/api/session', '/api/dashboard', '/login/?next=/app/workspace/'], 'workspace');
 need(middleware, ['const isPublicAppGateway = path === "/app"', 'const isNestedAppSurface = path.startsWith("/app/")', 'const isPublicExperience = isPublicAppGateway'], 'middleware');

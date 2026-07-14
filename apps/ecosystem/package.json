@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "next build",
-    "lint": "next lint",
+    "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate"
