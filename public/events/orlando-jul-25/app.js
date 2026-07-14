@@ -86,7 +86,7 @@
     submitButton.textContent = 'REGISTRANDO PREVENTA…';
 
     const payload = {
-      source: 'boostr-event-os-rowma-orlando-presale',
+      source: 'boostr-event-os-orlando-jul-25',
       contact_name: name,
       contact_phone: phone,
       contact_email: email,
@@ -126,9 +126,7 @@
         body: JSON.stringify(payload)
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok) {
-        throw new Error(result.message || 'No se pudo registrar la preventa.');
-      }
+      if (!response.ok || !result.ok) throw new Error(result.message || 'No se pudo registrar la preventa.');
 
       document.querySelector('#presaleCode').textContent = code;
       document.querySelector('#confirmationQuantity').textContent = String(quantity);
