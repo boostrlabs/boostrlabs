@@ -6,6 +6,11 @@ const MODELS = {
     extension: ".glb",
     terms: ["burli"]
   },
+  johanka: {
+    filenames: ["Johanka-3D.glb", "johanka-3d.glb", "johanka-doll.glb", "johanka.glb"],
+    extension: ".glb",
+    terms: ["johanka"]
+  },
   glizzy: { filenames: ["gs_glizzy.ply"], extension: ".ply" },
   malta: { filenames: ["gs_malta.ply"], extension: ".ply" },
   janko: {
@@ -14,7 +19,7 @@ const MODELS = {
     terms: ["janko", "diorr"]
   },
   gemese: {
-    filenames: ["gemese.glb", "gemese-nne.glb", "gemese_3d.glb", "gemese-nne-3d.glb"],
+    filenames: ["Gemese-3D.glb", "gemese-3d.glb", "gemese.glb", "gemese-nne.glb", "gemese_3d.glb", "gemese-nne-3d.glb"],
     extension: ".glb",
     terms: ["gemese", "nne"]
   },
