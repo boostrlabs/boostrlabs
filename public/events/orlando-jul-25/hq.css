@@ -1,0 +1,11 @@
+/* HQ asset presentation pass. Keeps the supplied artwork at its native detail level. */
+.hero-poster{filter:saturate(.96) brightness(.38)!important;transform:scale(1.025)!important;inset:-1.5%!important;width:103%!important;height:103%!important;image-rendering:auto}
+.rowma-photo{filter:contrast(1.04) saturate(.9)!important;image-rendering:auto;backface-visibility:hidden}
+.artist-card.poster-card{background:#080808}
+.artist-card.poster-card img{object-fit:contain!important;object-position:center!important;min-height:0!important;height:auto!important;aspect-ratio:2/3;background:#080808;image-rendering:auto}
+.artist-card.poster-card:after{background:linear-gradient(180deg,transparent 48%,rgba(5,5,5,.98) 96%)!important}
+.poster-rail figure{overflow:hidden}
+.poster-rail img{object-fit:contain!important;object-position:center!important;background:#080808;image-rendering:auto;transform:translateZ(0)}
+.headliner-card img{image-rendering:auto;transform:translateZ(0)}
+@media(max-width:759px){.artist-card.poster-card{min-height:0}.artist-card.poster-card img{width:100%;height:auto}.poster-rail{grid-auto-columns:91%}.page-noise{opacity:.08!important}}
+@media(min-width:760px){.artist-card.poster-card img{max-height:760px}.poster-rail img{max-height:850px}}

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070707">
+  <title>Orlando Leads · BOOSTR Event OS</title>
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="stylesheet" href="./styles.css?v=1">
+</head>
+<body>
+  <header>
+    <a href="/events/orlando-jul-25/"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></a>
+    <div><span>BOOSTR EVENT OS</span><strong>ORLANDO LEADS</strong></div>
+    <button id="logout" type="button">SALIR</button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p>FUERTE PROMOTIONS · JUL 25</p>
+      <h1>CONTROL DE<br>PREVENTA</h1>
+      <div id="summary" class="summary"></div>
+    </section>
+
+    <section class="toolbar">
+      <input id="search" type="search" placeholder="Buscar nombre, WhatsApp o correo">
+      <select id="filter">
+        <option value="">TODOS</option>
+        <option value="new">NUEVOS</option>
+        <option value="contacted">CONTACTADOS</option>
+        <option value="payment_sent">PAGO ENVIADO</option>
+        <option value="paid">PAGADOS</option>
+        <option value="confirmed">CONFIRMADOS</option>
+        <option value="cancelled">CANCELADOS</option>
+      </select>
+      <button id="refresh" type="button">ACTUALIZAR</button>
+    </section>
+
+    <section id="accessPanel" class="access" hidden>
+      <div>
+        <span>ACCESO GEMESE</span>
+        <h2>CREAR O ACTUALIZAR CUENTA</h2>
+        <p>Esta acción limita la cuenta al workspace de este evento.</p>
+      </div>
+      <form id="accessForm">
+        <input name="name" value="Gemese" required>
+        <input name="email" type="email" placeholder="Correo de Gemese" required>
+        <input name="username" value="gemese" required>
+        <input name="password" type="password" minlength="10" placeholder="Contraseña temporal" required>
+        <button type="submit">ACTIVAR ACCESO</button>
+        <p id="accessStatus"></p>
+      </form>
+    </section>
+
+    <section>
+      <div id="status" class="status">Cargando leads…</div>
+      <div id="leads" class="leads"></div>
+    </section>
+  </main>
+
+  <template id="leadTemplate">
+    <article class="lead-card">
+      <div class="lead-head">
+        <div><span class="reference"></span><h2 class="name"></h2></div>
+        <strong class="total"></strong>
+      </div>
+      <div class="contact"></div>
+      <div class="meta"></div>
+      <div class="actions">
+        <select class="lead-status">
+          <option value="new">NUEVO</option>
+          <option value="contacted">CONTACTADO</option>
+          <option value="payment_sent">PAGO ENVIADO</option>
+          <option value="paid">PAGADO</option>
+          <option value="confirmed">CONFIRMADO</option>
+          <option value="cancelled">CANCELADO</option>
+        </select>
+        <a class="whatsapp" target="_blank" rel="noreferrer">WHATSAPP</a>
+      </div>
+    </article>
+  </template>
+
+  <script src="./app.js?v=1" defer></script>
+</body>
+</html>
