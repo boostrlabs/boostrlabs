@@ -8,6 +8,14 @@
   },
   "models": [
     {
+      "id": "janko",
+      "title": "JANKO 3D",
+      "embed_url": "https://supavoxel.com/embed/cmrjxhbkj106d8rmed0gm84mq",
+      "format": "supavoxel",
+      "route": "/3d/janko/",
+      "status": "external_embed_temporary"
+    },
+    {
       "id": "glizzy",
       "title": "GS Glizzy",
       "filename": "gs_glizzy.ply",

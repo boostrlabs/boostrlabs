@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>JANKO 3D · BOOSTR 3D</title>
+<link rel="icon" href="/assets/link/janko/favicon-janko.ico">
+<link rel="stylesheet" href="/3d/viewer.css?v=0.3">
+<style>
+  .supavoxel-frame{width:100%;height:100%;border:0;background:#020304;display:block}
+  .viewer-stage{background:radial-gradient(circle at 50% 20%,rgba(124,236,255,.12),transparent 34%),#020304}
+  .status-wrap{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+  .external-note{font-size:11px;color:rgba(255,255,255,.5)}
+  @media(max-width:700px){.status-wrap{padding:9px 12px}.external-note{display:none}}
+</style>
+</head>
+<body>
+<div class="viewer-shell">
+  <div class="viewer-stage" id="viewer">
+    <iframe
+      class="supavoxel-frame"
+      src="https://supavoxel.com/embed/cmrjxhbkj106d8rmed0gm84mq"
+      title="JANKO 3D Supavoxel viewer"
+      allowfullscreen
+      allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer"
+      loading="eager"></iframe>
+  </div>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
+      <div class="scene-copy"><span>BOOSTR 3D · SUPAVOXEL EMBED</span><b>JANKO 3D</b></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="/3d/"><span>Galería</span> ←</a>
+      <a class="btn" href="https://supavoxel.com/embed/cmrjxhbkj106d8rmed0gm84mq" target="_blank" rel="noopener noreferrer"><span>Abrir</span> ↗</a>
+      <button class="btn primary" id="fullscreen"><span>Fullscreen</span> ⛶</button>
+    </div>
+  </header>
+  <nav class="scene-switcher">
+    <a href="/3d/burli/">B</a>
+    <a class="active" href="/3d/janko/">J</a>
+    <a href="/3d/glizzy/">G</a>
+    <a href="/3d/malta/">M</a>
+  </nav>
+  <div class="status-wrap">
+    <div id="status">JANKO 3D cargado desde Supavoxel</div>
+    <span class="external-note">Temporal hasta tener asset propio en BOOSTR.</span>
+  </div>
+</div>
+<script>
+  document.getElementById('fullscreen')?.addEventListener('click', async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (error) {
+      document.getElementById('status').textContent = error?.message || 'Fullscreen no disponible.';
+    }
+  });
+</script>
+</body>
+</html>

@@ -155,7 +155,7 @@
       return '/partner-dashboard/';
     }
     if (system.id === 'artist') {
-      if (context.founder) return '/app/janko/';
+      if (context.founder) return '/app/janko/?module=artist';
       if (context.johanka) return '/app/82ngel/';
       return '/partner-dashboard/';
     }
