@@ -1,6 +1,11 @@
 import { jsonError } from "../../_lib/api.js";
 
 const MODELS = {
+  burli: {
+    filenames: ["BURLi.glb", "burli.glb", "burli-3d.glb", "burli-cartoon.glb"],
+    extension: ".glb",
+    terms: ["burli"]
+  },
   glizzy: { filenames: ["gs_glizzy.ply"], extension: ".ply" },
   malta: { filenames: ["gs_malta.ply"], extension: ".ply" },
   janko: {
