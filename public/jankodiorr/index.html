@@ -20,8 +20,9 @@
     .brand img{width:132px;display:block}
     .nav{display:flex;justify-content:center;gap:10px}
     .nav a,.circle{border:1px solid var(--line);background:rgba(255,255,255,.035);border-radius:999px;text-decoration:none;min-height:36px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase;color:#cfcfcf}
-    .circle{width:38px;padding:0}
-    .circle img{width:18px;max-height:18px;object-fit:contain}
+    .circle{width:38px;padding:0;overflow:hidden;flex:0 0 auto}
+    .circle img{width:18px;height:18px;max-width:18px;max-height:18px;object-fit:contain}
+    img[src*="/assets/link/janko/platforms/"]{position:static!important;inset:auto!important;display:block!important;width:18px!important;height:18px!important;max-width:18px!important;max-height:18px!important;min-width:0!important;min-height:0!important;object-fit:contain!important;filter:none!important;transform:none!important}
     .quick{display:flex;gap:8px}
     .wrap{width:min(100%,1180px);margin:auto;padding:18px}
     .hero{min-height:calc(100svh - 112px);display:grid;grid-template-columns:1.05fr .95fr;gap:16px;align-items:stretch}
@@ -63,15 +64,15 @@
     .track small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
     .metric{color:#ff6268!important}
     .links{display:flex;gap:7px}
-    .links a{width:34px;height:34px;border:1px solid #343434;border-radius:50%;display:grid;place-items:center;text-decoration:none;font-size:9px;font-weight:1000;background:rgba(255,255,255,.035)}
-    .links img{width:17px;max-height:17px;object-fit:contain}
+    .links a{width:34px;height:34px;border:1px solid #343434;border-radius:50%;display:grid;place-items:center;text-decoration:none;font-size:9px;font-weight:1000;background:rgba(255,255,255,.035);overflow:hidden;flex:0 0 34px}
+    .links img{width:17px!important;height:17px!important;max-width:17px!important;max-height:17px!important;object-fit:contain}
     .links a.spotify{color:var(--green)}
     .links a.youtube{color:#fff}
     .links a.tiktok{color:#ff6268}
     .links a.apple{color:#f5f5f5}
     .platforms{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-    .platform{min-height:74px;border:1px solid var(--line);background:linear-gradient(180deg,#151515,#0d0d0d);border-radius:16px;display:flex;gap:12px;align-items:center;justify-content:center;text-decoration:none;font-weight:1000}
-    .platform img{width:24px;max-height:24px;object-fit:contain}
+    .platform{min-height:74px;border:1px solid var(--line);background:linear-gradient(180deg,#151515,#0d0d0d);border-radius:16px;display:flex;gap:12px;align-items:center;justify-content:center;text-decoration:none;font-weight:1000;overflow:hidden}
+    .platform img{width:24px!important;height:24px!important;max-width:24px!important;max-height:24px!important;object-fit:contain}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .platform.spotify{color:var(--green)}
     .platform.youtube{color:#ff4248}
