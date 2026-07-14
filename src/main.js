@@ -1102,12 +1102,14 @@ const appSystems = [
   {
     category: 'Automotive',
     title: 'Automotive OS',
-    description: 'Proximamente',
-    status: 'Soon',
+    description: 'SOLVE dentro de BOOSTR: intake, offer review, partner routing y Deal OS.',
+    status: 'Access',
     icon: 'car',
     accent: 'indigo',
-    locked: true,
-    logos: []
+    href: '/app/automotive/',
+    logos: [
+      { name: 'SOLVE Automotive', label: 'SOLVE', href: '/app/automotive/' }
+    ]
   },
   {
     category: 'Artist',
