@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080808">
+  <meta name="description" content="Reserva tu entrada para Fuerte Promotions BDay Bash en Orlando. Janko Diorr y Gemese abren para ROWMA.">
+  <title>Fuerte Promotions BDay Bash · Orlando</title>
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <link rel="stylesheet" href="./styles.css?v=1">
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <nav class="topbar">
+        <a class="brand" href="/app/" aria-label="BOOSTR Labs">
+          <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
+        </a>
+        <span>SMART EVENT LINK</span>
+      </nav>
+
+      <div class="noise" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <p class="eyebrow">BLVCK CAT BISTRO CAFÉ · ORLANDO</p>
+        <h1>FUERTE<br>PROMOTIONS</h1>
+        <p class="script">BDAY BASH</p>
+        <div class="lineup">
+          <span>ROWMA</span>
+          <small>con</small>
+          <strong>GEMESE × JANKO DIORR</strong>
+        </div>
+        <a class="primary" href="#reservar">RESERVAR ENTRADA · $40</a>
+      </div>
+
+      <div class="date-lockup" aria-label="Sábado 25 de julio a las 9 PM">
+        <span>SAT</span><b>JUL 25TH</b><span>9PM</span>
+      </div>
+    </section>
+
+    <section class="event-grid" aria-label="Detalles del evento">
+      <article><span>FECHA</span><strong>Sábado, 25 de julio</strong></article>
+      <article><span>PUERTAS</span><strong>9:00 PM</strong></article>
+      <article><span>ENTRADA</span><strong>$40 por persona</strong></article>
+      <article><span>LUGAR</span><strong>Blvck Cat Bistro Café</strong></article>
+      <article class="wide"><span>DIRECCIÓN</span><strong>9521 S Orange Blossom Trail #104<br>Orlando, Florida 32837</strong></article>
+    </section>
+
+    <section class="experience">
+      <p class="eyebrow">UNA NOCHE EN ORLANDO</p>
+      <h2>ROWMA EN VIVO.<br>GEMESE Y JANKO ABREN EL SHOW.</h2>
+      <p>Reserva tu espacio ahora. No se realiza ningún cobro en esta página. El equipo del evento te escribirá por WhatsApp para confirmar disponibilidad y completar el pago.</p>
+    </section>
+
+    <section class="reserve" id="reservar">
+      <div class="reserve-head">
+        <p class="eyebrow">RESERVA DIGITAL</p>
+        <h2>APARTA TU ENTRADA</h2>
+        <p>Completa tus datos. Recibirás seguimiento por WhatsApp para finalizar la compra.</p>
+      </div>
+
+      <form id="reservationForm" novalidate>
+        <label>Nombre completo<input name="name" autocomplete="name" required maxlength="120"></label>
+        <label>WhatsApp<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+1 407 000 0000" required maxlength="30"></label>
+        <label>Correo electrónico <small>opcional</small><input name="email" type="email" autocomplete="email" maxlength="160"></label>
+        <div class="quantity-field">
+          <span>Cantidad de entradas</span>
+          <div class="stepper">
+            <button type="button" data-step="-1" aria-label="Restar una entrada">−</button>
+            <output id="quantityOutput">1</output>
+            <button type="button" data-step="1" aria-label="Agregar una entrada">+</button>
+          </div>
+        </div>
+        <div class="total"><span>Total a confirmar</span><strong id="totalOutput">$40</strong></div>
+        <label class="check"><input name="consent" type="checkbox" required><span>Acepto recibir mensajes relacionados con esta reserva por WhatsApp.</span></label>
+        <button class="submit" type="submit">SOLICITAR RESERVA</button>
+        <p class="fineprint">La solicitud no garantiza admisión hasta que el pago sea confirmado por el equipo del evento.</p>
+        <p id="formStatus" class="status" role="status" aria-live="polite"></p>
+      </form>
+
+      <section class="confirmation" id="confirmation" hidden>
+        <span class="checkmark">✓</span>
+        <p class="eyebrow">SOLICITUD RECIBIDA</p>
+        <h2>TU RESERVA ESTÁ EN PROCESO</h2>
+        <p>Guardamos tus datos. Te contactaremos por WhatsApp para confirmar las entradas y completar el pago.</p>
+        <div class="reservation-code"><span>CÓDIGO</span><strong id="reservationCode"></strong></div>
+        <a class="secondary" href="#event-top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">VER DETALLES DEL EVENTO</a>
+      </section>
+    </section>
+
+    <footer>
+      <div><strong>FUERTE PROMOTIONS</strong><span>BDAY BASH · ORLANDO</span></div>
+      <a href="/app/"><span>POWERED BY</span><b>BOOSTR LABS</b></a>
+    </footer>
+  </main>
+  <script src="./app.js?v=1" defer></script>
+</body>
+</html>
