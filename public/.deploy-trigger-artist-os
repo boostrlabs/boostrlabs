@@ -2,4 +2,4 @@ BOOSTR production deployment trigger
 2026-07-15
 reason: payment link hotfix now uploads and persists product images
 commit: bd43e10d5727f9e16d6c3070a7345ad9f8999e08
-route: /manager/payment-links/ -> /pay/
+route: /manager/payment-links/ -> /pay/.
