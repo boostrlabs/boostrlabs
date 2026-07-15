@@ -6,7 +6,7 @@
   const $ = (id) => document.getElementById(id);
   const token = () => localStorage.getItem('boostr_auth_token');
   const authHeaders = () => token() ? { Authorization: `Bearer ${token()}` } : {};
-  const state = { workspaces: [], workspaceId: '', productType: 'service', saleType: 'purchase_now' };
+  const state = { workspaces: [], workspaceId: '', productType: 'service', saleType: 'purchase_now', photoFile: null };
 
   function message(text, bad = false) {
     const node = $('msg');
@@ -119,6 +119,47 @@
         $('bnplNote')?.classList.toggle('show', state.saleType === 'bnpl');
       };
     });
+
+    const photo = $('photo');
+    if (photo) {
+      photo.onchange = () => {
+        state.photoFile = photo.files?.[0] || null;
+        const preview = $('photoPreview');
+        if (!preview) return;
+        if (!state.photoFile) {
+          preview.innerHTML = 'Sin foto';
+          return;
+        }
+        const url = URL.createObjectURL(state.photoFile);
+        preview.innerHTML = `<img src="${url}" alt="Vista previa">`;
+      };
+    }
+  }
+
+  async function uploadPhoto(title) {
+    if (!state.photoFile) return null;
+    const params = new URLSearchParams({
+      workspace_id: state.workspaceId,
+      visibility: 'workspace',
+      filename: state.photoFile.name,
+      title: title || state.photoFile.name,
+      category: 'product-media',
+      source: 'quick_publish_mobile_hotfix'
+    });
+    const response = await fetch(`/api/cloud/upload?${params.toString()}`, {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': state.photoFile.type || 'application/octet-stream' },
+      credentials: 'same-origin',
+      body: state.photoFile
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false || !data.asset?.id) {
+      throw new Error(data.message || data.error || 'No se pudo subir la foto');
+    }
+    return {
+      id: data.asset.id,
+      publicUrl: `/api/public/assets/${data.asset.id}`
+    };
   }
 
   function wireForm() {
@@ -133,14 +174,19 @@
       if (!title) return message('Escribe un nombre', true);
       if (!Number.isFinite(cents) || cents < 50) return message('El precio mínimo para la prueba es $0.50', true);
       button.disabled = true;
-      button.textContent = 'Publicando...';
+      button.textContent = state.photoFile ? 'Subiendo foto...' : 'Publicando...';
       $('success')?.classList.remove('show');
       try {
+        const uploaded = await uploadPhoto(title);
+        button.textContent = 'Creando producto...';
         const metadata = {
           source: 'quick_publish_mobile_hotfix',
           sale_type: state.saleType,
           subscription_interval: state.saleType === 'subscription' ? $('interval')?.value : null,
-          auction_end: state.saleType === 'auction' ? $('auctionEnd')?.value : null
+          auction_end: state.saleType === 'auction' ? $('auctionEnd')?.value : null,
+          image_url: uploaded?.publicUrl || null,
+          image_asset_id: uploaded?.id || null,
+          product_image_asset_id: uploaded?.id || null
         };
         const productData = await api('/api/products', {
           method: 'POST',
@@ -176,6 +222,10 @@
         $('copySuccess').onclick = async () => navigator.clipboard.writeText(publicUrl);
         $('success').classList.add('show');
         message('Publicado correctamente');
+        const photo = $('photo');
+        if (photo) photo.value = '';
+        state.photoFile = null;
+        if ($('photoPreview')) $('photoPreview').innerHTML = 'Sin foto';
         await loadLinks();
       } catch (error) {
         message(error.message || 'No se pudo publicar', true);
