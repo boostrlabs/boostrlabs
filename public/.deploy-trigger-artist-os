@@ -1,3 +1,5 @@
-BOOSTR Artist OS deployment trigger
-2026-07-14
-route: /demo/janko-artist-os/
+BOOSTR production deployment trigger
+2026-07-15
+reason: public payment-link product image fix
+commit: 4fc2555d38cffc9859f042785cd571805d362516
+route: /pay/
