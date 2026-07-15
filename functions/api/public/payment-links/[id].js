@@ -15,7 +15,9 @@ function publicProductImageUrl(value, assetId = "") {
     const url = new URL(raw, "https://boostr.local");
     const parts = url.pathname.split("/").filter(Boolean);
     const last = parts.at(-1) || "";
-    if (parts.length === 1 && /^[a-f0-9-]{20,120}$/i.test(last)) return `/api/public/assets/${last}`;
+    if (/^[a-f0-9-]{20,120}$/i.test(last) && !url.pathname.startsWith("/api/cloud")) {
+      return `/api/public/assets/${last}`;
+    }
     if (url.pathname.startsWith("/api/public/assets/")) return `${url.pathname}${url.search}`;
   } catch {}
   return raw;
@@ -32,6 +34,42 @@ function publicProductModelUrl(value, assetId = "") {
     if (url.pathname.startsWith("/api/public/models/")) return `${url.pathname}${url.search}`;
   } catch {}
   return raw;
+}
+
+async function recoverProductImage(env, link, metadata) {
+  const direct = publicProductImageUrl(
+    metadata.image_url || metadata.hero_image_url || metadata.cover_url || metadata.image || "",
+    metadata.image_asset_id || metadata.product_image_asset_id || metadata.asset_id || ""
+  );
+  if (direct) return direct;
+
+  const title = clean(link?.product_title || link?.title, 220);
+  const candidates = await env.DB.prepare(`
+    SELECT id, title, metadata_json, created_at
+    FROM workspace_files
+    WHERE workspace_id = ?
+      AND related_type = 'cloud_asset'
+      AND status = 'active'
+      AND file_type = 'image'
+    ORDER BY created_at DESC
+    LIMIT 50
+  `).bind(link.workspace_id).all();
+
+  const rows = candidates.results || [];
+  const normalizedTitle = title.toLowerCase();
+  const match = rows.find((row) => {
+    const meta = parseJson(row.metadata_json);
+    const category = clean(meta.category, 80);
+    const source = clean(meta.source, 80);
+    if (category !== "product-media" && source !== "quick_publish_v4") return false;
+    const rowTitle = clean(row.title, 220).toLowerCase();
+    return normalizedTitle && rowTitle === normalizedTitle;
+  }) || rows.find((row) => {
+    const meta = parseJson(row.metadata_json);
+    return clean(meta.category, 80) === "product-media" || clean(meta.source, 80) === "quick_publish_v4";
+  });
+
+  return match?.id ? `/api/public/assets/${match.id}` : null;
 }
 
 function isOmniParking(link, metadata) {
@@ -109,10 +147,7 @@ export async function onRequestGet({ env, params }) {
   const rawMetadata = { ...parseJson(link.product_metadata_json), ...parseJson(link.metadata_json) };
   const metadata = normalizeOmniMetadata(link, rawMetadata);
   const disclosure = parseJson(link.disclosure_json);
-  const imageUrl = publicProductImageUrl(
-    metadata.image_url || metadata.hero_image_url || metadata.cover_url || metadata.image || "",
-    metadata.image_asset_id || metadata.product_image_asset_id || metadata.asset_id || ""
-  );
+  const imageUrl = await recoverProductImage(env, link, metadata);
   const modelUrl = publicProductModelUrl(
     metadata.model_3d_url || metadata.model_url || "",
     metadata.model_3d_asset_id || metadata.model_asset_id || ""
