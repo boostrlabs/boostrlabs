@@ -6,6 +6,7 @@
 <title>BOOSTR Smart Pay</title>
 <meta name="description" content="Checkout seguro dentro de BOOSTR.">
 <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="https://js.stripe.com/v3/"></script>
 <style>
 :root{
@@ -42,6 +43,12 @@ h2{font-size:clamp(34px,5vw,56px);line-height:.95;letter-spacing:-.055em;margin:
 .tech-signature{display:none;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;color:var(--muted);font-size:10px}.tech-signature b{color:var(--ink);letter-spacing:.08em}
 .ticket{border:1px solid var(--line);background:var(--field);border-radius:24px;padding:16px;margin-top:14px;text-align:center}.ticket img{display:block;width:min(100%,300px);aspect-ratio:1;object-fit:contain;margin:12px auto;background:#fff;border-radius:20px;padding:10px}.ticket h3{font-size:40px;letter-spacing:-.06em;margin:6px 0}.ticket a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;border-radius:999px;background:var(--button);color:var(--button-ink);padding:0 16px;text-decoration:none;font-size:12px;font-weight:950}
 .parking-only{display:none}
+
+.store-82-theme{--ink:#fff;--muted:rgba(255,255,255,.62);--line:rgba(255,255,255,.13);--gold:#f20d19;--green:#f20d19;--red:#f20d19;--cyan:#fff;--card:linear-gradient(180deg,rgba(13,13,13,.98),rgba(0,0,0,.96));--field:rgba(255,255,255,.055);--button:#f20d19;--button-ink:#fff;background:radial-gradient(circle at 18% 14%,rgba(242,13,25,.24),transparent 28%),radial-gradient(circle at 85% 88%,rgba(123,7,16,.34),transparent 34%),#000}
+.store-82-theme:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to bottom,#000,transparent)}
+.store-82-theme .shell{position:relative}.store-82-theme .wrap{width:min(100%,1040px);grid-template-columns:1fr 1fr}.store-82-theme .card{border-radius:0;box-shadow:0 32px 90px rgba(123,7,16,.2)}
+.store-82-theme .brand{padding:18px}.store-82-theme .brand-lockup{margin-bottom:12px}.store-82-theme .brand img.logo{width:76px;height:76px;object-fit:contain}.store-82-theme .brand-copy{display:block}.store-82-theme .brand-copy b{font-family:'Press Start 2P',ui-monospace,monospace;font-size:12px;color:#fff}.store-82-theme .brand-copy span{color:#f20d19;font-size:7px}.store-82-theme .secure-pill{display:flex;border-radius:0;background:#080808}
+.store-82-theme .hero-img{aspect-ratio:4/3;object-fit:contain;border-radius:0;background:#fff;margin-bottom:20px}.store-82-theme .eyebrow{border-radius:0;background:rgba(242,13,25,.12);color:#f20d19}.store-82-theme h1,.store-82-theme h2,.store-82-theme .price{font-family:'Press Start 2P',ui-monospace,monospace;letter-spacing:-.04em}.store-82-theme h1{font-size:clamp(25px,4vw,44px);line-height:1.12}.store-82-theme h2{font-size:clamp(24px,3.6vw,38px);line-height:1.14}.store-82-theme .price{font-size:clamp(36px,6vw,62px);color:#f20d19}.store-82-theme .meta div,.store-82-theme .field input,.store-82-theme .notice{border-radius:0}.store-82-theme .btn{border-radius:0;text-transform:uppercase;letter-spacing:.08em}.store-82-theme .payment-rail{display:flex}.store-82-theme .powered-note{color:rgba(255,255,255,.52)}
 
 .parking-theme{
   --bg:#f3f3ef;--ink:#0b0b0c;--muted:#6f706c;--line:#dedfd9;--gold:#111;
@@ -180,6 +187,7 @@ const id=params.get('id')||decodeURIComponent(location.pathname.split('/').filte
 let link=null;
 let embeddedCheckout=null;
 let isParking=false;
+let is82Store=false;
 let countdownTimer=null;
 
 const els={
@@ -258,6 +266,7 @@ async function load(){
     link=data.payment_link;
     const meta=link.metadata||{};
     isParking=meta.operator==='omni_jr';
+    is82Store=meta.source==='82_store'||meta.checkout_theme==='82_store'||link.workspace_slug==='82-store';
 
     if(isParking){
       document.body.classList.add('parking-theme');
@@ -277,12 +286,30 @@ async function load(){
       els.secureText.textContent=meta.plan_type==='monthly'?'Mensual':'8 hours max';
     }
 
+    if(is82Store){
+      document.body.classList.add('store-82-theme');
+      document.title='82 Store · Secure checkout';
+      els.brandLogo.src=meta.brand_logo_url||'/assets/82store/piloto-final-logo-82ngel.webp';
+      els.brandLogo.alt='82 Store';
+      document.querySelector('.brand-copy b').textContent='82 STORE';
+      document.querySelector('.brand-copy span').textContent='POWERED BY BOOSTR LABS';
+      els.workspace.textContent='82 STORE / 82NGEL';
+      els.saleBadge.textContent='DROP 001 · SECURE CHECKOUT';
+      els.actionBadge.textContent='82 STORE CHECKOUT';
+      els.actionTitle.textContent='Complete your order.';
+      els.actionCopy.textContent='Pago seguro procesado por Stripe, dentro del universo visual de 82 Store.';
+      els.notice.textContent='Stripe procesa el pago. BOOSTR y 82 Store no guardan los datos de tu tarjeta.';
+      els.payBtn.textContent='BUY NOW';
+      els.secureText.textContent='SECURE PAYMENT';
+      document.querySelector('.powered-note').textContent='Métodos sujetos a disponibilidad · Pago seguro para 82 Store, powered by BOOSTR Labs.';
+    }
+
     els.title.textContent=link.title;
     els.description.textContent=link.product_description||'BOOSTR Smart Pay';
     els.price.textContent=money(link.amount_cents,link.currency);
     if(!isParking)els.workspace.textContent=link.workspace_name||'BOOSTR Workspace';
     els.mode.textContent=saleLabel(link.sale_type||link.checkout_mode);
-    els.saleBadge.textContent=isParking?'OMNI JR × BOOSTR':saleLabel(link.sale_type||link.checkout_mode);
+    if(!is82Store)els.saleBadge.textContent=isParking?'OMNI JR × BOOSTR':saleLabel(link.sale_type||link.checkout_mode);
     els.rule.textContent=link.requires_account?'cuenta requerida':'checkout como invitado';
 
     if(link.image_url){els.heroImage.src=link.image_url;els.heroImage.classList.remove('hidden')}

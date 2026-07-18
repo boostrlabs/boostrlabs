@@ -5,6 +5,16 @@ function parseJson(value) {
   try { return value ? JSON.parse(value) : {}; } catch { return {}; }
 }
 
+const STORE_82_IMAGES = Object.freeze({
+  "82_store_trapsiah-oversized-tee": "/assets/82store/82apparel1.webp",
+  "82_store_star-girl-distressed-denim": "/assets/82store/82apparel2.webp",
+  "82_store_chunky-platform-boots": "/assets/82store/82apparel3.webp",
+  "82_store_star-girl-baggy-jeans": "/assets/82store/82apparel4.webp",
+  "82_store_star-girl-zip-hoodie": "/assets/82store/82apparel5.webp",
+  "82_store_spiked-chain-bracelet": "/assets/82store/82apparel6.webp",
+  "82_store_spiked-star-choker": "/assets/82store/82apparel7.webp"
+});
+
 function publicProductImageUrl(value, assetId = "") {
   const explicitId = clean(assetId, 120);
   if (/^[a-f0-9-]{20,120}$/i.test(explicitId)) return `/api/public/assets/${explicitId}`;
@@ -42,6 +52,8 @@ async function recoverProductImage(env, link, metadata) {
     metadata.image_asset_id || metadata.product_image_asset_id || metadata.asset_id || ""
   );
   if (direct) return direct;
+  const storeImage = STORE_82_IMAGES[clean(metadata.store_product_code, 160).toLowerCase()];
+  if (storeImage) return storeImage;
 
   const title = clean(link?.product_title || link?.title, 220);
   const candidates = await env.DB.prepare(`

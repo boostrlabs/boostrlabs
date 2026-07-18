@@ -2,13 +2,13 @@ import { clean, now } from "./api.js";
 import { ensureOmniCoreSchema } from "./omni-parking.js";
 
 export const STORE_82_PRODUCTS = Object.freeze({
-  "trapsiah-oversized-tee": { title: "Trapsiah Oversized Tee", amount: 7000, description: "Oversized black tee with washed 82 graphics, red punk marks and distressed finish." },
-  "star-girl-distressed-denim": { title: "Star Girl Distressed Denim", amount: 12000, description: "Destroyed wide-leg denim with chain details, star marks and oxidized black wash." },
-  "chunky-platform-boots": { title: "Chunky Platform Boots", amount: 15000, description: "Heavy black platform boots with spikes, chains and star hardware." },
-  "star-girl-baggy-jeans": { title: "Star Girl Baggy Jeans", amount: 11000, description: "Black baggy denim with red stitching, star girl artwork and chain styling." },
-  "star-girl-zip-hoodie": { title: "Star Girl Zip Hoodie", amount: 9500, description: "Black zip hoodie with 82 star emblem, red sleeve work and back artwork." },
-  "spiked-chain-bracelet": { title: "Spiked Chain Bracelet", amount: 4000, description: "Silver-tone spike chain bracelet with star detail and sharp 82 energy." },
-  "spiked-star-choker": { title: "Spiked Star Choker", amount: 5000, description: "Black choker with hanging stars, spikes and metallic punk hardware." }
+  "trapsiah-oversized-tee": { title: "Trapsiah Oversized Tee", amount: 7000, image: "/assets/82store/82apparel1.webp", description: "Oversized black tee with washed 82 graphics, red punk marks and distressed finish." },
+  "star-girl-distressed-denim": { title: "Star Girl Distressed Denim", amount: 12000, image: "/assets/82store/82apparel2.webp", description: "Destroyed wide-leg denim with chain details, star marks and oxidized black wash." },
+  "chunky-platform-boots": { title: "Chunky Platform Boots", amount: 15000, image: "/assets/82store/82apparel3.webp", description: "Heavy black platform boots with spikes, chains and star hardware." },
+  "star-girl-baggy-jeans": { title: "Star Girl Baggy Jeans", amount: 11000, image: "/assets/82store/82apparel4.webp", description: "Black baggy denim with red stitching, star girl artwork and chain styling." },
+  "star-girl-zip-hoodie": { title: "Star Girl Zip Hoodie", amount: 9500, image: "/assets/82store/82apparel5.webp", description: "Black zip hoodie with 82 star emblem, red sleeve work and back artwork." },
+  "spiked-chain-bracelet": { title: "Spiked Chain Bracelet", amount: 4000, image: "/assets/82store/82apparel6.webp", description: "Silver-tone spike chain bracelet with star detail and sharp 82 energy." },
+  "spiked-star-choker": { title: "Spiked Star Choker", amount: 5000, image: "/assets/82store/82apparel7.webp", description: "Black choker with hanging stars, spikes and metallic punk hardware." }
 });
 
 const STORE = Object.freeze({ slug: "82-store", name: "82 Store / 82NGEL", type: "partner" });
@@ -43,7 +43,7 @@ export async function ensure82StoreProduct(env, slug) {
       .bind(workspaceId, code).first();
   } catch {}
   const timestamp = now();
-  const metadata = JSON.stringify({ source: "82_store", module: "82 Store", brand_name: "82 STORE", store_product_code: code, stable_url: `/82store/buy/${slug}` });
+  const metadata = JSON.stringify({ source: "82_store", module: "82 Store", brand_name: "82 STORE", brand_logo_url: "/assets/82store/piloto-final-logo-82ngel.webp", checkout_theme: "82_store", image_url: item.image, store_product_code: code, stable_url: `/82store/buy/${slug}` });
   const productId = link?.product_id || crypto.randomUUID();
   const existingProduct = await env.DB.prepare("SELECT id FROM products WHERE id = ? LIMIT 1").bind(productId).first();
   if (existingProduct?.id) {
