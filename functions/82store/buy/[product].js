@@ -1,4 +1,4 @@
-import { ensure82StoreProduct, get82StoreProduct } from "../../../_lib/store-82.js";
+import { ensure82StoreProduct, get82StoreProduct } from "../../_lib/store-82.js";
 
 export async function onRequestGet({ env, params }) {
   const slug = String(params?.product || "").trim().toLowerCase();
