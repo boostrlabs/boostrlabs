@@ -1,4 +1,5 @@
 import { addLeadEvent, clean, isValidEmail, isValidPhone, json, jsonError, normalizeArray, normalizePhone, readJson } from "../_lib/api.js";
+import { notifyLeadOnTelegram } from "../_lib/telegram-leads.js";
 
 const requiredFields = ["contact_name", "business_name", "industry", "project_goal", "current_status"];
 const ORLANDO_SOURCE = "boostr-event-os-orlando-jul-25";
@@ -27,24 +28,24 @@ async function ensureEventWorkspace(env, source, createdAt) {
 
 const leadFromPayload = (payload) => ({
   id: crypto.randomUUID(),
-  source: clean(payload.source || "website", 80),
-  contact_name: clean(payload.contact_name, 140),
-  contact_email: clean(payload.contact_email, 180).toLowerCase(),
-  contact_phone: normalizePhone(payload.contact_phone),
+  source: clean(payload.source || payload.formKind || payload.form_kind || "website", 80),
+  contact_name: clean(payload.contact_name || payload.name, 140),
+  contact_email: clean(payload.contact_email || payload.email, 180).toLowerCase(),
+  contact_phone: normalizePhone(payload.contact_phone || payload.phone),
   preferred_contact_method: clean(payload.preferred_contact_method || "email", 40),
-  business_name: clean(payload.business_name, 180),
-  industry: clean(payload.industry, 120),
+  business_name: clean(payload.business_name || payload.business || payload.businessProject || "Website lead", 180),
+  industry: clean(payload.industry || "not_collected", 120),
   current_website_url: clean(payload.current_website_url, 300),
   social_links: clean(payload.social_links, 1000),
-  project_goal: clean(payload.project_goal, 2000),
+  project_goal: clean(payload.project_goal || payload.mainGoal || payload.serviceInterested || payload.message, 2000),
   requested_modules: normalizeArray(payload.requested_modules, 80),
   timeline: clean(payload.timeline, 80),
-  budget_range: clean(payload.budget_range, 80),
-  current_status: clean(payload.current_status, 2000),
+  budget_range: clean(payload.budget_range || payload.budgetRange, 80),
+  current_status: clean(payload.current_status || payload.websiteStatus || payload.currentProblem || "Lead submitted", 2000),
   biggest_problem: clean(payload.biggest_problem, 2000),
   manual_or_confusing: clean(payload.manual_or_confusing, 2000),
   system_outcome: clean(payload.system_outcome, 2000),
-  extra_message: clean(payload.extra_message, 3000),
+  extra_message: clean(payload.extra_message || payload.message, 3000),
   referral_code: clean(payload.referralCode || payload.referral_code, 80),
   page_url: clean(payload.pageUrl || payload.page_url, 800),
   created_at: new Date().toISOString()
@@ -70,41 +71,6 @@ const emailHtml = (lead) => `
   <p>${escapeHtml(lead.extra_message)}</p>
 `;
 
-const telegramText = (lead) => [
-  "🎟️ NUEVO LEAD · ROWMA ORLANDO",
-  "",
-  `Nombre: ${lead.contact_name}`,
-  `WhatsApp: ${lead.contact_phone}`,
-  `Correo: ${lead.contact_email || "No indicado"}`,
-  `Total solicitado: ${lead.budget_range}`,
-  `Referencia: ${lead.referral_code || "Sin referencia"}`,
-  `Fecha: ${lead.created_at}`,
-  "",
-  "Acción: escribirle por WhatsApp para enviar pago y cerrar las entradas."
-].join("\n");
-
-async function sendTelegramLeadNotification(env, lead) {
-  const token = clean(env.TELEGRAM_BOT_TOKEN, 200);
-  const chatId = clean(env.TELEGRAM_CHAT_ID, 100);
-  if (!token || !chatId || lead.source !== ORLANDO_SOURCE) return false;
-  if (!/^\d+:[A-Za-z0-9_-]+$/.test(token)) throw new Error("telegram_bot_token_invalid");
-
-  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: telegramText(lead),
-      disable_web_page_preview: true
-    })
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok || result.ok !== true) {
-    throw new Error(clean(result.description || `telegram_http_${response.status}`, 300));
-  }
-  return true;
-}
-
 export async function onRequestOptions() {
   return json({ ok: true });
 }
@@ -115,13 +81,14 @@ export async function onRequestPost(context) {
   if (!parsed.ok) return parsed.response;
 
   const payload = parsed.payload || {};
-  const missingFields = requiredFields.filter((field) => !clean(payload[field]));
+  const lead = leadFromPayload(payload);
+  const missingFields = requiredFields.filter((field) => !clean(lead[field]));
   if (missingFields.length) {
     return jsonError("required_fields_missing", "Missing required fields.", 400, { fields: missingFields });
   }
 
-  const suppliedEmail = clean(payload.contact_email, 180);
-  const suppliedPhone = clean(payload.contact_phone, 80);
+  const suppliedEmail = lead.contact_email;
+  const suppliedPhone = lead.contact_phone;
   if (!suppliedEmail && !suppliedPhone) {
     return jsonError("contact_required", "Provide at least one contact channel: email or phone.", 400, { fields: ["contact_email", "contact_phone"] });
   }
@@ -131,8 +98,6 @@ export async function onRequestPost(context) {
   if (suppliedPhone && !isValidPhone(suppliedPhone)) {
     return jsonError("invalid_contact_phone", "Invalid phone format.", 400, { fields: ["contact_phone"] });
   }
-
-  const lead = leadFromPayload(payload);
 
   if (env.DB) {
     const workspaceId = await ensureEventWorkspace(env, lead.source, lead.created_at);
@@ -192,30 +157,13 @@ export async function onRequestPost(context) {
     emailPreview: emailHtml(lead)
   });
 
-  const notificationConfigured = Boolean(
-    lead.source === ORLANDO_SOURCE && env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID
-  );
-  let notificationSent = false;
-  let notificationError = "";
-  if (notificationConfigured) {
-    try {
-      notificationSent = await sendTelegramLeadNotification(env, lead);
-    } catch (error) {
-      notificationError = error instanceof Error ? error.message : String(error);
-      console.error(JSON.stringify({
-        message: "telegram_lead_notification_failed",
-        lead_id: lead.id,
-        error: notificationError
-      }));
-    }
-  }
+  const notification = await notifyLeadOnTelegram(env, lead);
 
   return json({
     ok: true,
     id: lead.id,
     stored: Boolean(env.DB),
-    notificationConfigured,
-    notificationSent,
-    ...(notificationError ? { notificationError } : {})
+    notificationConfigured: notification.configured,
+    notificationSent: notification.sent
   });
 }

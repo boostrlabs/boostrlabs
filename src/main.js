@@ -4,7 +4,7 @@ import { getLinkRoute, renderLinkExperience } from './linkSystem.js';
 const config = {
   siteUrl: import.meta.env.VITE_SITE_URL || '',
   contactEmail: import.meta.env.VITE_CONTACT_EMAIL || 'boostrlabs@gmail.com',
-  formEndpoint: import.meta.env.VITE_FORM_ENDPOINT || '',
+  formEndpoint: import.meta.env.VITE_FORM_ENDPOINT || '/api/intake',
   analyticsId: import.meta.env.VITE_ANALYTICS_ID || '',
   referralCookieDays: Number(import.meta.env.VITE_REFERRAL_COOKIE_DAYS || 30)
 };

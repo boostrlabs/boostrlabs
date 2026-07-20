@@ -1,5 +1,6 @@
 import { addLeadEvent, clean, getIp, getUa, isValidEmail, isValidPhone, json, jsonError, normalizeArray, readJson } from "../_lib/api.js";
 import { createAuditCards } from "../_lib/custom-os.js";
+import { notifyLeadOnTelegram } from "../_lib/telegram-leads.js";
 
 const inferContact = (payload) => {
   const free = clean(payload.contact || payload.contact_info || payload.free || payload.link || payload.website || payload.social || payload.business_link, 500);
@@ -258,12 +259,22 @@ export async function onRequestPost({ request, env }) {
       recommended_modules: record.recommended_modules
     });
 
+    const notification = await notifyLeadOnTelegram(env, {
+      ...record,
+      contact_phone: record.contact_phone || record.contact_raw,
+      project_goal: `BOOSTR Audit · ${record.recommended_modules.join(", ")}`,
+      budget_range: "not_collected",
+      referral_code: ""
+    });
+
     return json({
       ok: true,
       id: record.id,
       stored: storage.stored,
       cards_created: storage.cards_created || 0,
-      recommended_modules: record.recommended_modules
+      recommended_modules: record.recommended_modules,
+      notificationConfigured: notification.configured,
+      notificationSent: notification.sent
     });
   } catch (error) {
     console.error("BOOSTR Audit endpoint error", error);

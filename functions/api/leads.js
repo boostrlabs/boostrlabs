@@ -15,6 +15,7 @@ import {
   requireRole,
   requireWorkspaceAccess
 } from "../_lib/api.js";
+import { notifyLeadOnTelegram } from "../_lib/telegram-leads.js";
 
 const leadColumns = `
   id, workspace_id, created_by_user_id, source, contact_name, contact_email, contact_phone, preferred_contact_method,
@@ -168,6 +169,7 @@ export async function onRequestPost({ request, env }) {
   const businessName = clean(payload.business_name || payload.business, 180);
   const projectGoal = clean(payload.project_goal || payload.goal || payload.message, 2000);
   const workspaceId = clean(payload.workspace_id, 120) || defaultWorkspaceId(auth);
+  const source = clean(payload.source || "manager", 80);
 
   if (!contactEmail && !contactPhone) {
     return jsonError("contact_required", "Manual lead needs email or phone.", 400, { fields: ["contact_email", "contact_phone"] });
@@ -190,7 +192,7 @@ export async function onRequestPost({ request, env }) {
       id,
       workspaceId,
       auth.user.id,
-      clean(payload.source || "manager", 80),
+      source,
       contactName,
       contactEmail,
       contactPhone,
@@ -213,9 +215,29 @@ export async function onRequestPost({ request, env }) {
     workspace_id: workspaceId,
     lead_id: id,
     event_type: "lead.created",
-    payload: { source: "manager", business_name: businessName, contact_email: contactEmail, contact_phone: contactPhone },
+    payload: { source, business_name: businessName, contact_email: contactEmail, contact_phone: contactPhone },
     created_at: createdAt
   });
 
-  return json({ ok: true, id, stored: true }, 201);
+  const notification = await notifyLeadOnTelegram(env, {
+    id,
+    source,
+    contact_name: contactName,
+    contact_email: contactEmail,
+    contact_phone: contactPhone,
+    business_name: businessName,
+    project_goal: projectGoal,
+    budget_range: clean(payload.budget_range, 80),
+    referral_code: clean(payload.referral_code || payload.referralCode, 80),
+    page_url: clean(payload.page_url || payload.pageUrl, 800),
+    created_at: createdAt
+  });
+
+  return json({
+    ok: true,
+    id,
+    stored: true,
+    notificationConfigured: notification.configured,
+    notificationSent: notification.sent
+  }, 201);
 }
