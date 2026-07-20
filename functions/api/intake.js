@@ -192,25 +192,30 @@ export async function onRequestPost(context) {
     emailPreview: emailHtml(lead)
   });
 
-  const notificationQueued = Boolean(
+  const notificationConfigured = Boolean(
     lead.source === ORLANDO_SOURCE && env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID
   );
-  if (notificationQueued) {
-    context.waitUntil(
-      sendTelegramLeadNotification(env, lead).catch((error) => {
-        console.error(JSON.stringify({
-          message: "telegram_lead_notification_failed",
-          lead_id: lead.id,
-          error: error instanceof Error ? error.message : String(error)
-        }));
-      })
-    );
+  let notificationSent = false;
+  let notificationError = "";
+  if (notificationConfigured) {
+    try {
+      notificationSent = await sendTelegramLeadNotification(env, lead);
+    } catch (error) {
+      notificationError = error instanceof Error ? error.message : String(error);
+      console.error(JSON.stringify({
+        message: "telegram_lead_notification_failed",
+        lead_id: lead.id,
+        error: notificationError
+      }));
+    }
   }
 
   return json({
     ok: true,
     id: lead.id,
     stored: Boolean(env.DB),
-    notificationQueued
+    notificationConfigured,
+    notificationSent,
+    ...(notificationError ? { notificationError } : {})
   });
 }
