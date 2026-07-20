@@ -70,6 +70,36 @@ const emailHtml = (lead) => `
   <p>${escapeHtml(lead.extra_message)}</p>
 `;
 
+const emailText = (lead) => [
+  "Nuevo lead de BOOSTR Event OS",
+  `Nombre: ${lead.contact_name}`,
+  `WhatsApp: ${lead.contact_phone}`,
+  `Correo: ${lead.contact_email || "No indicado"}`,
+  `Evento: ${lead.business_name}`,
+  `Total solicitado: ${lead.budget_range}`,
+  `Referencia: ${lead.referral_code || "Sin referencia"}`,
+  `Página: ${lead.page_url || "No indicada"}`,
+  "",
+  `Detalle: ${lead.extra_message || "Sin detalle"}`
+].join("\n");
+
+async function notifyEventLead(env, lead) {
+  if (lead.source !== ORLANDO_SOURCE || !env.EMAIL) return false;
+
+  const recipient = clean(env.LEAD_NOTIFICATION_EMAIL || env.VITE_CONTACT_EMAIL, 180);
+  const sender = clean(env.LEAD_FROM_EMAIL, 180);
+  if (!recipient || !sender) return false;
+
+  await env.EMAIL.send({
+    to: recipient,
+    from: { email: sender, name: "BOOSTR Event OS" },
+    subject: `Nuevo lead ROWMA · ${lead.contact_name} · ${lead.budget_range}`,
+    html: emailHtml(lead),
+    text: emailText(lead)
+  });
+  return true;
+}
+
 export async function onRequestOptions() {
   return json({ ok: true });
 }
@@ -149,6 +179,17 @@ export async function onRequestPost({ request, env }) {
     });
   }
 
+  let notificationSent = false;
+  try {
+    notificationSent = await notifyEventLead(env, lead);
+  } catch (error) {
+    console.error(JSON.stringify({
+      message: "event_lead_notification_failed",
+      lead_id: lead.id,
+      error: error instanceof Error ? error.message : String(error)
+    }));
+  }
+
   console.info("BOOSTR intake received", {
     id: lead.id,
     business: lead.business_name,
@@ -160,6 +201,6 @@ export async function onRequestPost({ request, env }) {
     ok: true,
     id: lead.id,
     stored: Boolean(env.DB),
-    emailReady: true
+    notificationSent
   });
 }

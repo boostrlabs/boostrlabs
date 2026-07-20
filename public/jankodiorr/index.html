@@ -25,6 +25,13 @@
     img[src*="/assets/link/janko/platforms/"]{position:static!important;inset:auto!important;display:block!important;width:18px!important;height:18px!important;max-width:18px!important;max-height:18px!important;min-width:0!important;min-height:0!important;object-fit:contain!important;filter:none!important;transform:none!important}
     .quick{display:flex;gap:8px}
     .wrap{width:min(100%,1180px);margin:auto;padding:18px}
+    .event-cta{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;margin-bottom:18px;padding:22px 24px;border:1px solid #ff5a43;border-radius:20px;background:linear-gradient(110deg,#f0442d,#8e1308 72%,#070707);color:#fff;text-decoration:none;box-shadow:0 18px 50px rgba(240,68,45,.22)}
+    .event-cta:after{content:"ROWMA";position:absolute;right:150px;top:50%;transform:translateY(-50%);font:1000 clamp(3rem,8vw,6.5rem)/1 Arial Black,Arial,sans-serif;letter-spacing:-.08em;opacity:.1;pointer-events:none}
+    .event-cta span,.event-cta strong,.event-cta small{position:relative;z-index:1;display:block}
+    .event-cta span{font:950 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase}
+    .event-cta strong{margin-top:7px;font:1000 clamp(1.35rem,3vw,2.25rem)/1 Arial Black,Arial,sans-serif;letter-spacing:-.045em}
+    .event-cta small{margin-top:7px;font-size:12px;font-weight:800;color:rgba(255,255,255,.78)}
+    .event-cta b{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:999px;background:#fff;color:#111;font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
     .hero{min-height:calc(100svh - 112px);display:grid;grid-template-columns:1.05fr .95fr;gap:16px;align-items:stretch}
     .hero-media{position:relative;min-height:640px;border:1px solid var(--line);border-radius:28px;overflow:hidden;background:#000}
     .hero-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.16) brightness(.72)}
@@ -91,7 +98,7 @@
     .footer{width:min(100%,1180px);margin:auto;padding:26px 18px 34px;display:flex;justify-content:space-between;gap:16px;color:#777;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
     .footer img{height:18px;vertical-align:middle;margin-left:8px}
     @media(max-width:980px){.top{grid-template-columns:auto auto;padding:0 16px}.nav{display:none}.hero,.story,.world-grid,.contact-grid{grid-template-columns:1fr}.hero-media{min-height:520px}.platforms{grid-template-columns:repeat(3,1fr)}.release-card{grid-template-columns:130px 1fr}}
-    @media(max-width:620px){.top{height:68px}.brand img{width:104px}.wrap{padding:10px}.hero{min-height:auto}.hero-media{min-height:560px;border-radius:0;margin-inline:-10px;border-left:0;border-right:0}.hero h1{font-size:70px}.hero-copy{left:18px;right:18px}.logo-wall{grid-template-columns:1fr 1fr}.logo-cell{min-height:96px;padding:18px}.release-card{grid-template-columns:92px 1fr;padding:13px;border-radius:20px}.release-card .actions{display:grid;grid-template-columns:1fr 1fr}.signal-grid,.platforms{grid-template-columns:1fr 1fr}.track{grid-template-columns:42px 1fr;align-items:start}.links{grid-column:2;justify-content:flex-start}.artist-panel{grid-template-columns:1fr}.artist-panel img{min-height:220px}.world-card{min-height:220px;padding:20px}.world-card img{max-width:190px}.footer{display:grid}}
+    @media(max-width:620px){.top{height:68px}.brand img{width:104px}.wrap{padding:10px}.event-cta{grid-template-columns:1fr;margin:0 -10px 10px;padding:20px;border-left:0;border-right:0;border-radius:0}.event-cta:after{right:-10px;top:28%;font-size:4.4rem}.event-cta b{width:100%}.hero{min-height:auto}.hero-media{min-height:560px;border-radius:0;margin-inline:-10px;border-left:0;border-right:0}.hero h1{font-size:70px}.hero-copy{left:18px;right:18px}.logo-wall{grid-template-columns:1fr 1fr}.logo-cell{min-height:96px;padding:18px}.release-card{grid-template-columns:92px 1fr;padding:13px;border-radius:20px}.release-card .actions{display:grid;grid-template-columns:1fr 1fr}.signal-grid,.platforms{grid-template-columns:1fr 1fr}.track{grid-template-columns:42px 1fr;align-items:start}.links{grid-column:2;justify-content:flex-start}.artist-panel{grid-template-columns:1fr}.artist-panel img{min-height:220px}.world-card{min-height:220px;padding:20px}.world-card img{max-width:190px}.footer{display:grid}}
   </style>
 </head>
 <body>
@@ -110,6 +117,10 @@
   </header>
 
   <main class="wrap" id="home">
+    <a class="event-cta" href="/events/orlando-jul-25/" aria-label="Ver evento ROWMA Live in Orlando y solicitar preventa">
+      <span><span>Evento especial · Orlando · Jul 25</span><strong>ROWMA LIVE · JANKO DIORR + GEMESE</strong><small>Preventa oficial · Solicita tus entradas y recibe la información por WhatsApp.</small></span>
+      <b>Ver evento →</b>
+    </a>
     <section class="hero" aria-label="JANKO DIORR artist link">
       <article class="hero-media">
         <img src="/assets/link/janko/janko_10_nne_press_microphones.jpg" alt="JANKO DIORR">
@@ -133,16 +144,14 @@
         </div>
 
         <article class="release-card" id="music">
-          <img src="/assets/link/janko/late-night-cover.png" alt="Late Night">
+          <img src="/assets/link/janko/es-mala-pero-asi-me-gusta.jpg" alt="Portada de Es Mala Pero Así Me Gusta">
           <div>
             <span class="eyebrow">Último release</span>
-            <h3>Late Night</h3>
-            <p class="muted">JANKO DIORR. Single. WESTDETRO.</p>
+            <h3>Es Mala Pero Así Me Gusta</h3>
+            <p class="muted">JANKO DIORR. Nuevo single. 2026.</p>
             <div class="actions">
-              <a class="btn red" href="https://open.spotify.com/album/2pyeIgVOnx28Qm0Oq2zAH4" target="_blank" rel="noreferrer">Spotify</a>
-              <a class="btn" href="https://www.youtube.com/watch?v=2RkraeDKILE" target="_blank" rel="noreferrer">YouTube</a>
-              <a class="btn" href="https://music.apple.com/us/album/late-night-single/6782543842" target="_blank" rel="noreferrer">Apple</a>
-              <a class="btn" href="https://www.amazon.com/Late-Night-Explicit-Janko-Diorr/dp/B0H5BWQM2W" target="_blank" rel="noreferrer">Amazon</a>
+              <a class="btn red" href="https://open.spotify.com/intl-es/album/4Rx63zryufm3xN2gUpi7WR" target="_blank" rel="noreferrer">Spotify</a>
+              <a class="btn" href="https://music.apple.com/us/song/es-mala-pero-as%C3%AD-me-gusta/6790942190" target="_blank" rel="noreferrer">Apple Music</a>
             </div>
           </div>
         </article>
