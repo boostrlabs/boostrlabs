@@ -4,12 +4,6 @@ pages_build_output_dir = "dist"
 [vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
 VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
-LEAD_NOTIFICATION_EMAIL = "boostrlabs@gmail.com"
-LEAD_FROM_EMAIL = "leads@boostrlabs.com"
-
-[[send_email]]
-name = "EMAIL"
-destination_address = "boostrlabs@gmail.com"
 
 [[d1_databases]]
 binding = "DB"
@@ -25,12 +19,6 @@ preview_bucket_name = "boostr-labs-assets-prod"
 [env.production.vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
 VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
-LEAD_NOTIFICATION_EMAIL = "boostrlabs@gmail.com"
-LEAD_FROM_EMAIL = "leads@boostrlabs.com"
-
-[[env.production.send_email]]
-name = "EMAIL"
-destination_address = "boostrlabs@gmail.com"
 
 [[env.production.d1_databases]]
 binding = "DB"
@@ -44,12 +32,6 @@ bucket_name = "boostr-labs-assets-prod"
 [env.preview.vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
 VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
-LEAD_NOTIFICATION_EMAIL = "boostrlabs@gmail.com"
-LEAD_FROM_EMAIL = "leads@boostrlabs.com"
-
-[[env.preview.send_email]]
-name = "EMAIL"
-destination_address = "boostrlabs@gmail.com"
 
 [[env.preview.d1_databases]]
 binding = "DB"

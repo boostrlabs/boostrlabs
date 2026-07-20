@@ -70,33 +70,38 @@ const emailHtml = (lead) => `
   <p>${escapeHtml(lead.extra_message)}</p>
 `;
 
-const emailText = (lead) => [
-  "Nuevo lead de BOOSTR Event OS",
+const telegramText = (lead) => [
+  "🎟️ NUEVO LEAD · ROWMA ORLANDO",
+  "",
   `Nombre: ${lead.contact_name}`,
   `WhatsApp: ${lead.contact_phone}`,
   `Correo: ${lead.contact_email || "No indicado"}`,
-  `Evento: ${lead.business_name}`,
   `Total solicitado: ${lead.budget_range}`,
   `Referencia: ${lead.referral_code || "Sin referencia"}`,
-  `Página: ${lead.page_url || "No indicada"}`,
+  `Fecha: ${lead.created_at}`,
   "",
-  `Detalle: ${lead.extra_message || "Sin detalle"}`
+  "Acción: escribirle por WhatsApp para enviar pago y cerrar las entradas."
 ].join("\n");
 
-async function notifyEventLead(env, lead) {
-  if (lead.source !== ORLANDO_SOURCE || !env.EMAIL) return false;
+async function sendTelegramLeadNotification(env, lead) {
+  const token = clean(env.TELEGRAM_BOT_TOKEN, 200);
+  const chatId = clean(env.TELEGRAM_CHAT_ID, 100);
+  if (!token || !chatId || lead.source !== ORLANDO_SOURCE) return false;
+  if (!/^\d+:[A-Za-z0-9_-]+$/.test(token)) throw new Error("telegram_bot_token_invalid");
 
-  const recipient = clean(env.LEAD_NOTIFICATION_EMAIL || env.VITE_CONTACT_EMAIL, 180);
-  const sender = clean(env.LEAD_FROM_EMAIL, 180);
-  if (!recipient || !sender) return false;
-
-  await env.EMAIL.send({
-    to: recipient,
-    from: { email: sender, name: "BOOSTR Event OS" },
-    subject: `Nuevo lead ROWMA · ${lead.contact_name} · ${lead.budget_range}`,
-    html: emailHtml(lead),
-    text: emailText(lead)
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: telegramText(lead),
+      disable_web_page_preview: true
+    })
   });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.ok !== true) {
+    throw new Error(clean(result.description || `telegram_http_${response.status}`, 300));
+  }
   return true;
 }
 
@@ -104,7 +109,8 @@ export async function onRequestOptions() {
   return json({ ok: true });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   const parsed = await readJson(request);
   if (!parsed.ok) return parsed.response;
 
@@ -179,17 +185,6 @@ export async function onRequestPost({ request, env }) {
     });
   }
 
-  let notificationSent = false;
-  try {
-    notificationSent = await notifyEventLead(env, lead);
-  } catch (error) {
-    console.error(JSON.stringify({
-      message: "event_lead_notification_failed",
-      lead_id: lead.id,
-      error: error instanceof Error ? error.message : String(error)
-    }));
-  }
-
   console.info("BOOSTR intake received", {
     id: lead.id,
     business: lead.business_name,
@@ -197,10 +192,25 @@ export async function onRequestPost({ request, env }) {
     emailPreview: emailHtml(lead)
   });
 
+  const notificationQueued = Boolean(
+    lead.source === ORLANDO_SOURCE && env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID
+  );
+  if (notificationQueued) {
+    context.waitUntil(
+      sendTelegramLeadNotification(env, lead).catch((error) => {
+        console.error(JSON.stringify({
+          message: "telegram_lead_notification_failed",
+          lead_id: lead.id,
+          error: error instanceof Error ? error.message : String(error)
+        }));
+      })
+    );
+  }
+
   return json({
     ok: true,
     id: lead.id,
     stored: Boolean(env.DB),
-    notificationSent
+    notificationQueued
   });
 }
