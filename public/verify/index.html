@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Validar pase | Toyota of Hollywood x La Chiqui</title>
+  <link rel="icon" href="/toyota/assets/favicon.ico">
+  <link rel="stylesheet" href="/toyota/styles.css">
+</head>
+<body class="verify-page">
+  <main class="verify-wrap">
+    <img class="verify-logo" src="/toyota/assets/toh-logo-color-transparent-1000w.png" alt="Toyota of Hollywood">
+    <section class="verify-card" id="verifyCard">
+      <div class="status-icon" id="statusIcon">…</div>
+      <h1 id="statusTitle">Validando pase</h1>
+      <p id="statusCopy">Checking promotional pass…</p>
+      <div class="verify-data" id="verifyData" hidden>
+        <div class="verify-row"><span>Código / Code</span><strong id="code"></strong></div>
+        <div class="verify-row"><span>Cliente / Guest</span><strong id="guest"></strong></div>
+        <div class="verify-row"><span>Teléfono / Phone</span><strong id="phone"></strong></div>
+        <div class="verify-row"><span>Vehículo / Vehicle</span><strong id="vehicle"></strong></div>
+        <div class="verify-row"><span>Emitido / Issued</span><strong id="issued"></strong></div>
+        <div class="verify-row"><span>Expira / Expires</span><strong id="expires"></strong></div>
+      </div>
+      <p class="pass-note">Este pase identifica una solicitud promocional. No constituye aprobación, contrato ni reserva de vehículo.<br>This pass identifies a promotional request. It is not an approval, contract, or vehicle reservation.</p>
+    </section>
+  </main>
+  <script>
+    const token = new URLSearchParams(location.search).get("token") || "";
+    const card = document.getElementById("verifyCard");
+    const format = (value) => new Intl.DateTimeFormat("en-US", { dateStyle:"medium", timeStyle:"short", timeZone:"America/New_York" }).format(new Date(value));
+    fetch(`/api/toyota/verify?token=${encodeURIComponent(token)}`)
+      .then(async (response) => ({ response, body: await response.json().catch(() => ({})) }))
+      .then(({ response, body }) => {
+        if (!response.ok || !body.ok) throw new Error("invalid");
+        const active = body.valid === true;
+        card.classList.add(active ? "active" : "expired");
+        document.getElementById("statusIcon").textContent = active ? "✓" : "!";
+        document.getElementById("statusTitle").textContent = active ? "PASE VÁLIDO · VALID PASS" : "PASE EXPIRADO · EXPIRED PASS";
+        document.getElementById("statusCopy").textContent = active ? "Verificado por Toyota of Hollywood x La Chiqui" : "Este pase superó su vigencia de 72 horas.";
+        document.getElementById("code").textContent = body.pass.code;
+        document.getElementById("guest").textContent = body.pass.guest;
+        document.getElementById("phone").textContent = `••• ••• ${body.pass.phone4}`;
+        document.getElementById("vehicle").textContent = body.pass.vehicle;
+        document.getElementById("issued").textContent = format(body.pass.issuedAt);
+        document.getElementById("expires").textContent = format(body.pass.expiresAt);
+        document.getElementById("verifyData").hidden = false;
+      })
+      .catch(() => {
+        card.classList.add("expired");
+        document.getElementById("statusIcon").textContent = "×";
+        document.getElementById("statusTitle").textContent = "PASE NO VÁLIDO · INVALID PASS";
+        document.getElementById("statusCopy").textContent = "No pudimos verificar este código promocional.";
+      });
+  </script>
+</body>
+</html>
