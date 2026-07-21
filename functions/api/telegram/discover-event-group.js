@@ -47,9 +47,25 @@ export async function onRequestPost({ request, env }) {
       return json({ ok: true, found: false });
     }
 
+    let testSent = false;
+    if (payload?.send_test === true) {
+      const testResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: String(match.chat.id),
+          text: "✅ BOOSTR Notifications conectado. Este grupo recibirá únicamente los leads del evento ROWMA Orlando."
+        })
+      });
+      const testResult = await testResponse.json().catch(() => ({}));
+      testSent = testResponse.ok && testResult.ok === true;
+      if (!testSent) throw new Error(`telegram_test_failed:${clean(testResult.description || testResponse.status, 200)}`);
+    }
+
     return json({
       ok: true,
       found: true,
+      test_sent: testSent,
       group: {
         id: String(match.chat.id),
         title: clean(match.chat.title, 160),
