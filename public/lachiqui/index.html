@@ -26,40 +26,36 @@
   <main id="top" class="landing">
     <section class="campaign-shell">
       <div class="visual-panel">
-        <div class="campaign-kicker" data-i18n="kicker">OFERTA DE JULIO - EQUIPO DE LA CHIQUI</div>
-        <h1 data-i18n-html="headline">TU TACOMA.<br><span>TU MOMENTO.</span></h1>
-        <p class="hero-copy" data-i18n="heroCopy">Solicita tu cita y recibe un pase QR personalizado, valido por 72 horas.</p>
+        <div class="campaign-kicker" data-i18n="kicker">TOYOTA OF HOLLYWOOD X LA CHIQUI</div>
+        <div class="urgency-row"><span data-i18n="reservedBadge">PRECIO RESERVADO</span><b data-i18n="julyOnly">SOLO JULIO</b></div>
+        <h1 data-i18n-html="headline">TACOMA SR5 2026<br><span>CERO MILLAS</span></h1>
+
+        <div class="hero-price" aria-label="Lease $299 por mes">
+          <span class="currency">$</span><strong>299</strong><div><b data-i18n="perMonth">AL MES</b><small data-i18n="leaseLabel">LEASE</small></div>
+        </div>
+        <div class="hero-terms" data-i18n="heroTerms">$2,000 DE ENTRADA · 36 MESES · 10,000 MILLAS/AÑO</div>
 
         <div class="people-vehicle" aria-label="La Chiqui y Toyota Tacoma SR5 2026">
           <div class="chiqui-stage">
             <img src="/toyota/assets/la-chiqui-cutout.png" alt="Adriana Quintero, La Chiqui" width="1048" height="1501">
             <span>LA CHIQUI</span>
           </div>
-          <img class="tacoma" src="/toyota/assets/tacoma-2026-official.png" alt="Toyota Tacoma 2026" width="512" height="171">
+          <div class="vehicle-video">
+            <video autoplay muted loop playsinline preload="metadata" poster="/toyota/assets/tacoma-showroom-poster.jpg" aria-label="Toyota Tacoma SR5 2026 en inventario">
+              <source src="/toyota/assets/tacoma-showroom.mp4" type="video/mp4">
+            </video>
+            <span data-i18n="realUnit">UNIDAD REAL · TOYOTA OF HOLLYWOOD</span>
+          </div>
         </div>
 
-        <div class="offer-card" aria-label="Resumen de pagos estimados">
-          <div class="offer-heading">
-            <strong>2026 TOYOTA TACOMA SR5</strong>
-            <span data-i18n="vehicleDetail">2WD DOUBLE CAB - NUEVA - 0 MILLAS - MSRP $39,350</span>
-          </div>
-          <div class="payment-grid">
-            <div>
-              <small data-i18n="leaseEstimate">LEASE ESTIMADO</small>
-              <strong>$334<sup>/mes</sup></strong>
-              <span data-i18n="leaseTerm">36 meses - $1,500 de entrada</span>
-            </div>
-            <div>
-              <small data-i18n="buyEstimate">COMPRA ESTIMADA</small>
-              <strong>$627<sup>/mes</sup></strong>
-              <span data-i18n="buyTerm">72 meses - 5.99% APR - $1,500 de entrada</span>
-            </div>
-          </div>
-          <p class="estimate-note" data-i18n="estimateNote">Estimados antes de impuestos y cargos. Para clientes Tier 1 que califiquen. Terminos sujetos a verificacion final.</p>
+        <div class="finance-strip">
+          <span data-i18n="financeAlt">O FINANCIA DESDE</span>
+          <strong>$599<small data-i18n="perMonthShort">/MES</small></strong>
+          <b data-i18n="financeTerms">$2,000 DE ENTRADA · 72 MESES · 5.99% APR</b>
         </div>
 
         <div class="countdown" aria-live="polite">
-          <span data-i18n="countdownLabel">LA PROMOCION TERMINA EN</span>
+          <span data-i18n="countdownLabel">TU PRECIO RESERVADO EXPIRA EN</span>
           <div class="countdown-grid">
             <div><strong id="days">00</strong><small data-i18n="days">dias</small></div>
             <div><strong id="hours">00</strong><small data-i18n="hours">horas</small></div>
@@ -72,8 +68,8 @@
       <aside class="form-card" id="form">
         <div class="form-head">
           <span data-i18n="formKicker">TOYOTA OF HOLLYWOOD x LA CHIQUI</span>
-          <h2 data-i18n="formTitle">RESERVA TU CITA</h2>
-          <p data-i18n="formIntro">Completa tus datos y recibe tu pase QR valido por 72 horas.</p>
+          <h2 data-i18n="formTitle">RESERVA TU PRECIO</h2>
+          <p data-i18n="formIntro">Recibe tu pase QR de $299 valido por 72 horas</p>
         </div>
         <div class="form-body">
           <form id="leadForm" novalidate>
@@ -103,7 +99,7 @@
               </div>
               <label class="consent"><input type="checkbox" name="consent" required><span data-i18n="consent">Acepto ser contactado por Toyota of Hollywood y el equipo de Adriana Quintero sobre esta promocion. Mi pase QR no constituye aprobacion de credito ni reserva un vehiculo.</span></label>
               <input class="honeypot" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
-              <div class="form-actions"><button type="button" class="back" data-i18n="back">ATRAS</button><button type="submit" class="submit" data-i18n="submit">RESERVAR Y CREAR MI PASE</button></div>
+              <div class="form-actions"><button type="button" class="back" data-i18n="back">ATRAS</button><button type="submit" class="submit" data-i18n="submit">RESERVAR MI PRECIO</button></div>
             </div>
             <div class="form-error" id="formError" role="alert"></div>
           </form>
@@ -120,17 +116,18 @@
 
     <section class="legal">
       <div class="legal-inner">
+        <div class="legal-lead" data-i18n="legalLead">OFERTA SUJETA A APROBACION DE CREDITO · NO TODOS CALIFICAN · IMPUESTOS Y CARGOS NO INCLUIDOS</div>
         <details>
-          <summary data-i18n="legalSummary">Ver terminos importantes de la promocion</summary>
+          <summary data-i18n="legalSummary">Terminos de la oferta</summary>
           <div class="legal-copy" data-lang-block="es">
-            <p><b>Lease estimado:</b> $334/mes por 36 meses con $1,500 de entrada para una Tacoma SR5 2026 modelo 7146, MSRP/SRP total de $39,350, 10,000 millas por ano y cliente Tier 1 aprobado por SETF. El total estimado al firmar es $2,529 e incluye la entrada, el primer pago estimado y un cargo de adquisicion de $695. Excluye impuestos, titulo, licencia, registro, opciones y cargos del dealer. Deposito de seguridad sujeto a elegibilidad. $350 de disposicion al finalizar; $0.18 por milla sobre 10,000 millas anuales.</p>
-            <p><b>Compra estimada:</b> $627.11/mes por 72 meses a 5.99% APR, calculado sobre $37,850 financiados despues de $1,500 de entrada. Excluye impuestos, titulo, registro, productos, opciones y cargos del dealer. El monto real financiado modifica el pago.</p>
-            <p>Todos los numeros son estimados para clientes muy bien calificados y requieren aprobacion final. Sujeto a inventario, precio final del vehiculo y verificacion del dealer. La solicitud y el QR no reservan una unidad, no son aprobacion de credito y no obligan a comprar o arrendar. Oferta de campana valida hasta el 31 de julio de 2026; programas SETF consultados vigentes hasta el 3 de agosto de 2026.</p>
+            <p><b>Lease:</b> Tacoma SR5 2026 2WD Double Cab L4 8AT modelo 7146 con MSRP/SRP de $39,350 · $299 por mes durante 36 meses · $2,000 de entrada · total estimado al firmar $2,994 compuesto por entrada, primer pago de $299 y cargo de adquisicion de $695 · 10,000 millas por año · requiere cliente Tier 1 aprobado por Southeast Toyota Finance y contribucion del dealer suficiente para alcanzar el pago anunciado · deposito de seguridad sujeto a elegibilidad · $350 de disposicion al finalizar · $0.18 por milla sobre 10,000 millas anuales</p>
+            <p><b>Financiamiento:</b> $599 por mes durante 72 meses a 5.99% APR con $2,000 de entrada · calculo basado en un maximo aproximado de $36,154 financiados y un precio promocional de referencia de $38,154 antes de impuestos y cargos · MSRP $39,350 · el precio y descuento final del dealer deben ajustarse si se financian impuestos, titulo, registro, productos, opciones o cargos</p>
+            <p>Terminos disponibles con credito aprobado a traves de SETF en dealers Toyota participantes · no todos califican · sujeto a inventario, precio final, contribucion del dealer y aprobacion escrita · excluye impuestos, titulo, licencia, registro, opciones y cargos del dealer · la solicitud y el QR no reservan una unidad ni constituyen aprobacion de credito · oferta de campaña hasta el 31 de julio de 2026 · programas SETF consultados vigentes hasta el 3 de agosto de 2026</p>
           </div>
           <div class="legal-copy" data-lang-block="en" hidden>
-            <p><b>Estimated lease:</b> $334/month for 36 months with $1,500 down for a 2026 Tacoma SR5 model 7146, $39,350 total MSRP/SRP, 10,000 miles per year and approved Tier 1 SETF credit. Estimated total due at signing is $2,529, including down payment, estimated first payment and a $695 acquisition fee. Excludes tax, title, license, registration, dealer options and charges. Security deposit subject to eligibility. $350 disposition fee; $0.18 per mile above 10,000 miles/year.</p>
-            <p><b>Estimated purchase:</b> $627.11/month for 72 months at 5.99% APR, calculated on $37,850 financed after $1,500 down. Excludes tax, title, registration, products, options and dealer charges. Actual amount financed changes the payment.</p>
-            <p>All figures are estimates for very well-qualified customers and require final approval. Subject to inventory, final vehicle price and dealer verification. The request and QR do not reserve a vehicle, constitute credit approval, or require a purchase or lease. Campaign valid through July 31, 2026; referenced SETF programs are valid through August 3, 2026.</p>
+            <p><b>Lease:</b> 2026 Tacoma SR5 2WD Double Cab L4 8AT model 7146 with $39,350 MSRP/SRP · $299 per month for 36 months · $2,000 down · estimated $2,994 total due at signing consisting of down payment, $299 first payment and $695 acquisition fee · 10,000 miles/year · requires SETF Tier 1 approval and sufficient dealer contribution to produce advertised payment · security deposit subject to eligibility · $350 disposition fee · $0.18 per mile above 10,000 miles/year</p>
+            <p><b>Financing:</b> $599 per month for 72 months at 5.99% APR with $2,000 down · calculation based on approximately $36,154 maximum amount financed and $38,154 reference promotional price before taxes and fees · $39,350 MSRP · final dealer price and discount must be adjusted when taxes, title, registration, products, options or fees are financed</p>
+            <p>Terms available on approved credit through SETF at participating Toyota dealers · not all customers qualify · subject to inventory, final price, dealer contribution and written approval · excludes tax, title, license, registration, dealer options and charges · request and QR do not reserve a vehicle or constitute credit approval · campaign valid through July 31, 2026 · referenced SETF programs valid through August 3, 2026</p>
           </div>
         </details>
       </div>
@@ -145,7 +142,7 @@
       <p data-i18n="passCopy">Muestralo al equipo de La Chiqui cuando llegues.</p>
       <img class="qr-image" id="qrImage" alt="Codigo QR promocional">
       <div class="pass-code" id="passCode"></div>
-      <div class="pass-summary"><strong>2026 Toyota Tacoma SR5</strong><br><span>$334/mes lease estimado - $1,500 de entrada</span><br><span id="expiryText"></span></div>
+      <div class="pass-summary"><strong>2026 Toyota Tacoma SR5</strong><br><span>$299/mes lease · $2,000 de entrada</span><br><span id="expiryText"></span></div>
       <button class="save-button" id="savePass" data-i18n="savePass">GUARDAR MI QR</button>
       <small class="pass-note" data-i18n="passNote">Valido por 72 horas. No representa aprobacion ni reserva de vehiculo.</small>
     </div>
