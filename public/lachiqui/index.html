@@ -87,8 +87,9 @@
             </div>
 
             <div class="form-step" data-step="2">
-              <div class="field"><label for="phone" data-i18n="phone">Telefono</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(000) 000-0000" required></div>
-              <div class="field"><label for="email" data-i18n="email">Email</label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required></div>
+              <p class="contact-hint" data-i18n="contactHint">Escribe tu teléfono o tu email · solo uno es obligatorio</p>
+              <div class="field"><label for="phone" data-i18n="phone">Telefono</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(000) 000-0000"></div>
+              <div class="field"><label for="email" data-i18n="email">Email</label><input id="email" name="email" type="email" inputmode="email" autocomplete="email"></div>
               <div class="form-actions"><button type="button" class="back" data-i18n="back">ATRAS</button><button type="button" class="next" data-i18n="continue">CONTINUAR</button></div>
             </div>
 
@@ -141,12 +142,23 @@
   <div class="modal" id="passModal" role="dialog" aria-modal="true" aria-labelledby="passTitle">
     <div class="pass-card">
       <button class="close" id="closeModal" aria-label="Cerrar">x</button>
-      <span class="pass-kicker" data-i18n="passKicker">TU PASE PROMOCIONAL</span>
-      <h2 id="passTitle" data-i18n="passTitle">PASE CREADO</h2>
-      <p data-i18n="passCopy">Muestralo al equipo de La Chiqui cuando llegues.</p>
+      <span class="pass-kicker" data-i18n="passKicker">TU PRECIO CONGELADO</span>
+      <h2 id="passTitle" data-i18n="passTitle">¡FELICIDADES!</h2>
+      <p data-i18n="passCopy">Lograste congelar tu pago mensual en</p>
+      <div class="pass-price" aria-label="$299 al mes"><span>$</span><strong>299</strong><small data-i18n="perMonth">AL MES</small></div>
+      <p class="pass-duration" data-i18n="passDuration">Tu precio congelado estará disponible durante 72 horas</p>
+      <img class="pass-vehicle" src="/toyota/assets/tacoma-2026-official.png" alt="Toyota Tacoma SR5 2026">
       <img class="qr-image" id="qrImage" alt="Codigo QR promocional">
       <div class="pass-code" id="passCode"></div>
-      <div class="pass-summary"><strong>2026 Toyota Tacoma SR5</strong><br><span>$299/mes lease · $2,000 de entrada</span><br><span id="expiryText"></span></div>
+      <div class="pass-expiry" aria-live="polite">
+        <strong data-i18n="passUrgency">VE CON EL TEAM LA CHIQUI ANTES DE QUE TERMINE</strong>
+        <div class="pass-countdown">
+          <div><b id="passHours">72</b><small data-i18n="hours">horas</small></div>
+          <div><b id="passMinutes">00</b><small data-i18n="minutes">min</small></div>
+          <div><b id="passSeconds">00</b><small data-i18n="seconds">seg</small></div>
+        </div>
+      </div>
+      <div class="pass-summary"><strong>2026 Toyota Tacoma SR5</strong><br><span>$2,000 de entrada · 36 meses</span><br><span id="expiryText"></span></div>
       <button class="save-button" id="savePass" data-i18n="savePass">GUARDAR MI QR</button>
       <small class="pass-note" data-i18n="passNote">Valido por 72 horas. No representa aprobacion ni reserva de vehiculo.</small>
     </div>

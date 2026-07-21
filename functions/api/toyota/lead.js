@@ -41,10 +41,11 @@ export async function onRequestPost(context) {
     page_url: clean(payload.page_url || request.headers.get("Referer"), 800)
   };
 
-  const missing = ["first_name", "last_name", "phone", "email", "score"].filter((field) => !lead[field]);
+  const missing = ["first_name", "last_name", "score"].filter((field) => !lead[field]);
   if (missing.length) return jsonError("required_fields_missing", "Complete all required fields.", 400, { fields: missing });
-  if (!isValidPhone(lead.phone)) return jsonError("invalid_phone", "Enter a valid phone number.", 400);
-  if (!isValidEmail(lead.email)) return jsonError("invalid_email", "Enter a valid email address.", 400);
+  if (!lead.phone && !lead.email) return jsonError("contact_required", "Enter a phone number or email address.", 400, { fields: ["phone", "email"] });
+  if (lead.phone && !isValidPhone(lead.phone)) return jsonError("invalid_phone", "Enter a valid phone number.", 400);
+  if (lead.email && !isValidEmail(lead.email)) return jsonError("invalid_email", "Enter a valid email address.", 400);
   if (!lead.consent) return jsonError("consent_required", "Consent is required.", 400);
 
   let pass;
