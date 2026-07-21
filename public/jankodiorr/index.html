@@ -32,6 +32,8 @@
     .event-cta strong{margin-top:7px;font:1000 clamp(1.35rem,3vw,2.25rem)/1 Arial Black,Arial,sans-serif;letter-spacing:-.045em}
     .event-cta small{margin-top:7px;font-size:12px;font-weight:800;color:rgba(255,255,255,.78)}
     .event-cta b{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:999px;background:#fff;color:#111;font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+    .raffle-spotlight{position:relative;overflow:hidden;display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-bottom:18px;padding:24px;border:1px solid rgba(190,116,255,.45);border-radius:22px;background:radial-gradient(circle at 10% 10%,rgba(119,36,224,.31),transparent 38%),radial-gradient(circle at 90% 90%,rgba(240,68,45,.2),transparent 38%),#09070d}
+    .raffle-spotlight:after{content:"NNE";position:absolute;right:-12px;bottom:-25px;font:1000 8rem/.8 Arial Black,Arial,sans-serif;color:rgba(255,255,255,.035);pointer-events:none}.raffle-copy-mini,.raffle-live{position:relative;z-index:1}.raffle-copy-mini h2{margin:8px 0 9px;font:1000 clamp(2rem,5vw,4.1rem)/.87 Arial Black,Arial,sans-serif;letter-spacing:-.065em}.raffle-copy-mini p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.prize-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}.prize-pills span{padding:7px 9px;border:1px solid rgba(244,214,160,.35);color:#f4d6a0;font-size:9px;font-weight:950;letter-spacing:.08em}.raffle-count-mini{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:4px;align-items:start}.raffle-count-mini>div{text-align:center;padding:11px 3px;border:1px solid var(--line);background:rgba(255,255,255,.035)}.raffle-count-mini strong{display:block;font:1000 clamp(1.55rem,4vw,2.8rem)/1 Arial Black,Arial,sans-serif;color:#f4d6a0;font-variant-numeric:tabular-nums}.raffle-count-mini span{display:block;margin-top:4px;color:var(--muted);font-size:7px;font-weight:900}.raffle-count-mini i{padding-top:10px;color:#f0442d;font-style:normal;font-weight:1000}.raffle-live>p{margin:12px 0 6px;color:var(--muted);font-size:9px;font-weight:900;letter-spacing:.09em}.raffle-participants-mini{display:grid;gap:5px;max-height:126px;overflow:auto}.raffle-participants-mini .participant{display:flex;justify-content:space-between;gap:8px;padding:8px 9px;border:1px solid var(--line);background:rgba(255,255,255,.03)}.raffle-participants-mini .participant b{font-size:10px}.raffle-participants-mini .participant span{color:#f4d6a0;font-size:8px;font-weight:900}.raffle-participants-mini .empty{margin:0;color:var(--muted);font-size:10px;line-height:1.4}.raffle-link{display:inline-block;margin-top:12px;color:#f4d6a0;font-size:10px;font-weight:950;letter-spacing:.08em;text-decoration:none}
     .hero{min-height:calc(100svh - 112px);display:grid;grid-template-columns:1.05fr .95fr;gap:16px;align-items:stretch}
     .hero-media{position:relative;min-height:640px;border:1px solid var(--line);border-radius:28px;overflow:hidden;background:#000}
     .hero-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.16) brightness(.72)}
@@ -97,7 +99,7 @@
     .contact-grid .panel{min-height:190px}
     .footer{width:min(100%,1180px);margin:auto;padding:26px 18px 34px;display:flex;justify-content:space-between;gap:16px;color:#777;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
     .footer img{height:18px;vertical-align:middle;margin-left:8px}
-    @media(max-width:980px){.top{grid-template-columns:auto auto;padding:0 16px}.nav{display:none}.hero,.story,.world-grid,.contact-grid{grid-template-columns:1fr}.hero-media{min-height:520px}.platforms{grid-template-columns:repeat(3,1fr)}.release-card{grid-template-columns:130px 1fr}}
+    @media(max-width:980px){.top{grid-template-columns:auto auto;padding:0 16px}.nav{display:none}.hero,.story,.world-grid,.contact-grid,.raffle-spotlight{grid-template-columns:1fr}.hero-media{min-height:520px}.platforms{grid-template-columns:repeat(3,1fr)}.release-card{grid-template-columns:130px 1fr}}
     @media(max-width:620px){.top{height:68px}.brand img{width:104px}.wrap{padding:10px}.event-cta{grid-template-columns:1fr;margin:0 -10px 10px;padding:20px;border-left:0;border-right:0;border-radius:0}.event-cta:after{right:-10px;top:28%;font-size:4.4rem}.event-cta b{width:100%}.hero{min-height:auto}.hero-media{min-height:560px;border-radius:0;margin-inline:-10px;border-left:0;border-right:0}.hero h1{font-size:70px}.hero-copy{left:18px;right:18px}.logo-wall{grid-template-columns:1fr 1fr}.logo-cell{min-height:96px;padding:18px}.release-card{grid-template-columns:92px 1fr;padding:13px;border-radius:20px}.release-card .actions{display:grid;grid-template-columns:1fr 1fr}.signal-grid,.platforms{grid-template-columns:1fr 1fr}.track{grid-template-columns:42px 1fr;align-items:start}.links{grid-column:2;justify-content:flex-start}.artist-panel{grid-template-columns:1fr}.artist-panel img{min-height:220px}.world-card{min-height:220px;padding:20px}.world-card img{max-width:190px}.footer{display:grid}}
   </style>
 </head>
@@ -121,6 +123,10 @@
       <span><span>Evento especial · Orlando · Jul 25</span><strong>ROWMA LIVE · JANKO DIORR + GEMESE</strong><small>Preventa oficial · Solicita tus entradas y recibe la información por WhatsApp.</small></span>
       <b>Ver evento →</b>
     </a>
+    <section class="raffle-spotlight" aria-label="Sorteo de producción NNE WESTDETRO">
+      <div class="raffle-copy-mini"><span class="eyebrow">CON TU ENTRADA CONFIRMADA</span><h2>GANA UNA PROD<br>NNE / WESTDETRO.</h2><p>Beat, producción vocal, mix y master. Cada entrada confirmada suma una participación.</p><div class="prize-pills"><span>BEAT</span><span>PROD VOCALS</span><span>MIX</span><span>MASTER</span></div><a class="raffle-link" href="/events/orlando-jul-25/#sorteo">VER REGLAS Y PARTICIPANTES →</a></div>
+      <div class="raffle-live"><div class="raffle-count-mini" data-raffle-countdown><div><strong data-days>00</strong><span>DÍAS</span></div><i>:</i><div><strong data-hours>00</strong><span>HRS</span></div><i>:</i><div><strong data-minutes>00</strong><span>MIN</span></div><i>:</i><div><strong data-seconds>00</strong><span>SEG</span></div></div><p><span data-raffle-entries>0 participaciones</span> CONFIRMADAS</p><div class="raffle-participants-mini" data-raffle-participants><p class="empty">Cargando participantes…</p></div></div>
+    </section>
     <section class="hero" aria-label="JANKO DIORR artist link">
       <article class="hero-media">
         <img src="/assets/link/janko/janko_10_nne_press_microphones.jpg" alt="JANKO DIORR">
@@ -261,5 +267,6 @@
     <span>Por <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></span>
     <span>2026</span>
   </footer>
+  <script src="/events/orlando-jul-25/promo.js?v=4" defer></script>
 </body>
 </html>

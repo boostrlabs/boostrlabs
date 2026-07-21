@@ -26,30 +26,46 @@ async function ensureEventWorkspace(env, source, createdAt) {
   return id;
 }
 
-const leadFromPayload = (payload) => ({
-  id: crypto.randomUUID(),
-  source: clean(payload.source || payload.formKind || payload.form_kind || "website", 80),
-  contact_name: clean(payload.contact_name || payload.name, 140),
-  contact_email: clean(payload.contact_email || payload.email, 180).toLowerCase(),
-  contact_phone: normalizePhone(payload.contact_phone || payload.phone),
-  preferred_contact_method: clean(payload.preferred_contact_method || "email", 40),
-  business_name: clean(payload.business_name || payload.business || payload.businessProject || "Website lead", 180),
-  industry: clean(payload.industry || "not_collected", 120),
-  current_website_url: clean(payload.current_website_url, 300),
-  social_links: clean(payload.social_links, 1000),
-  project_goal: clean(payload.project_goal || payload.mainGoal || payload.serviceInterested || payload.message, 2000),
-  requested_modules: normalizeArray(payload.requested_modules, 80),
-  timeline: clean(payload.timeline, 80),
-  budget_range: clean(payload.budget_range || payload.budgetRange, 80),
-  current_status: clean(payload.current_status || payload.websiteStatus || payload.currentProblem || "Lead submitted", 2000),
-  biggest_problem: clean(payload.biggest_problem, 2000),
-  manual_or_confusing: clean(payload.manual_or_confusing, 2000),
-  system_outcome: clean(payload.system_outcome, 2000),
-  extra_message: clean(payload.extra_message || payload.message, 3000),
-  referral_code: clean(payload.referralCode || payload.referral_code, 80),
-  page_url: clean(payload.pageUrl || payload.page_url, 800),
-  created_at: new Date().toISOString()
-});
+const parseObject = (value) => {
+  if (value && typeof value === "object") return value;
+  try { return JSON.parse(value || "{}"); } catch { return {}; }
+};
+
+const leadFromPayload = (payload, request) => {
+  const id = crypto.randomUUID();
+  const source = clean(payload.source || payload.formKind || payload.form_kind || "website", 80);
+  const legacyMessage = parseObject(payload.message);
+  const referralCode = clean(
+    payload.referralCode || payload.referral_code || legacyMessage.referral_code ||
+      (source === ORLANDO_SOURCE ? `ROW-${id.slice(0, 6).toUpperCase()}` : ""),
+    80
+  );
+
+  return {
+    id,
+    source,
+    contact_name: clean(payload.contact_name || payload.name, 140),
+    contact_email: clean(payload.contact_email || payload.email, 180).toLowerCase(),
+    contact_phone: normalizePhone(payload.contact_phone || payload.phone),
+    preferred_contact_method: clean(payload.preferred_contact_method || "email", 40),
+    business_name: clean(payload.business_name || payload.business || payload.businessProject || "Website lead", 180),
+    industry: clean(payload.industry || "not_collected", 120),
+    current_website_url: clean(payload.current_website_url, 300),
+    social_links: clean(payload.social_links, 1000),
+    project_goal: clean(payload.project_goal || payload.mainGoal || payload.serviceInterested || payload.message, 2000),
+    requested_modules: normalizeArray(payload.requested_modules, 80),
+    timeline: clean(payload.timeline, 80),
+    budget_range: clean(payload.budget_range || payload.budgetRange, 80),
+    current_status: clean(payload.current_status || payload.websiteStatus || payload.currentProblem || "Lead submitted", 2000),
+    biggest_problem: clean(payload.biggest_problem, 2000),
+    manual_or_confusing: clean(payload.manual_or_confusing, 2000),
+    system_outcome: clean(payload.system_outcome, 2000),
+    extra_message: clean(payload.extra_message || legacyMessage.extra_message || payload.message, 3000),
+    referral_code: referralCode,
+    page_url: clean(payload.pageUrl || payload.page_url || request.headers.get("Referer"), 800),
+    created_at: new Date().toISOString()
+  };
+};
 
 const emailHtml = (lead) => `
   <h1>New BOOSTR Intake</h1>
@@ -81,7 +97,7 @@ export async function onRequestPost(context) {
   if (!parsed.ok) return parsed.response;
 
   const payload = parsed.payload || {};
-  const lead = leadFromPayload(payload);
+  const lead = leadFromPayload(payload, request);
   const missingFields = requiredFields.filter((field) => !clean(lead[field]));
   if (missingFields.length) {
     return jsonError("required_fields_missing", "Missing required fields.", 400, { fields: missingFields });

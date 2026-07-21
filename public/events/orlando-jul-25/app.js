@@ -1,121 +1,85 @@
 (() => {
-  const PRICE = 40;
-  const MAX_TICKETS = 8;
+  const UNIT_PRICE = 40;
+  const REGULAR_PRICE = 50;
   const form = document.querySelector('#presaleForm');
-  const confirmation = document.querySelector('#confirmation');
-  const quantityOutput = document.querySelector('#quantityOutput');
+  const quantity = document.querySelector('#quantity');
   const totalOutput = document.querySelector('#totalOutput');
-  const reviewQuantity = document.querySelector('#reviewQuantity');
-  const reviewTotal = document.querySelector('#reviewTotal');
-  const reviewContact = document.querySelector('#reviewContact');
+  const regularTotal = document.querySelector('#regularTotal');
   const statusNode = document.querySelector('#formStatus');
-  const mobileBar = document.querySelector('.mobile-presale-bar');
-  let quantity = 1;
-  let currentStep = 1;
+  const confirmation = document.querySelector('#confirmation');
 
-  const money = (amount) => `$${amount}`;
-
-  const updateSummary = () => {
-    const total = quantity * PRICE;
-    quantityOutput.textContent = String(quantity);
-    totalOutput.textContent = money(total);
-    reviewQuantity.textContent = String(quantity);
-    reviewTotal.textContent = money(total);
-  };
-
-  const showStep = (step) => {
-    currentStep = step;
-    document.querySelectorAll('[data-step-panel]').forEach((panel) => {
-      const isActive = Number(panel.dataset.stepPanel) === step;
-      panel.hidden = !isActive;
-      panel.classList.toggle('active', isActive);
-    });
-    document.querySelectorAll('[data-progress]').forEach((node) => {
-      node.classList.toggle('active', Number(node.dataset.progress) <= step);
-    });
-    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
-
-  const validateContactStep = () => {
-    const fields = form.querySelectorAll('[data-step-panel="2"] input[required]');
-    for (const field of fields) {
-      if (!field.reportValidity()) return false;
-    }
-    reviewContact.textContent = String(new FormData(form).get('phone') || '—').trim();
-    return true;
-  };
-
-  document.querySelectorAll('[data-quantity]').forEach((button) => {
-    button.addEventListener('click', () => {
-      quantity = Math.min(MAX_TICKETS, Math.max(1, quantity + Number(button.dataset.quantity || 0)));
-      updateSummary();
-    });
-  });
-
-  document.querySelectorAll('[data-next]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const target = Number(button.dataset.next);
-      if (currentStep === 2 && !validateContactStep()) return;
-      showStep(target);
-    });
-  });
-
-  document.querySelectorAll('[data-back]').forEach((button) => {
-    button.addEventListener('click', () => showStep(Number(button.dataset.back)));
-  });
-
+  const money = (value) => `$${Number(value).toFixed(0)}`;
   const makeCode = () => {
-    const suffix = Math.random().toString(36).slice(2, 8).toUpperCase();
-    return `PRE25-${suffix}`;
+    const bytes = new Uint8Array(4);
+    crypto.getRandomValues(bytes);
+    return `ROW-${[...bytes].map((value) => value.toString(16).padStart(2, '0')).join('').slice(0, 6).toUpperCase()}`;
   };
+
+  const updateTotal = () => {
+    const count = Math.min(Math.max(Number(quantity.value || 1), 1), 8);
+    totalOutput.textContent = money(count * UNIT_PRICE);
+    regularTotal.textContent = money(count * REGULAR_PRICE);
+  };
+
+  quantity.addEventListener('change', updateTotal);
+  updateTotal();
+
+  document.querySelector('#share')?.addEventListener('click', async () => {
+    const shareData = {
+      title: 'ROWMA Live in Orlando · Preventa + Sorteo NNE',
+      text: '20% OFF: entradas a $40. Cada entrada confirmada participa por una producción completa NNE / WESTDETRO.',
+      url: window.location.href
+    };
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else {
+        await navigator.clipboard.writeText(window.location.href);
+        document.querySelector('#share').textContent = 'LINK COPIADO';
+      }
+    } catch {}
+  });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     statusNode.textContent = '';
-    if (!validateContactStep() || !form.reportValidity()) return;
+    if (!form.reportValidity()) return;
 
     const submitButton = form.querySelector('button[type="submit"]');
     const data = new FormData(form);
-    const code = makeCode();
-    const name = String(data.get('name') || '').trim();
-    const phone = String(data.get('phone') || '').trim();
-    const email = String(data.get('email') || '').trim();
-    const total = quantity * PRICE;
+    const ticketCount = Math.min(Math.max(Number(data.get('quantity') || 1), 1), 8);
+    const reference = makeCode();
+    const total = ticketCount * UNIT_PRICE;
+    const pageUrl = window.location.href;
 
     submitButton.disabled = true;
-    submitButton.textContent = 'REGISTRANDO PREVENTA…';
+    submitButton.textContent = 'REGISTRANDO…';
 
     const payload = {
       source: 'boostr-event-os-orlando-jul-25',
-      contact_name: name,
-      contact_phone: phone,
-      contact_email: email,
+      contact_name: String(data.get('name') || '').trim(),
+      contact_phone: String(data.get('phone') || '').trim(),
+      contact_email: String(data.get('email') || '').trim(),
       preferred_contact_method: 'whatsapp',
-      business_name: 'Fuerte Promotions BDay Bash',
-      industry: 'live-events',
-      project_goal: 'event-presale',
-      current_status: 'presale_requested',
-      requested_modules: ['smart-links', 'smart-checkout', 'event-os'],
+      business_name: 'ROWMA Orlando Presale',
+      industry: 'live_event',
+      project_goal: 'Pre-sale ticket request + NNE / WESTDETRO production raffle',
+      current_status: 'pending_payment',
       timeline: '2026-07-25',
       budget_range: money(total),
-      biggest_problem: 'payment_instructions_pending',
-      system_outcome: 'send_payment_information_and_confirm_tickets',
-      referral_code: code,
-      page_url: window.location.href,
+      referral_code: reference,
+      page_url: pageUrl,
       extra_message: JSON.stringify({
-        product: 'BOOSTR Event OS',
-        event: 'Fuerte Promotions BDay Bash',
-        headliner: 'ROWMA',
-        supporting_artists: ['GEMESE', 'Janko Diorr'],
-        event_date: '2026-07-25',
-        doors: '9:00 PM',
-        venue: 'Blvck Cat Bistro Café',
-        address: '9521 S Orange Blossom Trail #104, Orlando, FL 32837',
-        quantity,
-        unit_price: PRICE,
+        quantity: ticketCount,
+        regular_unit_price: REGULAR_PRICE,
+        discount_percent: 20,
+        unit_price: UNIT_PRICE,
         total,
-        presale_reference: code,
-        next_action: 'Send payment information by WhatsApp and confirm tickets after payment.'
+        note: String(data.get('note') || '').trim(),
+        presale_reference: reference,
+        event: 'ROWMA Live in Orlando',
+        venue: 'Blvck Cat Bistro Café',
+        raffle: 'NNE / WESTDETRO complete production',
+        raffle_entries: ticketCount
       })
     };
 
@@ -128,28 +92,17 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) throw new Error(result.message || 'No se pudo registrar la preventa.');
 
-      document.querySelector('#presaleCode').textContent = code;
-      document.querySelector('#confirmationQuantity').textContent = String(quantity);
+      document.querySelector('#presaleCode').textContent = reference;
+      document.querySelector('#confirmationQuantity').textContent = String(ticketCount);
       document.querySelector('#confirmationTotal').textContent = money(total);
       form.hidden = true;
-      document.querySelector('.form-progress').hidden = true;
       confirmation.hidden = false;
       confirmation.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      mobileBar?.classList.add('hidden');
+      document.querySelector('.mobile-cta')?.remove();
     } catch (error) {
       statusNode.textContent = error instanceof Error ? error.message : 'No se pudo registrar la preventa.';
       submitButton.disabled = false;
-      submitButton.textContent = 'ENVIAR SOLICITUD DE PREVENTA';
+      submitButton.textContent = 'ENVIAR SOLICITUD';
     }
   });
-
-  const presaleSection = document.querySelector('#preventa');
-  if ('IntersectionObserver' in window && presaleSection && mobileBar) {
-    const observer = new IntersectionObserver(([entry]) => {
-      mobileBar.classList.toggle('hidden', entry.isIntersecting);
-    }, { threshold: 0.12 });
-    observer.observe(presaleSection);
-  }
-
-  updateSummary();
 })();
