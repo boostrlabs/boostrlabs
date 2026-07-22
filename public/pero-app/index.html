@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090909">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>PERO APP — BOOSTR Labs</title>
+  <meta name="description" content="Contador histórico de PEROS de Johanka.">
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #090909;
+      color: #fff;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body { min-height: 100%; margin: 0; }
+
+    body {
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(255, 33, 33, .18), transparent 32%),
+        linear-gradient(180deg, #111 0%, #070707 100%);
+    }
+
+    main {
+      width: min(100%, 520px);
+      min-height: 100dvh;
+      padding: max(24px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+    }
+
+    .brand {
+      font-size: 12px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #8e8e93;
+    }
+
+    .counter-wrap {
+      display: grid;
+      place-items: center;
+      gap: 8px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: #a7a7ab;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    #counter {
+      margin: 0;
+      font-size: clamp(92px, 31vw, 164px);
+      line-height: .9;
+      font-weight: 950;
+      letter-spacing: -.07em;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 12px 50px rgba(255, 20, 20, .2);
+      transition: transform .16s ease;
+    }
+
+    #counter.bump { transform: scale(1.075); }
+
+    .subcopy {
+      margin: 10px 0 0;
+      color: #76767c;
+      font-size: 14px;
+    }
+
+    #peroButton {
+      width: min(78vw, 310px);
+      aspect-ratio: 1;
+      border: 0;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      font-size: clamp(29px, 8vw, 42px);
+      font-weight: 950;
+      letter-spacing: -.04em;
+      background:
+        radial-gradient(circle at 38% 28%, #ff5c5c 0%, #ec1c24 34%, #b70008 72%, #790005 100%);
+      box-shadow:
+        inset 0 5px 9px rgba(255,255,255,.22),
+        inset 0 -12px 22px rgba(60,0,0,.42),
+        0 18px 0 #5d0004,
+        0 30px 62px rgba(211, 0, 10, .36);
+      transform: translateY(-7px);
+      transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    #peroButton:active {
+      transform: translateY(10px) scale(.985);
+      box-shadow:
+        inset 0 4px 10px rgba(255,255,255,.18),
+        inset 0 -8px 18px rgba(60,0,0,.4),
+        0 3px 0 #5d0004,
+        0 15px 34px rgba(211, 0, 10, .28);
+    }
+
+    #peroButton:focus-visible {
+      outline: 4px solid rgba(255,255,255,.85);
+      outline-offset: 8px;
+    }
+
+    footer {
+      display: grid;
+      gap: 8px;
+      color: #66666b;
+      font-size: 12px;
+    }
+
+    .last-event { min-height: 18px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      #counter, #peroButton { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="brand">BOOSTR LABS · INTERNAL</header>
+
+    <section class="counter-wrap" aria-live="polite">
+      <p class="eyebrow">Peros históricos de Johanka</p>
+      <p id="counter">0</p>
+      <p class="subcopy">cada click registra un nuevo PERO</p>
+    </section>
+
+    <button id="peroButton" type="button" aria-label="Registrar un nuevo PERO">PERO</button>
+
+    <footer>
+      <span id="lastEvent" class="last-event">Todavía no hay peros registrados.</span>
+      <span>Datos guardados en este dispositivo.</span>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'boostr.pero-app.v1';
+      const CHANNEL_NAME = 'boostr-pero-app';
+      const counter = document.querySelector('#counter');
+      const button = document.querySelector('#peroButton');
+      const lastEvent = document.querySelector('#lastEvent');
+      const channel = 'BroadcastChannel' in window ? new BroadcastChannel(CHANNEL_NAME) : null;
+
+      const emptyState = () => ({ count: 0, events: [] });
+
+      function readState() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          if (!parsed || !Number.isInteger(parsed.count) || !Array.isArray(parsed.events)) return emptyState();
+          return parsed;
+        } catch {
+          return emptyState();
+        }
+      }
+
+      function writeState(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        channel?.postMessage(state);
+      }
+
+      function formatDate(iso) {
+        return new Intl.DateTimeFormat('es-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        }).format(new Date(iso));
+      }
+
+      function render(state, animate = false) {
+        counter.textContent = state.count.toLocaleString('es-US');
+        const latest = state.events.at(-1);
+        lastEvent.textContent = latest
+          ? `Último PERO: ${formatDate(latest.at)}`
+          : 'Todavía no hay peros registrados.';
+
+        if (animate) {
+          counter.classList.remove('bump');
+          requestAnimationFrame(() => {
+            counter.classList.add('bump');
+            setTimeout(() => counter.classList.remove('bump'), 170);
+          });
+        }
+      }
+
+      function addPero() {
+        const state = readState();
+        const next = {
+          count: state.count + 1,
+          events: [...state.events, { at: new Date().toISOString() }]
+        };
+        writeState(next);
+        render(next, true);
+        navigator.vibrate?.(45);
+      }
+
+      button.addEventListener('click', addPero);
+      window.addEventListener('storage', event => {
+        if (event.key === STORAGE_KEY) render(readState(), true);
+      });
+      channel?.addEventListener('message', event => render(event.data, true));
+
+      render(readState());
+    })();
+  </script>
+</body>
+</html>
