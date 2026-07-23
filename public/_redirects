@@ -37,4 +37,13 @@
 /jankodiorr/live.html /demos/jankodiorr-live.html 200
 /pay/success/* /pay/success/index.html 200
 /pay/* /pay/index.html 200
+/nne-community /nne-community/index.html 200
+/nne-community/ /nne-community/index.html 200
+/nne-community/login /nne-community/index.html 200
+/nne-community/signup /nne-community/index.html 200
+/nne-community/quests /nne-community/index.html 200
+/nne-community/feed /nne-community/index.html 200
+/nne-community/rewards /nne-community/index.html 200
+/nne-community/profile /nne-community/index.html 200
+/nne-community/admin /nne-community/index.html 200
 /nne-community/* /nne-community/index.html 200

@@ -1,19 +1,20 @@
-type View = "home" | "quests" | "feed" | "rewards" | "profile";
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-interface NavigationProps {
-  activeView: View;
-  onChange: (view: View) => void;
-}
-
-const items: Array<{ id: View; label: string; icon: string }> = [
-  { id: "home", label: "Home", icon: "⌂" },
-  { id: "quests", label: "Quests", icon: "◎" },
-  { id: "feed", label: "Feed", icon: "◌" },
-  { id: "rewards", label: "Rewards", icon: "◇" },
-  { id: "profile", label: "Profile", icon: "◉" }
+const items = [
+  { to: "/", label: "Home", icon: "⌂" },
+  { to: "/quests", label: "Quests", icon: "◎" },
+  { to: "/feed", label: "Feed", icon: "◌" },
+  { to: "/rewards", label: "Rewards", icon: "◇" },
+  { to: "/profile", label: "Profile", icon: "◉" }
 ];
 
-export function Navigation({ activeView, onChange }: NavigationProps) {
+export function Navigation() {
+  const { user, logout } = useAuth();
+  const visibleItems = user?.role === "admin"
+    ? [...items, { to: "/admin", label: "Admin", icon: "✦" }]
+    : items;
+
   return (
     <>
       <aside className="sidebar">
@@ -26,41 +27,40 @@ export function Navigation({ activeView, onChange }: NavigationProps) {
         </div>
 
         <nav className="nav-list">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              className={activeView === item.id ? "nav-button active" : "nav-button"}
-              onClick={() => onChange(item.id)}
+          {visibleItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) => isActive ? "nav-button active" : "nav-button"}
             >
               <span>{item.icon}</span>
               {item.label}
-            </button>
+            </NavLink>
           ))}
         </nav>
 
         <div className="next-unlock">
           <small>Próximo desbloqueo</small>
           <strong>Beat Lease · Nivel 15</strong>
-          <div className="mini-progress">
-            <span />
-          </div>
+          <div className="mini-progress"><span /></div>
+          <button className="text-button" onClick={() => void logout()}>Cerrar sesión</button>
         </div>
       </aside>
 
       <nav className="mobile-navigation">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            className={activeView === item.id ? "active" : ""}
-            onClick={() => onChange(item.id)}
+        {visibleItems.slice(0, 5).map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            className={({ isActive }) => isActive ? "active" : ""}
           >
             <span>{item.icon}</span>
             {item.label}
-          </button>
+          </NavLink>
         ))}
       </nav>
     </>
   );
 }
-
-export type { View };
