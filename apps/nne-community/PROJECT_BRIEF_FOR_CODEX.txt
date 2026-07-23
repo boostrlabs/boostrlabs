@@ -1,0 +1,404 @@
+NNE COMMUNITY — FRONTEND MVP BRIEF
+Version: 0.1
+Language: Spanish-first
+Frontend stack included: React + Vite + TypeScript
+Backend: Not included. Juan/Janko and Codex will implement it.
+
+==================================================
+1. PRODUCT VISION
+==================================================
+
+NNE Community is a gamified platform for emerging artists and NNE fans.
+
+Users complete quests that create real value for the NNE ecosystem:
+- Interact with NNE artists on social platforms.
+- Participate in listening quests.
+- Answer song trivia.
+- Refer real artists.
+- Attend lives or events.
+- Create content.
+- Complete future community missions.
+
+The user receives NNE Credits after completing or passing a quest.
+
+NNE Credits are NOT cryptocurrency and should not be presented as money.
+They represent verified participation and contribution inside the NNE ecosystem.
+
+Users can exchange NNE Credits for real NNE services:
+- Song feedback.
+- Master.
+- Vocal mix.
+- Beat lease.
+- Cover art.
+- Exclusive beat.
+- Full production in later versions.
+
+The app must feel like a premium dark videogame/community operating system,
+not like a survey website or basic loyalty program.
+
+==================================================
+2. CURRENT MVP SCOPE
+==================================================
+
+Included in this starter:
+
+- Dashboard.
+- NNE Credits balance.
+- Level.
+- XP.
+- Streak.
+- NNE Score.
+- Daily quests.
+- Screenshot evidence modal.
+- Listening quest flow.
+- Minimum listening timer.
+- Song trivia.
+- Automatic trivia scoring.
+- Reward catalog.
+- Rewards locked by level.
+- Community feed.
+- Leaderboard preview.
+- User profile.
+- Responsive desktop/mobile layout.
+- Mock data only.
+
+Not included yet:
+
+- Real authentication.
+- Real database.
+- Admin panel.
+- Fraud detection.
+- AI moderation.
+- Real file storage.
+- Real referral tracking.
+- Real Spotify/YouTube/TikTok verification.
+- Marketplace.
+- Academy.
+- Payments.
+- Push notifications.
+
+==================================================
+3. IMPORTANT PRODUCT RULES
+==================================================
+
+1. Credits should only be added after one of these events:
+   - Admin approves submitted evidence.
+   - User passes an automatically graded quest.
+   - Backend confirms a referral or another event.
+
+2. Screenshot quests should become "pending", not completed, after submission.
+
+3. Listening quests should not rely on screenshots.
+   They should use:
+   - Official song link.
+   - Minimum waiting/listening timer.
+   - Random questions from a larger question bank.
+   - Required passing percentage.
+   - Limited retries and cooldown in the backend later.
+
+4. The frontend must NEVER reveal correct trivia answers before submission.
+
+5. Correct answers must eventually come from the backend.
+   Do not ship correctOptionIndex to the browser in production.
+   It is included in mockData only to demonstrate the interaction.
+
+6. NNE Credits must use an immutable transaction ledger in the backend.
+   Never update only a numeric balance without recording why it changed.
+
+7. Reward redemption should create a redemption request.
+   Do not instantly mark a service as delivered.
+
+8. User progress should remain visible and aspirational:
+   - Locked rewards.
+   - Next level.
+   - XP progress.
+   - Streak.
+   - Achievements later.
+
+==================================================
+4. RECOMMENDED BACKEND ENTITIES
+==================================================
+
+users
+- id
+- name
+- handle
+- email
+- avatar_url
+- role
+- level
+- xp
+- streak_days
+- nne_score
+- created_at
+
+credit_transactions
+- id
+- user_id
+- amount
+- type: earn | spend | adjustment
+- source_type: quest | reward | referral | admin
+- source_id
+- description
+- created_at
+
+quests
+- id
+- title
+- description
+- type
+- platform
+- reward_credits
+- status
+- starts_at
+- ends_at
+- daily_limit
+- minimum_level
+- verification_method
+
+quest_completions
+- id
+- quest_id
+- user_id
+- status: started | pending | approved | rejected | completed
+- evidence_url
+- score
+- attempt_count
+- started_at
+- submitted_at
+- reviewed_at
+- reviewed_by
+
+songs
+- id
+- title
+- artists
+- official_url
+- cover_url
+- duration_seconds
+
+trivia_questions
+- id
+- song_id
+- prompt
+- question_type
+- difficulty
+- active
+
+trivia_options
+- id
+- question_id
+- option_text
+- is_correct
+
+rewards
+- id
+- name
+- description
+- cost_credits
+- minimum_level
+- inventory_limit
+- active
+
+reward_redemptions
+- id
+- reward_id
+- user_id
+- credit_transaction_id
+- status: requested | accepted | in_progress | delivered | cancelled
+- created_at
+
+feed_events
+- id
+- user_id
+- event_type
+- event_data
+- visibility
+- created_at
+
+referral_codes
+- id
+- user_id
+- code
+- active
+
+referrals
+- id
+- referrer_user_id
+- referred_user_id
+- status
+- qualified_at
+
+==================================================
+5. RECOMMENDED API ENDPOINTS
+==================================================
+
+GET /api/me
+GET /api/dashboard
+GET /api/quests
+GET /api/quests/:id
+POST /api/quests/:id/start
+POST /api/quests/:id/evidence
+POST /api/quests/:id/trivia-session
+POST /api/trivia-sessions/:id/submit
+GET /api/rewards
+POST /api/rewards/:id/redeem
+GET /api/feed
+GET /api/leaderboard
+GET /api/profile/:handle
+
+Admin:
+GET /api/admin/quest-submissions
+POST /api/admin/quest-submissions/:id/approve
+POST /api/admin/quest-submissions/:id/reject
+POST /api/admin/quests
+PATCH /api/admin/quests/:id
+POST /api/admin/rewards
+PATCH /api/admin/rewards/:id
+
+==================================================
+6. LISTENING QUEST PRODUCTION FLOW
+==================================================
+
+Recommended secure flow:
+
+1. Frontend calls:
+   POST /api/quests/:id/start
+
+2. Backend creates quest attempt and returns:
+   - attempt_id
+   - song_url
+   - unlock_at
+   - trivia_session_available_at
+
+3. User opens song link.
+
+4. Frontend waits until unlock_at.
+   This timer is only UX. Backend must also enforce time.
+
+5. Frontend calls:
+   POST /api/quests/:id/trivia-session
+
+6. Backend randomly selects questions and options.
+   Backend does NOT return correct answers.
+
+7. User submits answers:
+   POST /api/trivia-sessions/:id/submit
+
+8. Backend grades answers.
+
+9. If passed:
+   - Mark completion completed.
+   - Add credit transaction.
+   - Update balance.
+   - Create feed event if public.
+   - Return result and new balance.
+
+10. If failed:
+   - Increase attempt count.
+   - Apply cooldown.
+   - Return next_retry_at.
+   - Never return the full correct answer set.
+
+==================================================
+7. DESIGN SYSTEM
+==================================================
+
+Current direction:
+- Dark luxury.
+- Black base.
+- Soft gold details.
+- Deep wine red accents.
+- Large numbers.
+- Minimal navigation.
+- Premium gaming/product feeling.
+- Mobile-first.
+- Avoid generic crypto visuals.
+- Avoid childish gamification.
+- Avoid excessive neon.
+- Avoid emojis as the main visual system in production.
+
+Suggested production icons:
+- Lucide React or Phosphor Icons.
+
+Suggested fonts:
+- Inter.
+- Geist.
+- Manrope.
+- A custom display font may later be used for branding.
+
+==================================================
+8. HOW TO RUN
+==================================================
+
+1. Install Node.js 20 or newer.
+2. Open this folder in VS Code/Codex.
+3. Run:
+   npm install
+4. Run:
+   npm run dev
+5. Open:
+   http://localhost:5173
+
+==================================================
+9. FIRST CODEX TASKS
+==================================================
+
+Ask Codex to complete these tasks in order:
+
+TASK 1
+Review the entire project and preserve the visual design.
+Create a clean API service layer under:
+src/services/
+
+TASK 2
+Move all mock data access behind async service functions so the UI can later
+switch to a real backend without rewriting components.
+
+TASK 3
+Add React Router with routes:
+/
+ /quests
+ /feed
+ /rewards
+ /profile
+ /admin
+
+TASK 4
+Create an admin frontend prototype:
+- Submission queue.
+- Evidence preview.
+- Approve.
+- Reject.
+- Quest creation.
+- Trivia question management.
+- Reward management.
+
+TASK 5
+Choose backend:
+Recommended simple options:
+- Supabase for auth, database, storage and realtime.
+- Or Next.js API + PostgreSQL if full control is preferred.
+
+TASK 6
+Remove correctOptionIndex from all client-facing production responses.
+
+==================================================
+10. DEFINITION OF MVP READY FOR USERS
+==================================================
+
+The MVP is ready for private testing when:
+
+- Users can register and log in.
+- Admin can create quests.
+- Users can start quests.
+- Users can upload screenshots.
+- Admin can approve/reject evidence.
+- Approved quests generate credit ledger entries.
+- Listening quests generate secure random trivia.
+- Backend grades trivia.
+- Users can view credits, streak, level and feed.
+- Users can request a reward.
+- Admin can manage reward requests.
+- All important actions have an audit trail.
+- Mobile experience is stable.

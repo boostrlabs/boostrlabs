@@ -19,7 +19,7 @@
     "health:pwa-entry": "node scripts/pwa-entry-health.mjs",
     "health:shared-ui": "node scripts/shared-ui-v2-health.mjs",
     "stability:check": "node scripts/ecosystem-stability.mjs && node scripts/shared-ui-v2-health.mjs && node scripts/omni-parking-health.mjs && node scripts/pwa-entry-health.mjs",
-    "build": "vite build && node scripts/patch-johankarrd-v60.mjs && node scripts/johankarrd-dist-health.mjs",
+    "build": "vite build && node scripts/patch-johankarrd-v60.mjs && node scripts/johankarrd-dist-health.mjs && corepack pnpm --filter nne-community-frontend build && node scripts/integrate-nne-community.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "deploy:check": "corepack pnpm run health:johankarrd && corepack pnpm run health:johankarrd:backend && corepack pnpm run health:johankarrd:renderer && corepack pnpm run health:smart-documents && corepack pnpm run health:omni-parking && corepack pnpm run health:pwa-entry && corepack pnpm run health:shared-ui && corepack pnpm run stability:check && corepack pnpm run build && corepack pnpm run health:boostr-live",
     "smoke:launch": "node scripts/launch-smoke-test.mjs",
