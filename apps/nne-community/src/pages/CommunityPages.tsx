@@ -152,6 +152,31 @@ export function ProfilePage() {
       : "",
     [dashboard.referralCode]
   );
+  const referralMessage = `Únete a NNE Community con mi invitación. Tú y ${dashboard.user.handle} reciben +${dashboard.referralReward.credits.toLocaleString()} NNE Credits y +${dashboard.referralReward.xp.toLocaleString()} XP al crear tu cuenta.`;
+
+  const copyReferral = async () => {
+    await navigator.clipboard.writeText(referralUrl);
+    showToast("Enlace de invitación copiado.");
+  };
+
+  const shareReferral = async () => {
+    if (!referralUrl) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Invitación a NNE Community",
+          text: referralMessage,
+          url: referralUrl
+        });
+        return;
+      } catch (caught) {
+        if (caught instanceof DOMException && caught.name === "AbortError") return;
+      }
+    }
+    await navigator.clipboard.writeText(`${referralMessage}\n${referralUrl}`);
+    showToast("Invitación lista para compartir.");
+  };
+
   return (
     <>
       <article className="card profile-card">
@@ -169,15 +194,25 @@ export function ProfilePage() {
         </div>
       </article>
       <article className="card referral-card">
-        <div><div className="eyebrow">Tu señal se expande</div><h2>Invita a un artista.</h2></div>
-        <p>Recibes créditos cuando complete su registro con tu enlace.</p>
-        <button
-          className="primary-button"
-          disabled={!referralUrl}
-          onClick={() => navigator.clipboard.writeText(referralUrl).then(() => showToast("Enlace copiado."))}
-        >
-          Copiar enlace
-        </button>
+        <div>
+          <div className="eyebrow">Tu señal se expande</div>
+          <h2>Invita. Crezcan ambos.</h2>
+        </div>
+        <div className="referral-card-copy">
+          <p>Cada artista que entra con tu enlace recibe la misma recompensa que tú.</p>
+          <div className="referral-benefits">
+            <span>+{dashboard.referralReward.credits.toLocaleString()} NNE Credits cada uno</span>
+            <span>+{dashboard.referralReward.xp.toLocaleString()} XP cada uno</span>
+          </div>
+        </div>
+        <div className="referral-actions">
+          <button className="primary-button" disabled={!referralUrl} onClick={() => void shareReferral()}>
+            Compartir invitación
+          </button>
+          <button className="text-button" disabled={!referralUrl} onClick={() => void copyReferral()}>
+            Copiar enlace
+          </button>
+        </div>
       </article>
     </>
   );

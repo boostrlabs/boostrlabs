@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { usersService } from "../services/users";
+import type { ReferralPreview } from "../types";
 
 export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const { user, login, signup } = useAuth();
@@ -9,6 +11,37 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const [searchParams] = useSearchParams();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [referralPreview, setReferralPreview] = useState<ReferralPreview | null>(null);
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [referralError, setReferralError] = useState("");
+  const referralCode = mode === "signup" ? String(searchParams.get("ref") || "").trim() : "";
+
+  useEffect(() => {
+    let active = true;
+    if (!referralCode) {
+      setReferralPreview(null);
+      setReferralError("");
+      setReferralLoading(false);
+      return () => { active = false; };
+    }
+
+    setReferralLoading(true);
+    setReferralError("");
+    usersService.referralPreview(referralCode)
+      .then((preview) => {
+        if (active) setReferralPreview(preview);
+      })
+      .catch((caught) => {
+        if (!active) return;
+        setReferralPreview(null);
+        setReferralError(caught instanceof Error ? caught.message : "Esta invitación no está disponible.");
+      })
+      .finally(() => {
+        if (active) setReferralLoading(false);
+      });
+
+    return () => { active = false; };
+  }, [referralCode]);
 
   if (user) return <Navigate to="/" replace />;
 
@@ -26,7 +59,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
           username: String(data.get("username") || ""),
           email: String(data.get("email") || ""),
           password: String(data.get("password") || ""),
-          referral_code: String(data.get("referral_code") || ""),
+          referral_code: referralPreview?.code || "",
           company_website: String(data.get("company_website") || "")
         });
       }
@@ -52,6 +85,33 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
         <h2>{mode === "login" ? "Inicia sesión." : "Crea tu cuenta NNE."}</h2>
         <p className="auth-note">Tu cuenta NNE es independiente de cualquier cuenta BOOSTR.</p>
         {error && <div className="form-error">{error}</div>}
+        {mode === "signup" && referralCode && (
+          <aside className={`referral-invite ${referralError ? "invalid" : ""}`}>
+            {referralLoading ? (
+              <>
+                <div className="eyebrow">Validando invitación</div>
+                <strong>Conectando la señal…</strong>
+              </>
+            ) : referralPreview ? (
+              <>
+                <div className="eyebrow">Invitación activa</div>
+                <strong>Referido por {referralPreview.referrer.handle}</strong>
+                <p>Al crear tu cuenta, ambos reciben:</p>
+                <div className="referral-benefits">
+                  <span>+{referralPreview.reward.credits.toLocaleString()} NNE Credits</span>
+                  <span>+{referralPreview.reward.xp.toLocaleString()} XP</span>
+                </div>
+                <small>Tu progreso empieza con ventaja. El suyo crece contigo.</small>
+              </>
+            ) : (
+              <>
+                <div className="eyebrow">Invitación no disponible</div>
+                <strong>{referralError}</strong>
+                <Link to="/signup">Continuar sin invitación</Link>
+              </>
+            )}
+          </aside>
+        )}
         <form onSubmit={submit} className="form-stack">
           {mode === "signup" && (
             <>
@@ -70,12 +130,10 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             />
           </label>
           <label>Contraseña<input name="password" type="password" className="field" required minLength={10} autoComplete={mode === "login" ? "current-password" : "new-password"} /></label>
-          {mode === "signup" && (
-            <label>Código de invitación <span>(opcional)</span>
-              <input name="referral_code" className="field" defaultValue={searchParams.get("ref") || ""} />
-            </label>
-          )}
-          <button className="primary-button full" disabled={busy}>
+          <button
+            className="primary-button full"
+            disabled={busy || Boolean(referralCode && (referralLoading || !referralPreview))}
+          >
             {busy ? "Conectando…" : mode === "login" ? "Entrar" : "Crear cuenta"}
           </button>
         </form>

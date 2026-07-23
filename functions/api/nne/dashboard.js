@@ -5,7 +5,7 @@ export async function onRequestGet({ request, env }) {
   const auth = await requireNneSession(request, env);
   if (!auth.ok) return auth.response;
 
-  const [questRows, feedRows, leaderRows, referral] = await Promise.all([
+  const [questRows, feedRows, leaderRows, referral, referralReward] = await Promise.all([
     env.DB.prepare(
       `SELECT id, type, platform, title, description, icon, reward_credits,
               reward_xp, cadence, verification_method, minimum_level, sort_order
@@ -36,10 +36,16 @@ export async function onRequestGet({ request, env }) {
     ).all(),
     env.DB.prepare(
       `SELECT referral_code
-       FROM nne_referrals
-       WHERE referrer_user_id = ? AND referred_user_id IS NULL AND status = 'invited'
-       ORDER BY created_at DESC LIMIT 1`
-    ).bind(auth.user.id).first()
+       FROM nne_referral_codes
+       WHERE referrer_user_id = ? AND status = 'active'
+       ORDER BY created_at ASC LIMIT 1`
+    ).bind(auth.user.id).first(),
+    env.DB.prepare(
+      `SELECT reward_credits, reward_xp
+       FROM nne_quests
+       WHERE id = 'quest_referral_artist' AND status = 'published'
+       LIMIT 1`
+    ).first()
   ]);
 
   const quests = [];
@@ -58,6 +64,7 @@ export async function onRequestGet({ request, env }) {
       description: quest.description,
       icon: quest.icon,
       reward_credits: Number(quest.reward_credits),
+      reward_xp: Number(quest.reward_xp),
       verification_method: quest.verification_method,
       status: questStatusForUser(quest, attempt, auth.user.level),
       attempt: attempt || null
@@ -85,6 +92,10 @@ export async function onRequestGet({ request, env }) {
     feed: feedRows.results || [],
     leaderboard,
     current_rank: leaderboard.find((entry) => entry.user_id === auth.user.id)?.rank || null,
-    referral_code: referral?.referral_code || null
+    referral_code: referral?.referral_code || null,
+    referral_reward: {
+      credits: Number(referralReward?.reward_credits || 500),
+      xp: Number(referralReward?.reward_xp || 500)
+    }
   });
 }

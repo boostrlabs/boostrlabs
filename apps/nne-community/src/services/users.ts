@@ -1,4 +1,4 @@
-import type { DashboardData, UserProfile } from "../types";
+import type { DashboardData, ReferralPreview, UserProfile } from "../types";
 import { apiRequest } from "./api";
 import { mapDashboard, mapUser } from "./mappers";
 
@@ -35,5 +35,11 @@ export const usersService = {
   },
   async dashboard(): Promise<DashboardData> {
     return mapDashboard(await apiRequest<any>("/dashboard"));
+  },
+  async referralPreview(code: string): Promise<ReferralPreview> {
+    const result = await apiRequest<{ referral: ReferralPreview }>(
+      `/referrals/preview?code=${encodeURIComponent(code)}`
+    );
+    return result.referral;
   }
 };

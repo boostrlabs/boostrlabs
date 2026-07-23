@@ -28,9 +28,9 @@ export async function onRequestGet({ request, env }) {
 
   const referral = await env.DB.prepare(
     `SELECT referral_code
-     FROM nne_referrals
-     WHERE referrer_user_id = ? AND referred_user_id IS NULL AND status = 'invited'
-     ORDER BY created_at DESC
+     FROM nne_referral_codes
+     WHERE referrer_user_id = ? AND status = 'active'
+     ORDER BY created_at ASC
      LIMIT 1`
   )
     .bind(auth.user.id)

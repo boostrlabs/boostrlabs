@@ -114,4 +114,20 @@ export interface DashboardData {
   leaderboard: LeaderboardEntry[];
   currentRank: number | null;
   referralCode: string | null;
+  referralReward: ReferralReward;
+}
+
+export interface ReferralReward {
+  credits: number;
+  xp: number;
+}
+
+export interface ReferralPreview {
+  code: string;
+  referrer: {
+    username: string;
+    handle: string;
+    name: string;
+  };
+  reward: ReferralReward;
 }

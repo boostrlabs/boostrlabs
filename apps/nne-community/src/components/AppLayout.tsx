@@ -8,7 +8,7 @@ import { QuestModal } from "./QuestModal";
 
 const pageCopy: Record<string, { title: string; subtitle: string }> = {
   "/": { title: "Tu progreso empieza aquí.", subtitle: "Cada acción suma al movimiento." },
-  "/quests": { title: "Daily Quests.", subtitle: "Convierte acciones reales en progreso real." },
+  "/quests": { title: "Quests con propósito.", subtitle: "Convierte acciones reales en progreso real." },
   "/feed": { title: "La comunidad se está moviendo.", subtitle: "Todo avance deja una señal." },
   "/rewards": { title: "Canjea tu progreso.", subtitle: "Servicios reales. Valor real." },
   "/profile": { title: "Tu carrera, visible.", subtitle: "Este perfil cuenta tu consistencia." },
@@ -99,6 +99,7 @@ export function AppLayout() {
       <QuestModal
         quest={selectedQuest}
         referralCode={dashboard.referralCode}
+        referralReward={dashboard.referralReward}
         onClose={() => setSelectedQuest(null)}
         onChanged={async (message) => {
           await refreshDashboard();

@@ -111,6 +111,10 @@ export function mapDashboard(payload: Raw): DashboardData {
     feed: (payload.feed || []).map(mapFeed),
     leaderboard: (payload.leaderboard || []).map(mapLeaderboard),
     currentRank: payload.current_rank == null ? null : Number(payload.current_rank),
-    referralCode: payload.referral_code || null
+    referralCode: payload.referral_code || null,
+    referralReward: {
+      credits: Number(payload.referral_reward?.credits || 500),
+      xp: Number(payload.referral_reward?.xp || 500)
+    }
   };
 }

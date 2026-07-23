@@ -2,18 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../services/api";
 import { questsService } from "../services/quests";
 import { triviaService } from "../services/trivia";
-import type { Quest, TriviaQuestion } from "../types";
+import type { Quest, ReferralReward, TriviaQuestion } from "../types";
 
 interface QuestModalProps {
   quest: Quest | null;
   referralCode: string | null;
+  referralReward: ReferralReward;
   onClose: () => void;
   onChanged: (message: string) => Promise<void>;
 }
 
 type Phase = "intro" | "timer" | "trivia" | "result";
 
-export function QuestModal({ quest, referralCode, onClose, onChanged }: QuestModalProps) {
+export function QuestModal({ quest, referralCode, referralReward, onClose, onChanged }: QuestModalProps) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [file, setFile] = useState<File | null>(null);
   const [note, setNote] = useState("");
@@ -149,9 +150,16 @@ export function QuestModal({ quest, referralCode, onClose, onChanged }: QuestMod
         {quest.verificationMethod === "referral" && (
           <>
             <p>{quest.description}</p>
-            <div className="referral-code">{referralCode || "Preparando enlace…"}</div>
+            <div className="modal-referral-reward">
+              <div className="eyebrow">Recompensa para ambos</div>
+              <strong>Tu invitado gana. Tú también.</strong>
+              <div className="referral-benefits">
+                <span>+{referralReward.credits.toLocaleString()} NNE Credits</span>
+                <span>+{referralReward.xp.toLocaleString()} XP</span>
+              </div>
+            </div>
             <button className="primary-button full" disabled={busy || !referralCode} onClick={copyReferral}>
-              Copiar enlace personal
+              Copiar mi invitación
             </button>
           </>
         )}

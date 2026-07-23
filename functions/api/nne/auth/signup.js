@@ -91,18 +91,17 @@ export async function onRequestPost({ request, env }) {
   let referredBy = null;
   if (referralCode) {
     referredBy = await env.DB.prepare(
-      `SELECT r.id, r.referrer_user_id
-       FROM nne_referrals r
-       JOIN nne_users u ON u.id = r.referrer_user_id
-       WHERE r.referral_code = ?
-         AND r.status = 'invited'
-         AND r.referred_user_id IS NULL
+      `SELECT c.referral_code, c.referrer_user_id, u.username, u.display_name
+       FROM nne_referral_codes c
+       JOIN nne_users u ON u.id = c.referrer_user_id
+       WHERE c.referral_code = ?
+         AND c.status = 'active'
          AND u.status = 'active'
        LIMIT 1`
     )
       .bind(referralCode)
       .first();
-    if (!referredBy?.id) {
+    if (!referredBy?.referrer_user_id) {
       return jsonError("nne_invalid_referral", "Ese enlace de invitación ya no está disponible.", 400, {
         fields: ["referral_code"]
       });
@@ -111,9 +110,20 @@ export async function onRequestPost({ request, env }) {
 
   const timestamp = now();
   const userId = crypto.randomUUID();
-  const ownReferralId = crypto.randomUUID();
-  const ownReferralCode = `${username}-${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
+  const referralEventId = referredBy ? crypto.randomUUID() : null;
+  const ownReferralCode = `NNE-${crypto.randomUUID().replaceAll("-", "").slice(0, 10).toUpperCase()}`;
   const passwordHash = await hashNnePassword(password);
+  const referralReward = referredBy
+    ? await env.DB.prepare(
+        `SELECT reward_credits, reward_xp
+         FROM nne_quests
+         WHERE id = 'quest_referral_artist' AND status = 'published'
+         LIMIT 1`
+      ).first()
+    : null;
+  const referralCredits = referredBy ? Number(referralReward?.reward_credits || 500) : 0;
+  const referralXp = referredBy ? Number(referralReward?.reward_xp || 500) : 0;
+  const startingLevel = 1 + Math.floor(referralXp / 1000);
 
   let role = "member";
   const suppliedBootstrapSecret = clean(payload.admin_bootstrap_secret, 300);
@@ -134,47 +144,74 @@ export async function onRequestPost({ request, env }) {
     env.DB.prepare(
       `INSERT INTO nne_profiles (
         user_id, level, xp, streak_days, nne_score, title, completed_quest_count, created_at, updated_at
-      ) VALUES (?, 1, 0, 0, 0, 'New Wave', 0, ?, ?)`
-    ).bind(userId, timestamp, timestamp),
+      ) VALUES (?, ?, ?, 0, 0, 'New Wave', 0, ?, ?)`
+    ).bind(userId, startingLevel, referralXp, timestamp, timestamp),
     env.DB.prepare(
-      `INSERT INTO nne_referrals (
-        id, referrer_user_id, referred_user_id, referral_code, status, created_at
-      ) VALUES (?, ?, NULL, ?, 'invited', ?)`
-    ).bind(ownReferralId, userId, ownReferralCode, timestamp)
+      `INSERT INTO nne_referral_codes (
+        referral_code, referrer_user_id, status, created_at, updated_at
+      ) VALUES (?, ?, 'active', ?, ?)`
+    ).bind(ownReferralCode, userId, timestamp, timestamp)
   ];
 
-  if (referredBy?.id) {
-    const referralReward = await env.DB.prepare(
-      "SELECT reward_credits FROM nne_quests WHERE id = 'quest_referral_artist' AND status = 'published'"
-    ).first();
-    const amount = Number(referralReward?.reward_credits || 500);
+  if (referredBy?.referrer_user_id && referralEventId) {
     statements.push(
       env.DB.prepare(
-        `UPDATE nne_referrals
-         SET referred_user_id = ?, status = 'rewarded', qualified_at = ?, rewarded_at = ?
-         WHERE id = ? AND referred_user_id IS NULL AND status = 'invited'`
-      ).bind(userId, timestamp, timestamp, referredBy.id),
+        `INSERT INTO nne_referral_events (
+          id, referrer_user_id, referred_user_id, referral_code, status,
+          reward_credits_each, reward_xp_each, created_at, rewarded_at
+        ) VALUES (?, ?, ?, ?, 'rewarded', ?, ?, ?, ?)`
+      ).bind(
+        referralEventId,
+        referredBy.referrer_user_id,
+        userId,
+        referredBy.referral_code,
+        referralCredits,
+        referralXp,
+        timestamp,
+        timestamp
+      ),
       env.DB.prepare(
         `INSERT INTO nne_credit_transactions (
           id, user_id, amount, kind, source_type, source_id, description, actor_user_id, created_at
-        ) VALUES (?, ?, ?, 'referral_reward', 'referral', ?, ?, NULL, ?)`
+        ) VALUES (?, ?, ?, 'referral_reward', 'referral_inviter', ?, ?, NULL, ?)`
       ).bind(
         crypto.randomUUID(),
         referredBy.referrer_user_id,
-        amount,
-        referredBy.id,
+        referralCredits,
+        referralEventId,
         `Invitación completada por @${username}`,
         timestamp
       ),
       env.DB.prepare(
+        `INSERT INTO nne_credit_transactions (
+          id, user_id, amount, kind, source_type, source_id, description, actor_user_id, created_at
+        ) VALUES (?, ?, ?, 'referral_reward', 'referral_welcome', ?, ?, NULL, ?)`
+      ).bind(
+        crypto.randomUUID(),
+        userId,
+        referralCredits,
+        referralEventId,
+        `Bonus de bienvenida por invitación de @${referredBy.username}`,
+        timestamp
+      ),
+      env.DB.prepare(
+        `UPDATE nne_profiles
+         SET xp = xp + ?,
+             level = 1 + CAST((xp + ?) / 1000 AS INTEGER),
+             completed_quest_count = completed_quest_count + 1,
+             nne_score = MIN(100, nne_score + 1),
+             updated_at = ?
+         WHERE user_id = ?`
+      ).bind(referralXp, referralXp, timestamp, referredBy.referrer_user_id),
+      env.DB.prepare(
         `INSERT INTO nne_feed_events (
           id, user_id, event_type, message, visibility, source_type, source_id, created_at
-        ) VALUES (?, ?, 'referral_completed', ?, 'public', 'referral', ?, ?)`
+        ) VALUES (?, ?, 'referral_completed', ?, 'public', 'referral_event', ?, ?)`
       ).bind(
         crypto.randomUUID(),
         referredBy.referrer_user_id,
-        `@${username} se unió a NNE Community mediante una invitación.`,
-        referredBy.id,
+        `@${referredBy.username} y @${username} ganaron ${referralCredits} NNE Credits por moverse juntos.`,
+        referralEventId,
         timestamp
       )
     );
@@ -187,7 +224,10 @@ export async function onRequestPost({ request, env }) {
     .run();
   await writeNneAudit(env, request, userId, "auth.signup", "nne_user", userId, {
     role,
-    referred: Boolean(referredBy?.id)
+    referred: Boolean(referredBy?.referrer_user_id),
+    referrer_user_id: referredBy?.referrer_user_id || null,
+    referral_credits_each: referralCredits,
+    referral_xp_each: referralXp
   });
 
   return jsonOk(
@@ -199,15 +239,22 @@ export async function onRequestPost({ request, env }) {
         handle: `@${username}`,
         name,
         role,
-        level: 1,
-        xp: 0,
+        level: startingLevel,
+        xp: referralXp,
         streak_days: 0,
         nne_score: 0,
         title: "New Wave",
         completed_quest_count: 0,
-        credits: 0
+        credits: referralCredits
       },
       referral_code: ownReferralCode,
+      referral_bonus: referredBy
+        ? {
+            referrer_handle: `@${referredBy.username}`,
+            credits: referralCredits,
+            xp: referralXp
+          }
+        : null,
       redirect: role === "admin" ? "/nne-community/admin" : "/nne-community/"
     },
     201,

@@ -429,7 +429,24 @@ h1 {
   align-items: center;
 }
 .referral-card h2 { margin: 6px 0 0; }
-.referral-card p { color: var(--muted); }
+.referral-card p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+.referral-card-copy { min-width: 0; }
+.referral-actions { display: grid; gap: 10px; justify-items: stretch; }
+.referral-actions .text-button { padding: 5px; }
+.referral-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.referral-benefits span {
+  padding: 7px 10px;
+  color: var(--gold-light);
+  font-size: .75rem;
+  font-weight: 800;
+  border: 1px solid rgba(216,182,106,.22);
+  border-radius: 999px;
+  background: rgba(216,182,106,.07);
+}
 
 .right-panel {
   padding: 30px 22px;
@@ -534,6 +551,16 @@ select.field { color-scheme: dark; }
   border-radius: 14px;
   background: rgba(216,182,106,.04);
 }
+.modal-referral-reward {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid rgba(216,182,106,.22);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(216,182,106,.12), transparent 45%),
+    rgba(216,182,106,.035);
+}
+.modal-referral-reward > strong { display: block; margin: 7px 0 14px; font-size: 1.15rem; }
 
 .quest-rules { display: grid; gap: 10px; margin: 20px 0; }
 .quest-rules > div {
@@ -629,6 +656,30 @@ select.field { color-scheme: dark; }
 .auth-card { padding: 32px; }
 .auth-card h2 { margin: 8px 0; font-size: 2rem; }
 .auth-note { color: var(--muted); line-height: 1.5; }
+.referral-invite {
+  position: relative;
+  overflow: hidden;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(216,182,106,.3);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(240,205,125,.15), transparent 42%),
+    linear-gradient(145deg, rgba(216,182,106,.07), rgba(255,255,255,.018));
+}
+.referral-invite::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--gold);
+}
+.referral-invite > strong { display: block; margin: 7px 0 8px; font-size: 1.12rem; }
+.referral-invite p { margin: 0 0 10px; color: var(--muted); font-size: .88rem; }
+.referral-invite small { display: block; margin-top: 12px; color: var(--muted); line-height: 1.45; }
+.referral-invite.invalid { border-color: rgba(255,80,95,.24); background: rgba(111,15,24,.12); }
+.referral-invite.invalid::before { background: #b5424e; }
+.referral-invite.invalid a { display: inline-block; margin-top: 10px; color: var(--gold-light); font-size: .84rem; }
 .form-stack { display: grid; gap: 14px; margin-top: 22px; }
 .form-stack label, .admin-form label { color: #d7d7da; font-size: .82rem; }
 .form-stack label .field, .admin-form label .field { margin-top: 7px; }
@@ -752,6 +803,7 @@ select.field { color-scheme: dark; }
   }
   .toast { left: 16px; right: 16px; bottom: 94px; }
   .referral-card { grid-template-columns: 1fr; text-align: center; }
+  .referral-card .referral-benefits { justify-content: center; }
   .admin-metrics { grid-template-columns: repeat(2, 1fr); }
   .evidence-card { grid-template-columns: 1fr; }
   .evidence-card img { height: 220px; }
