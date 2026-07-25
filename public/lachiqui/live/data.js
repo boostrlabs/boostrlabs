@@ -1,5 +1,5 @@
 window.LIVE_ESTIMATOR_CONFIG = {
-  assetVersion: '20260725-2',
+  assetVersion: '20260725-3',
   optimisticDiscount: 3000,
   standardDiscount: 2000,
   programEnd: '2026-08-03',
