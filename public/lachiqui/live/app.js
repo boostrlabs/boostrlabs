@@ -24,9 +24,18 @@ function populateModels(){
     modelSelect.appendChild(option);
   });
   modelSelect.value = 'rav4';
+  priceInput.value = getModel().msrp;
 }
 function getModel(){ return window.TOYOTA_MODELS.find(m => m.id === modelSelect.value); }
 function getTier(){ return window.CREDIT_TIERS.find(t => t.id === scoreSelect.value); }
+function getApr(model, tier){
+  // El boletín exige cotización personalizada por debajo de 660.
+  if (tier.programTier > 1) {
+    return window.LIVE_ESTIMATOR_CONFIG.specialApr.standard[tier.programTier];
+  }
+  const program = model.aprProgram || 'standard';
+  return window.LIVE_ESTIMATOR_CONFIG.specialApr[program][tier.programTier];
+}
 function calculate(){
   const model = getModel();
   const tier = getTier();
@@ -34,16 +43,20 @@ function calculate(){
   const optimistic = optimisticToggle.checked;
   const price = Math.max(10000, Number(priceInput.value) || model.msrp);
 
-  // Live estimate assumptions: taxes/fees approximated at 8.5%; optimistic mode applies a promotional discount.
-  const promoDiscount = optimistic ? Math.min(1800, price * .035) : 0;
-  const estimatedOutTheDoor = (price - promoDiscount) * 1.085;
+  // El precio live asume una venta entre $2,000 y $3,000 bajo MSRP.
+  // Impuestos y cargos quedan fuera para no mezclarlos con el pago anunciado.
+  const configuredDiscount = optimistic
+    ? window.LIVE_ESTIMATOR_CONFIG.optimisticDiscount
+    : window.LIVE_ESTIMATOR_CONFIG.standardDiscount;
+  const promoDiscount = Math.min(configuredDiscount, Math.max(0, price - 10000));
+  const sellingPrice = Math.max(0, price - promoDiscount);
   const rateBasedDown = Math.round((price * tier.downRate) / 100) * 100;
   let down = Math.max(tier.downMinimum, rateBasedDown);
   if (optimistic && tier.id === 'good') down = 999;
   if (optimistic && tier.id === 'excellent') down = 0;
 
-  const apr = term === 84 ? tier.apr84 : tier.apr72;
-  let monthly = payment(Math.max(0, estimatedOutTheDoor - down), apr, term);
+  const apr = getApr(model, tier);
+  let monthly = payment(Math.max(0, sellingPrice - down), apr, term);
   monthly = roundLive(monthly, optimistic);
 
   $('#vehicleName').textContent = model.name.toUpperCase();
@@ -54,6 +67,7 @@ function calculate(){
   $('#monthlyPayment').textContent = money(monthly);
   $('#downPayment').textContent = money(down);
   $('#downHeadline').textContent = tier.headline;
+  $('#estimateBasis').textContent = `${term} MESES · ${apr.toFixed(2)}% APR · PRECIO LIVE $${money(sellingPrice)} ($${money(promoDiscount)} BAJO MSRP)`;
   $('#downCard').classList.toggle('zero-down', down === 0);
   $('#resultStage').classList.remove('flash');
   requestAnimationFrame(() => $('#resultStage').classList.add('flash'));
@@ -67,6 +81,8 @@ function calculate(){
       scoreLabel: tier.label,
       term,
       price,
+      sellingPrice,
+      promoDiscount,
       apr,
       down,
       monthly,
