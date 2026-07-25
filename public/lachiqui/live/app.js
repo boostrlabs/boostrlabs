@@ -3,7 +3,6 @@ const modelSelect = $('#modelSelect');
 const scoreSelect = $('#scoreSelect');
 const termSelect = $('#termSelect');
 const priceInput = $('#priceInput');
-const optimisticToggle = $('#optimisticToggle');
 let nativeFullscreenActive = false;
 
 function money(value){ return Math.max(0, Math.round(value)).toLocaleString('en-US'); }
@@ -40,7 +39,7 @@ function calculate(){
   const model = getModel();
   const tier = getTier();
   const term = Number(termSelect.value);
-  const optimistic = optimisticToggle.checked;
+  const optimistic = true;
   const price = Math.max(10000, Number(priceInput.value) || model.msrp);
 
   // El precio live asume una venta entre $2,000 y $3,000 bajo MSRP.
@@ -62,7 +61,9 @@ function calculate(){
   $('#vehicleName').textContent = model.name.toUpperCase();
   $('#vehicleType').textContent = model.type;
   $('#scoreLabel').textContent = tier.label;
-  $('#vehicleImage').src = `assets/cars/${model.id}.png`;
+  const vehicleAsset = model.asset || `${model.id}.png`;
+  $('#vehicleImage').src = `assets/cars/${vehicleAsset}?v=${window.LIVE_ESTIMATOR_CONFIG.assetVersion}`;
+  $('#vehicleImage').style.setProperty('--vehicle-scale', model.imageScale || 1);
   $('#vehicleImage').alt = `Toyota ${model.name}`;
   $('#monthlyPayment').textContent = money(monthly);
   $('#downPayment').textContent = money(down);
@@ -94,6 +95,7 @@ function syncModelPrice(){ priceInput.value = getModel().msrp; calculate(); }
 function setLiveMode(enabled){
   document.body.classList.toggle('live-mode', enabled);
   $('#fullscreenButton').setAttribute('aria-pressed', String(enabled));
+  $('#fullscreenButton').textContent = enabled ? 'SALIR DE PANTALLA COMPLETA' : 'VER RESULTADO COMPLETO';
 }
 async function toggleFullscreen(){
   const shouldEnter = !document.body.classList.contains('live-mode');
@@ -113,7 +115,6 @@ populateModels();
 modelSelect.addEventListener('change', syncModelPrice);
 scoreSelect.addEventListener('change', calculate);
 termSelect.addEventListener('change', calculate);
-optimisticToggle.addEventListener('change', calculate);
 $('#calculateButton').addEventListener('click', calculate);
 $('#fullscreenButton').addEventListener('click', toggleFullscreen);
 document.addEventListener('keydown', (event) => {

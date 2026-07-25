@@ -1,4 +1,5 @@
 window.LIVE_ESTIMATOR_CONFIG = {
+  assetVersion: '20260725-2',
   optimisticDiscount: 3000,
   standardDiscount: 2000,
   programEnd: '2026-08-03',
@@ -16,19 +17,21 @@ window.LIVE_ESTIMATOR_CONFIG = {
 };
 
 window.TOYOTA_MODELS = [
-  { id:'corolla', name:'Corolla', type:'Sedán', msrp:25700, aprProgram:'corolla' },
-  { id:'camry', name:'Camry Hybrid', type:'Sedán híbrido', msrp:32900, aprProgram:'camry' },
+  { id:'corolla', name:'Corolla', type:'Sedán', msrp:25700, aprProgram:'corolla', imageScale:1.2 },
+  { id:'gr-corolla', name:'GR Corolla', type:'Hatchback deportivo', msrp:39920 },
+  { id:'camry', name:'Camry Hybrid', type:'Sedán híbrido', msrp:32900, aprProgram:'camry', imageScale:1.08 },
+  { id:'crown', name:'Crown', type:'Sedán híbrido AWD', msrp:41440, imageScale:1.24 },
   { id:'prius', name:'Prius PHEV', type:'Híbrido plug-in', msrp:35900, aprProgram:'prius' },
   { id:'corolla-cross', name:'Corolla Cross', type:'SUV', msrp:25400 },
-  { id:'rav4', name:'RAV4 Hybrid', type:'SUV híbrido', msrp:34200, aprProgram:'rav4' },
+  { id:'rav4', name:'RAV4 Hybrid', type:'SUV híbrido', msrp:34200, aprProgram:'rav4', asset:'rav4.jpg' },
   { id:'highlander', name:'Highlander', type:'SUV 3 filas', msrp:40500 },
   { id:'grand-highlander', name:'Grand Highlander', type:'SUV 3 filas', msrp:44800 },
   { id:'4runner', name:'4Runner', type:'SUV', msrp:45400, aprProgram:'4runner' },
   { id:'sienna', name:'Sienna', type:'Minivan híbrida', msrp:39400 },
-  { id:'tacoma', name:'Tacoma', type:'Pickup', msrp:39350, aprProgram:'tacoma' },
-  { id:'tundra', name:'Tundra', type:'Pickup', msrp:41500, aprProgram:'tundra' },
+  { id:'tacoma', name:'Tacoma', type:'Pickup', msrp:39350, aprProgram:'tacoma', imageScale:1.38 },
+  { id:'tundra', name:'Tundra', type:'Pickup', msrp:41500, aprProgram:'tundra', asset:'tundra.jpg' },
   { id:'sequoia', name:'Sequoia', type:'SUV grande', msrp:64000 },
-  { id:'gr86', name:'GR86', type:'Deportivo', msrp:31000 },
+  { id:'gr86', name:'GR86', type:'Deportivo', msrp:31000, imageScale:1.18 },
   { id:'supra', name:'GR Supra', type:'Deportivo', msrp:57000 },
   { id:'bz', name:'bZ', type:'Eléctrico', msrp:37100, aprProgram:'bz' }
 ];
