@@ -13,14 +13,15 @@
 <div class="compact-shell">
 <aside class="compact-side">
   <a class="brand" href="/home/"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"><span><strong>BOOSTR Labs</strong><small>Module Deck</small></span></a>
-  <nav class="side-nav"><a href="/home/">BOOSTR CORE<span>/</span></a><a href="/manager/">Manager<span>ops</span></a><a href="/manager/payment-links/">Payments<span>money</span></a><a href="/app/documents/">Documents<span>live</span></a><a href="/app/">Dashboard<span>app</span></a><a href="/audit/">Audit<span>public</span></a></nav>
+  <nav class="side-nav"><a href="/home/">BOOSTR CORE<span>/</span></a><a href="/app/delivery-check/">Delivery Check<span>tool</span></a><a href="/manager/">Manager<span>ops</span></a><a href="/manager/payment-links/">Payments<span>money</span></a><a href="/app/documents/">Documents<span>live</span></a><a href="/app/">Dashboard<span>app</span></a><a href="/audit/">Audit<span>public</span></a></nav>
   <div class="card glass"><b>Rule</b><p class="micro">The user thinks “I need to charge” or “I need to issue a document.” BOOSTR resolves the infrastructure.</p></div>
 </aside>
 <main class="compact-main">
   <section class="card glass">
-    <div class="section-head"><div><span class="eyebrow">Module Deck</span><h1>BOOSTR surfaces.</h1><p class="micro">Core, Payments, Smart Documents and custom worlds on one infrastructure.</p></div><a class="btn primary" href="/audit/">Start Audit</a></div>
+    <div class="section-head"><div><span class="eyebrow">Module Deck</span><h1>BOOSTR surfaces.</h1><p class="micro">Core, utility tools, Payments, Smart Documents and custom worlds on one infrastructure.</p></div><a class="btn primary" href="/audit/">Start Audit</a></div>
     <select class="search" id="moduleContext" aria-label="Module context" style="max-width:100%;width:100%;margin-bottom:10px">
       <option value="core">BOOSTR Core</option>
+      <option value="tools">BOOSTR Tools</option>
       <option value="payments">BOOSTR Payments</option>
       <option value="documents">Smart Documents</option>
       <option value="automotive">Automotive OS</option>
@@ -36,6 +37,12 @@
       <div class="module" data-search-item><b>Dashboard</b><p class="micro">Client workspace.</p><a href="/app/">Open →</a></div>
       <div class="module" data-search-item><b>Partners</b><p class="micro">Partner routes.</p><a href="/partner-dashboard/">Open →</a></div>
       <div class="module" data-search-item><b>BOOSTR CORE / Admin</b><p class="micro">System controls.</p><a href="/admin/">Open →</a></div>
+    </div>
+    </div>
+    <div data-module-group="tools" hidden>
+    <span class="eyebrow">BOOSTR TOOLS</span>
+    <div class="network-grid" style="margin-bottom:18px">
+      <div class="module" data-search-item><b>Delivery Check</b><p class="micro">Instant Uber Eats order decision using pay, minutes and miles. $20/h remains the primary rule.</p><a href="/app/delivery-check/">Open →</a></div>
     </div>
     </div>
     <div data-module-group="payments" hidden>
