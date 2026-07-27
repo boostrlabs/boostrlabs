@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" data-build="2.2.0" data-no-shared-ui="true">
+<html lang="es" data-build="2.3.0" data-no-shared-ui="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -8,14 +8,13 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BOOSTR Delivery Check</title>
-  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png?v=4">
-  <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png?v=4">
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png?v=5">
+  <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png?v=5">
   <style>
     :root{color-scheme:dark;--bg:#07101d;--line:rgba(255,255,255,.12);--text:#f7f9fc;--blue:#48bfff;--green:#55e98a;--green-bg:rgba(85,233,138,.13);--red:#ff6b78;--red-bg:rgba(255,107,120,.13);--amber:#f4be5f;--amber-bg:rgba(244,190,95,.13)}
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{margin:0;min-height:100%;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
     body{background:radial-gradient(circle at 90% 0,rgba(72,191,255,.15),transparent 30%),linear-gradient(180deg,#0b1728,#05080e 78%)}
-    body>*:not(main):not(script){display:none!important}
     img{max-width:100%;display:block} button,input{font:inherit}
     .app{width:min(720px,100%);margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));overflow:hidden}
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}.brand{width:148px;min-width:0}.back{width:44px;height:44px;flex:0 0 44px;border:1px solid var(--line);border-radius:15px;display:grid;place-items:center;color:#fff;text-decoration:none;background:rgba(255,255,255,.04);font-size:22px}
@@ -28,8 +27,8 @@
   </style>
 </head>
 <body>
-  <main class="app" id="deliveryApp">
-    <header class="topbar"><a href="/app/" class="brand" aria-label="BOOSTR"><img src="/assets/logos/boostr-logo-nav.png?v=4" alt="BOOSTR Labs"></a><a class="back" href="/app/" aria-label="Volver">←</a></header>
+  <main class="app">
+    <header class="topbar"><a href="/app/" class="brand" aria-label="BOOSTR"><img src="/assets/logos/boostr-logo-nav.png?v=5" alt="BOOSTR Labs"></a><a class="back" href="/app/" aria-label="Volver">←</a></header>
     <p class="eyebrow">BOOSTR LABS · TOOLS</p><h1>Delivery Check</h1>
     <section id="decisionCard" class="decision" aria-live="polite"><span class="label">DECISIÓN</span><strong id="decision">METE LA ORDEN</strong><p id="reason">Pago, minutos y millas.</p></section>
     <section class="quick-grid" aria-label="Datos de la orden">
@@ -42,27 +41,11 @@
     <nav class="nav" aria-label="BOOSTR navigation"><a href="/app/">Inicio</a><a href="/modules/">Módulos</a><a href="/app/delivery-check/">Delivery</a></nav>
   </main>
   <script>
-    const app=document.getElementById('deliveryApp');
-    function purgeChrome(root=document){
-      root.querySelectorAll('*').forEach((el)=>{
-        if(el===app||app.contains(el)||el.tagName==='SCRIPT'||el.tagName==='STYLE') return;
-        const text=(el.textContent||'').replace(/\s+/g,' ').trim();
-        let fixed=false;
-        try{const s=getComputedStyle(el);fixed=s.position==='fixed'||s.position==='sticky';}catch(_){ }
-        if(fixed||text.includes('Workspace OS')||text.includes('WESTDETRO Artist')||text==='EN ES'||text.includes('OSWorkspace')) el.remove();
-        if(el.shadowRoot) purgeChrome(el.shadowRoot);
-      });
-      [...document.body.children].forEach((el)=>{if(el!==app&&el.tagName!=='SCRIPT')el.remove();});
-    }
-    new MutationObserver(()=>purgeChrome()).observe(document.documentElement,{childList:true,subtree:true});
-    setInterval(()=>purgeChrome(),250);
-    purgeChrome();
-
     const pay=document.getElementById('pay'),minutes=document.getElementById('minutes'),miles=document.getElementById('miles'),decision=document.getElementById('decision'),reason=document.getElementById('reason'),hourly=document.getElementById('hourly'),perMile=document.getElementById('perMile'),warning=document.getElementById('warning'),card=document.getElementById('decisionCard');
     const currency=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2});
-    function setState(type,title,copy){card.className='decision'+(type?' '+type:'');decision.textContent=title;reason.textContent=copy;}
-    function evaluate(){const p=Number(pay.value),m=Number(minutes.value),mi=Number(miles.value);if(!(p>0)||!(m>0)||!(mi>0)){setState('','METE LA ORDEN','Pago, minutos y millas.');hourly.textContent='—';perMile.textContent='—';warning.hidden=true;return;}const hourlyRate=p/(m/60),mileRate=p/mi;hourly.textContent=currency.format(hourlyRate)+'/h';perMile.textContent=currency.format(mileRate);if(hourlyRate>=20)setState('good','ACÉPTALA','Cumple tu meta mínima de $20 por hora.');else if(hourlyRate>=18)setState('maybe','DECIDE SEGÚN MILLAS','Está cerca de tu meta; revisa si el recorrido vale la pena.');else setState('bad','ESPERA LA SIGUIENTE','No llega a tu meta mínima por hora.');warning.textContent=mileRate>=1.5?'Excelente recorrido: '+currency.format(mileRate)+' por milla.':mileRate>=1?'Recorrido aceptable: '+currency.format(mileRate)+' por milla.':'Advertencia: muchas millas para este pago ('+currency.format(mileRate)+' por milla).';warning.hidden=false;}
-    [pay,minutes,miles].forEach(input=>input.addEventListener('input',evaluate));document.getElementById('reset').addEventListener('click',()=>{pay.value='';minutes.value='';miles.value='';evaluate();pay.focus();});pay.focus();
+    function setState(type,title,copy){card.className='decision'+(type?' '+type:'');decision.textContent=title;reason.textContent=copy}
+    function evaluate(){const p=Number(pay.value),m=Number(minutes.value),mi=Number(miles.value);if(!(p>0)||!(m>0)||!(mi>0)){setState('','METE LA ORDEN','Pago, minutos y millas.');hourly.textContent='—';perMile.textContent='—';warning.hidden=true;return}const hourlyRate=p/(m/60),mileRate=p/mi;hourly.textContent=currency.format(hourlyRate)+'/h';perMile.textContent=currency.format(mileRate);if(hourlyRate>=20)setState('good','ACÉPTALA','Cumple tu meta mínima de $20 por hora.');else if(hourlyRate>=18)setState('maybe','DECIDE SEGÚN MILLAS','Está cerca de tu meta; revisa si el recorrido vale la pena.');else setState('bad','ESPERA LA SIGUIENTE','No llega a tu meta mínima por hora.');warning.textContent=mileRate>=1.5?'Excelente recorrido: '+currency.format(mileRate)+' por milla.':mileRate>=1?'Recorrido aceptable: '+currency.format(mileRate)+' por milla.':'Advertencia: muchas millas para este pago ('+currency.format(mileRate)+' por milla).';warning.hidden=false}
+    [pay,minutes,miles].forEach(input=>input.addEventListener('input',evaluate));document.getElementById('reset').addEventListener('click',()=>{pay.value='';minutes.value='';miles.value='';evaluate();pay.focus()});pay.focus();
   </script>
 </body>
 </html>
