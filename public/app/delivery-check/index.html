@@ -1,33 +1,69 @@
 <!doctype html>
-<html lang="es" data-build="1.1.0" data-boostr-surface="delivery-check" data-boostr-theme="night_blue" data-boostr-accent="blue">
+<html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0c1118">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#07101d">
   <title>BOOSTR Delivery Check</title>
   <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
-  <link rel="stylesheet" href="/assets/boostr-mother/mother.css?v=1.1.0">
+  <link rel="apple-touch-icon" href="/assets/icons/09.-b-star-favicon.png">
   <style>
-    .delivery-shell{max-width:760px;margin:0 auto;padding:20px 16px 110px}.delivery-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.delivery-head h1{margin:4px 0 0;font-size:clamp(28px,7vw,48px)}.delivery-meta{display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:8px 12px}.decision{padding:24px 18px;text-align:center;border-radius:24px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035);margin-bottom:18px}.decision strong{display:block;font-size:clamp(30px,8vw,56px);line-height:1.02;margin:8px 0}.decision small{font-size:15px}.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.quick-field label{display:block;text-align:center;margin-bottom:7px}.quick-input{display:flex;align-items:center;border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:14px 10px;background:rgba(255,255,255,.025)}.quick-input span{font-size:22px}.quick-input input{width:100%;min-width:0;border:0;background:transparent;color:inherit;text-align:center;font-size:30px;outline:none}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.stat{padding:16px;border-radius:18px;background:rgba(255,255,255,.06);text-align:center}.stat b{display:block;font-size:26px;margin-top:4px}.warning{margin-top:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12)}.reset{width:100%;margin-top:14px}.footer-nav{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(8,12,18,.92);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,.08)}.footer-nav-inner{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.footer-nav a{text-align:center;padding:10px;border-radius:12px;text-decoration:none}.footer-nav a.active{background:rgba(255,255,255,.08)}@media(max-width:520px){.delivery-head{align-items:flex-start}.quick-grid{gap:7px}.quick-input{padding:12px 6px}.quick-input input{font-size:25px}.stats{grid-template-columns:1fr 1fr}.decision{padding:20px 12px}}
+    :root{color-scheme:dark;--bg:#07101d;--panel:#101b2b;--line:rgba(255,255,255,.12);--text:#f7f9fc;--muted:#8fa0b7;--blue:#48bfff;--green:#55e98a;--green-bg:rgba(85,233,138,.13);--red:#ff6b78;--red-bg:rgba(255,107,120,.13);--amber:#f4be5f;--amber-bg:rgba(244,190,95,.13)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+    body{background:radial-gradient(circle at 90% 0,rgba(72,191,255,.15),transparent 30%),linear-gradient(180deg,#0b1728,#05080e 78%)}
+    img{max-width:100%;display:block}
+    button,input{font:inherit}
+    .app{width:min(720px,100%);margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom))}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+    .brand{width:148px}.back{width:44px;height:44px;border:1px solid var(--line);border-radius:15px;display:grid;place-items:center;color:#fff;text-decoration:none;background:rgba(255,255,255,.04);font-size:22px}
+    .eyebrow{margin:0 0 7px;color:var(--blue);font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:900}
+    h1{margin:0 0 18px;font-size:clamp(32px,9vw,54px);line-height:.98;letter-spacing:-.05em}
+    .decision{border:1px solid var(--line);border-radius:28px;padding:24px 18px;text-align:center;background:rgba(255,255,255,.04);transition:.2s ease}
+    .decision.good{border-color:rgba(85,233,138,.48);background:var(--green-bg);box-shadow:0 0 0 1px rgba(85,233,138,.08) inset}
+    .decision.bad{border-color:rgba(255,107,120,.48);background:var(--red-bg);box-shadow:0 0 0 1px rgba(255,107,120,.08) inset}
+    .decision.maybe{border-color:rgba(244,190,95,.48);background:var(--amber-bg)}
+    .decision .label{color:var(--blue);font-size:12px;letter-spacing:.2em;font-weight:900}
+    .decision.good .label,.decision.good strong{color:var(--green)}
+    .decision.bad .label,.decision.bad strong{color:var(--red)}
+    .decision.maybe .label,.decision.maybe strong{color:var(--amber)}
+    .decision strong{display:block;margin:10px auto 8px;max-width:100%;font-size:clamp(34px,10vw,58px);line-height:.95;letter-spacing:-.05em;overflow-wrap:anywhere}
+    .decision p{margin:0;color:#dbe3ee;font-size:15px;line-height:1.4}
+    .quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:18px}
+    .field{min-width:0}.field label{display:block;margin-bottom:7px;text-align:center;font-size:14px}
+    .input-wrap{min-width:0;display:flex;align-items:center;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035);padding:12px 8px}
+    .input-wrap span{flex:0 0 auto;font-size:22px}
+    .input-wrap input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#fff;text-align:center;font-size:28px;padding:0}
+    .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+    .stat{min-width:0;border-radius:22px;background:rgba(255,255,255,.055);padding:16px 10px;text-align:center}
+    .stat span{display:block;color:#dce4ee;font-size:13px}.stat b{display:block;margin-top:5px;font-size:clamp(24px,7vw,38px);line-height:1;overflow-wrap:anywhere}
+    .warning{margin-top:12px;border:1px solid var(--line);border-radius:18px;padding:13px 14px;color:#dce4ee;font-size:14px;line-height:1.4}
+    .reset{width:100%;margin-top:12px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);color:#fff;padding:15px;font-weight:800}
+    .nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+    .nav a{min-width:0;border:1px solid var(--line);border-radius:16px;padding:12px 8px;text-align:center;color:#dfe7f1;text-decoration:none;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    @media(max-width:430px){.app{padding-left:10px;padding-right:10px}.brand{width:132px}.quick-grid{gap:6px}.input-wrap{padding:11px 5px}.input-wrap input{font-size:24px}.input-wrap span{font-size:19px}.decision{padding:22px 12px}.stats{gap:8px}.stat{padding:15px 8px}.nav a{font-size:12px;padding:11px 5px}}
   </style>
 </head>
 <body>
-  <main class="delivery-shell">
-    <header class="delivery-head">
-      <div><span class="eyebrow">BOOSTR LABS · TOOLS</span><h1>Delivery Check</h1></div>
-      <span class="delivery-meta">Meta: $20/h</span>
+  <main class="app">
+    <header class="topbar">
+      <a href="/app/" class="brand" aria-label="BOOSTR"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs"></a>
+      <a class="back" href="/app/" aria-label="Volver">←</a>
     </header>
 
-    <section class="decision" aria-live="polite">
-      <span class="eyebrow">DECISIÓN</span>
+    <p class="eyebrow">BOOSTR LABS · TOOLS</p>
+    <h1>Delivery Check</h1>
+
+    <section id="decisionCard" class="decision" aria-live="polite">
+      <span class="label">DECISIÓN</span>
       <strong id="decision">METE LA ORDEN</strong>
-      <small id="reason">Pago, minutos y millas.</small>
+      <p id="reason">Pago, minutos y millas.</p>
     </section>
 
     <section class="quick-grid" aria-label="Datos de la orden">
-      <div class="quick-field"><label for="pay">Paga</label><div class="quick-input"><span>$</span><input id="pay" inputmode="decimal" type="number" min="0" step="0.01" placeholder="16"></div></div>
-      <div class="quick-field"><label for="minutes">Min</label><div class="quick-input"><input id="minutes" inputmode="numeric" type="number" min="1" step="1" placeholder="45"></div></div>
-      <div class="quick-field"><label for="miles">Millas</label><div class="quick-input"><input id="miles" inputmode="decimal" type="number" min="0" step="0.1" placeholder="20"></div></div>
+      <div class="field"><label for="pay">Paga</label><div class="input-wrap"><span>$</span><input id="pay" inputmode="decimal" type="number" min="0" step="0.01" placeholder="16"></div></div>
+      <div class="field"><label for="minutes">Min</label><div class="input-wrap"><input id="minutes" inputmode="numeric" type="number" min="1" step="1" placeholder="45"></div></div>
+      <div class="field"><label for="miles">Millas</label><div class="input-wrap"><input id="miles" inputmode="decimal" type="number" min="0" step="0.1" placeholder="20"></div></div>
     </section>
 
     <section class="stats">
@@ -36,10 +72,14 @@
     </section>
 
     <div id="warning" class="warning" hidden></div>
-    <button id="reset" class="btn reset" type="button">NUEVA ORDEN</button>
-  </main>
+    <button id="reset" class="reset" type="button">NUEVA ORDEN</button>
 
-  <nav class="footer-nav" aria-label="BOOSTR navigation"><div class="footer-nav-inner"><a href="/home/">Inicio</a><a href="/modules/">Módulos</a><a class="active" href="/app/delivery-check/">Delivery</a></div></nav>
+    <nav class="nav" aria-label="BOOSTR navigation">
+      <a href="/app/">Inicio</a>
+      <a href="/modules/">Módulos</a>
+      <a href="/app/delivery-check/">Delivery</a>
+    </nav>
+  </main>
 
   <script>
     const pay=document.getElementById('pay');
@@ -50,31 +90,37 @@
     const hourly=document.getElementById('hourly');
     const perMile=document.getElementById('perMile');
     const warning=document.getElementById('warning');
+    const card=document.getElementById('decisionCard');
     const currency=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2});
 
+    function setState(type,title,copy){
+      card.className='decision'+(type?' '+type:'');
+      decision.textContent=title;
+      reason.textContent=copy;
+    }
+
     function evaluate(){
-      const p=Number(pay.value), m=Number(minutes.value), mi=Number(miles.value);
+      const p=Number(pay.value),m=Number(minutes.value),mi=Number(miles.value);
       if(!(p>0)||!(m>0)||!(mi>0)){
-        decision.textContent='METE LA ORDEN'; reason.textContent='Pago, minutos y millas.'; hourly.textContent='—'; perMile.textContent='—'; warning.hidden=true; return;
+        setState('','METE LA ORDEN','Pago, minutos y millas.');
+        hourly.textContent='—';perMile.textContent='—';warning.hidden=true;return;
       }
-      const hourlyRate=p/(m/60), mileRate=p/mi;
+      const hourlyRate=p/(m/60),mileRate=p/mi;
       hourly.textContent=currency.format(hourlyRate)+'/h';
       perMile.textContent=currency.format(mileRate);
 
       if(hourlyRate>=20){
-        decision.textContent='ACÉPTALA';
-        reason.textContent='Cumple tu meta mínima de $20 por hora.';
+        setState('good','ACÉPTALA','Cumple tu meta mínima de $20 por hora.');
       }else if(hourlyRate>=18){
-        decision.textContent='DECIDE SEGÚN MILLAS';
-        reason.textContent='Está cerca de tu meta; revisa si el recorrido vale la pena.';
+        setState('maybe','DECIDE SEGÚN MILLAS','Está cerca de tu meta; revisa si el recorrido vale la pena.');
       }else{
-        decision.textContent='ESPERA LA SIGUIENTE';
-        reason.textContent='No llega a tu meta mínima por hora.';
+        setState('bad','ESPERA LA SIGUIENTE','No llega a tu meta mínima por hora.');
       }
 
-      if(mileRate>=1.5){warning.textContent='Excelente recorrido: '+currency.format(mileRate)+' por milla.';warning.hidden=false;}
-      else if(mileRate>=1){warning.textContent='Recorrido aceptable: '+currency.format(mileRate)+' por milla.';warning.hidden=false;}
-      else{warning.textContent='Advertencia: muchas millas para este pago ('+currency.format(mileRate)+' por milla).';warning.hidden=false;}
+      if(mileRate>=1.5) warning.textContent='Excelente recorrido: '+currency.format(mileRate)+' por milla.';
+      else if(mileRate>=1) warning.textContent='Recorrido aceptable: '+currency.format(mileRate)+' por milla.';
+      else warning.textContent='Advertencia: muchas millas para este pago ('+currency.format(mileRate)+' por milla).';
+      warning.hidden=false;
     }
 
     [pay,minutes,miles].forEach(input=>input.addEventListener('input',evaluate));
