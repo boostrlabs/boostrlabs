@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Solicita tu pase de precio para un Toyota Camry Hybrid 2026 desde $499 al mes con $1,000 de entrada en Toyota of Hollywood">
+  <meta property="og:title" content="Camry Hybrid 2026 desde $499/mes">
+  <meta property="og:description" content="Toyota of Hollywood x La Chiqui">
+  <title>Camry Hybrid 2026 desde $499 | Toyota of Hollywood x La Chiqui</title>
+  <link rel="preload" href="/toyota/assets/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/lachiqui/live/assets/cars/camry.png" as="image">
+  <link rel="stylesheet" href="/lachiqui/camry/styles.css?v=20260728-1">
+  <script src="/lachiqui/camry/app.js?v=20260728-1" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <img class="dealer-logo" src="/toyota/assets/toh-logo-black-transparent-1000w.png" alt="TOH Team Toyota of Hollywood">
+      <span class="collab">× LA CHIQUI</span>
+      <div class="language" aria-label="Idioma">
+        <button class="lang active" type="button" data-lang="es">ES</button>
+        <button class="lang" type="button" data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="campaign">
+      <div class="offer-panel">
+        <div class="eyebrow" data-i18n="eyebrow">OFERTA ESPECIAL DE TIKTOK</div>
+        <div class="title-row">
+          <div>
+            <div class="tiny-label" data-i18n="yourToyota">TU TOYOTA</div>
+            <h1>CAMRY <span>HYBRID</span></h1>
+            <p class="model-year">2026 · CERO MILLAS</p>
+          </div>
+          <div class="price-lock">
+            <strong>72H</strong>
+            <span data-i18n="pricePass">PASE DE PRECIO</span>
+          </div>
+        </div>
+
+        <div class="vehicle-stage">
+          <div class="stage-glow"></div>
+          <img class="camry" src="/lachiqui/live/assets/cars/camry.png" alt="Toyota Camry Hybrid 2026">
+          <div class="chiqui-card">
+            <img src="/toyota/assets/la-chiqui-portrait.jpg" alt="La Chiqui">
+            <span>LA CHIQUI</span>
+          </div>
+        </div>
+
+        <div class="numbers">
+          <article class="number-card monthly">
+            <span data-i18n="monthlyFrom">PAGO MENSUAL DESDE</span>
+            <div class="amount"><sup>$</sup>499<small>/MES</small></div>
+          </article>
+          <article class="number-card down">
+            <span data-i18n="downLabel">ENTRADA DESDE</span>
+            <div class="amount"><sup>$</sup>1,000</div>
+            <small data-i18n="qualified">PARA CLIENTES QUE CALIFIQUEN</small>
+          </article>
+        </div>
+
+        <div class="offer-terms" data-i18n="offerTerms">$1,000 DE ENTRADA · 72 MESES · 6.99% APR ESTIMADO</div>
+
+        <div class="urgency">
+          <span class="urgency-dot"></span>
+          <div>
+            <strong data-i18n="freezeTitle">CONGELA TU PRECIO POR 72 HORAS</strong>
+            <p data-i18n="freezeCopy">Genera tu pase y preséntalo al equipo de La Chiqui antes de que expire</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="form-card" id="formulario">
+        <div class="form-head">
+          <div class="eyebrow">TOYOTA OF HOLLYWOOD × LA CHIQUI</div>
+          <h2 data-i18n="formTitle">RESERVA TU PRECIO</h2>
+          <p data-i18n="formSubtitle">Recibe tu pase QR de $499 válido por 72 horas</p>
+        </div>
+
+        <form id="lead-form" novalidate>
+          <input class="honeypot" type="text" name="company" tabindex="-1" autocomplete="off">
+          <div class="progress-meta">
+            <strong id="step-label">Paso 1 de 3</strong>
+            <strong id="progress-label">33%</strong>
+          </div>
+          <div class="progress"><span id="progress-bar"></span></div>
+
+          <section class="form-step active" data-step="1">
+            <label><span data-i18n="firstName">Nombre</span><input name="first_name" autocomplete="given-name" required></label>
+            <label><span data-i18n="lastName">Apellido</span><input name="last_name" autocomplete="family-name" required></label>
+          </section>
+
+          <section class="form-step" data-step="2">
+            <p class="helper" data-i18n="contactHelper">Completa por lo menos uno: teléfono o email</p>
+            <label><span data-i18n="phone">Teléfono</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel"></label>
+            <div class="or" data-i18n="or">O</div>
+            <label><span>Email</span><input name="email" type="email" inputmode="email" autocomplete="email"></label>
+          </section>
+
+          <section class="form-step" data-step="3">
+            <label>
+              <span data-i18n="score">Score de crédito aproximado</span>
+              <select name="score" required>
+                <option value="" data-i18n="select">Selecciona</option>
+                <option value="720+">720+</option>
+                <option value="680-719">680–719</option>
+                <option value="640-679">640–679</option>
+                <option value="Menos de 640" data-i18n="under640">Menos de 640</option>
+                <option value="No lo sé" data-i18n="unknown">No lo sé</option>
+              </select>
+            </label>
+            <label class="consent">
+              <input name="consent" type="checkbox">
+              <span data-i18n="consent">Acepto que Toyota of Hollywood y el equipo de La Chiqui me contacten sobre esta solicitud por llamada, mensaje de texto o email. El consentimiento no es condición de compra</span>
+            </label>
+          </section>
+
+          <div class="form-actions">
+            <button id="back-button" class="back" type="button" hidden data-i18n="back">ATRÁS</button>
+            <button id="next-button" class="primary" type="button" data-i18n="continue">CONTINUAR</button>
+            <button id="submit-button" class="primary" type="submit" hidden data-i18n="submit">GENERAR MI PASE</button>
+          </div>
+          <div id="form-error" class="form-error" role="alert" hidden></div>
+        </form>
+
+        <div class="dealer">
+          <strong>Toyota of Hollywood</strong>
+          <span>1841 N State Road 7, Hollywood, FL 33021</span>
+          <a href="tel:+17866820776">786-682-0776</a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="how">
+      <h2 data-i18n="howTitle">TU PRECIO EN 3 PASOS</h2>
+      <div class="how-grid">
+        <article><b>1</b><strong data-i18n="how1">Completa tus datos</strong></article>
+        <article><b>2</b><strong data-i18n="how2">Recibe tu QR al instante</strong></article>
+        <article><b>3</b><strong data-i18n="how3">Visita al equipo de La Chiqui en 72 horas</strong></article>
+      </div>
+    </section>
+
+    <footer>
+      <details>
+        <summary data-i18n="termsTitle">Términos importantes de la promoción</summary>
+        <p data-i18n="terms">Pago estimado desde $499 al mes por 72 meses con $1,000 de entrada, basado en precio promocional de vehículo elegible y financiamiento para clientes con crédito aprobado. Impuestos, título, registro, productos, opciones y cargos del dealer no incluidos. El pago real puede variar según vehículo, precio final, historial de crédito y aprobación. Sujeto a inventario y aprobación final. No todos califican. El pase identifica una solicitud promocional y no constituye aprobación, contrato ni reserva de vehículo. Los términos pueden cambiar sin previo aviso. Consulte al dealer para detalles finales por escrito</p>
+      </details>
+    </footer>
+  </main>
+
+  <div class="modal" id="pass-modal" hidden>
+    <div class="modal-backdrop"></div>
+    <section class="pass" role="dialog" aria-modal="true" aria-labelledby="pass-title">
+      <button class="close" id="close-modal" type="button" aria-label="Cerrar">×</button>
+      <div class="eyebrow" data-i18n="congrats">¡FELICIDADES!</div>
+      <h2 id="pass-title" data-i18n="passCreated">CONGELASTE TU PAGO</h2>
+      <div class="pass-price"><sup>$</sup>499 <small data-i18n="perMonth">AL MES</small></div>
+      <img class="pass-car" src="/lachiqui/live/assets/cars/camry.png" alt="Toyota Camry Hybrid 2026">
+      <p data-i18n="passInstructions">Muestra este QR al equipo de La Chiqui cuando llegues</p>
+      <div class="qr"><img id="qr-code" alt="Código QR de validación"></div>
+      <strong id="pass-code"></strong>
+      <div class="expiration">
+        <span data-i18n="expiresIn">TU PASE EXPIRA EN</span>
+        <div id="pass-countdown">72:00:00</div>
+      </div>
+      <button id="save-qr" class="primary" type="button" data-i18n="save">GUARDAR MI QR</button>
+      <small class="pass-note" data-i18n="passNote">Válido por 72 horas · sujeto a aprobación e inventario</small>
+    </section>
+  </div>
+</body>
+</html>
