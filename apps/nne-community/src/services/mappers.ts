@@ -39,6 +39,7 @@ export function mapQuest(row: Raw): Quest {
     platform: String(row.platform),
     title: String(row.title),
     description: String(row.description),
+    sourceUrl: row.source_url || null,
     rewardCredits: Number(row.reward_credits || 0),
     rewardXp: Number(row.reward_xp || row.reward_credits || 0),
     status: row.status,
