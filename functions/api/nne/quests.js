@@ -1,9 +1,17 @@
 import { jsonOk, requireNneSession } from "../../_lib/nne-api.js";
 import { nnePeriodKey, questStatusForUser } from "../../_lib/nne-community.js";
+import { ensureNneSeason001 } from "../../_lib/nne-season-001.js";
+
+function sourceUrl(description = "") {
+  const match = String(description).match(/https?:\/\/[^\s]+/);
+  return match ? match[0] : null;
+}
 
 export async function onRequestGet({ request, env }) {
   const auth = await requireNneSession(request, env);
   if (!auth.ok) return auth.response;
+
+  await ensureNneSeason001(env);
 
   const result = await env.DB.prepare(
     `SELECT
@@ -40,6 +48,7 @@ export async function onRequestGet({ request, env }) {
       platform: row.platform,
       title: row.title,
       description: row.description,
+      source_url: sourceUrl(row.description),
       icon: row.icon,
       reward_credits: Number(row.reward_credits),
       reward_xp: Number(row.reward_xp),
@@ -71,5 +80,14 @@ export async function onRequestGet({ request, env }) {
     });
   }
 
-  return jsonOk({ quests });
+  return jsonOk({
+    season: {
+      id: "001",
+      name: "ROAD TO WESTDETRO",
+      release_date: "2026-08-28",
+      philosophy: "Participar suma. Esforzarte multiplica.",
+      standard_weekly_cap: 15000
+    },
+    quests
+  });
 }
