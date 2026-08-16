@@ -28,16 +28,8 @@ export function QuestModal({ quest, referralCode, onClose, onChanged }: QuestMod
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setPhase("intro");
-    setFile(null);
-    setNote("");
-    setSessionId(null);
-    setUnlockAt(null);
-    setQuestions([]);
-    setAnswers({});
-    setScore(0);
-    setPassed(false);
-    setError("");
+    setPhase("intro"); setFile(null); setNote(""); setSessionId(null); setUnlockAt(null);
+    setQuestions([]); setAnswers({}); setScore(0); setPassed(false); setError("");
   }, [quest]);
 
   useEffect(() => {
@@ -48,10 +40,7 @@ export function QuestModal({ quest, referralCode, onClose, onChanged }: QuestMod
       if (remaining === 0 && sessionId) {
         setBusy(true);
         triviaService.get(sessionId)
-          .then((result) => {
-            setQuestions(result.questions);
-            setPhase("trivia");
-          })
+          .then((result) => { setQuestions(result.questions); setPhase("trivia"); })
           .catch((caught) => setError(caught instanceof Error ? caught.message : "No pudimos abrir la trivia."))
           .finally(() => setBusy(false));
       }
@@ -65,15 +54,10 @@ export function QuestModal({ quest, referralCode, onClose, onChanged }: QuestMod
   if (!quest) return null;
 
   const run = async (action: () => Promise<void>) => {
-    setBusy(true);
-    setError("");
-    try {
-      await action();
-    } catch (caught) {
-      setError(caught instanceof ApiError || caught instanceof Error ? caught.message : "Algo salió mal.");
-    } finally {
-      setBusy(false);
-    }
+    setBusy(true); setError("");
+    try { await action(); }
+    catch (caught) { setError(caught instanceof ApiError || caught instanceof Error ? caught.message : "Algo salió mal."); }
+    finally { setBusy(false); }
   };
 
   const start = () => run(async () => {
@@ -81,9 +65,7 @@ export function QuestModal({ quest, referralCode, onClose, onChanged }: QuestMod
     if (quest.verificationMethod === "trivia" && result.trivia_session) {
       setSessionId(result.trivia_session.id);
       setUnlockAt(result.trivia_session.unlock_at);
-      setSecondsLeft(Math.max(0, Math.ceil(
-        (new Date(result.trivia_session.unlock_at).getTime() - Date.now()) / 1000
-      )));
+      setSecondsLeft(Math.max(0, Math.ceil((new Date(result.trivia_session.unlock_at).getTime() - Date.now()) / 1000)));
       if (quest.song?.listenUrl) window.open(quest.song.listenUrl, "_blank", "noopener,noreferrer");
       setPhase("timer");
     }
@@ -100,9 +82,7 @@ export function QuestModal({ quest, referralCode, onClose, onChanged }: QuestMod
   const submitTrivia = () => run(async () => {
     if (!sessionId) throw new Error("La sesión de trivia no está disponible.");
     const result = await triviaService.submit(sessionId, answers);
-    setScore(result.score);
-    setPassed(result.passed);
-    setPhase("result");
+    setScore(result.score); setPassed(result.passed); setPhase("result");
     if (result.passed) await onChanged(`+${result.reward_credits} NNE Credits.`);
   });
 
@@ -117,107 +97,51 @@ export function QuestModal({ quest, referralCode, onClose, onChanged }: QuestMod
     <div className="modal-backdrop" onMouseDown={onClose}>
       <section className="modal-card" onMouseDown={(event) => event.stopPropagation()}>
         <header className="modal-header">
-          <div><div className="eyebrow">Quest</div><h2>{quest.title}</h2></div>
+          <div><div className="eyebrow">Quest · Season 001</div><h2>{quest.title}</h2></div>
           <button className="icon-button" onClick={onClose} aria-label="Cerrar">×</button>
         </header>
         {error && <div className="form-error">{error}</div>}
 
         {quest.verificationMethod === "manual" && (
           <>
-            <p>{quest.description}</p>
+            <p style={{ whiteSpace: "pre-line" }}>{quest.description}</p>
+            {quest.sourceUrl && <a className="primary-button full" href={quest.sourceUrl} target="_blank" rel="noreferrer" style={{ display: "block", textAlign: "center", marginBottom: 14 }}>Abrir contenido oficial</a>}
             <label className="upload-zone">
               <strong>{file ? file.name : "Subir screenshot"}</strong>
               <span>PNG, JPG o WEBP · máximo 10 MB</span>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(event) => setFile(event.target.files?.[0] || null)}
-              />
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setFile(event.target.files?.[0] || null)} />
             </label>
-            <textarea
-              className="field"
-              placeholder="Nota opcional para el equipo NNE"
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-            />
-            <button className="primary-button full" disabled={busy || !file} onClick={uploadEvidence}>
-              {busy ? "Enviando…" : "Enviar evidencia"}
-            </button>
+            <textarea className="field" placeholder="Para Creator Quest: pega aquí el link del TikTok/Reel. Nota adicional opcional." value={note} onChange={(event) => setNote(event.target.value)} />
+            <button className="primary-button full" disabled={busy || !file} onClick={uploadEvidence}>{busy ? "Enviando…" : "Enviar evidencia"}</button>
           </>
         )}
 
         {quest.verificationMethod === "referral" && (
           <>
-            <p>{quest.description}</p>
-            <div className="referral-code">{referralCode || "Preparando enlace…"}</div>
-            <button className="primary-button full" disabled={busy || !referralCode} onClick={copyReferral}>
-              Copiar enlace personal
-            </button>
+            <p>{quest.description}</p><div className="referral-code">{referralCode || "Preparando enlace…"}</div>
+            <button className="primary-button full" disabled={busy || !referralCode} onClick={copyReferral}>Copiar enlace personal</button>
           </>
         )}
 
         {quest.verificationMethod === "trivia" && phase === "intro" && (
           <>
             <p>{quest.description}</p>
-            <div className="quest-rules">
-              <div><span>01</span> Abre la canción desde el enlace oficial.</div>
-              <div><span>02</span> Escucha al menos {quest.minimumListenSeconds} segundos.</div>
-              <div><span>03</span> Supera la trivia con {quest.passPercentage}% o más.</div>
-            </div>
-            <button className="primary-button full" disabled={busy} onClick={start}>
-              {busy ? "Preparando…" : "Abrir canción y comenzar"}
-            </button>
+            <div className="quest-rules"><div><span>01</span> Abre la canción desde el enlace oficial.</div><div><span>02</span> Escucha al menos {quest.minimumListenSeconds} segundos.</div><div><span>03</span> Supera la trivia con {quest.passPercentage}% o más.</div></div>
+            <button className="primary-button full" disabled={busy} onClick={start}>{busy ? "Preparando…" : "Abrir canción y comenzar"}</button>
           </>
         )}
 
-        {quest.verificationMethod === "trivia" && phase === "timer" && (
-          <div className="listening-timer">
-            <div className="eyebrow">Listening mode</div>
-            <strong>{secondsLeft}s</strong>
-            <p>{busy ? "Cargando trivia…" : "La trivia se desbloquea al terminar el contador."}</p>
-          </div>
-        )}
+        {quest.verificationMethod === "trivia" && phase === "timer" && <div className="listening-timer"><div className="eyebrow">Listening mode</div><strong>{secondsLeft}s</strong><p>{busy ? "Cargando trivia…" : "La trivia se desbloquea al terminar el contador."}</p></div>}
 
         {quest.verificationMethod === "trivia" && phase === "trivia" && (
           <>
             <div className="quiz-progress">{answeredCount} / {questions.length} respondidas</div>
-            <div className="quiz-list">
-              {questions.map((question, questionIndex) => (
-                <article className="quiz-question" key={question.id}>
-                  <strong>{questionIndex + 1}. {question.prompt}</strong>
-                  <div className="quiz-options">
-                    {question.options.map((option) => (
-                      <button
-                        key={option.id}
-                        className={answers[question.id] === option.id ? "quiz-option selected" : "quiz-option"}
-                        onClick={() => setAnswers((current) => ({ ...current, [question.id]: option.id }))}
-                      >
-                        {option.text}
-                      </button>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-            <button
-              className="primary-button full"
-              disabled={busy || answeredCount !== questions.length}
-              onClick={submitTrivia}
-            >
-              {busy ? "Calificando…" : "Enviar respuestas"}
-            </button>
+            <div className="quiz-list">{questions.map((question, questionIndex) => <article className="quiz-question" key={question.id}><strong>{questionIndex + 1}. {question.prompt}</strong><div className="quiz-options">{question.options.map((option) => <button key={option.id} className={answers[question.id] === option.id ? "quiz-option selected" : "quiz-option"} onClick={() => setAnswers((current) => ({ ...current, [question.id]: option.id }))}>{option.text}</button>)}</div></article>)}</div>
+            <button className="primary-button full" disabled={busy || answeredCount !== questions.length} onClick={submitTrivia}>{busy ? "Calificando…" : "Enviar respuestas"}</button>
           </>
         )}
 
-        {quest.verificationMethod === "trivia" && phase === "result" && (
-          <div className="quiz-result">
-            <div className="eyebrow">Resultado</div>
-            <strong>{score}%</strong>
-            <h3>{passed ? "Quest completada." : "Todavía no."}</h3>
-            <p>{passed ? `Ganaste ${quest.rewardCredits} NNE Credits.` : "Escucha nuevamente y vuelve a intentarlo mañana."}</p>
-            <button className="primary-button full" onClick={onClose}>Cerrar</button>
-          </div>
-        )}
+        {quest.verificationMethod === "trivia" && phase === "result" && <div className="quiz-result"><div className="eyebrow">Resultado</div><strong>{score}%</strong><h3>{passed ? "Quest completada." : "Todavía no."}</h3><p>{passed ? `Ganaste ${quest.rewardCredits} NNE Credits.` : "Escucha nuevamente y vuelve a intentarlo mañana."}</p><button className="primary-button full" onClick={onClose}>Cerrar</button></div>}
       </section>
     </div>
   );
