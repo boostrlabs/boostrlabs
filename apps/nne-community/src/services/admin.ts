@@ -13,6 +13,9 @@ export const adminService = {
     method: "PATCH",
     body: JSON.stringify({ action, reason, quality, performance })
   }),
+  reviewers: () => apiRequest<any>("/admin/reviewers"),
+  assignReviewer: (username: string, artist_slug: "janko" | "gemese" | "xiam") =>
+    apiRequest<any>("/admin/reviewers", { method: "POST", body: JSON.stringify({ username, artist_slug }) }),
   quests: () => apiRequest<any>("/admin/quests"),
   createQuest: (payload: Record<string, unknown>) =>
     apiRequest<any>("/admin/quests", { method: "POST", body: JSON.stringify(payload) }),
