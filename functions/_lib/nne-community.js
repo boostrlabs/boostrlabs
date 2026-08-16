@@ -44,6 +44,26 @@ export async function getNneQuest(env, questId) {
     .first();
 }
 
+function mondayIso(timestamp) {
+  const date = new Date(timestamp);
+  const weekday = date.getUTCDay() || 7;
+  date.setUTCHours(0, 0, 0, 0);
+  date.setUTCDate(date.getUTCDate() - weekday + 1);
+  return date.toISOString();
+}
+
+async function seasonBaseAward(env, userId, quest, timestamp) {
+  const requested = Number(quest.reward_credits || 0);
+  if (!String(quest.id || "").startsWith("s1_")) return requested;
+  const row = await env.DB.prepare(
+    `SELECT COALESCE(SUM(amount),0) AS earned
+     FROM nne_credit_transactions
+     WHERE user_id = ? AND kind = 'quest_reward' AND amount > 0 AND created_at >= ?`
+  ).bind(userId, mondayIso(timestamp)).first();
+  const remaining = Math.max(0, 15000 - Number(row?.earned || 0));
+  return Math.min(requested, remaining);
+}
+
 export async function completeNneQuest(env, {
   attemptId,
   userId,
@@ -55,10 +75,9 @@ export async function completeNneQuest(env, {
 }) {
   const timestamp = now();
   const today = timestamp.slice(0, 10);
-  const transactionId = crypto.randomUUID();
+  const credited = await seasonBaseAward(env, userId, quest, timestamp);
   const feedId = crypto.randomUUID();
-
-  await env.DB.batch([
+  const statements = [
     ...leadingStatements,
     env.DB.prepare(
       `UPDATE nne_quest_attempts
@@ -74,20 +93,28 @@ export async function completeNneQuest(env, {
       timestamp,
       attemptId,
       userId
-    ),
-    env.DB.prepare(
+    )
+  ];
+
+  if (credited > 0) {
+    statements.push(env.DB.prepare(
       `INSERT INTO nne_credit_transactions (
         id, user_id, amount, kind, source_type, source_id, description, actor_user_id, created_at
       ) VALUES (?, ?, ?, 'quest_reward', 'quest_attempt', ?, ?, ?, ?)`
     ).bind(
-      transactionId,
+      crypto.randomUUID(),
       userId,
-      Number(quest.reward_credits),
+      credited,
       attemptId,
-      `Quest completada: ${quest.title}`,
+      credited < Number(quest.reward_credits || 0)
+        ? `Quest completada: ${quest.title} · weekly cap applied`
+        : `Quest completada: ${quest.title}`,
       actorUserId,
       timestamp
-    ),
+    ));
+  }
+
+  statements.push(
     env.DB.prepare(
       `UPDATE nne_profiles
        SET xp = xp + ?,
@@ -120,7 +147,10 @@ export async function completeNneQuest(env, {
       FROM nne_users u
       WHERE u.id = ?`
     ).bind(feedId, quest.title, attemptId, timestamp, userId)
-  ]);
+  );
+
+  await env.DB.batch(statements);
+  return { credited, weekly_cap: String(quest.id || "").startsWith("s1_") ? 15000 : null };
 }
 
 export function parseOptions(value) {
