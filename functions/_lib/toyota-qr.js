@@ -42,7 +42,7 @@ const randomCode = () => {
   return `TOH-${[...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("").toUpperCase()}`;
 };
 
-export async function createToyotaPass(env, lead) {
+export async function createToyotaPass(env, lead, options = {}) {
   const secret = signingSecret(env);
   if (!secret) throw new Error("toyota_qr_secret_missing");
 
@@ -57,8 +57,8 @@ export async function createToyotaPass(env, lead) {
     phone4: phoneDigits.slice(-4),
     issuedAt: issuedAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
-    campaign: "TOYOTA OF HOLLYWOOD X LA CHIQUI",
-    vehicle: "2026 Toyota Tacoma SR5"
+    campaign: clean(options.campaign, 160) || "TOYOTA OF HOLLYWOOD X LA CHIQUI",
+    vehicle: clean(options.vehicle, 160) || "2026 Toyota Tacoma SR5"
   };
 
   const body = toBase64Url(encoder.encode(JSON.stringify(payload)));

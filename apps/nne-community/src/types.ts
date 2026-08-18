@@ -40,6 +40,7 @@ export interface Quest {
   platform: string;
   title: string;
   description: string;
+  sourceUrl?: string | null;
   rewardCredits: number;
   rewardXp: number;
   status: QuestStatus;

@@ -3,11 +3,19 @@ import { apiRequest } from "./api";
 export const adminService = {
   overview: () => apiRequest<any>("/admin/overview"),
   evidence: (status = "pending") => apiRequest<any>(`/admin/evidence?status=${status}`),
-  reviewEvidence: (attemptId: string, action: "approve" | "reject", reason = "") =>
-    apiRequest<any>(`/admin/evidence/${encodeURIComponent(attemptId)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ action, reason })
-    }),
+  reviewEvidence: (
+    attemptId: string,
+    action: "approve" | "reject",
+    reason = "",
+    quality: "completed" | "good" | "standout" | "exceptional" = "completed",
+    performance: "normal" | "strong" | "breakout" | "viral" = "normal"
+  ) => apiRequest<any>(`/admin/evidence/${encodeURIComponent(attemptId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ action, reason, quality, performance })
+  }),
+  reviewers: () => apiRequest<any>("/admin/reviewers"),
+  assignReviewer: (username: string, artist_slug: "janko" | "gemese" | "xiam") =>
+    apiRequest<any>("/admin/reviewers", { method: "POST", body: JSON.stringify({ username, artist_slug }) }),
   quests: () => apiRequest<any>("/admin/quests"),
   createQuest: (payload: Record<string, unknown>) =>
     apiRequest<any>("/admin/quests", { method: "POST", body: JSON.stringify(payload) }),

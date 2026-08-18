@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eb0a1e">
+  <title>La Chiqui x Toyota of Hollywood — Estimador Live</title>
+  <link rel="preload" href="/toyota/assets/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=20260725-3">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark">LC</div>
+        <div>
+          <strong>LA CHIQUI <span>×</span> TOYOTA OF HOLLYWOOD</strong>
+          <small>ESTIMADOR PARA TIKTOK LIVE</small>
+        </div>
+      </div>
+      <div class="live-pill"><i></i> EN VIVO</div>
+    </header>
+
+    <section class="hero-title">
+      <span>ESCOGE TU TOYOTA</span>
+      <h1>TE DOY UN ESTIMADO DE<br><em>PAGO MENSUAL + DOWN PAYMENT</em></h1>
+      <p>Comenta el modelo que quieres y tu score aproximado.</p>
+    </section>
+
+    <section class="live-grid">
+      <article class="result-stage" id="resultStage">
+        <div class="vehicle-head">
+          <div>
+            <span class="kicker">TU TOYOTA</span>
+            <h2 id="vehicleName">RAV4</h2>
+            <p id="vehicleType">SUV</p>
+          </div>
+          <div class="score-chip">SCORE <strong id="scoreLabel">720+</strong></div>
+        </div>
+
+        <div class="vehicle-visual">
+          <img id="vehicleImage" src="assets/cars/rav4.png" alt="Toyota RAV4">
+          <div class="glow"></div>
+        </div>
+
+        <div class="numbers" aria-live="polite">
+          <div class="number-card payment-card">
+            <span>PAGO ESTIMADO DESDE</span>
+            <div class="amount"><sup>$</sup><strong id="monthlyPayment">499</strong><small>/MES</small></div>
+          </div>
+          <div class="number-card down-card" id="downCard">
+            <span>DOWN PAYMENT ESTIMADO</span>
+            <div class="amount"><sup>$</sup><strong id="downPayment">0</strong></div>
+            <b id="downHeadline">$0 DOWN POSIBLE</b>
+          </div>
+        </div>
+
+        <div class="cta-strip">
+          <strong>COMENTA: MODELO + SCORE + ZIP CODE</strong>
+          <span>Ejemplo: “RAV4 · 680 · 33024”</span>
+        </div>
+
+        <p class="estimate-basis" id="estimateBasis">72 MESES · APR SEGÚN PROGRAMA · PRECIO LIVE</p>
+        <p class="disclaimer">Pago estimado “desde” con precio promocional hasta $3,000 bajo MSRP. Impuestos, título, registro, productos y cargos no incluidos. Sujeto a vehículo elegible, inventario, crédito y aprobación final. No todos califican. No constituye una oferta de financiamiento.</p>
+      </article>
+
+      <aside class="control-panel" id="controls">
+        <div class="panel-head">
+          <span>ESTIMADO PERSONALIZADO</span>
+          <h3>Elige tu Toyota</h3>
+        </div>
+
+        <label>Modelo Toyota
+          <select id="modelSelect"></select>
+        </label>
+
+        <label>Score aproximado
+          <select id="scoreSelect">
+            <option value="excellent">720+</option>
+            <option value="good">660–719</option>
+            <option value="fair">600–659</option>
+            <option value="challenged">Menos de 600</option>
+          </select>
+        </label>
+
+        <div class="control-row">
+          <label>Plazo
+            <select id="termSelect">
+              <option value="72">72 meses</option>
+            </select>
+          </label>
+          <label>Precio / MSRP
+            <input id="priceInput" type="number" min="10000" step="100" value="30500" inputmode="numeric">
+          </label>
+        </div>
+
+        <button id="calculateButton" class="calculate" type="button">CALCULAR PAGO</button>
+        <button id="fullscreenButton" class="secondary" type="button" aria-pressed="false">VER RESULTADO COMPLETO</button>
+      </aside>
+    </section>
+  </main>
+
+  <script src="data.js?v=20260725-3"></script>
+  <script src="app.js?v=20260725-3"></script>
+</body>
+</html>

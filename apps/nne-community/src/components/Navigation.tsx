@@ -49,7 +49,7 @@ export function Navigation() {
       </aside>
 
       <nav className="mobile-navigation">
-        {visibleItems.slice(0, 5).map((item) => (
+        {visibleItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

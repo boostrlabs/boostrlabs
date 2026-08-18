@@ -1,8 +1,11 @@
 import { jsonOk, requireNneSession } from "../../_lib/nne-api.js";
+import { ensureNneSeason001 } from "../../_lib/nne-season-001.js";
 
 export async function onRequestGet({ request, env }) {
   const auth = await requireNneSession(request, env);
   if (!auth.ok) return auth.response;
+
+  await ensureNneSeason001(env);
 
   const result = await env.DB.prepare(
     `SELECT
@@ -24,6 +27,7 @@ export async function onRequestGet({ request, env }) {
   return jsonOk({
     credits: auth.user.credits,
     level: auth.user.level,
+    season: { id: "001", name: "ROAD TO WESTDETRO", ends_at: "2026-08-29T04:00:00.000Z" },
     rewards: (result.results || []).map((row) => ({
       id: row.id,
       name: row.name,

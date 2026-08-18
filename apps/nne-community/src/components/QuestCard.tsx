@@ -1,4 +1,5 @@
 import type { Quest } from "../types";
+import { VisualMedia } from "./VisualMedia";
 
 interface QuestCardProps {
   quest: Quest;
@@ -17,7 +18,11 @@ export function QuestCard({ quest, onOpen }: QuestCardProps) {
     <article className="card quest-card">
       <div>
         <div className="quest-header">
-          <div className="quest-icon">{quest.icon}</div>
+          {quest.song?.artworkUrl ? (
+            <VisualMedia className="quest-art" src={quest.song.artworkUrl} alt={`Portada de ${quest.song.title}`} fallback={quest.icon} />
+          ) : (
+            <div className="quest-icon">{quest.icon}</div>
+          )}
           <div className="tag">{quest.platform}</div>
         </div>
         <h3>{quest.title}</h3>

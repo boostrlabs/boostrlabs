@@ -2,7 +2,9 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import { useAuth } from "./context/AuthContext";
 import { AdminPage } from "./pages/AdminPage";
+import { AdminReviewersPage } from "./pages/AdminReviewersPage";
 import { AuthPage } from "./pages/AuthPage";
+import { ReviewPage } from "./pages/ReviewPage";
 import {
   FeedPage,
   HomePage,
@@ -31,9 +33,11 @@ export default function App() {
         <Route path="feed" element={<FeedPage />} />
         <Route path="rewards" element={<RewardsPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="review" element={<ReviewPage />} />
       </Route>
       <Route element={<RequireAuth admin />}>
         <Route path="admin" element={<AdminPage />} />
+        <Route path="admin/reviewers" element={<AdminReviewersPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

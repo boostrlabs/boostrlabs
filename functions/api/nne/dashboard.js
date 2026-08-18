@@ -1,9 +1,17 @@
 import { initials, nnePeriodKey, questStatusForUser } from "../../_lib/nne-community.js";
 import { jsonOk, requireNneSession } from "../../_lib/nne-api.js";
+import { ensureNneSeason001 } from "../../_lib/nne-season-001.js";
+
+function sourceUrl(description = "") {
+  const match = String(description).match(/https?:\/\/[^\s]+/);
+  return match ? match[0] : null;
+}
 
 export async function onRequestGet({ request, env }) {
   const auth = await requireNneSession(request, env);
   if (!auth.ok) return auth.response;
+
+  await ensureNneSeason001(env);
 
   const [questRows, feedRows, leaderRows, referral, referralReward] = await Promise.all([
     env.DB.prepare(
@@ -62,10 +70,12 @@ export async function onRequestGet({ request, env }) {
       platform: quest.platform,
       title: quest.title,
       description: quest.description,
+      source_url: sourceUrl(quest.description),
       icon: quest.icon,
       reward_credits: Number(quest.reward_credits),
       reward_xp: Number(quest.reward_xp),
       verification_method: quest.verification_method,
+      minimum_level: Number(quest.minimum_level || 1),
       status: questStatusForUser(quest, attempt, auth.user.level),
       attempt: attempt || null
     });
@@ -82,6 +92,12 @@ export async function onRequestGet({ request, env }) {
   }));
 
   return jsonOk({
+    season: {
+      id: "001",
+      name: "ROAD TO WESTDETRO",
+      release_date: "2026-08-28",
+      philosophy: "Participar suma. Esforzarte multiplica."
+    },
     user: {
       ...auth.user,
       initials: initials(auth.user.name),
