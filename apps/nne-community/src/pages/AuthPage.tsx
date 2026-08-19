@@ -78,8 +78,10 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
       <section className="auth-brand">
         <CollabBrand />
         <div className="eyebrow">NNE × WESTDETRO Community</div>
-        <h1>Move different.</h1>
-        <p>Acciones reales. Progreso visible. Acceso que se gana.</p>
+        <h1>Hazlo real.</h1>
+        <p>Cumple tareas cortas, farmea NNE Credits y cámbialos por ropa, beats, producciones y otros rewards sin sacar dinero de tu bolsillo.</p>
+        <p className="auth-brand-secondary">También hacemos sorteos para los miembros que se mantienen activos.</p>
+        <strong className="auth-manifesto">De artistas haciéndolo real, para artistas que quieren hacerlo real.</strong>
       </section>
       <section className="card auth-card">
         <div className="eyebrow">{mode === "login" ? "Bienvenido de vuelta" : "Entra al movimiento"}</div>
@@ -131,6 +133,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             />
           </label>
           <label>Contraseña<input name="password" type="password" className="field" required minLength={10} autoComplete={mode === "login" ? "current-password" : "new-password"} /></label>
+          {mode === "login" && <Link className="forgot-password-link" to="/forgot-password">¿Olvidaste tu contraseña?</Link>}
           <button
             className="primary-button full"
             disabled={busy || Boolean(referralCode && (referralLoading || !referralPreview))}

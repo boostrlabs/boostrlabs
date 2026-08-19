@@ -33,6 +33,20 @@ export const usersService = {
   async logout(): Promise<void> {
     await apiRequest("/auth/session", { method: "DELETE" });
   },
+  async requestPasswordReset(identifier: string, channel: "email" | "sms" = "email"): Promise<string> {
+    const result = await apiRequest<{ message: string }>("/auth/password/forgot", {
+      method: "POST",
+      body: JSON.stringify({ identifier, channel })
+    });
+    return result.message;
+  },
+  async resetPassword(token: string, password: string): Promise<string> {
+    const result = await apiRequest<{ message: string }>("/auth/password/reset", {
+      method: "POST",
+      body: JSON.stringify({ token, password })
+    });
+    return result.message;
+  },
   async dashboard(): Promise<DashboardData> {
     return mapDashboard(await apiRequest<any>("/dashboard"));
   },

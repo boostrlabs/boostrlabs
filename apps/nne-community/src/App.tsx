@@ -5,6 +5,7 @@ import { useAuth } from "./context/AuthContext";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminReviewersPage } from "./pages/AdminReviewersPage";
 import { AuthPage } from "./pages/AuthPage";
+import { ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordRecoveryPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import {
   FeedPage,
@@ -28,6 +29,8 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<AuthPage mode="login" />} />
       <Route path="/signup" element={<AuthPage mode="signup" />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route element={<RequireAuth />}>
         <Route index element={<HomePage />} />
         <Route path="quests" element={<QuestsPage />} />

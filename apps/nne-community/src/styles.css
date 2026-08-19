@@ -763,6 +763,15 @@ select.field { color-scheme: dark; }
   border-radius: 12px;
   background: rgba(111,15,24,.2);
 }
+.form-success {
+  margin: 14px 0;
+  padding: 12px 14px;
+  color: #b9e7c7;
+  border: 1px solid rgba(70,176,108,.25);
+  border-radius: 12px;
+  background: rgba(25,91,49,.18);
+  line-height: 1.5;
+}
 
 .auth-shell {
   width: min(1120px, calc(100% - 32px));
@@ -776,6 +785,17 @@ select.field { color-scheme: dark; }
 .auth-brand .collab-brand { margin-bottom: 26px; }
 .auth-brand h1 { font-size: clamp(3.5rem, 8vw, 7.5rem); }
 .auth-brand p { max-width: 500px; color: var(--muted); font-size: 1.2rem; }
+.auth-brand .auth-brand-secondary { margin-top: 12px; font-size: 1rem; }
+.auth-manifesto {
+  display: block;
+  max-width: 520px;
+  margin-top: 24px;
+  color: var(--gold-light);
+  font-size: .85rem;
+  line-height: 1.55;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
 .auth-card { padding: 32px; }
 .auth-card h2 { margin: 8px 0; font-size: 2rem; }
 .auth-note { color: var(--muted); line-height: 1.5; }
@@ -807,8 +827,38 @@ select.field { color-scheme: dark; }
 .form-stack label, .admin-form label { color: #d7d7da; font-size: .82rem; }
 .form-stack label .field, .admin-form label .field { margin-top: 7px; }
 .form-stack label span { color: var(--muted); }
+.forgot-password-link {
+  justify-self: end;
+  margin-top: -5px;
+  color: var(--gold-light);
+  font-size: .82rem;
+}
 .auth-switch { margin: 20px 0 0; color: var(--muted); text-align: center; }
 .auth-switch a { color: var(--gold-light); }
+.recovery-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 20px;
+}
+.recovery-methods button {
+  min-height: 48px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.02);
+}
+.recovery-methods button.active { color: #111; border-color: var(--gold); background: var(--gold-light); }
+.recovery-methods small { display: block; margin-top: 2px; font-size: .62rem; text-transform: uppercase; }
+.sms-coming-soon {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.02);
+}
+.sms-coming-soon p { margin: 8px 0 0; color: var(--muted); font-size: .88rem; line-height: 1.55; }
+.button-link { display: flex; margin-top: 18px; text-decoration: none; }
 .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
 .admin-metrics {
@@ -890,6 +940,7 @@ select.field { color-scheme: dark; }
   .auth-brand { text-align: center; }
   .auth-brand .collab-brand { margin-left: auto; margin-right: auto; }
   .auth-brand p { margin-left: auto; margin-right: auto; }
+  .auth-manifesto { margin-left: auto; margin-right: auto; }
   .profile-avatar { margin: auto; }
   .profile-card { text-align: center; }
   .profile-stats { grid-template-columns: repeat(2, 1fr); }

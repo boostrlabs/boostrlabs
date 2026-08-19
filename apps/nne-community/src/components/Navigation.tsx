@@ -23,7 +23,7 @@ export function Navigation() {
           <CollabBrand compact />
           <div>
             <strong>NNE × WESTDETRO</strong>
-            <span>Community · Move different.</span>
+            <span>Community · Hazlo real.</span>
           </div>
         </div>
 
