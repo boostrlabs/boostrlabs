@@ -356,6 +356,21 @@ main {
   padding: 0 clamp(22px, 7vw, 110px) clamp(80px, 10vw, 150px);
   background: #070707;
 }
+.official-tracklist {
+  background: #060606;
+}
+.official-tracklist figure {
+  width: min(100%, 1320px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #090909;
+}
+.official-tracklist img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 .visual-film video {
   display: block;
   width: 100%;
