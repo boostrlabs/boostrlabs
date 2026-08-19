@@ -213,6 +213,35 @@ h1 {
   background: linear-gradient(90deg, #0b0809 0%, transparent 50%);
   pointer-events: none;
 }
+.music-strip {
+  margin: 20px 0 34px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.music-strip article {
+  position: relative;
+  min-height: 150px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #0a0a0b;
+}
+.music-strip .visual-media { position: absolute; inset: 0; }
+.music-strip .visual-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,.86), transparent 62%);
+}
+.music-strip strong {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  z-index: 2;
+  font-size: .78rem;
+  letter-spacing: .12em;
+}
 .hero-grid {
   display: grid;
   grid-template-columns: 1.5fr .9fr;
@@ -458,6 +487,12 @@ h1 {
   gap: 14px;
 }
 .reward-card { padding: 18px; }
+.reward-visuals.has-variants {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.reward-visuals.has-variants .reward-art { aspect-ratio: 1; }
 .reward-art {
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -862,6 +897,7 @@ select.field { color-scheme: dark; }
   .progress-track { width: 100%; }
   .economy-tip { grid-template-columns: 1fr; }
   .economy-tip small { grid-column: auto; }
+  .music-strip { grid-template-columns: 1fr 1fr 1fr; }
   .mobile-navigation {
     position: fixed;
     left: 14px;
@@ -926,6 +962,9 @@ select.field { color-scheme: dark; }
   .quest-card footer strong, .reward-card footer strong { max-width: 55%; }
   .primary-button, .reward-card button { min-height: 44px; }
   .reward-art { min-height: 185px; }
+  .music-strip { grid-template-columns: 1fr; }
+  .music-strip article { min-height: 210px; }
+  .reward-visuals.has-variants .reward-art { min-height: 150px; }
   .profile-stats { gap: 8px; }
   .profile-stats > div { padding: 12px 10px; }
   .referral-actions .text-button { min-height: 44px; }

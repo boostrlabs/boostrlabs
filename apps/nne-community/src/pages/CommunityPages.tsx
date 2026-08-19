@@ -8,7 +8,7 @@ import { questsService } from "../services/quests";
 import type { FeedItem, Quest, Reward } from "../types";
 import { formatNne, formatRelativeDate } from "../services/api";
 import { VisualMedia } from "../components/VisualMedia";
-import { nneAssets, rewardAsset } from "../config/assets";
+import { nneAssets, rewardAssets } from "../config/assets";
 
 const useApp = () => useOutletContext<AppOutletContext>();
 
@@ -52,6 +52,12 @@ export function HomePage() {
         <p>Te quedan <strong>{formatNne(dashboard.economy.remainingToday)} NNE</strong> disponibles hoy. Cada quest indica su recompensa y la evidencia es revisada antes de acreditarse.</p>
         <small>1 NNE Credit representa $1 de valor de canje dentro del catálogo. No es dinero, no se retira ni se transfiere. Reinicia {dashboard.economy.resetsAt}.</small>
       </article>
+
+      <section className="music-strip" aria-label="En rotación">
+        <article><VisualMedia src={nneAssets.music.sisisi} alt="SISISI" fallback="SISISI" /><strong>SISISI</strong></article>
+        <article><VisualMedia src={nneAssets.music.deDescargue} alt="DE DESCARGUE" fallback="DD" /><strong>DE DESCARGUE</strong></article>
+        <article><VisualMedia src={nneAssets.music.caption} alt="CAPTION" fallback="CAPTION" /><strong>CAPTION</strong></article>
+      </section>
 
       <div className="section-heading"><h2>Quests activas</h2></div>
       <section className="quest-grid">{dashboard.quests.slice(0, 4).map((quest) => <QuestCard key={quest.id} quest={quest} onOpen={openQuest} />)}</section>
@@ -153,8 +159,13 @@ export function RewardsPage() {
           const levelLocked = dashboard.user.level < reward.minimumLevel;
           const creditLocked = dashboard.user.credits < reward.costCredits;
           const locked = levelLocked || creditLocked || reward.remaining === 0;
+          const assets = rewardAssets(reward.id, reward.imageUrl);
           return <article className={`card reward-card ${locked ? "locked" : ""}`} key={reward.id}>
-            <VisualMedia className="reward-art" src={rewardAsset(reward.id, reward.imageUrl)} alt={reward.name} fallback={reward.icon} />
+            <div className={`reward-visuals ${assets.length > 1 ? "has-variants" : ""}`}>
+              {(assets.length ? assets : [null]).map((asset, index) => (
+                <VisualMedia className="reward-art" src={asset} alt={`${reward.name}${assets.length > 1 ? index === 0 ? " gris" : " negro" : ""}`} fallback={reward.icon} key={asset || "fallback"} />
+              ))}
+            </div>
             <h3>{reward.name}</h3><p>{reward.description}</p>
             <footer><strong>{formatNne(reward.costCredits)} Credits</strong><button disabled={locked || busyId === reward.id} onClick={() => void redeem(reward)}>{levelLocked ? `Nivel ${reward.minimumLevel}` : creditLocked ? "Sin balance" : busyId === reward.id ? "Procesando…" : "Canjear"}</button></footer>
           </article>;

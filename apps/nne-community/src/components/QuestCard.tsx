@@ -1,6 +1,7 @@
 import type { Quest } from "../types";
 import { formatNne } from "../services/api";
 import { VisualMedia } from "./VisualMedia";
+import { questArtwork } from "../config/assets";
 
 interface QuestCardProps {
   quest: Quest;
@@ -8,6 +9,7 @@ interface QuestCardProps {
 }
 
 export function QuestCard({ quest, onOpen }: QuestCardProps) {
+  const artwork = questArtwork(quest.title, quest.song?.title, quest.song?.artworkUrl);
   const label =
     quest.status === "completed"
       ? "Completada"
@@ -19,8 +21,8 @@ export function QuestCard({ quest, onOpen }: QuestCardProps) {
     <article className="card quest-card">
       <div>
         <div className="quest-header">
-          {quest.song?.artworkUrl ? (
-            <VisualMedia className="quest-art" src={quest.song.artworkUrl} alt={`Portada de ${quest.song.title}`} fallback={quest.icon} />
+          {artwork ? (
+            <VisualMedia className="quest-art" src={artwork} alt={`Arte de ${quest.song?.title || quest.title}`} fallback={quest.icon} />
           ) : (
             <div className="quest-icon">{quest.icon}</div>
           )}
