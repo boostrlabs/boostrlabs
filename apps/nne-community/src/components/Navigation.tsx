@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { CollabBrand } from "./CollabBrand";
 
 const items = [
   { to: "/", label: "Home", icon: "⌂" },
@@ -19,10 +20,10 @@ export function Navigation() {
     <>
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-mark">NN</div>
+          <CollabBrand compact />
           <div>
-            <strong>NNE COMMUNITY</strong>
-            <span>Move different.</span>
+            <strong>NNE × WESTDETRO</strong>
+            <span>Community · Move different.</span>
           </div>
         </div>
 

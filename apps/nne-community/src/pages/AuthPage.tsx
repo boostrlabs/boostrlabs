@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react
 import { useAuth } from "../context/AuthContext";
 import { usersService } from "../services/users";
 import type { ReferralPreview } from "../types";
+import { CollabBrand } from "../components/CollabBrand";
 
 export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const { user, login, signup } = useAuth();
@@ -75,14 +76,14 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   return (
     <main className="auth-shell">
       <section className="auth-brand">
-        <div className="brand-mark">NN</div>
-        <div className="eyebrow">NNE Community</div>
+        <CollabBrand />
+        <div className="eyebrow">NNE × WESTDETRO Community</div>
         <h1>Move different.</h1>
         <p>Acciones reales. Progreso visible. Acceso que se gana.</p>
       </section>
       <section className="card auth-card">
         <div className="eyebrow">{mode === "login" ? "Bienvenido de vuelta" : "Entra al movimiento"}</div>
-        <h2>{mode === "login" ? "Inicia sesión." : "Crea tu cuenta NNE."}</h2>
+        <h2>{mode === "login" ? "Inicia sesión." : "Crea tu cuenta NNE × WESTDETRO."}</h2>
         <p className="auth-note">Tu cuenta NNE es independiente de cualquier cuenta BOOSTR.</p>
         {error && <div className="form-error">{error}</div>}
         {mode === "signup" && referralCode && (

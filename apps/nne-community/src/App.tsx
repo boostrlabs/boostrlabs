@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
+import { CollabBrand } from "./components/CollabBrand";
 import { useAuth } from "./context/AuthContext";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminReviewersPage } from "./pages/AdminReviewersPage";
@@ -16,7 +17,7 @@ import {
 function RequireAuth({ admin = false }: { admin?: boolean }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  if (loading) return <div className="loading-screen"><div className="brand-mark">NN</div><strong>Cargando…</strong></div>;
+  if (loading) return <div className="loading-screen"><CollabBrand /><strong>Cargando…</strong></div>;
   if (!user) return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   if (admin && user.role !== "admin") return <Navigate to="/" replace />;
   return <AppLayout />;

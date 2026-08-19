@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { usersService } from "../services/users";
 import type { DashboardData, Quest } from "../types";
 import { Navigation } from "./Navigation";
+import { CollabBrand } from "./CollabBrand";
 import { QuestModal } from "./QuestModal";
 
 const pageCopy: Record<string, { title: string; subtitle: string }> = {
@@ -35,7 +36,7 @@ export function AppLayout() {
       setDashboard(await usersService.dashboard());
       setError("");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "No pudimos cargar NNE Community.");
+      setError(caught instanceof Error ? caught.message : "No pudimos cargar NNE × WESTDETRO.");
     }
   }, []);
 
@@ -51,8 +52,8 @@ export function AppLayout() {
   if (!dashboard) {
     return (
       <div className="loading-screen">
-        <div className="brand-mark">NN</div>
-        <strong>{error || "Cargando NNE Community…"}</strong>
+        <CollabBrand />
+        <strong>{error || "Cargando NNE × WESTDETRO…"}</strong>
         {error && (
           <div className="loading-actions">
             <button className="primary-button" onClick={() => void refreshDashboard()}>Reintentar</button>
@@ -70,7 +71,7 @@ export function AppLayout() {
       <main className="main-content">
         <header className="topbar">
           <div>
-            <div className="eyebrow">NNE Community / Powered by BOOSTR Labs</div>
+            <div className="eyebrow">NNE × WESTDETRO / Powered by BOOSTR Labs</div>
             <h1>{copy.title}</h1>
             <p>{copy.subtitle}</p>
           </div>

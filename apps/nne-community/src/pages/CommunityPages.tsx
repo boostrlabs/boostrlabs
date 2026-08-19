@@ -22,7 +22,7 @@ export function HomePage() {
     <>
       <article className="card season-hero">
         <div className="season-hero-copy">
-          <div className="eyebrow">NNE SEASON 001</div>
+          <div className="eyebrow">NNE × WESTDETRO · SEASON 001</div>
           <h2>ROAD TO WESTDETRO</h2>
           <p>08.28.26 · Participar suma. Esforzarte multiplica.</p>
         </div>
@@ -172,7 +172,7 @@ export function ProfilePage() {
       : "",
     [dashboard.referralCode]
   );
-  const referralMessage = `Únete a NNE Community con mi invitación. Tú y ${dashboard.user.handle} reciben +${formatNne(dashboard.referralReward.credits)} NNE Credits y +${dashboard.referralReward.xp.toLocaleString()} XP al crear tu cuenta.`;
+  const referralMessage = `Únete a NNE × WESTDETRO Community con mi invitación. Tú y ${dashboard.user.handle} reciben +${formatNne(dashboard.referralReward.credits)} NNE Credits y +${dashboard.referralReward.xp.toLocaleString()} XP al crear tu cuenta.`;
 
   const copyReferral = async () => {
     await navigator.clipboard.writeText(referralUrl);
@@ -184,7 +184,7 @@ export function ProfilePage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Invitación a NNE Community",
+          title: "Invitación a NNE × WESTDETRO Community",
           text: referralMessage,
           url: referralUrl
         });
@@ -204,7 +204,7 @@ export function ProfilePage() {
         <div>
           <div className="eyebrow">{dashboard.user.title}</div>
           <h2>{dashboard.user.name}</h2>
-          <p>{dashboard.user.handle} · NNE Community · Season 001</p>
+          <p>{dashboard.user.handle} · NNE × WESTDETRO · Season 001</p>
           <div className="profile-stats">
             <div><small>Level</small><strong>{dashboard.user.level}</strong></div>
             <div><small>Credits</small><strong>{formatNne(dashboard.user.credits)}</strong></div>

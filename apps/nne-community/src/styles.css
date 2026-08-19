@@ -50,11 +50,30 @@ img { display: block; max-width: 100%; }
   backdrop-filter: blur(24px);
 }
 .brand {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+  display: grid;
+  gap: 10px;
+  align-items: start;
   padding: 0 8px 28px;
 }
+.collab-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: fit-content;
+  max-width: 100%;
+}
+.collab-brand img { flex: 0 0 auto; max-width: none; }
+.collab-brand img:first-child { width: 112px; height: auto; }
+.collab-brand img:last-child { width: 174px; height: auto; }
+.collab-brand > span {
+  color: var(--gold-light);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.collab-brand.compact { gap: 8px; }
+.collab-brand.compact img:first-child { width: 48px; }
+.collab-brand.compact img:last-child { width: 102px; }
+.collab-brand.compact > span { font-size: .82rem; }
 .brand-mark {
   width: 42px;
   height: 42px;
@@ -453,6 +472,7 @@ h1 {
   font-size: 2rem;
 }
 .reward-art img { object-fit: contain; padding: 14px; filter: drop-shadow(0 18px 20px rgba(0,0,0,.48)); }
+.reward-art img[src*="janko-floating-head"] { padding: 0; }
 .reward-card.locked { opacity: .5; }
 .reward-card footer { margin-top: 18px; }
 
@@ -718,7 +738,7 @@ select.field { color-scheme: dark; }
   gap: 70px;
   align-items: center;
 }
-.auth-brand .brand-mark { margin-bottom: 26px; }
+.auth-brand .collab-brand { margin-bottom: 26px; }
 .auth-brand h1 { font-size: clamp(3.5rem, 8vw, 7.5rem); }
 .auth-brand p { max-width: 500px; color: var(--muted); font-size: 1.2rem; }
 .auth-card { padding: 32px; }
@@ -833,7 +853,7 @@ select.field { color-scheme: dark; }
   .season-hero > .visual-media::after { background: linear-gradient(0deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.2) 72%); }
   .auth-shell { padding: 48px 0; gap: 30px; }
   .auth-brand { text-align: center; }
-  .auth-brand .brand-mark { margin-left: auto; margin-right: auto; }
+  .auth-brand .collab-brand { margin-left: auto; margin-right: auto; }
   .auth-brand p { margin-left: auto; margin-right: auto; }
   .profile-avatar { margin: auto; }
   .profile-card { text-align: center; }
@@ -916,4 +936,7 @@ select.field { color-scheme: dark; }
   .modal-backdrop { padding: 8px; }
   .modal-card { padding: 18px; border-radius: 22px; }
   .admin-metrics { grid-template-columns: 1fr 1fr; }
+  .collab-brand { gap: 9px; }
+  .collab-brand img:first-child { width: 78px; }
+  .collab-brand img:last-child { width: 126px; }
 }
