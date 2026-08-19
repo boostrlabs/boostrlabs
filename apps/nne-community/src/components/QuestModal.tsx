@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ApiError } from "../services/api";
+import { ApiError, formatNne } from "../services/api";
 import { questsService } from "../services/quests";
 import { triviaService } from "../services/trivia";
 import type { Quest, ReferralReward, TriviaQuestion } from "../types";
@@ -84,7 +84,7 @@ export function QuestModal({ quest, referralCode, referralReward, onClose, onCha
     if (!sessionId) throw new Error("La sesión de trivia no está disponible.");
     const result = await triviaService.submit(sessionId, answers);
     setScore(result.score); setPassed(result.passed); setPhase("result");
-    if (result.passed) await onChanged(`+${result.reward_credits} NNE Credits.`);
+    if (result.passed) await onChanged(`+${formatNne(result.reward_credits)} NNE Credits.`);
   });
 
   const copyReferral = () => run(async () => {
@@ -124,7 +124,7 @@ export function QuestModal({ quest, referralCode, referralReward, onClose, onCha
               <div className="eyebrow">Recompensa para ambos</div>
               <strong>Tu invitado gana. Tú también.</strong>
               <div className="referral-benefits">
-                <span>+{referralReward.credits.toLocaleString()} NNE Credits</span>
+                <span>+{formatNne(referralReward.credits)} NNE Credits</span>
                 <span>+{referralReward.xp.toLocaleString()} XP</span>
               </div>
             </div>
@@ -152,7 +152,7 @@ export function QuestModal({ quest, referralCode, referralReward, onClose, onCha
           </>
         )}
 
-        {quest.verificationMethod === "trivia" && phase === "result" && <div className="quiz-result"><div className="eyebrow">Resultado</div><strong>{score}%</strong><h3>{passed ? "Quest completada." : "Todavía no."}</h3><p>{passed ? `Ganaste ${quest.rewardCredits} NNE Credits.` : "Escucha nuevamente y vuelve a intentarlo mañana."}</p><button className="primary-button full" onClick={onClose}>Cerrar</button></div>}
+        {quest.verificationMethod === "trivia" && phase === "result" && <div className="quiz-result"><div className="eyebrow">Resultado</div><strong>{score}%</strong><h3>{passed ? "Quest completada." : "Todavía no."}</h3><p>{passed ? `Ganaste ${formatNne(quest.rewardCredits)} NNE Credits.` : "Escucha nuevamente y vuelve a intentarlo mañana."}</p><button className="primary-button full" onClick={onClose}>Cerrar</button></div>}
       </section>
     </div>
   );

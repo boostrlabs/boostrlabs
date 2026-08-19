@@ -17,6 +17,7 @@ import {
   requireNneDb,
   writeNneAudit
 } from "../../../_lib/nne-api.js";
+import { createNneCappedCreditStatement } from "../../../_lib/nne-community.js";
 
 const reservedUsernames = new Set([
   "admin",
@@ -121,8 +122,8 @@ export async function onRequestPost({ request, env }) {
          LIMIT 1`
       ).first()
     : null;
-  const referralCredits = referredBy ? Number(referralReward?.reward_credits || 500) : 0;
-  const referralXp = referredBy ? Number(referralReward?.reward_xp || 500) : 0;
+  const referralCredits = referredBy ? Math.min(1, Number(referralReward?.reward_credits || 1)) : 0;
+  const referralXp = referredBy ? Math.min(100, Number(referralReward?.reward_xp || 100)) : 0;
   const startingLevel = 1 + Math.floor(referralXp / 1000);
 
   let role = "member";
@@ -170,30 +171,26 @@ export async function onRequestPost({ request, env }) {
         timestamp,
         timestamp
       ),
-      env.DB.prepare(
-        `INSERT INTO nne_credit_transactions (
-          id, user_id, amount, kind, source_type, source_id, description, actor_user_id, created_at
-        ) VALUES (?, ?, ?, 'referral_reward', 'referral_inviter', ?, ?, NULL, ?)`
-      ).bind(
-        crypto.randomUUID(),
-        referredBy.referrer_user_id,
-        referralCredits,
-        referralEventId,
-        `Invitación completada por @${username}`,
+      createNneCappedCreditStatement(env, {
+        userId: referredBy.referrer_user_id,
+        amount: referralCredits,
+        kind: "referral_reward",
+        sourceType: "referral_inviter",
+        sourceId: referralEventId,
+        description: `Invitación completada por @${username}`,
+        actorUserId: null,
         timestamp
-      ),
-      env.DB.prepare(
-        `INSERT INTO nne_credit_transactions (
-          id, user_id, amount, kind, source_type, source_id, description, actor_user_id, created_at
-        ) VALUES (?, ?, ?, 'referral_reward', 'referral_welcome', ?, ?, NULL, ?)`
-      ).bind(
-        crypto.randomUUID(),
+      }),
+      createNneCappedCreditStatement(env, {
         userId,
-        referralCredits,
-        referralEventId,
-        `Bonus de bienvenida por invitación de @${referredBy.username}`,
+        amount: referralCredits,
+        kind: "referral_reward",
+        sourceType: "referral_welcome",
+        sourceId: referralEventId,
+        description: `Bonus de bienvenida por invitación de @${referredBy.username}`,
+        actorUserId: null,
         timestamp
-      ),
+      }),
       env.DB.prepare(
         `UPDATE nne_profiles
          SET xp = xp + ?,

@@ -174,7 +174,7 @@ export function AdminPage() {
               <label>Cadencia<select className="field" name="cadence" defaultValue="once">
                 <option value="once">Una vez</option><option value="daily">Diaria</option><option value="weekly">Semanal</option>
               </select></label>
-              <label>Credits<input className="field" name="reward_credits" type="number" min="0" defaultValue="100" /></label>
+              <label>Credits<input className="field" name="reward_credits" type="number" min="0" step="0.25" defaultValue="0.25" /></label>
               <label>XP<input className="field" name="reward_xp" type="number" min="0" defaultValue="100" /></label>
               <label>Nivel mínimo<input className="field" name="minimum_level" type="number" min="1" defaultValue="1" /></label>
               <label>Estado<select className="field" name="status" defaultValue="draft">

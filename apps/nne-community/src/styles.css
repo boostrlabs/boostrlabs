@@ -401,6 +401,18 @@ h1 {
   background: linear-gradient(90deg, var(--red), var(--gold));
 }
 
+.economy-tip {
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(280px, 1.2fr);
+  gap: 16px 28px;
+  align-items: center;
+  margin: 18px 0 28px;
+  border-color: rgba(228, 189, 91, .25);
+  background: linear-gradient(120deg, rgba(228, 189, 91, .08), rgba(96, 10, 24, .12));
+}
+.economy-tip p { margin: 0; }
+.economy-tip small { grid-column: 1 / -1; color: var(--muted); }
+
 .feed-list { display: grid; gap: 10px; }
 .feed-item {
   padding: 16px;
@@ -828,6 +840,8 @@ select.field { color-scheme: dark; }
   .profile-stats { grid-template-columns: repeat(2, 1fr); }
   .progress-card { align-items: flex-start; flex-direction: column; }
   .progress-track { width: 100%; }
+  .economy-tip { grid-template-columns: 1fr; }
+  .economy-tip small { grid-column: auto; }
   .mobile-navigation {
     position: fixed;
     left: 14px;

@@ -6,19 +6,11 @@ import { feedService } from "../services/feed";
 import { rewardsService } from "../services/rewards";
 import { questsService } from "../services/quests";
 import type { FeedItem, Quest, Reward } from "../types";
-import { formatRelativeDate } from "../services/api";
+import { formatNne, formatRelativeDate } from "../services/api";
 import { VisualMedia } from "../components/VisualMedia";
 import { nneAssets, rewardAsset } from "../config/assets";
 
 const useApp = () => useOutletContext<AppOutletContext>();
-
-const seasonRewards: Reward[] = [
-  { id: "season-001-shirt", name: "NNE / WESTDETRO T-shirt", description: "Season 001 physical drop.", costCredits: 50000, minimumLevel: 1, icon: "TEE", imageUrl: null, remaining: null, available: true },
-  { id: "season-001-af1-white", name: "AF1 White", description: "White Air Force 1 reward drop.", costCredits: 65000, minimumLevel: 1, icon: "AF1", imageUrl: null, remaining: null, available: true },
-  { id: "season-001-af1-black", name: "AF1 Black", description: "Black Air Force 1 reward drop.", costCredits: 65000, minimumLevel: 1, icon: "AF1", imageUrl: null, remaining: null, available: true },
-  { id: "season-001-nike-tech", name: "Nike Tech Set", description: "Full Nike Tech set.", costCredits: 150000, minimumLevel: 1, icon: "TECH", imageUrl: null, remaining: null, available: true },
-  { id: "season-001-early", name: "WESTDETRO Early Access", description: "Early-access digital reward for Season 001 members.", costCredits: 10000, minimumLevel: 1, icon: "EARLY", imageUrl: null, remaining: null, available: true }
-];
 
 export function HomePage() {
   const { dashboard, openQuest } = useApp();
@@ -39,7 +31,7 @@ export function HomePage() {
       <section className="hero-grid">
         <article className="card balance-card">
           <div className="eyebrow">Balance disponible</div>
-          <div className="balance">{dashboard.user.credits.toLocaleString()}<span>NNE Credits</span></div>
+          <div className="balance">{formatNne(dashboard.user.credits)}<span>NNE Credits</span></div>
           <div className="metric-row">
             <div><small>Streak</small><strong>{dashboard.user.streakDays} días</strong></div>
             <div><small>NNE Score</small><strong>{dashboard.user.nneScore} / 100</strong></div>
@@ -54,6 +46,12 @@ export function HomePage() {
           <p>{xpRemaining} XP para llegar al nivel {dashboard.user.level + 1}</p>
         </article>
       </section>
+
+      <article className="card economy-tip">
+        <div><div className="eyebrow">Cómo funciona</div><strong>Hoy puedes acumular hasta {formatNne(dashboard.economy.dailyCap)} NNE.</strong></div>
+        <p>Te quedan <strong>{formatNne(dashboard.economy.remainingToday)} NNE</strong> disponibles hoy. Cada quest indica su recompensa y la evidencia es revisada antes de acreditarse.</p>
+        <small>1 NNE Credit representa $1 de valor de canje dentro del catálogo. No es dinero, no se retira ni se transfiere. Reinicia {dashboard.economy.resetsAt}.</small>
+      </article>
 
       <div className="section-heading"><h2>Quests activas</h2></div>
       <section className="quest-grid">{dashboard.quests.slice(0, 4).map((quest) => <QuestCard key={quest.id} quest={quest} onOpen={openQuest} />)}</section>
@@ -97,9 +95,9 @@ export function QuestsPage() {
   return (
     <>
       <article className="card" style={{ marginBottom: 18 }}>
-        <div className="eyebrow">Season 001 rules</div>
-        <h2>Quantity has a cap. Impact can break it.</h2>
-        <p>Support bundles pay small credits. Creator quests can be submitted up to 10 times per song. Creativity and proven performance can unlock Merit and Impact bonuses.</p>
+        <div className="eyebrow">Cómo completar una quest</div>
+        <h2>Abre. Completa. Sube evidencia.</h2>
+        <p>Las acciones simples pagan 0.25 NNE, las misiones de mayor esfuerzo 0.50 o 1 NNE. El staff valida la evidencia y puedes acumular un máximo de 5 NNE por día.</p>
       </article>
       <div className="section-heading"><h2>Quests disponibles</h2></div>
       <div className="filter-strip" aria-label="Filtrar quests">
@@ -135,16 +133,7 @@ export function RewardsPage() {
   const load = () => rewardsService.list().then((result) => setRewards(result.rewards));
   useEffect(() => { void load(); }, []);
 
-  const mergedRewards = useMemo(() => {
-    const existingNames = new Set(rewards.map((reward) => reward.name.toLowerCase()));
-    return [...rewards, ...seasonRewards.filter((reward) => !existingNames.has(reward.name.toLowerCase()))];
-  }, [rewards]);
-
   const redeem = async (reward: Reward) => {
-    if (reward.id.startsWith("season-001-")) {
-      showToast("Season 001 reward visible. Admin fulfillment activation pending for this catalog item.");
-      return;
-    }
     setBusyId(reward.id);
     try {
       await rewardsService.redeem(reward.id);
@@ -157,17 +146,17 @@ export function RewardsPage() {
 
   return (
     <>
-      <article className="card" style={{ marginBottom: 18 }}><div className="eyebrow">Season 001 Rewards</div><h2>Earn your way into the drop.</h2><p>Support suma. Creativity, consistency and impact move you faster.</p></article>
-      <div className="section-heading"><h2>Rewards</h2><span className="balance-pill">{dashboard.user.credits.toLocaleString()} Credits</span></div>
+      <article className="card" style={{ marginBottom: 18 }}><div className="eyebrow">Catálogo NNE</div><h2>Tu progreso se convierte en acceso.</h2><p>1 NNE Credit representa $1 de valor de canje dentro de este catálogo. Los créditos no son efectivo, no se retiran ni se transfieren.</p></article>
+      <div className="section-heading"><h2>Rewards</h2><span className="balance-pill">{formatNne(dashboard.user.credits)} Credits</span></div>
       <section className="reward-grid">
-        {mergedRewards.map((reward) => {
+        {rewards.map((reward) => {
           const levelLocked = dashboard.user.level < reward.minimumLevel;
           const creditLocked = dashboard.user.credits < reward.costCredits;
           const locked = levelLocked || creditLocked || reward.remaining === 0;
           return <article className={`card reward-card ${locked ? "locked" : ""}`} key={reward.id}>
             <VisualMedia className="reward-art" src={rewardAsset(reward.id, reward.imageUrl)} alt={reward.name} fallback={reward.icon} />
             <h3>{reward.name}</h3><p>{reward.description}</p>
-            <footer><strong>{reward.costCredits.toLocaleString()} Credits</strong><button disabled={locked || busyId === reward.id} onClick={() => void redeem(reward)}>{levelLocked ? `Nivel ${reward.minimumLevel}` : creditLocked ? "Sin balance" : busyId === reward.id ? "Procesando…" : "Canjear"}</button></footer>
+            <footer><strong>{formatNne(reward.costCredits)} Credits</strong><button disabled={locked || busyId === reward.id} onClick={() => void redeem(reward)}>{levelLocked ? `Nivel ${reward.minimumLevel}` : creditLocked ? "Sin balance" : busyId === reward.id ? "Procesando…" : "Canjear"}</button></footer>
           </article>;
         })}
       </section>
@@ -183,7 +172,7 @@ export function ProfilePage() {
       : "",
     [dashboard.referralCode]
   );
-  const referralMessage = `Únete a NNE Community con mi invitación. Tú y ${dashboard.user.handle} reciben +${dashboard.referralReward.credits.toLocaleString()} NNE Credits y +${dashboard.referralReward.xp.toLocaleString()} XP al crear tu cuenta.`;
+  const referralMessage = `Únete a NNE Community con mi invitación. Tú y ${dashboard.user.handle} reciben +${formatNne(dashboard.referralReward.credits)} NNE Credits y +${dashboard.referralReward.xp.toLocaleString()} XP al crear tu cuenta.`;
 
   const copyReferral = async () => {
     await navigator.clipboard.writeText(referralUrl);
@@ -218,7 +207,7 @@ export function ProfilePage() {
           <p>{dashboard.user.handle} · NNE Community · Season 001</p>
           <div className="profile-stats">
             <div><small>Level</small><strong>{dashboard.user.level}</strong></div>
-            <div><small>Credits</small><strong>{dashboard.user.credits.toLocaleString()}</strong></div>
+            <div><small>Credits</small><strong>{formatNne(dashboard.user.credits)}</strong></div>
             <div><small>Quests</small><strong>{dashboard.user.completedQuestCount}</strong></div>
             <div><small>Streak</small><strong>{dashboard.user.streakDays} días</strong></div>
           </div>
@@ -232,7 +221,7 @@ export function ProfilePage() {
         <div className="referral-card-copy">
           <p>Cada artista que entra con tu enlace recibe la misma recompensa que tú.</p>
           <div className="referral-benefits">
-            <span>+{dashboard.referralReward.credits.toLocaleString()} NNE Credits cada uno</span>
+            <span>+{formatNne(dashboard.referralReward.credits)} NNE Credits cada uno</span>
             <span>+{dashboard.referralReward.xp.toLocaleString()} XP cada uno</span>
           </div>
         </div>

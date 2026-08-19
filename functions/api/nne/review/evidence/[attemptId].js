@@ -1,5 +1,5 @@
 import { clean, jsonError, jsonOk, now, onOptions, readJson, writeNneAudit } from "../../../../_lib/nne-api.js";
-import { completeNneQuest } from "../../../../_lib/nne-community.js";
+import { awardNneCreditsWithDailyCap, completeNneQuest } from "../../../../_lib/nne-community.js";
 import { PERFORMANCE_BONUS, QUALITY_BONUS, requireNneReviewer, reviewerCanAccess } from "../../../../_lib/nne-reviewer.js";
 
 export const onRequestOptions = onOptions;
@@ -35,13 +35,21 @@ export async function onRequestPatch({ request, env, params }) {
   let performance = clean(parsed.payload?.performance || "normal", 20).toLowerCase();
   if (!(quality in QUALITY_BONUS)) quality = "completed";
   if (!(performance in PERFORMANCE_BONUS)) performance = "normal";
-  const bonus = QUALITY_BONUS[quality] + PERFORMANCE_BONUS[performance];
+  const requestedBonus = QUALITY_BONUS[quality] + PERFORMANCE_BONUS[performance];
 
   const base = await completeNneQuest(env, { attemptId: attempt.id, userId: attempt.user_id, quest: attempt, actorUserId: auth.user.id, completionStatus: "approved" });
-  if (bonus > 0) {
-    await env.DB.prepare(`INSERT OR IGNORE INTO nne_credit_transactions (id,user_id,amount,kind,source_type,source_id,description,actor_user_id,created_at) VALUES (?, ?, ?, 'admin_adjustment', 'season_bonus', ?, ?, ?, ?)`)
-      .bind(crypto.randomUUID(),attempt.user_id,bonus,`${attempt.id}:bonus`,`Season 001 · Creativity ${quality} · Performance ${performance}`,auth.user.id,timestamp).run();
-  }
+  const bonus = requestedBonus > 0
+    ? await awardNneCreditsWithDailyCap(env, {
+        userId: attempt.user_id,
+        amount: requestedBonus,
+        kind: "admin_adjustment",
+        sourceType: "season_bonus",
+        sourceId: `${attempt.id}:bonus`,
+        description: `Season 001 · Creativity ${quality} · Performance ${performance}`,
+        actorUserId: auth.user.id,
+        timestamp
+      })
+    : 0;
   await writeNneAudit(env, request, auth.user.id, "artist.evidence.approved", "nne_quest_attempt", attempt.id, { quest_id: attempt.quest_id, quality, performance, base_credits: base.credited, bonus_credits: bonus });
   return jsonOk({ attempt: { id: attempt.id, status: "approved", base_credits: base.credited, bonus_credits: bonus, total_credits: base.credited + bonus, quality, performance } });
 }

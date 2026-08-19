@@ -1,4 +1,5 @@
 import type { Quest } from "../types";
+import { formatNne } from "../services/api";
 import { VisualMedia } from "./VisualMedia";
 
 interface QuestCardProps {
@@ -30,7 +31,7 @@ export function QuestCard({ quest, onOpen }: QuestCardProps) {
       </div>
 
       <footer>
-        <strong>+{quest.rewardCredits} Credits</strong>
+        <strong>+{formatNne(quest.rewardCredits)} Credits</strong>
         <button
           className={`primary-button ${quest.status}`}
           disabled={quest.status === "completed" || quest.status === "pending"}

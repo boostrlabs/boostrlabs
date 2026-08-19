@@ -1,4 +1,4 @@
-import { initials, nnePeriodKey, questStatusForUser } from "../../_lib/nne-community.js";
+import { initials, NNE_DAILY_CREDIT_CAP, nnePeriodKey, questStatusForUser } from "../../_lib/nne-community.js";
 import { jsonOk, requireNneSession } from "../../_lib/nne-api.js";
 import { ensureNneSeason001 } from "../../_lib/nne-season-001.js";
 
@@ -13,7 +13,7 @@ export async function onRequestGet({ request, env }) {
 
   await ensureNneSeason001(env);
 
-  const [questRows, feedRows, leaderRows, referral, referralReward] = await Promise.all([
+  const [questRows, feedRows, leaderRows, referral, referralReward, dailyCredits] = await Promise.all([
     env.DB.prepare(
       `SELECT id, type, platform, title, description, icon, reward_credits,
               reward_xp, cadence, verification_method, minimum_level, sort_order
@@ -53,7 +53,14 @@ export async function onRequestGet({ request, env }) {
        FROM nne_quests
        WHERE id = 'quest_referral_artist' AND status = 'published'
        LIMIT 1`
-    ).first()
+    ).first(),
+    env.DB.prepare(
+      `SELECT COALESCE(SUM(amount), 0) AS earned
+       FROM nne_credit_transactions
+       WHERE user_id = ? AND amount > 0
+         AND created_at >= datetime('now', 'start of day')
+         AND created_at < datetime('now', 'start of day', '+1 day')`
+    ).bind(auth.user.id).first()
   ]);
 
   const quests = [];
@@ -110,8 +117,16 @@ export async function onRequestGet({ request, env }) {
     current_rank: leaderboard.find((entry) => entry.user_id === auth.user.id)?.rank || null,
     referral_code: referral?.referral_code || null,
     referral_reward: {
-      credits: Number(referralReward?.reward_credits || 500),
-      xp: Number(referralReward?.reward_xp || 500)
+      credits: Number(referralReward?.reward_credits || 1),
+      xp: Number(referralReward?.reward_xp || 100)
+    },
+    economy: {
+      daily_cap: NNE_DAILY_CREDIT_CAP,
+      earned_today: Number(dailyCredits?.earned || 0),
+      remaining_today: Math.max(0, NNE_DAILY_CREDIT_CAP - Number(dailyCredits?.earned || 0)),
+      reference_usd_per_credit: 1,
+      redemption_only: true,
+      resets_at: "00:00 UTC"
     }
   });
 }

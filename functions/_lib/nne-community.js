@@ -44,24 +44,69 @@ export async function getNneQuest(env, questId) {
     .first();
 }
 
-function mondayIso(timestamp) {
-  const date = new Date(timestamp);
-  const weekday = date.getUTCDay() || 7;
-  date.setUTCHours(0, 0, 0, 0);
-  date.setUTCDate(date.getUTCDate() - weekday + 1);
-  return date.toISOString();
+export const NNE_DAILY_CREDIT_CAP = 5;
+
+function dailyWindow(timestamp) {
+  const start = `${timestamp.slice(0, 10)}T00:00:00.000Z`;
+  const endDate = new Date(start);
+  endDate.setUTCDate(endDate.getUTCDate() + 1);
+  return { start, end: endDate.toISOString() };
 }
 
-async function seasonBaseAward(env, userId, quest, timestamp) {
-  const requested = Number(quest.reward_credits || 0);
-  if (!String(quest.id || "").startsWith("s1_")) return requested;
+export function createNneCappedCreditStatement(env, {
+  userId,
+  amount,
+  kind,
+  sourceType,
+  sourceId,
+  description,
+  actorUserId,
+  timestamp
+}) {
+  const requested = Math.max(0, Number(amount || 0));
+  const { start, end } = dailyWindow(timestamp);
+  return env.DB.prepare(
+    `WITH available(value) AS (
+       SELECT MAX(0, ? - COALESCE(SUM(amount), 0))
+       FROM nne_credit_transactions
+       WHERE user_id = ?
+         AND amount > 0
+         AND created_at >= ? AND created_at < ?
+     )
+     INSERT OR IGNORE INTO nne_credit_transactions (
+       id, user_id, amount, kind, source_type, source_id,
+       description, actor_user_id, created_at
+     )
+     SELECT ?, ?, MIN(?, available.value), ?, ?, ?, ?, ?, ?
+     FROM available
+     WHERE available.value > 0 AND ? > 0`
+  ).bind(
+    NNE_DAILY_CREDIT_CAP,
+    userId,
+    start,
+    end,
+    crypto.randomUUID(),
+    userId,
+    requested,
+    kind,
+    sourceType,
+    sourceId,
+    description,
+    actorUserId,
+    timestamp,
+    requested
+  );
+}
+
+export async function awardNneCreditsWithDailyCap(env, award) {
+  const timestamp = award.timestamp || now();
+  await createNneCappedCreditStatement(env, { ...award, timestamp }).run();
   const row = await env.DB.prepare(
-    `SELECT COALESCE(SUM(amount),0) AS earned
-     FROM nne_credit_transactions
-     WHERE user_id = ? AND kind = 'quest_reward' AND amount > 0 AND created_at >= ?`
-  ).bind(userId, mondayIso(timestamp)).first();
-  const remaining = Math.max(0, 15000 - Number(row?.earned || 0));
-  return Math.min(requested, remaining);
+    `SELECT amount FROM nne_credit_transactions
+     WHERE user_id = ? AND kind = ? AND source_type = ? AND source_id = ?
+     LIMIT 1`
+  ).bind(award.userId, award.kind, award.sourceType, award.sourceId).first();
+  return Number(row?.amount || 0);
 }
 
 export async function completeNneQuest(env, {
@@ -75,7 +120,6 @@ export async function completeNneQuest(env, {
 }) {
   const timestamp = now();
   const today = timestamp.slice(0, 10);
-  const credited = await seasonBaseAward(env, userId, quest, timestamp);
   const feedId = crypto.randomUUID();
   const statements = [
     ...leadingStatements,
@@ -96,23 +140,16 @@ export async function completeNneQuest(env, {
     )
   ];
 
-  if (credited > 0) {
-    statements.push(env.DB.prepare(
-      `INSERT INTO nne_credit_transactions (
-        id, user_id, amount, kind, source_type, source_id, description, actor_user_id, created_at
-      ) VALUES (?, ?, ?, 'quest_reward', 'quest_attempt', ?, ?, ?, ?)`
-    ).bind(
-      crypto.randomUUID(),
-      userId,
-      credited,
-      attemptId,
-      credited < Number(quest.reward_credits || 0)
-        ? `Quest completada: ${quest.title} · weekly cap applied`
-        : `Quest completada: ${quest.title}`,
-      actorUserId,
-      timestamp
-    ));
-  }
+  statements.push(createNneCappedCreditStatement(env, {
+    userId,
+    amount: Number(quest.reward_credits || 0),
+    kind: "quest_reward",
+    sourceType: "quest_attempt",
+    sourceId: attemptId,
+    description: `Quest completada: ${quest.title} · límite diario de ${NNE_DAILY_CREDIT_CAP} NNE`,
+    actorUserId,
+    timestamp
+  }));
 
   statements.push(
     env.DB.prepare(
@@ -150,7 +187,13 @@ export async function completeNneQuest(env, {
   );
 
   await env.DB.batch(statements);
-  return { credited, weekly_cap: String(quest.id || "").startsWith("s1_") ? 15000 : null };
+  const transaction = await env.DB.prepare(
+    `SELECT amount FROM nne_credit_transactions
+     WHERE user_id = ? AND kind = 'quest_reward'
+       AND source_type = 'quest_attempt' AND source_id = ?
+     LIMIT 1`
+  ).bind(userId, attemptId).first();
+  return { credited: Number(transaction?.amount || 0), daily_cap: NNE_DAILY_CREDIT_CAP };
 }
 
 export function parseOptions(value) {

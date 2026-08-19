@@ -88,7 +88,8 @@ export async function onRequestGet({ request, env }) {
       name: "ROAD TO WESTDETRO",
       release_date: "2026-08-28",
       philosophy: "Participar suma. Esforzarte multiplica.",
-      standard_weekly_cap: 15000
+      daily_credit_cap: 5,
+      reference_usd_per_credit: 1
     },
     quests
   });

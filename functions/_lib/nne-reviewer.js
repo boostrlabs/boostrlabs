@@ -38,5 +38,5 @@ export function reviewerCanAccess(scopes, questId) {
   return Boolean(slug && scopes.includes(slug));
 }
 
-export const QUALITY_BONUS = Object.freeze({ completed: 0, good: 250, standout: 1500, exceptional: 5000 });
-export const PERFORMANCE_BONUS = Object.freeze({ normal: 0, strong: 1000, breakout: 7500, viral: 25000 });
+export const QUALITY_BONUS = Object.freeze({ completed: 0, good: 0.25, standout: 0.5, exceptional: 1 });
+export const PERFORMANCE_BONUS = Object.freeze({ normal: 0, strong: 0.25, breakout: 0.5, viral: 1 });

@@ -116,6 +116,14 @@ export interface DashboardData {
   currentRank: number | null;
   referralCode: string | null;
   referralReward: ReferralReward;
+  economy: {
+    dailyCap: number;
+    earnedToday: number;
+    remainingToday: number;
+    referenceUsdPerCredit: number;
+    redemptionOnly: boolean;
+    resetsAt: string;
+  };
 }
 
 export interface ReferralReward {

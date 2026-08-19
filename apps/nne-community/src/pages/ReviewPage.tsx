@@ -4,8 +4,8 @@ import { reviewService } from "../services/review";
 type Quality = "completed" | "good" | "standout" | "exceptional";
 type Performance = "normal" | "strong" | "breakout" | "viral";
 
-const qualityCredits: Record<Quality, number> = { completed: 0, good: 250, standout: 1500, exceptional: 5000 };
-const performanceCredits: Record<Performance, number> = { normal: 0, strong: 1000, breakout: 7500, viral: 25000 };
+const qualityCredits: Record<Quality, number> = { completed: 0, good: 0.25, standout: 0.5, exceptional: 1 };
+const performanceCredits: Record<Performance, number> = { normal: 0, strong: 0.25, breakout: 0.5, viral: 1 };
 
 export function ReviewPage() {
   const [items, setItems] = useState<any[]>([]);

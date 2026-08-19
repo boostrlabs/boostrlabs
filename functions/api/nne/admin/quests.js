@@ -43,7 +43,7 @@ export async function onRequestPost({ request, env }) {
   const status = clean(payload.status || "draft", 20);
   const cadence = clean(payload.cadence || "once", 20);
   const verification = clean(payload.verification_method || "manual", 30);
-  const rewardCredits = Math.max(0, Math.floor(Number(payload.reward_credits || 0)));
+  const rewardCredits = Math.max(0, Math.round(Number(payload.reward_credits || 0) * 4) / 4);
   const rewardXp = Math.max(0, Math.floor(Number(payload.reward_xp ?? rewardCredits)));
 
   if (!title || !description) return jsonError("nne_quest_fields_required", "Título y descripción son requeridos.", 400);

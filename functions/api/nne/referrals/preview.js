@@ -60,8 +60,8 @@ export async function onRequestGet({ request, env }) {
         name: referral.display_name
       },
       reward: {
-        credits: Number(reward?.reward_credits || 500),
-        xp: Number(reward?.reward_xp || 500)
+        credits: Math.min(1, Number(reward?.reward_credits || 1)),
+        xp: Math.min(100, Number(reward?.reward_xp || 100))
       }
     }
   });

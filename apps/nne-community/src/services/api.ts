@@ -44,3 +44,10 @@ export function formatRelativeDate(value: string) {
   const days = Math.floor(hours / 24);
   return `Hace ${days} d`;
 }
+
+export function formatNne(value: number) {
+  return new Intl.NumberFormat("es-US", {
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}

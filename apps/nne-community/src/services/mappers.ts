@@ -114,8 +114,16 @@ export function mapDashboard(payload: Raw): DashboardData {
     currentRank: payload.current_rank == null ? null : Number(payload.current_rank),
     referralCode: payload.referral_code || null,
     referralReward: {
-      credits: Number(payload.referral_reward?.credits || 500),
-      xp: Number(payload.referral_reward?.xp || 500)
+      credits: Number(payload.referral_reward?.credits || 1),
+      xp: Number(payload.referral_reward?.xp || 100)
+    },
+    economy: {
+      dailyCap: Number(payload.economy?.daily_cap || 5),
+      earnedToday: Number(payload.economy?.earned_today || 0),
+      remainingToday: Number(payload.economy?.remaining_today ?? 5),
+      referenceUsdPerCredit: Number(payload.economy?.reference_usd_per_credit || 1),
+      redemptionOnly: payload.economy?.redemption_only !== false,
+      resetsAt: String(payload.economy?.resets_at || "00:00 UTC")
     }
   };
 }

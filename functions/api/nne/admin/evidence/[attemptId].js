@@ -8,12 +8,12 @@ import {
   requireNneAdmin,
   writeNneAudit
 } from "../../../../_lib/nne-api.js";
-import { completeNneQuest } from "../../../../_lib/nne-community.js";
+import { awardNneCreditsWithDailyCap, completeNneQuest } from "../../../../_lib/nne-community.js";
 
 export const onRequestOptions = onOptions;
 
-const QUALITY_BONUS = Object.freeze({ completed: 0, good: 250, standout: 1500, exceptional: 5000 });
-const PERFORMANCE_BONUS = Object.freeze({ normal: 0, strong: 1000, breakout: 7500, viral: 25000 });
+const QUALITY_BONUS = Object.freeze({ completed: 0, good: 0.25, standout: 0.5, exceptional: 1 });
+const PERFORMANCE_BONUS = Object.freeze({ normal: 0, strong: 0.25, breakout: 0.5, viral: 1 });
 
 export async function onRequestPatch({ request, env, params }) {
   const auth = await requireNneAdmin(request, env);
@@ -41,6 +41,7 @@ export async function onRequestPatch({ request, env, params }) {
 
   const timestamp = now();
   let bonusCredits = 0;
+  let baseCredits = 0;
   let quality = "completed";
   let performance = "normal";
 
@@ -51,24 +52,26 @@ export async function onRequestPatch({ request, env, params }) {
     if (!(performance in PERFORMANCE_BONUS)) performance = "normal";
     bonusCredits = QUALITY_BONUS[quality] + PERFORMANCE_BONUS[performance];
 
-    await completeNneQuest(env, {
+    const base = await completeNneQuest(env, {
       attemptId: attempt.id,
       userId: attempt.user_id,
       quest: attempt,
       actorUserId: auth.user.id,
       completionStatus: "approved"
     });
+    baseCredits = base.credited;
 
     if (bonusCredits > 0) {
-      await env.DB.prepare(
-        `INSERT OR IGNORE INTO nne_credit_transactions (
-          id, user_id, amount, kind, source_type, source_id, description, actor_user_id, created_at
-        ) VALUES (?, ?, ?, 'admin_adjustment', 'season_bonus', ?, ?, ?, ?)`
-      ).bind(
-        crypto.randomUUID(), attempt.user_id, bonusCredits, `${attempt.id}:bonus`,
-        `Season 001 bonus · Creativity ${quality} · Performance ${performance}`,
-        auth.user.id, timestamp
-      ).run();
+      bonusCredits = await awardNneCreditsWithDailyCap(env, {
+        userId: attempt.user_id,
+        amount: bonusCredits,
+        kind: "admin_adjustment",
+        sourceType: "season_bonus",
+        sourceId: `${attempt.id}:bonus`,
+        description: `Season 001 bonus · Creativity ${quality} · Performance ${performance}`,
+        actorUserId: auth.user.id,
+        timestamp
+      });
     }
   } else {
     const reason = clean(parsed.payload?.reason, 500);
@@ -100,9 +103,9 @@ export async function onRequestPatch({ request, env, params }) {
       id: attempt.id,
       status: action === "approve" ? "approved" : "rejected",
       reviewed_at: timestamp,
-      base_credits: action === "approve" ? Number(attempt.reward_credits) : 0,
+      base_credits: action === "approve" ? baseCredits : 0,
       bonus_credits: action === "approve" ? bonusCredits : 0,
-      total_credits: action === "approve" ? Number(attempt.reward_credits) + bonusCredits : 0,
+      total_credits: action === "approve" ? baseCredits + bonusCredits : 0,
       quality,
       performance
     }

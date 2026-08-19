@@ -32,20 +32,20 @@ function upsertQuest(env, id, platform, title, description, credits, sort) {
 
 export async function ensureNneSeason001Catalog(env) {
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS nne_runtime_flags (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`).run();
-  const ready = await env.DB.prepare(`SELECT value FROM nne_runtime_flags WHERE key='season_001_catalog_v1' LIMIT 1`).first();
+  const ready = await env.DB.prepare(`SELECT value FROM nne_runtime_flags WHERE key='season_001_catalog_economy_v2' LIMIT 1`).first();
   if (ready?.value === 'ready') return;
   const statements = [];
 
-  statements.push(upsertQuest(env, "s1_spotify_profile", "Spotify", "Janko Diorr · Artist Profile", `Abre el perfil oficial de Janko Diorr y familiarízate con el catálogo de Season 001. Esta quest es una visita de discovery, no paga por repetir streams. Sube screenshot del perfil abierto.\n\nAbrir perfil: ${spotifyProfile}`, 100, 290));
+  statements.push(upsertQuest(env, "s1_spotify_profile", "Spotify", "Janko Diorr · Artist Profile", `Abre el perfil oficial de Janko Diorr y familiarízate con el catálogo de Season 001. Esta quest es una visita de discovery, no paga por repetir streams. Sube screenshot del perfil abierto.\n\nAbrir perfil: ${spotifyProfile}`, 0.25, 290));
 
   for (const [id,title,url,sort] of catalog) {
-    statements.push(upsertQuest(env, id, "Apple Music", title, `Catalog Discovery: abre la ficha oficial, reconoce el release y sube screenshot. En la nota puedes decir qué tema quieres ver dentro de NNE. No se exige repetir reproducciones.\n\nAbrir release: ${url}`, 100, sort));
+    statements.push(upsertQuest(env, id, "Apple Music", title, `Catalog Discovery: abre la ficha oficial, reconoce el release y sube screenshot. En la nota puedes decir qué tema quieres ver dentro de NNE. No se exige repetir reproducciones.\n\nAbrir release: ${url}`, 0.25, sort));
   }
 
   for (const [id,title,url,sort] of tiktoks) {
-    statements.push(upsertQuest(env, id, "TikTok", title, `Support Bundle: like + comentario + share/repost en el mismo TikTok. Las tres acciones juntas califican; una acción aislada no genera Credits.\n\nAbrir TikTok: ${url}`, 100, sort));
+    statements.push(upsertQuest(env, id, "TikTok", title, `Support Bundle: like + comentario + share/repost en el mismo TikTok. Las tres acciones juntas califican; una acción aislada no genera Credits.\n\nAbrir TikTok: ${url}`, 0.25, sort));
   }
 
-  statements.push(env.DB.prepare(`INSERT INTO nne_runtime_flags (key,value,updated_at) VALUES ('season_001_catalog_v1','ready',datetime('now')) ON CONFLICT(key) DO UPDATE SET value='ready',updated_at=datetime('now')`));
+  statements.push(env.DB.prepare(`INSERT INTO nne_runtime_flags (key,value,updated_at) VALUES ('season_001_catalog_economy_v2','ready',datetime('now')) ON CONFLICT(key) DO UPDATE SET value='ready',updated_at=datetime('now')`));
   await env.DB.batch(statements);
 }
