@@ -9,7 +9,6 @@ import {
 } from "react";
 import {
   usersService,
-  type LoginChallengeResult,
   type SignupInput,
   type SignupResult
 } from "../services/users";
@@ -18,8 +17,7 @@ import type { UserProfile } from "../types";
 interface AuthContextValue {
   user: UserProfile | null;
   loading: boolean;
-  login: (identifier: string, password: string) => Promise<LoginChallengeResult>;
-  verifyLoginCode: (challengeToken: string, code: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   signup: (input: SignupInput) => Promise<SignupResult>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -48,15 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       login: async (identifier, password) => {
-        return usersService.login(identifier, password);
-      },
-      verifyLoginCode: async (challengeToken, code) => {
-        await usersService.verifyLoginCode(challengeToken, code);
+        await usersService.login(identifier, password);
         await refreshSession();
       },
-      signup: async (input) => {
-        return usersService.signup(input);
-      },
+      signup: async (input) => usersService.signup(input),
       logout: async () => {
         await usersService.logout();
         setUser(null);
