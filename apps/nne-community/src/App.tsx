@@ -5,7 +5,7 @@ import { useAuth } from "./context/AuthContext";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminReviewersPage } from "./pages/AdminReviewersPage";
 import { AuthPage } from "./pages/AuthPage";
-import { ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordRecoveryPage";
+import { EmailVerificationPage, ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordRecoveryPage";
 import { JoinPage } from "./pages/JoinPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import {
@@ -34,6 +34,7 @@ export default function App() {
       <Route path="/join" element={<JoinPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/verify-email" element={<EmailVerificationPage />} />
       <Route element={<RequireAuth />}>
         <Route index element={<HomePage />} />
         <Route path="quests" element={<QuestsPage />} />

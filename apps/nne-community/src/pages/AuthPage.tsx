@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usersService } from "../services/users";
+import { ApiError } from "../services/api";
 import type { ReferralPreview } from "../types";
 import { CollabBrand } from "../components/CollabBrand";
 
@@ -13,11 +14,14 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [applicationMessage, setApplicationMessage] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
   const [referralPreview, setReferralPreview] = useState<ReferralPreview | null>(null);
   const [referralLoading, setReferralLoading] = useState(false);
   const [referralError, setReferralError] = useState("");
   const referralCode = mode === "signup" ? String(searchParams.get("ref") || "").trim() : "";
   const promoCode = mode === "signup" ? String(searchParams.get("promo") || "").trim().toUpperCase() : "";
+  const adminInvite = mode === "signup" ? String(searchParams.get("admin_invite") || "").trim() : "";
+  const invitedUsername = adminInvite ? String(searchParams.get("username") || "").trim().toLowerCase() : "";
 
   useEffect(() => {
     let active = true;
@@ -53,6 +57,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
     const data = new FormData(event.currentTarget);
     setBusy(true);
     setError("");
+    setNeedsVerification(false);
     try {
       if (mode === "login") {
         await login(String(data.get("identifier") || ""), String(data.get("password") || ""));
@@ -72,7 +77,8 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
           bio: String(data.get("bio") || ""),
           promo_code: String(data.get("promo_code") || ""),
           referral_code: referralPreview?.code || "",
-          company_website: String(data.get("company_website") || "")
+          company_website: String(data.get("company_website") || ""),
+          admin_invite: adminInvite || undefined
         });
         setApplicationMessage(result.message);
         event.currentTarget.reset();
@@ -81,6 +87,9 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
       const from = (location.state as { from?: string } | null)?.from || "/";
       navigate(from, { replace: true });
     } catch (caught) {
+      if (caught instanceof ApiError && caught.code === "nne_email_verification_required") {
+        setNeedsVerification(true);
+      }
       setError(caught instanceof Error ? caught.message : "No pudimos continuar.");
     } finally {
       setBusy(false);
@@ -103,13 +112,23 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
         <p className="auth-note">Tu cuenta NNE es independiente de cualquier cuenta BOOSTR.</p>
         {applicationMessage && (
           <div className="application-success">
-            <div className="eyebrow">Solicitud recibida</div>
-            <h3>Ahora la revisamos nosotros.</h3>
+            <div className="eyebrow">Confirma que eres tú</div>
+            <h3>Revisa tu correo.</h3>
             <p>{applicationMessage}</p>
             <Link className="primary-button full button-link" to="/login">Volver al inicio</Link>
           </div>
         )}
         {error && <div className="form-error">{error}</div>}
+        {needsVerification && (
+          <Link className="primary-button full button-link" to="/verify-email">Reenviar correo de verificación</Link>
+        )}
+        {mode === "signup" && adminInvite && (
+          <aside className="referral-invite">
+            <div className="eyebrow">Invitación privada</div>
+            <strong>Acceso admin para @{invitedUsername || "usuario reservado"}</strong>
+            <p>El rol se activa después de verificar el correo. Esta invitación funciona una sola vez.</p>
+          </aside>
+        )}
         {mode === "signup" && referralCode && (
           <aside className={`referral-invite ${referralError ? "invalid" : ""}`}>
             {referralLoading ? (
@@ -141,7 +160,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
           {mode === "signup" && (
             <>
               <label>Nombre o nombre artístico<input name="name" className="field" required autoComplete="name" /></label>
-              <label>Username<input name="username" className="field" required minLength={3} autoComplete="username" /></label>
+              <label>Tu @username público <span>(preferiblemente el de Instagram)</span><input name="username" className="field" required minLength={3} autoComplete="username" placeholder="tuusuario" defaultValue={invitedUsername} readOnly={Boolean(adminInvite && invitedUsername)} /></label>
               <div className="form-grid">
                 <label>¿Qué haces?<select name="artist_role" className="field" required defaultValue="">
                   <option value="" disabled>Selecciona</option><option value="artist">Artista</option><option value="producer">Productor/a</option><option value="engineer">Ingeniero/a</option><option value="designer">Diseñador/a</option><option value="manager">Manager</option><option value="fan">Fan / comunidad</option><option value="other">Otro</option>
@@ -180,6 +199,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
           </label>
           <label>Contraseña<input name="password" type="password" className="field" required minLength={10} autoComplete={mode === "login" ? "current-password" : "new-password"} /></label>
           {mode === "login" && <Link className="forgot-password-link" to="/forgot-password">¿Olvidaste tu contraseña?</Link>}
+          {mode === "login" && <Link className="forgot-password-link" to="/verify-email">¿No te llegó la verificación?</Link>}
           <button
             className="primary-button full"
             disabled={busy || Boolean(referralCode && (referralLoading || !referralPreview))}

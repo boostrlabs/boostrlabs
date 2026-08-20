@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { CollabBrand } from "../components/CollabBrand";
 import { useAuth } from "../context/AuthContext";
@@ -14,6 +14,71 @@ function RecoveryBrand() {
       <p className="auth-brand-secondary">También habrá drops y oportunidades especiales para los miembros que se mantienen activos.</p>
       <strong className="auth-manifesto">De artistas haciéndolo real, para artistas que quieren hacerlo real.</strong>
     </section>
+  );
+}
+
+export function EmailVerificationPage() {
+  const [searchParams] = useSearchParams();
+  const token = String(searchParams.get("token") || "").trim();
+  const [busy, setBusy] = useState(Boolean(token));
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [activated, setActivated] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (!token) return () => { active = false; };
+    usersService.verifyEmail(token)
+      .then((result) => {
+        if (!active) return;
+        setMessage(result.message);
+        setActivated(result.activated);
+      })
+      .catch((caught) => {
+        if (active) setError(caught instanceof Error ? caught.message : "No pudimos verificar este correo.");
+      })
+      .finally(() => {
+        if (active) setBusy(false);
+      });
+    return () => { active = false; };
+  }, [token]);
+
+  const resend = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      setMessage(await usersService.resendVerification(String(data.get("identifier") || "")));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos enviar otro correo.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <main className="auth-shell">
+      <RecoveryBrand />
+      <section className="card auth-card recovery-card">
+        <div className="eyebrow">Verificación de correo</div>
+        <h2>{busy ? "Verificando…" : message ? "Correo verificado." : token ? "Revisa el enlace." : "Pide otro correo."}</h2>
+        {error && <div className="form-error">{error}</div>}
+        {message && <div className="form-success">{message}</div>}
+        {!token && !message && (
+          <form onSubmit={resend} className="form-stack">
+            <p className="auth-note">Escribe el email o @username de tu solicitud pendiente.</p>
+            <label>Email o @username<input name="identifier" className="field" required autoComplete="username" /></label>
+            <button className="primary-button full" disabled={busy}>{busy ? "Enviando…" : "Reenviar verificación"}</button>
+          </form>
+        )}
+        {!busy && (message || error) && (
+          <Link className="primary-button full button-link" to="/login">{activated ? "Entrar como admin" : "Ir al inicio"}</Link>
+        )}
+        <p className="auth-switch"><Link to="/signup">Volver al registro</Link></p>
+      </section>
+    </main>
   );
 }
 

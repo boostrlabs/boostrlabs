@@ -23,9 +23,27 @@ const content = {
   late_night_2: "https://www.instagram.com/reel/DZyHYOqPiVj/"
 };
 
+const officialChannels = {
+  nne: "https://www.youtube.com/@nosotrosnoellos",
+  janko: "https://www.youtube.com/@jankodiorr",
+  gemese: "https://www.youtube.com/@gemeseoficial",
+  xiam: "https://www.youtube.com/@xiamoficial"
+};
+
+const featured = [
+  ["nne_sisisi_announcement", "Instagram / TikTok", "SISISI · 26 AGO", "Sube una story o video corto anunciando SISISI para el 26 de agosto. Debe mencionar SISISI, NNE × WESTDETRO y la fecha. Sube captura y pega el link si es público.", officialChannels.nne, 0.5, 20, 1, "2026-08-20T00:00:00.000Z", "2026-08-27T04:00:00.000Z"],
+  ["nne_sisisi_original", "TikTok / Reels", "Haz algo original con SISISI", "Crea una pieza original alrededor de SISISI: expectativa, concepto, outfit, reacción o una idea propia. No copies otro video. Base: 1 NNE; una ejecución especialmente dura puede recibir un plus del staff.", officialChannels.nne, 1, 30, 2, "2026-08-20T00:00:00.000Z", "2026-08-27T04:00:00.000Z"],
+  ["gemese_channel_discovery", "YouTube", "Conoce el canal de Gemese", "Entra al canal oficial de Gemese, mira uno de sus videos y deja un comentario real sobre lo que viste. Sube evidencia verificable.", officialChannels.gemese, 0.25, 10, 3],
+  ["xiam_channel_discovery", "YouTube", "Conoce el canal de Xiam", "Entra al canal oficial de Xiam, mira uno de sus videos y deja un comentario real sobre lo que viste. Sube evidencia verificable.", officialChannels.xiam, 0.25, 10, 4],
+  ["s1_janko_channel_discovery", "YouTube", "Conoce el canal de Janko", "Entra al canal oficial de Janko Diorr, mira uno de sus videos y deja un comentario real sobre lo que viste. Sube evidencia verificable.", officialChannels.janko, 0.25, 10, 5],
+  ["nne_channel_discovery", "YouTube", "Conoce NOSOTROSNOELLOS", "Entra al canal oficial de NOSOTROSNOELLOS, mira uno de los videos y deja un comentario real. Sube evidencia verificable.", officialChannels.nne, 0.25, 10, 6],
+  ["gemese_creator_spotlight", "TikTok / Reels", "Recomienda una canción de Gemese", "Crea un video corto recomendando una canción de Gemese y explica con tus palabras por qué alguien debería escucharla. Sube captura y link del video.", officialChannels.gemese, 1, 25, 7],
+  ["xiam_creator_spotlight", "TikTok / Reels", "Recomienda una canción de Xiam", "Crea un video corto recomendando una canción de Xiam y explica con tus palabras por qué alguien debería escucharla. Sube captura y link del video.", officialChannels.xiam, 1, 25, 8]
+];
+
 const support = [
-  ["s1_support_tracklist", "Instagram", "Support · Tracklist WESTDETRO", "Like + comentario + repost/share del tracklist oficial. Las tres acciones juntas completan la quest.", content.tracklist, 0.25, 10],
-  ["s1_comments_tracklist", "Instagram", "Comment Run · Tracklist WESTDETRO", "Deja 10 comentarios reales en el post oficial y sube evidencia verificable.", content.tracklist, 0.5, 11],
+  ["s1_support_tracklist", "Instagram", "Dale apoyo · Tracklist WESTDETRO", "Like + comentario + repost/share del tracklist oficial. Las tres acciones juntas completan la chamba.", content.tracklist, 0.25, 40],
+  ["s1_comments_tracklist", "Instagram", "Ronda de comentarios · Tracklist WESTDETRO", "Deja 10 comentarios reales en el post oficial y sube evidencia verificable.", content.tracklist, 0.5, 41],
   ["s1_support_punto_g", "Instagram", "Support · PUNTO G", "Like + comentario + repost/share del Reel oficial de PUNTO G.", content.punto_g, 0.25, 20],
   ["s1_comments_punto_g", "Instagram", "10 comentarios · PUNTO G", "Completa un run de 10 comentarios en este Reel. Sube evidencia donde se pueda verificar el esfuerzo.", content.punto_g, 0.5, 21],
   ["s1_support_caption", "Instagram", "Support · CAPTION", "Like + comentario + repost/share del Reel oficial de CAPTION.", content.caption, 0.25, 30],
@@ -60,26 +78,40 @@ const rewards = [
   ["s1_reward_production", "Full Production · Janko Diorr", "Producción completa con beat, producción, mix y master. Sujeta a agenda y términos del reward.", "PROD", 200, null, 80]
 ];
 
-function questUpsert(env, { id, type = "social-proof", platform, title, description, icon = "◆", credits, xp = credits, cadence = "once", verification = "manual", songId = null, listen = 0, pass = 75, level = 1, sort = 0 }) {
+function questUpsert(env, { id, type = "social-proof", platform, title, description, icon = "◆", credits, xp = credits, cadence = "once", verification = "manual", songId = null, listen = 0, pass = 75, level = 1, sort = 0, startsAt = START, endsAt = END }) {
   return env.DB.prepare(`INSERT INTO nne_quests (id,type,platform,title,description,icon,reward_credits,reward_xp,status,cadence,verification_method,song_id,minimum_listen_seconds,pass_percentage,minimum_level,starts_at,ends_at,sort_order,created_at,updated_at)
     VALUES (?,?,?,?,?,?,?,?, 'published',?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))
     ON CONFLICT(id) DO UPDATE SET type=excluded.type,platform=excluded.platform,title=excluded.title,description=excluded.description,icon=excluded.icon,reward_credits=excluded.reward_credits,reward_xp=excluded.reward_xp,status='published',cadence=excluded.cadence,verification_method=excluded.verification_method,song_id=excluded.song_id,minimum_listen_seconds=excluded.minimum_listen_seconds,pass_percentage=excluded.pass_percentage,minimum_level=excluded.minimum_level,starts_at=excluded.starts_at,ends_at=excluded.ends_at,sort_order=excluded.sort_order,updated_at=datetime('now')`)
-    .bind(id,type,platform,title,description,icon,credits,xp,cadence,verification,songId,listen,pass,level,START,END,sort);
+    .bind(id,type,platform,title,description,icon,credits,xp,cadence,verification,songId,listen,pass,level,startsAt,endsAt,sort);
 }
 
 export async function ensureNneSeason001(env) {
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS nne_runtime_flags (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`).run();
-  const ready = await env.DB.prepare(`SELECT value FROM nne_runtime_flags WHERE key='season_001_economy_v3' LIMIT 1`).first();
+  const ready = await env.DB.prepare(`SELECT value FROM nne_runtime_flags WHERE key='season_001_economy_v4' LIMIT 1`).first();
   if (ready?.value === "ready") return;
 
   const statements = [
     env.DB.prepare(`UPDATE nne_rewards SET status='archived', updated_at=datetime('now') WHERE status='published' AND id NOT LIKE 's1_%'`),
-    env.DB.prepare(`UPDATE nne_quests SET status='archived', updated_at=datetime('now') WHERE status='published' AND id NOT LIKE 's1_%' AND id != 'quest_referral_artist'`),
+    env.DB.prepare(`UPDATE nne_quests SET status='archived', updated_at=datetime('now') WHERE status='published' AND id NOT LIKE 's1_%' AND id NOT LIKE 'nne_%' AND id NOT LIKE 'gemese_%' AND id NOT LIKE 'xiam_%' AND id != 'quest_referral_artist'`),
     env.DB.prepare(`UPDATE nne_quests SET reward_credits=1, reward_xp=100, status='published', updated_at=datetime('now') WHERE id='quest_referral_artist'`)
   ];
 
   for (const [id,title,artist,url] of songs) {
     statements.push(env.DB.prepare(`INSERT INTO nne_songs (id,title,artist_name,listen_url,status,created_at,updated_at) VALUES (?,?,?,?, 'published',datetime('now'),datetime('now')) ON CONFLICT(id) DO UPDATE SET title=excluded.title,artist_name=excluded.artist_name,listen_url=excluded.listen_url,status='published',updated_at=datetime('now')`).bind(id,title,artist,url));
+  }
+
+  for (const [id,platform,title,body,url,credits,xp,sort,startsAt,endsAt] of featured) {
+    statements.push(questUpsert(env,{
+      id,
+      platform,
+      title,
+      description:`${body}\n\nAbrir contenido: ${url}`,
+      credits,
+      xp,
+      sort,
+      startsAt: startsAt || START,
+      endsAt: endsAt || END
+    }));
   }
 
   for (const [id,platform,title,body,url,credits,sort] of support) {
@@ -128,6 +160,6 @@ export async function ensureNneSeason001(env) {
   for (const [id,songId,questId,prompt,opts,correct] of trivia) statements.push(env.DB.prepare(`INSERT INTO nne_trivia_questions (id,song_id,quest_id,prompt,options_json,correct_option_id,status,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?,'active',10,datetime('now'),datetime('now')) ON CONFLICT(id) DO UPDATE SET song_id=excluded.song_id,quest_id=excluded.quest_id,prompt=excluded.prompt,options_json=excluded.options_json,correct_option_id=excluded.correct_option_id,status='active',updated_at=datetime('now')`).bind(id,songId,questId,prompt,JSON.stringify(opts.map(([oid,text])=>({id:oid,text}))),correct));
 
   statements.push(env.DB.prepare(`INSERT INTO nne_feed_events (id,user_id,event_type,message,visibility,source_type,source_id,created_at) VALUES ('s1_launch_feed',NULL,'season_launch','NNE SEASON 001 · ROAD TO WESTDETRO · 08.28.26 ya está activo.','public','season','001',datetime('now')) ON CONFLICT(id) DO NOTHING`));
-  statements.push(env.DB.prepare(`INSERT INTO nne_runtime_flags (key,value,updated_at) VALUES ('season_001_economy_v3','ready',datetime('now')) ON CONFLICT(key) DO UPDATE SET value='ready',updated_at=datetime('now')`));
+  statements.push(env.DB.prepare(`INSERT INTO nne_runtime_flags (key,value,updated_at) VALUES ('season_001_economy_v4','ready',datetime('now')) ON CONFLICT(key) DO UPDATE SET value='ready',updated_at=datetime('now')`));
   await env.DB.batch(statements);
 }

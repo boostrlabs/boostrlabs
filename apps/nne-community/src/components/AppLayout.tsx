@@ -76,7 +76,7 @@ export function AppLayout() {
             <h1>{copy.title}</h1>
             <p>{copy.subtitle}</p>
           </div>
-          <div className="avatar" title={user?.name}>{dashboard.user.initials}</div>
+          <div className="avatar" title={`@${user?.username || dashboard.user.username}`}>{dashboard.user.initials}</div>
         </header>
         <Outlet context={{
           dashboard,
@@ -91,7 +91,7 @@ export function AppLayout() {
         {dashboard.leaderboard.slice(0, 5).map((entry) => (
           <div className="leader-row" key={entry.userId}>
             <span>{entry.rank}</span>
-            <strong>{entry.userId === dashboard.user.id ? "Tú" : entry.name}</strong>
+            <strong>@{entry.username}{entry.userId === dashboard.user.id && <small> · tú</small>}</strong>
             <em>{entry.score.toLocaleString()}</em>
           </div>
         ))}

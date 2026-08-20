@@ -11,10 +11,15 @@ import {
   normalizeUsername,
   now,
   onOptions,
+  randomHex,
   readJson,
   requireNneDb,
+  sha256,
   writeNneAudit
 } from "../../../_lib/nne-api.js";
+import { sendNneEmail, verificationEmail } from "../../../_lib/nne-email.js";
+
+const VERIFICATION_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const reservedUsernames = new Set([
   "admin",
@@ -62,6 +67,7 @@ export async function onRequestPost({ request, env }) {
   const primaryContact = clean(payload.primary_contact, 20);
   const bio = clean(payload.bio, 800);
   const promoCode = clean(payload.promo_code, 80).toUpperCase();
+  const adminInviteToken = clean(payload.admin_invite, 200);
 
   if (name.length < 2) {
     return jsonError("nne_name_required", "Escribe tu nombre o nombre artístico.", 400, { fields: ["name"] });
@@ -141,30 +147,97 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
+  if (!env.EMAIL && !env.RESEND_API_KEY) {
+    return jsonError(
+      "nne_email_verification_unavailable",
+      "La verificación por correo está temporalmente fuera de servicio.",
+      503
+    );
+  }
+
+  let adminInvite = null;
+  if (adminInviteToken) {
+    adminInvite = await env.DB.prepare(
+      `SELECT id, intended_username, granted_role, expires_at
+       FROM nne_admin_invites
+       WHERE token_hash = ? AND status = 'active' AND expires_at > ?
+       LIMIT 1`
+    ).bind(await sha256(adminInviteToken), now()).first();
+    if (!adminInvite?.id) {
+      return jsonError("nne_admin_invite_invalid", "Esta invitación de admin no es válida o ya venció.", 403);
+    }
+    if (normalizeUsername(adminInvite.intended_username) !== username) {
+      return jsonError(
+        "nne_admin_invite_username_reserved",
+        `Esta invitación está reservada para @${adminInvite.intended_username}.`,
+        400,
+        { fields: ["username"] }
+      );
+    }
+  }
+
   const timestamp = now();
   const applicationId = crypto.randomUUID();
   const passwordHash = await hashNnePassword(password);
+  const verificationToken = randomHex(32);
+  const verificationId = crypto.randomUUID();
+  const verificationExpiresAt = new Date(Date.now() + VERIFICATION_WINDOW_MS).toISOString();
+  const verificationUrl = `${clean(env.NNE_APP_ORIGIN || "https://nne.westdetro.com", 300).replace(/\/$/, "")}/verify-email?token=${encodeURIComponent(verificationToken)}`;
   await env.DB.prepare(
     `INSERT INTO nne_access_applications (
       id, email, username, display_name, password_hash, artist_role, country, city,
       instagram_handle, whatsapp_contact, telegram_handle, primary_contact, bio,
-      referral_code, promo_code, status, ip, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`
+      referral_code, promo_code, status, ip, created_at, updated_at,
+      email_verification_status, admin_invite_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, 'pending', ?)`
   ).bind(
     applicationId, email, username, name, passwordHash, artistRole, country, city || null,
     instagramHandle || null, whatsappContact || null, telegramHandle || null, primaryContact, bio,
-    referredBy?.referral_code || null, promoCode || null, getIp(request), timestamp, timestamp
+    referredBy?.referral_code || null, promoCode || null, getIp(request), timestamp, timestamp,
+    adminInvite?.id || null
   ).run();
+  await env.DB.prepare(
+    `INSERT INTO nne_email_verification_tokens (
+       id, application_id, token_hash, status, expires_at, created_at, requested_ip
+     ) VALUES (?, ?, ?, 'active', ?, ?, ?)`
+  ).bind(
+    verificationId,
+    applicationId,
+    await sha256(verificationToken),
+    verificationExpiresAt,
+    timestamp,
+    getIp(request)
+  ).run();
+
+  try {
+    await sendNneEmail(
+      env,
+      { email, name },
+      verificationEmail({ displayName: name, username, verificationUrl })
+    );
+  } catch (error) {
+    console.error("NNE verification email failed", error?.message || error);
+    await env.DB.prepare("DELETE FROM nne_access_applications WHERE id = ?").bind(applicationId).run();
+    return jsonError(
+      "nne_email_verification_failed",
+      "No pudimos enviar el correo de verificación. Intenta nuevamente en unos minutos.",
+      503
+    );
+  }
   await writeNneAudit(env, request, null, "access.application_created", "nne_access_application", applicationId, {
     username,
     referred: Boolean(referredBy?.referrer_user_id),
-    promo_code: promoCode || null
+    promo_code: promoCode || null,
+    admin_invite: Boolean(adminInvite?.id)
   });
 
   return jsonOk(
     {
       application: { id: applicationId, status: "pending", username, email },
-      message: "Solicitud recibida. Revisaremos tus datos y te avisaremos por tu contacto principal cuando tu acceso esté aprobado."
+      verification_required: true,
+      message: adminInvite?.id
+        ? `Te enviamos un correo. Verifica ${email} para activar @${username} con acceso admin.`
+        : `Te enviamos un correo a ${email}. Verifícalo para que podamos revisar tu solicitud.`
     },
     202
   );

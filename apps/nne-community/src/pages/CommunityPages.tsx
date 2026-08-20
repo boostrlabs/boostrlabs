@@ -61,7 +61,7 @@ export function HomePage() {
       </article>
 
       <section className="music-strip" aria-label="En rotación">
-        <article><VisualMedia src={nneAssets.music.sisisi} alt="SISISI" fallback="SISISI" /><strong>SISISI</strong></article>
+        <article><VisualMedia src={nneAssets.music.sisisi} alt="SISISI" fallback="SISISI" /><strong>SISISI <small>26 AGO</small></strong></article>
         <article><VisualMedia src={nneAssets.music.deDescargue} alt="DE DESCARGUE" fallback="DD" /><strong>DE DESCARGUE</strong></article>
         <article><VisualMedia src={nneAssets.music.caption} alt="CAPTION" fallback="CAPTION" /><strong>CAPTION</strong></article>
       </section>
@@ -223,8 +223,8 @@ export function ProfilePage() {
         <div className="profile-avatar">{dashboard.user.initials}</div>
         <div>
           <div className="eyebrow">{dashboard.user.title}</div>
-          <h2>{dashboard.user.name}</h2>
-          <p>{dashboard.user.handle} · NNE × WESTDETRO · Season 001</p>
+          <h2>@{dashboard.user.username}</h2>
+          <p>{dashboard.user.name} · NNE × WESTDETRO · Season 001</p>
           <div className="profile-stats">
             <div><small>Level</small><strong>{dashboard.user.level}</strong></div>
             <div><small>Credits</small><strong>{formatNne(dashboard.user.credits)}</strong></div>

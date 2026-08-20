@@ -129,6 +129,7 @@ export function AdminPage() {
                 <h3>{item.display_name} <small>@{item.username}</small></h3>
                 <p>{item.bio}</p>
                 <div className="application-identities">
+                  <span>{item.email_verification_status === "verified" ? "Correo verificado" : item.email_verification_status === "pending" ? "Esperando verificación" : "Solicitud anterior"}</span>
                   {item.instagram_handle && <span>IG @{item.instagram_handle}</span>}
                   {item.whatsapp_contact && <span>WA {item.whatsapp_contact}</span>}
                   {item.telegram_handle && <span>TG @{item.telegram_handle}</span>}
@@ -138,7 +139,7 @@ export function AdminPage() {
                 </div>
               </div>
               <div className="action-row">
-                <button className="primary-button" onClick={() => void run(() => adminService.reviewApplication(item.id, "approve"), `@${item.username} aprobado.`)}>Aprobar acceso</button>
+                <button className="primary-button" disabled={item.email_verification_status === "pending"} onClick={() => void run(() => adminService.reviewApplication(item.id, "approve"), `@${item.username} aprobado.`)}>{item.email_verification_status === "pending" ? "Falta verificar correo" : "Aprobar acceso"}</button>
                 <button className="danger-button" onClick={() => {
                   const note = window.prompt("Razón interna o mensaje para seguimiento:") || "";
                   void run(() => adminService.reviewApplication(item.id, "reject", note), `Solicitud de @${item.username} rechazada.`);

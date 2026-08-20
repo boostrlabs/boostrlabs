@@ -242,6 +242,7 @@ h1 {
   font-size: .78rem;
   letter-spacing: .12em;
 }
+.music-strip strong small { display: block; margin-top: 4px; color: var(--gold-light); font-size: .68rem; letter-spacing: .12em; }
 .hero-grid {
   display: grid;
   grid-template-columns: 1.5fr .9fr;
@@ -605,6 +606,7 @@ h1 {
   background: #17171a;
 }
 .leader-row em { color: var(--gold-light); font-style: normal; font-weight: 800; }
+.leader-row strong small { color: var(--muted); font-size: .72rem; font-weight: 600; }
 
 .modal-backdrop {
   position: fixed;

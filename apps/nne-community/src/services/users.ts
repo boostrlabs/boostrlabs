@@ -18,10 +18,20 @@ export interface SignupInput {
   bio: string;
   promo_code?: string;
   company_website?: string;
+  admin_invite?: string;
 }
 
 export interface SignupResult {
   application: { id: string; status: "pending"; username: string; email: string };
+  verification_required: boolean;
+  message: string;
+}
+
+export interface EmailVerificationResult {
+  verified: boolean;
+  activated: boolean;
+  role: "admin" | null;
+  username: string;
   message: string;
 }
 
@@ -57,6 +67,19 @@ export const usersService = {
     const result = await apiRequest<{ message: string }>("/auth/password/reset", {
       method: "POST",
       body: JSON.stringify({ token, password })
+    });
+    return result.message;
+  },
+  async verifyEmail(token: string): Promise<EmailVerificationResult> {
+    return apiRequest<EmailVerificationResult>("/auth/email/verify", {
+      method: "POST",
+      body: JSON.stringify({ token })
+    });
+  },
+  async resendVerification(identifier: string): Promise<string> {
+    const result = await apiRequest<{ message: string }>("/auth/email/resend", {
+      method: "POST",
+      body: JSON.stringify({ identifier })
     });
     return result.message;
   },

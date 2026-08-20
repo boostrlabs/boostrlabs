@@ -11,7 +11,8 @@ export async function onRequestGet({ request, env }) {
   const result = await env.DB.prepare(
     `SELECT id, email, username, display_name, artist_role, country, city,
             instagram_handle, whatsapp_contact, telegram_handle, primary_contact,
-            bio, referral_code, promo_code, status, review_note, reviewed_at, created_at
+            bio, referral_code, promo_code, status, review_note, reviewed_at, created_at,
+            email_verification_status, email_verified_at, admin_invite_id
      FROM nne_access_applications
      WHERE status = ?
      ORDER BY created_at ASC

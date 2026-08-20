@@ -7,6 +7,10 @@ function sourceUrl(description = "") {
   return match ? match[0] : null;
 }
 
+function publicDescription(description = "") {
+  return String(description).replace(/\s*\n*Abrir (?:contenido|perfil|release|TikTok):\s*https?:\/\/[^\s]+\s*$/i, "").trim();
+}
+
 export async function onRequestGet({ request, env }) {
   const auth = await requireNneSession(request, env);
   if (!auth.ok) return auth.response;
@@ -76,7 +80,7 @@ export async function onRequestGet({ request, env }) {
       type: quest.type,
       platform: quest.platform,
       title: quest.title,
-      description: quest.description,
+      description: publicDescription(quest.description),
       source_url: sourceUrl(quest.description),
       icon: quest.icon,
       reward_credits: Number(quest.reward_credits),

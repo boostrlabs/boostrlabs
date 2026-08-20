@@ -70,11 +70,18 @@ export async function onRequestPost({ request, env }) {
 
   if (!user?.id) {
     const application = await env.DB.prepare(
-      `SELECT status FROM nne_access_applications
+      `SELECT status, email_verification_status FROM nne_access_applications
        WHERE lower(email) = ? OR username = ?
        LIMIT 1`
     ).bind(normalizeEmail(identifier), normalizeUsername(identifier)).first();
     if (application?.status === "pending") {
+      if (application.email_verification_status === "pending") {
+        return jsonError(
+          "nne_email_verification_required",
+          "Primero verifica tu correo. Si no encuentras el mensaje, pide uno nuevo.",
+          403
+        );
+      }
       return jsonError("nne_application_pending", "Tu solicitud está pendiente de aprobación. Te avisaremos por el contacto que elegiste.", 403);
     }
     if (application?.status === "rejected") {

@@ -8,6 +8,10 @@ function sourceUrl(description = "") {
   return match ? match[0] : null;
 }
 
+function publicDescription(description = "") {
+  return String(description).replace(/\s*\n*Abrir (?:contenido|perfil|release|TikTok):\s*https?:\/\/[^\s]+\s*$/i, "").trim();
+}
+
 export async function onRequestGet({ request, env }) {
   const auth = await requireNneSession(request, env);
   if (!auth.ok) return auth.response;
@@ -49,7 +53,7 @@ export async function onRequestGet({ request, env }) {
       type: row.type,
       platform: row.platform,
       title: row.title,
-      description: row.description,
+      description: publicDescription(row.description),
       source_url: sourceUrl(row.description),
       icon: row.icon,
       reward_credits: Number(row.reward_credits),

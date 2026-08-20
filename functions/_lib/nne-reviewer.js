@@ -14,6 +14,7 @@ export async function ensureNneReviewerTables(env) {
 export function artistSlugForQuest(questId = "") {
   const id = String(questId);
   if (id.startsWith("s1_")) return "janko";
+  if (id.startsWith("nne_")) return "nne";
   if (id.startsWith("gemese_")) return "gemese";
   if (id.startsWith("xiam_")) return "xiam";
   return null;
