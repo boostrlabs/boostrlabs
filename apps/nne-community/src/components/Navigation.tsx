@@ -5,6 +5,7 @@ import { CollabBrand } from "./CollabBrand";
 const items = [
   { to: "/", label: "Home", icon: "⌂" },
   { to: "/quests", label: "Chamba", icon: "◎" },
+  { to: "/raffles", label: "Sorteos", icon: "✦" },
   { to: "/feed", label: "Feed", icon: "◌" },
   { to: "/rewards", label: "Rewards", icon: "◇" },
   { to: "/profile", label: "Profile", icon: "◉" }

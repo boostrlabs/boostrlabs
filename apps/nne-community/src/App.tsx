@@ -13,6 +13,7 @@ import {
   HomePage,
   ProfilePage,
   QuestsPage,
+  RafflesPage,
   RewardsPage
 } from "./pages/CommunityPages";
 
@@ -36,6 +37,7 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route index element={<HomePage />} />
         <Route path="quests" element={<QuestsPage />} />
+        <Route path="raffles" element={<RafflesPage />} />
         <Route path="feed" element={<FeedPage />} />
         <Route path="rewards" element={<RewardsPage />} />
         <Route path="profile" element={<ProfilePage />} />

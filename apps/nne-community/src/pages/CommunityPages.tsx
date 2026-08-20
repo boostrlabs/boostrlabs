@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import type { AppOutletContext } from "../components/AppLayout";
 import { QuestCard } from "../components/QuestCard";
 import { feedService } from "../services/feed";
 import { rewardsService } from "../services/rewards";
 import { questsService } from "../services/quests";
-import type { FeedItem, Quest, Reward } from "../types";
+import { rafflesService } from "../services/raffles";
+import type { FeedItem, Quest, RaffleCampaign, Reward } from "../types";
 import { formatNne, formatRelativeDate } from "../services/api";
 import { VisualMedia } from "../components/VisualMedia";
 import { nneAssets, rewardAssets } from "../config/assets";
@@ -51,6 +52,12 @@ export function HomePage() {
         <div><div className="eyebrow">Cómo funciona</div><strong>Hoy puedes acumular hasta {formatNne(dashboard.economy.dailyCap)} NNE.</strong></div>
         <p>Te quedan <strong>{formatNne(dashboard.economy.remainingToday)} NNE</strong> disponibles hoy. Cada bloque indica cuánto paga y revisamos la evidencia antes de acreditarlo.</p>
         <small>1 NNE Credit representa $1 de valor de canje dentro del catálogo. No es dinero, no se retira ni se transfiere. Reinicia {dashboard.economy.resetsAt}.</small>
+      </article>
+
+      <article className="card raffle-teaser">
+        <div><div className="eyebrow">Sorteo semanal</div><strong>Tu XP te puede ganar un Beat WESTDETRO.</strong></div>
+        <p>Cada 10 XP elegibles de chamba aprobada crea una participación automática. No gastas XP ni NNE.</p>
+        <Link className="primary-button" to="/raffles">Ver sorteo</Link>
       </article>
 
       <section className="music-strip" aria-label="En rotación">
@@ -247,6 +254,101 @@ export function ProfilePage() {
           </button>
         </div>
       </article>
+    </>
+  );
+}
+
+const raffleDate = (value: string) => new Intl.DateTimeFormat("es-US", {
+  weekday: "long",
+  day: "numeric",
+  month: "short",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "America/New_York"
+}).format(new Date(value));
+
+export function RafflesPage() {
+  const [raffles, setRaffles] = useState<RaffleCampaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    rafflesService.list()
+      .then((response) => setRaffles(response.raffles))
+      .catch((caught) => setError(caught instanceof Error ? caught.message : "No pudimos cargar los sorteos."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="empty-state">Calculando tus participaciones…</div>;
+  if (error) return <div className="form-error">{error}</div>;
+
+  return (
+    <>
+      <article className="card raffle-rules">
+        <div>
+          <div className="eyebrow">Sorteos NNE</div>
+          <h2>No compras tickets. Tu chamba te mete.</h2>
+        </div>
+        <div className="raffle-rule-grid">
+          <span><b>10 XP</b>1 participación</span>
+          <span><b>3 máximo</b>por persona</span>
+          <span><b>5 XP</b>máximo elegible por día</span>
+        </div>
+        <p>Solo cuenta el XP base de Bloques de Chamba aprobados. Referrals, bonos y puntos extra por views no generan más participaciones. Tu XP nunca se descuenta.</p>
+      </article>
+
+      <section className="raffle-grid">
+        {raffles.map((raffle) => {
+          const prizeAsset = raffle.prizeRewardId
+            ? rewardAssets(raffle.prizeRewardId, null)[0]
+            : rewardAssets("s1_reward_westdetro_beat", null)[0];
+          const progress = raffle.userEntries >= raffle.maxEntriesPerUser
+            ? 100
+            : ((raffle.userEligibleXp % raffle.xpPerEntry) / raffle.xpPerEntry) * 100;
+          return (
+            <article className="card raffle-card" key={raffle.id}>
+              <VisualMedia src={prizeAsset} alt={raffle.prizeName} fallback="BEAT" eager />
+              <div className="raffle-card-copy">
+                <div className="raffle-card-topline">
+                  <span className="tag">{raffle.status === "drawn" ? "Resultado" : "Activo"}</span>
+                  <small>{raffleDate(raffle.drawAt)} · hora Miami</small>
+                </div>
+                <h2>{raffle.prizeName}</h2>
+                <p>{raffle.description}</p>
+
+                {raffle.result ? (
+                  <div className="raffle-winner">
+                    {raffle.result.winner ? <><small>Ganador</small><strong>@{raffle.result.winner.username}</strong></> : <strong>No hubo participaciones elegibles.</strong>}
+                    <span>Resultado verificable · {raffle.result.rosterHash.slice(0, 12)}</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="raffle-entry-count">
+                      <div><small>Tus participaciones</small><strong>{raffle.userEntries} / {raffle.maxEntriesPerUser}</strong></div>
+                      <div><small>XP elegible</small><strong>{formatNne(raffle.userEligibleXp)}</strong></div>
+                      <div><small>En juego</small><strong>{raffle.totalEntries}</strong></div>
+                    </div>
+                    <div className="raffle-progress"><span style={{ width: `${Math.min(100, progress)}%` }} /></div>
+                    <small className="raffle-next">
+                      {raffle.userEntries >= raffle.maxEntriesPerUser
+                        ? "Ya tienes el máximo para este sorteo."
+                        : `Te faltan ${formatNne(raffle.xpToNextEntry)} XP elegibles para tu próxima participación.`}
+                    </small>
+                  </>
+                )}
+
+                <div className="raffle-roster">
+                  <strong>Participantes · {raffle.participantCount}</strong>
+                  {raffle.participants.length > 0
+                    ? <div>{raffle.participants.map((participant) => <span key={participant.username}>@{participant.username} · {participant.entries}</span>)}</div>
+                    : <small>Todavía no hay participaciones. La primera puede ser tuya.</small>}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </section>
+      {!raffles.length && <div className="empty-state">El próximo sorteo se está preparando.</div>}
     </>
   );
 }

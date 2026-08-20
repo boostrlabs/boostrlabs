@@ -146,3 +146,40 @@ export interface ReferralPreview {
   };
   reward: ReferralReward;
 }
+
+export interface RaffleParticipant {
+  username: string;
+  name: string;
+  entries: number;
+}
+
+export interface RaffleCampaign {
+  id: string;
+  title: string;
+  description: string;
+  prizeName: string;
+  prizeRewardId: string | null;
+  xpPerEntry: number;
+  maxEntriesPerUser: number;
+  dailyEligibleXpCap: number;
+  status: "open" | "closed" | "drawn";
+  startsAt: string;
+  closesAt: string;
+  drawAt: string;
+  userEligibleXp: number;
+  userEntries: number;
+  xpToNextEntry: number;
+  participantCount: number;
+  totalEntries: number;
+  participants: RaffleParticipant[];
+  result: {
+    winner: {
+      userId: string;
+      username: string;
+      name: string;
+    } | null;
+    rosterHash: string;
+    totalEntries: number;
+    drawnAt: string;
+  } | null;
+}

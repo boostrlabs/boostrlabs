@@ -10,6 +10,7 @@ import { QuestModal } from "./QuestModal";
 const pageCopy: Record<string, { title: string; subtitle: string }> = {
   "/": { title: "Tu progreso empieza aquí.", subtitle: "Cada acción suma al movimiento." },
   "/quests": { title: "Bloques de Chamba.", subtitle: "Haz tareas cortas, demuestra el trabajo y suma NNE." },
+  "/raffles": { title: "Tu XP también participa.", subtitle: "La chamba acumulada te mete automáticamente en el sorteo." },
   "/feed": { title: "La comunidad se está moviendo.", subtitle: "Todo avance deja una señal." },
   "/rewards": { title: "Canjea tu progreso.", subtitle: "Servicios reales. Valor real." },
   "/profile": { title: "Tu carrera, visible.", subtitle: "Este perfil cuenta tu consistencia." },
