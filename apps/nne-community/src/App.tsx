@@ -6,6 +6,7 @@ import { AdminPage } from "./pages/AdminPage";
 import { AdminReviewersPage } from "./pages/AdminReviewersPage";
 import { AuthPage } from "./pages/AuthPage";
 import { ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordRecoveryPage";
+import { JoinPage } from "./pages/JoinPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import {
   FeedPage,
@@ -29,6 +30,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<AuthPage mode="login" />} />
       <Route path="/signup" element={<AuthPage mode="signup" />} />
+      <Route path="/join" element={<JoinPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route element={<RequireAuth />}>
