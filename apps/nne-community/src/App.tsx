@@ -8,6 +8,7 @@ import { AuthPage } from "./pages/AuthPage";
 import { EmailVerificationPage, ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordRecoveryPage";
 import { JoinPage } from "./pages/JoinPage";
 import { ReviewPage } from "./pages/ReviewPage";
+import { InstagramIntegrationPage } from "./pages/InstagramIntegrationPage";
 import {
   FeedPage,
   HomePage,
@@ -35,6 +36,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<EmailVerificationPage />} />
+      <Route path="/integrations/instagram" element={<InstagramIntegrationPage />} />
       <Route element={<RequireAuth />}>
         <Route index element={<HomePage />} />
         <Route path="quests" element={<QuestsPage />} />
