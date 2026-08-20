@@ -2,6 +2,12 @@ import { apiRequest } from "./api";
 
 export const adminService = {
   overview: () => apiRequest<any>("/admin/overview"),
+  applications: (status = "pending") => apiRequest<any>(`/admin/applications?status=${status}`),
+  reviewApplication: (id: string, action: "approve" | "reject", review_note = "") =>
+    apiRequest<any>(`/admin/applications/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ action, review_note })
+    }),
   evidence: (status = "pending") => apiRequest<any>(`/admin/evidence?status=${status}`),
   reviewEvidence: (
     attemptId: string,

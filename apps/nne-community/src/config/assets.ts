@@ -27,6 +27,8 @@ export const nneAssets = {
     "s1_reward_creator_review": localAsset("artists/xiam.webp"),
     "s1_reward_westdetro_beat": localAsset("rewards/janko-floating-head.jpeg"),
     "s1_reward_production": localAsset("rewards/janko-floating-head.jpeg"),
+    "s1_reward_focusrite_solo_3rd": localAsset("rewards/focusrite-solo-3rd-gen.png"),
+    "s1_reward_at2020": localAsset("rewards/audio-technica-at2020.jpg"),
     "season-001-shirt": localAsset("rewards/nne-westdetro-tee.webp"),
     "season-001-af1-white": localAsset("rewards/af1-white.webp"),
     "season-001-af1-black": localAsset("rewards/af1-black.webp"),

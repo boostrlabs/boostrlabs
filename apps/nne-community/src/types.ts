@@ -64,6 +64,12 @@ export interface Reward {
   name: string;
   description: string;
   costCredits: number;
+  regularCostCredits: number;
+  saleCostCredits: number | null;
+  onSale: boolean;
+  saleStartsAt: string | null;
+  saleEndsAt: string | null;
+  rewardType: "physical" | "service" | "digital";
   minimumLevel: number;
   icon: string;
   imageUrl: string | null;

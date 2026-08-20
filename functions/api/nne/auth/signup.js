@@ -1,6 +1,5 @@
 import {
   clean,
-  createNneSession,
   enforceNneRateLimit,
   getIp,
   hashNnePassword,
@@ -8,7 +7,6 @@ import {
   isValidUsername,
   jsonError,
   jsonOk,
-  nneSessionCookie,
   normalizeEmail,
   normalizeUsername,
   now,
@@ -17,7 +15,6 @@ import {
   requireNneDb,
   writeNneAudit
 } from "../../../_lib/nne-api.js";
-import { createNneCappedCreditStatement } from "../../../_lib/nne-community.js";
 
 const reservedUsernames = new Set([
   "admin",
@@ -56,6 +53,15 @@ export async function onRequestPost({ request, env }) {
   const username = normalizeUsername(payload.username);
   const password = String(payload.password || "");
   const referralCode = clean(payload.referral_code, 80).toLowerCase();
+  const artistRole = clean(payload.artist_role, 40);
+  const country = clean(payload.country, 80);
+  const city = clean(payload.city, 80);
+  const instagramHandle = clean(payload.instagram_handle, 100).replace(/^@/, "");
+  const whatsappContact = clean(payload.whatsapp_contact, 60);
+  const telegramHandle = clean(payload.telegram_handle, 100).replace(/^@/, "");
+  const primaryContact = clean(payload.primary_contact, 20);
+  const bio = clean(payload.bio, 800);
+  const promoCode = clean(payload.promo_code, 80).toUpperCase();
 
   if (name.length < 2) {
     return jsonError("nne_name_required", "Escribe tu nombre o nombre artístico.", 400, { fields: ["name"] });
@@ -76,13 +82,26 @@ export async function onRequestPost({ request, env }) {
       fields: ["password"]
     });
   }
+  if (!["artist", "producer", "engineer", "designer", "manager", "fan", "other"].includes(artistRole)) {
+    return jsonError("nne_artist_role_required", "Cuéntanos qué haces dentro de la música o la comunidad.", 400, { fields: ["artist_role"] });
+  }
+  if (!country || bio.length < 20) {
+    return jsonError("nne_application_details_required", "Escribe tu país y una presentación de al menos 20 caracteres.", 400, { fields: ["country", "bio"] });
+  }
+  const contactValues = { instagram: instagramHandle, whatsapp: whatsappContact, telegram: telegramHandle };
+  if (!Object.hasOwn(contactValues, primaryContact) || !contactValues[primaryContact]) {
+    return jsonError("nne_contact_required", "Agrega al menos una vía de contacto y elige esa misma como principal.", 400, { fields: ["primary_contact"] });
+  }
 
   const existing = await env.DB.prepare(
-    "SELECT id, email, username FROM nne_users WHERE lower(email) = ? OR username = ? LIMIT 1"
+    `SELECT email, username FROM nne_users WHERE lower(email) = ? OR username = ?
+     UNION ALL
+     SELECT email, username FROM nne_access_applications WHERE lower(email) = ? OR username = ?
+     LIMIT 1`
   )
-    .bind(email, username)
+    .bind(email, username, email, username)
     .first();
-  if (existing?.id) {
+  if (existing?.email || existing?.username) {
     if (String(existing.email).toLowerCase() === email) {
       return jsonError("nne_email_taken", "Ese email ya está registrado.", 409, { fields: ["email"] });
     }
@@ -109,152 +128,44 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
+  if (promoCode) {
+    const campaign = await env.DB.prepare(
+      `SELECT code FROM nne_promo_campaigns
+       WHERE code = ? AND status = 'active'
+         AND (starts_at IS NULL OR starts_at <= ?)
+         AND (ends_at IS NULL OR ends_at > ?)
+       LIMIT 1`
+    ).bind(promoCode, now(), now()).first();
+    if (!campaign?.code) {
+      return jsonError("nne_invalid_promo", "Ese código promocional no está activo.", 400, { fields: ["promo_code"] });
+    }
+  }
+
   const timestamp = now();
-  const userId = crypto.randomUUID();
-  const referralEventId = referredBy ? crypto.randomUUID() : null;
-  const ownReferralCode = `NNE-${crypto.randomUUID().replaceAll("-", "").slice(0, 10).toUpperCase()}`;
+  const applicationId = crypto.randomUUID();
   const passwordHash = await hashNnePassword(password);
-  const referralReward = referredBy
-    ? await env.DB.prepare(
-        `SELECT reward_credits, reward_xp
-         FROM nne_quests
-         WHERE id = 'quest_referral_artist' AND status = 'published'
-         LIMIT 1`
-      ).first()
-    : null;
-  const referralCredits = referredBy ? Math.min(1, Number(referralReward?.reward_credits || 1)) : 0;
-  const referralXp = referredBy ? Math.min(100, Number(referralReward?.reward_xp || 100)) : 0;
-  const startingLevel = 1 + Math.floor(referralXp / 1000);
-
-  let role = "member";
-  const suppliedBootstrapSecret = clean(payload.admin_bootstrap_secret, 300);
-  const configuredBootstrapSecret = clean(env.NNE_BOOTSTRAP_SECRET, 300);
-  if (configuredBootstrapSecret && suppliedBootstrapSecret === configuredBootstrapSecret) {
-    const currentAdmin = await env.DB.prepare(
-      "SELECT id FROM nne_users WHERE role = 'admin' AND status = 'active' LIMIT 1"
-    ).first();
-    if (!currentAdmin?.id) role = "admin";
-  }
-
-  const statements = [
-    env.DB.prepare(
-      `INSERT INTO nne_users (
-        id, email, username, display_name, password_hash, role, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?)`
-    ).bind(userId, email, username, name, passwordHash, role, timestamp, timestamp),
-    env.DB.prepare(
-      `INSERT INTO nne_profiles (
-        user_id, level, xp, streak_days, nne_score, title, completed_quest_count, created_at, updated_at
-      ) VALUES (?, ?, ?, 0, 0, 'New Wave', 0, ?, ?)`
-    ).bind(userId, startingLevel, referralXp, timestamp, timestamp),
-    env.DB.prepare(
-      `INSERT INTO nne_referral_codes (
-        referral_code, referrer_user_id, status, created_at, updated_at
-      ) VALUES (?, ?, 'active', ?, ?)`
-    ).bind(ownReferralCode, userId, timestamp, timestamp)
-  ];
-
-  if (referredBy?.referrer_user_id && referralEventId) {
-    statements.push(
-      env.DB.prepare(
-        `INSERT INTO nne_referral_events (
-          id, referrer_user_id, referred_user_id, referral_code, status,
-          reward_credits_each, reward_xp_each, created_at, rewarded_at
-        ) VALUES (?, ?, ?, ?, 'rewarded', ?, ?, ?, ?)`
-      ).bind(
-        referralEventId,
-        referredBy.referrer_user_id,
-        userId,
-        referredBy.referral_code,
-        referralCredits,
-        referralXp,
-        timestamp,
-        timestamp
-      ),
-      createNneCappedCreditStatement(env, {
-        userId: referredBy.referrer_user_id,
-        amount: referralCredits,
-        kind: "referral_reward",
-        sourceType: "referral_inviter",
-        sourceId: referralEventId,
-        description: `Invitación completada por @${username}`,
-        actorUserId: null,
-        timestamp
-      }),
-      createNneCappedCreditStatement(env, {
-        userId,
-        amount: referralCredits,
-        kind: "referral_reward",
-        sourceType: "referral_welcome",
-        sourceId: referralEventId,
-        description: `Bonus de bienvenida por invitación de @${referredBy.username}`,
-        actorUserId: null,
-        timestamp
-      }),
-      env.DB.prepare(
-        `UPDATE nne_profiles
-         SET xp = xp + ?,
-             level = 1 + CAST((xp + ?) / 1000 AS INTEGER),
-             completed_quest_count = completed_quest_count + 1,
-             nne_score = MIN(100, nne_score + 1),
-             updated_at = ?
-         WHERE user_id = ?`
-      ).bind(referralXp, referralXp, timestamp, referredBy.referrer_user_id),
-      env.DB.prepare(
-        `INSERT INTO nne_feed_events (
-          id, user_id, event_type, message, visibility, source_type, source_id, created_at
-        ) VALUES (?, ?, 'referral_completed', ?, 'public', 'referral_event', ?, ?)`
-      ).bind(
-        crypto.randomUUID(),
-        referredBy.referrer_user_id,
-        `@${referredBy.username} y @${username} ganaron ${referralCredits} NNE Credits por moverse juntos.`,
-        referralEventId,
-        timestamp
-      )
-    );
-  }
-
-  await env.DB.batch(statements);
-  const session = await createNneSession(env, request, userId);
-  await env.DB.prepare("UPDATE nne_users SET last_login_at = ? WHERE id = ?")
-    .bind(timestamp, userId)
-    .run();
-  await writeNneAudit(env, request, userId, "auth.signup", "nne_user", userId, {
-    role,
+  await env.DB.prepare(
+    `INSERT INTO nne_access_applications (
+      id, email, username, display_name, password_hash, artist_role, country, city,
+      instagram_handle, whatsapp_contact, telegram_handle, primary_contact, bio,
+      referral_code, promo_code, status, ip, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`
+  ).bind(
+    applicationId, email, username, name, passwordHash, artistRole, country, city || null,
+    instagramHandle || null, whatsappContact || null, telegramHandle || null, primaryContact, bio,
+    referredBy?.referral_code || null, promoCode || null, getIp(request), timestamp, timestamp
+  ).run();
+  await writeNneAudit(env, request, null, "access.application_created", "nne_access_application", applicationId, {
+    username,
     referred: Boolean(referredBy?.referrer_user_id),
-    referrer_user_id: referredBy?.referrer_user_id || null,
-    referral_credits_each: referralCredits,
-    referral_xp_each: referralXp
+    promo_code: promoCode || null
   });
 
   return jsonOk(
     {
-      user: {
-        id: userId,
-        email,
-        username,
-        handle: `@${username}`,
-        name,
-        role,
-        level: startingLevel,
-        xp: referralXp,
-        streak_days: 0,
-        nne_score: 0,
-        title: "New Wave",
-        completed_quest_count: 0,
-        credits: referralCredits
-      },
-      referral_code: ownReferralCode,
-      referral_bonus: referredBy
-        ? {
-            referrer_handle: `@${referredBy.username}`,
-            credits: referralCredits,
-            xp: referralXp
-          }
-        : null,
-      redirect: role === "admin" ? "/nne-community/admin" : "/nne-community/"
+      application: { id: applicationId, status: "pending", username, email },
+      message: "Solicitud recibida. Revisaremos tus datos y te avisaremos por tu contacto principal cuando tu acceso esté aprobado."
     },
-    201,
-    { "Set-Cookie": nneSessionCookie(session.token, request) }
+    202
   );
 }

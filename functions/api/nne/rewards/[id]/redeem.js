@@ -15,7 +15,12 @@ export async function onRequestPost({ request, env, params }) {
   if (!auth.ok) return auth.response;
 
   const reward = await env.DB.prepare(
-    `SELECT id, name, cost_credits, minimum_level, status
+    `SELECT id, name,
+            CASE WHEN sale_cost_credits IS NOT NULL
+                       AND (sale_starts_at IS NULL OR datetime(sale_starts_at) <= datetime('now'))
+                       AND (sale_ends_at IS NULL OR datetime(sale_ends_at) > datetime('now'))
+                 THEN sale_cost_credits ELSE cost_credits END AS cost_credits,
+            minimum_level, status
      FROM nne_rewards
      WHERE id = ? AND status = 'published'
      LIMIT 1`

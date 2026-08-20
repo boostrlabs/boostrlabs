@@ -7,14 +7,14 @@ import {
   useState,
   type ReactNode
 } from "react";
-import { usersService, type SignupInput } from "../services/users";
+import { usersService, type SignupInput, type SignupResult } from "../services/users";
 import type { UserProfile } from "../types";
 
 interface AuthContextValue {
   user: UserProfile | null;
   loading: boolean;
   login: (identifier: string, password: string) => Promise<void>;
-  signup: (input: SignupInput) => Promise<void>;
+  signup: (input: SignupInput) => Promise<SignupResult>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -46,8 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await refreshSession();
       },
       signup: async (input) => {
-        await usersService.signup(input);
-        await refreshSession();
+        return usersService.signup(input);
       },
       logout: async () => {
         await usersService.logout();

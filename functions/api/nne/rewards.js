@@ -9,7 +9,12 @@ export async function onRequestGet({ request, env }) {
 
   const result = await env.DB.prepare(
     `SELECT
-       r.id, r.name, r.description, r.icon, r.image_url, r.cost_credits,
+       r.id, r.name, r.description, r.icon, r.image_url, r.cost_credits AS regular_cost_credits,
+       CASE WHEN r.sale_cost_credits IS NOT NULL
+                  AND (r.sale_starts_at IS NULL OR datetime(r.sale_starts_at) <= datetime('now'))
+                  AND (r.sale_ends_at IS NULL OR datetime(r.sale_ends_at) > datetime('now'))
+            THEN r.sale_cost_credits ELSE r.cost_credits END AS cost_credits,
+       r.sale_cost_credits, r.sale_starts_at, r.sale_ends_at, r.reward_type,
        r.minimum_level, r.inventory, r.sort_order,
        CASE
          WHEN r.inventory IS NULL THEN NULL
@@ -35,6 +40,11 @@ export async function onRequestGet({ request, env }) {
       icon: row.icon,
       image_url: row.image_url || null,
       cost_credits: Number(row.cost_credits),
+      regular_cost_credits: Number(row.regular_cost_credits),
+      on_sale: Number(row.cost_credits) < Number(row.regular_cost_credits),
+      sale_starts_at: row.sale_starts_at || null,
+      sale_ends_at: row.sale_ends_at || null,
+      reward_type: row.reward_type,
       minimum_level: Number(row.minimum_level),
       remaining: row.remaining == null ? null : Number(row.remaining),
       available:

@@ -167,7 +167,8 @@ export function RewardsPage() {
               ))}
             </div>
             <h3>{reward.name}</h3><p>{reward.description}</p>
-            <footer><strong>{formatNne(reward.costCredits)} Credits</strong><button disabled={locked || busyId === reward.id} onClick={() => void redeem(reward)}>{levelLocked ? `Nivel ${reward.minimumLevel}` : creditLocked ? "Sin balance" : busyId === reward.id ? "Procesando…" : "Canjear"}</button></footer>
+            {reward.saleCostCredits != null && <div className={`sale-banner ${reward.onSale ? "" : "upcoming"}`}><span>{reward.onSale ? "20% OFF" : "OFERTA MAÑANA"}</span><small>{formatNne(reward.saleCostCredits)} NNE · 20 AGO — 20 SEP</small></div>}
+            <footer><strong className="reward-price">{reward.onSale && <del>{formatNne(reward.regularCostCredits)}</del>}{formatNne(reward.costCredits)} Credits</strong><button disabled={locked || busyId === reward.id} onClick={() => void redeem(reward)}>{levelLocked ? `Nivel ${reward.minimumLevel}` : creditLocked ? "Sin balance" : busyId === reward.id ? "Procesando…" : "Canjear"}</button></footer>
           </article>;
         })}
       </section>

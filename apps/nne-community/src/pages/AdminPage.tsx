@@ -3,13 +3,14 @@ import { useOutletContext } from "react-router-dom";
 import type { AppOutletContext } from "../components/AppLayout";
 import { adminService } from "../services/admin";
 
-type AdminTab = "evidence" | "quests" | "trivia" | "rewards" | "redemptions";
+type AdminTab = "applications" | "evidence" | "quests" | "trivia" | "rewards" | "redemptions";
 
 export function AdminPage() {
   const { refreshDashboard, showToast } = useOutletContext<AppOutletContext>();
-  const [tab, setTab] = useState<AdminTab>("evidence");
+  const [tab, setTab] = useState<AdminTab>("applications");
   const [data, setData] = useState<any>({
     metrics: {},
+    applications: [],
     evidence: [],
     quests: [],
     trivia: [],
@@ -23,8 +24,9 @@ export function AdminPage() {
     setBusy(true);
     setError("");
     try {
-      const [overview, evidence, quests, trivia, rewards, redemptions] = await Promise.all([
+      const [overview, applications, evidence, quests, trivia, rewards, redemptions] = await Promise.all([
         adminService.overview(),
+        adminService.applications(),
         adminService.evidence(),
         adminService.quests(),
         adminService.trivia(),
@@ -33,6 +35,7 @@ export function AdminPage() {
       ]);
       setData({
         metrics: overview.metrics,
+        applications: applications.applications || [],
         evidence: evidence.items || [],
         quests: quests.quests || [],
         trivia: trivia.questions || [],
@@ -92,14 +95,21 @@ export function AdminPage() {
   return (
     <>
       <section className="admin-metrics">
+        <Metric label="NNE creados · total" value={data.metrics.credits_created_total} suffix=" NNE" />
+        <Metric label="NNE en circulación" value={data.metrics.credits_in_circulation} suffix=" NNE" />
+        <Metric label="NNE usados" value={data.metrics.credits_redeemed_total} suffix=" NNE" />
+        <Metric label="Trabajos generados" value={data.metrics.jobs_generated} />
+        <Metric label="Solicitudes pendientes" value={data.metrics.pending_applications} />
         <Metric label="Usuarios activos" value={data.metrics.active_users} />
-        <Metric label="Evidencias pendientes" value={data.metrics.pending_evidence} />
-        <Metric label="Canjes abiertos" value={data.metrics.open_redemptions} />
-        <Metric label="Quests · 7 días" value={data.metrics.quests_completed_7d} />
+        <Metric label="Participantes · 30 días" value={data.metrics.active_participants_30d} />
+        <Metric label="Bono primeros 50" value={data.metrics.promo_members} suffix=" / 50" />
       </section>
+
+      <p className="admin-metric-note">“Trabajos generados” cuenta servicios creativos entregados desde el catálogo. Los productos físicos se miden aparte como canjes.</p>
 
       <nav className="admin-tabs">
         {([
+          ["applications", "Solicitudes"],
           ["evidence", "Evidencias"],
           ["quests", "Quests"],
           ["trivia", "Trivias"],
@@ -109,6 +119,36 @@ export function AdminPage() {
           <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>{label}</button>
         ))}
       </nav>
+
+      {tab === "applications" && (
+        <section className="admin-list">
+          {data.applications.map((item: any) => (
+            <article className="card admin-row application-row" key={item.id}>
+              <div>
+                <div className="eyebrow">{item.artist_role} · {item.country}{item.city ? ` / ${item.city}` : ""}</div>
+                <h3>{item.display_name} <small>@{item.username}</small></h3>
+                <p>{item.bio}</p>
+                <div className="application-identities">
+                  {item.instagram_handle && <span>IG @{item.instagram_handle}</span>}
+                  {item.whatsapp_contact && <span>WA {item.whatsapp_contact}</span>}
+                  {item.telegram_handle && <span>TG @{item.telegram_handle}</span>}
+                  <span>Contacto: {item.primary_contact}</span>
+                  {item.referral_code && <span>Referral {item.referral_code}</span>}
+                  {item.promo_code && <span>Promo {item.promo_code}</span>}
+                </div>
+              </div>
+              <div className="action-row">
+                <button className="primary-button" onClick={() => void run(() => adminService.reviewApplication(item.id, "approve"), `@${item.username} aprobado.`)}>Aprobar acceso</button>
+                <button className="danger-button" onClick={() => {
+                  const note = window.prompt("Razón interna o mensaje para seguimiento:") || "";
+                  void run(() => adminService.reviewApplication(item.id, "reject", note), `Solicitud de @${item.username} rechazada.`);
+                }}>Rechazar</button>
+              </div>
+            </article>
+          ))}
+          {!data.applications.length && <div className="empty-state">No hay solicitudes pendientes.</div>}
+        </section>
+      )}
 
       {tab === "evidence" && (
         <section className="admin-list">
@@ -232,6 +272,7 @@ export function AdminPage() {
               <label>Costo<input className="field" name="cost_credits" type="number" min="1" required /></label>
               <label>Nivel mínimo<input className="field" name="minimum_level" type="number" min="1" defaultValue="1" /></label>
               <label>Inventario<input className="field" name="inventory" type="number" min="0" placeholder="Ilimitado" /></label>
+              <label>Tipo<select className="field" name="reward_type" defaultValue="physical"><option value="physical">Producto físico</option><option value="service">Servicio / trabajo</option><option value="digital">Digital</option></select></label>
               <label>Estado<select className="field" name="status" defaultValue="draft">
                 <option value="draft">Draft</option><option value="published">Publicado</option>
               </select></label>
@@ -265,8 +306,8 @@ export function AdminPage() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
-  return <article className="card admin-metric"><small>{label}</small><strong>{Number(value || 0).toLocaleString()}</strong></article>;
+function Metric({ label, value, suffix = "" }: { label: string; value: number; suffix?: string }) {
+  return <article className="card admin-metric"><small>{label}</small><strong>{Number(value || 0).toLocaleString()}{suffix}</strong></article>;
 }
 
 function AdminCatalog({ items, render }: { items: any[]; render: (item: any) => React.ReactNode }) {

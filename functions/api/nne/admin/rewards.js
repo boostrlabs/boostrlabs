@@ -41,8 +41,9 @@ export async function onRequestPost({ request, env }) {
   await env.DB.prepare(
     `INSERT INTO nne_rewards (
       id, name, description, icon, image_url, cost_credits, minimum_level,
-      inventory, status, fulfillment_notes, sort_order, created_by, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      inventory, status, fulfillment_notes, sort_order, created_by, reward_type,
+      sale_cost_credits, sale_starts_at, sale_ends_at, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       id,
@@ -59,6 +60,10 @@ export async function onRequestPost({ request, env }) {
       clean(payload.fulfillment_notes, 2000) || null,
       Math.floor(Number(payload.sort_order || 0)),
       auth.user.id,
+      ["physical", "service", "digital"].includes(payload.reward_type) ? payload.reward_type : "physical",
+      payload.sale_cost_credits ? Math.max(1, Math.floor(Number(payload.sale_cost_credits))) : null,
+      clean(payload.sale_starts_at, 50) || null,
+      clean(payload.sale_ends_at, 50) || null,
       timestamp,
       timestamp
     )

@@ -8,7 +8,21 @@ export interface SignupInput {
   email: string;
   password: string;
   referral_code?: string;
+  artist_role: "artist" | "producer" | "engineer" | "designer" | "manager" | "fan" | "other";
+  country: string;
+  city?: string;
+  instagram_handle?: string;
+  whatsapp_contact?: string;
+  telegram_handle?: string;
+  primary_contact: "instagram" | "whatsapp" | "telegram";
+  bio: string;
+  promo_code?: string;
   company_website?: string;
+}
+
+export interface SignupResult {
+  application: { id: string; status: "pending"; username: string; email: string };
+  message: string;
 }
 
 export const usersService = {
@@ -23,12 +37,11 @@ export const usersService = {
     });
     return mapUser(result.user);
   },
-  async signup(input: SignupInput): Promise<UserProfile> {
-    const result = await apiRequest<any>("/auth/signup", {
+  async signup(input: SignupInput): Promise<SignupResult> {
+    return apiRequest<SignupResult>("/auth/signup", {
       method: "POST",
       body: JSON.stringify(input)
     });
-    return mapUser(result.user);
   },
   async logout(): Promise<void> {
     await apiRequest("/auth/session", { method: "DELETE" });

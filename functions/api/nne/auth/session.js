@@ -68,6 +68,19 @@ export async function onRequestPost({ request, env }) {
     .bind(normalizeEmail(identifier), normalizeUsername(identifier))
     .first();
 
+  if (!user?.id) {
+    const application = await env.DB.prepare(
+      `SELECT status FROM nne_access_applications
+       WHERE lower(email) = ? OR username = ?
+       LIMIT 1`
+    ).bind(normalizeEmail(identifier), normalizeUsername(identifier)).first();
+    if (application?.status === "pending") {
+      return jsonError("nne_application_pending", "Tu solicitud está pendiente de aprobación. Te avisaremos por el contacto que elegiste.", 403);
+    }
+    if (application?.status === "rejected") {
+      return jsonError("nne_application_rejected", "Tu solicitud todavía no fue aprobada. Contacta al equipo NNE × WESTDETRO si necesitas revisarla.", 403);
+    }
+  }
   if (!user?.id || !(await verifyNnePassword(password, user.password_hash))) {
     return jsonError("nne_invalid_credentials", "Email, username o contraseña incorrectos.", 401);
   }

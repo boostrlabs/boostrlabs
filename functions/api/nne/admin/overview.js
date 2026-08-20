@@ -14,7 +14,17 @@ export async function onRequestGet({ request, env }) {
        FROM nne_quest_attempts
        WHERE status IN ('approved', 'completed')
          AND completed_at >= datetime('now', '-7 days')`
-    )
+    ),
+    env.DB.prepare("SELECT COUNT(*) AS value FROM nne_access_applications WHERE status = 'pending'"),
+    env.DB.prepare("SELECT COALESCE(SUM(amount), 0) AS value FROM nne_credit_transactions WHERE amount > 0"),
+    env.DB.prepare("SELECT ABS(COALESCE(SUM(amount), 0)) AS value FROM nne_credit_transactions WHERE amount < 0"),
+    env.DB.prepare(
+      `SELECT COUNT(*) AS value FROM nne_reward_redemptions x
+       JOIN nne_rewards r ON r.id = x.reward_id
+       WHERE x.status = 'fulfilled' AND r.reward_type = 'service'`
+    ),
+    env.DB.prepare("SELECT COUNT(*) AS value FROM nne_promo_claims"),
+    env.DB.prepare("SELECT COUNT(DISTINCT user_id) AS value FROM nne_quest_attempts WHERE created_at >= datetime('now','-30 days')")
   ]);
 
   return jsonOk({
@@ -23,7 +33,13 @@ export async function onRequestGet({ request, env }) {
       pending_evidence: Number(rows[1]?.results?.[0]?.value || 0),
       open_redemptions: Number(rows[2]?.results?.[0]?.value || 0),
       credits_in_circulation: Number(rows[3]?.results?.[0]?.value || 0),
-      quests_completed_7d: Number(rows[4]?.results?.[0]?.value || 0)
+      quests_completed_7d: Number(rows[4]?.results?.[0]?.value || 0),
+      pending_applications: Number(rows[5]?.results?.[0]?.value || 0),
+      credits_created_total: Number(rows[6]?.results?.[0]?.value || 0),
+      credits_redeemed_total: Number(rows[7]?.results?.[0]?.value || 0),
+      jobs_generated: Number(rows[8]?.results?.[0]?.value || 0),
+      promo_members: Number(rows[9]?.results?.[0]?.value || 0),
+      active_participants_30d: Number(rows[10]?.results?.[0]?.value || 0)
     }
   });
 }
