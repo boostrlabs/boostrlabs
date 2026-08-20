@@ -35,15 +35,29 @@ export interface EmailVerificationResult {
   message: string;
 }
 
+export interface LoginChallengeResult {
+  two_factor_required: true;
+  challenge_token: string;
+  channel: "email" | "whatsapp";
+  destination: string;
+  expires_in: number;
+}
+
 export const usersService = {
   async session(): Promise<UserProfile> {
     const result = await apiRequest<any>("/auth/session");
     return mapUser(result.user);
   },
-  async login(identifier: string, password: string): Promise<UserProfile> {
-    const result = await apiRequest<any>("/auth/session", {
+  async login(identifier: string, password: string): Promise<LoginChallengeResult> {
+    return apiRequest<LoginChallengeResult>("/auth/session", {
       method: "POST",
       body: JSON.stringify({ identifier, password })
+    });
+  },
+  async verifyLoginCode(challengeToken: string, code: string): Promise<UserProfile> {
+    const result = await apiRequest<any>("/auth/session/verify", {
+      method: "POST",
+      body: JSON.stringify({ challenge_token: challengeToken, code })
     });
     return mapUser(result.user);
   },
