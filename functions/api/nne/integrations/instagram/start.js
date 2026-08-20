@@ -6,14 +6,32 @@ const redirect = (location, status = 302) => new Response(null, {
   }
 });
 
+const encoder = new TextEncoder();
+
+async function hmacHex(secret, value) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+  return [...new Uint8Array(signature)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export async function onRequestGet({ request, env }) {
-  if (!env.INSTAGRAM_APP_ID) {
+  if (!env.INSTAGRAM_APP_ID || !env.INSTAGRAM_APP_SECRET) {
     return new Response("Instagram integration is not configured.", { status: 503 });
   }
 
   const origin = env.NNE_APP_ORIGIN || new URL(request.url).origin;
   const redirectUri = `${origin}/api/nne/integrations/instagram/callback`;
-  const state = crypto.randomUUID();
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const nonce = crypto.randomUUID();
+  const payload = `${issuedAt}.${nonce}`;
+  const signature = await hmacHex(env.INSTAGRAM_APP_SECRET, payload);
+  const state = `${payload}.${signature}`;
 
   const authorize = new URL("https://www.instagram.com/oauth/authorize");
   authorize.searchParams.set("enable_fb_login", "0");
@@ -27,10 +45,5 @@ export async function onRequestGet({ request, env }) {
   );
   authorize.searchParams.set("state", state);
 
-  const response = redirect(authorize.toString());
-  response.headers.append(
-    "Set-Cookie",
-    `nne_ig_oauth_state=${encodeURIComponent(state)}; Path=/api/nne/integrations/instagram/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`
-  );
-  return response;
+  return redirect(authorize.toString());
 }
