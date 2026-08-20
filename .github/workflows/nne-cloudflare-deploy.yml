@@ -3,7 +3,7 @@ name: NNE Cloudflare Deploy
 on:
   push:
     branches:
-      - agent/nne-referral-v2
+      - main
     paths:
       - "apps/nne-community/**"
       - "functions/api/nne/**"
