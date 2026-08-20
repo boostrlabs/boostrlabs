@@ -42,9 +42,17 @@ export async function onRequestPost({ request, env }) {
        AND status='pending' AND email_verification_status='pending'
      LIMIT 1`
   ).bind(normalizeEmail(identifier), normalizeUsername(identifier)).first();
-  if (!application?.id) return jsonOk({ message: GENERIC_MESSAGE }, 202);
+  const member = application?.id ? null : await env.DB.prepare(
+    `SELECT id,email,username,display_name
+     FROM nne_users
+     WHERE (lower(email)=? OR username=?)
+       AND status='active' AND email_verified_at IS NULL
+     LIMIT 1`
+  ).bind(normalizeEmail(identifier), normalizeUsername(identifier)).first();
+  const identity = application?.id ? application : member;
+  if (!identity?.id) return jsonOk({ message: GENERIC_MESSAGE }, 202);
 
-  const identityAllowed = await enforceNneRateLimit(env, `email-resend-app:${application.id}`, 3, 60 * 60);
+  const identityAllowed = await enforceNneRateLimit(env, `email-resend-identity:${identity.id}`, 3, 60 * 60);
   if (!identityAllowed) return jsonOk({ message: GENERIC_MESSAGE }, 202);
 
   const token = randomHex(32);
@@ -53,32 +61,51 @@ export async function onRequestPost({ request, env }) {
   const expiresAt = new Date(Date.now() + VERIFICATION_WINDOW_MS).toISOString();
   const verificationUrl = `${clean(env.NNE_APP_ORIGIN || "https://nne.westdetro.com", 300).replace(/\/$/, "")}/verify-email?token=${encodeURIComponent(token)}`;
 
-  await env.DB.batch([
-    env.DB.prepare(
-      "UPDATE nne_email_verification_tokens SET status='revoked' WHERE application_id=? AND status='active'"
-    ).bind(application.id),
-    env.DB.prepare(
-      `INSERT INTO nne_email_verification_tokens (
-         id,application_id,token_hash,status,expires_at,created_at,requested_ip
-       ) VALUES (?,?,?,'active',?,?,?)`
-    ).bind(tokenId, application.id, await sha256(token), expiresAt, timestamp, getIp(request))
-  ]);
+  if (application?.id) {
+    await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE nne_email_verification_tokens SET status='revoked' WHERE application_id=? AND status='active'"
+      ).bind(identity.id),
+      env.DB.prepare(
+        `INSERT INTO nne_email_verification_tokens (
+           id,application_id,token_hash,status,expires_at,created_at,requested_ip
+         ) VALUES (?,?,?,'active',?,?,?)`
+      ).bind(tokenId, identity.id, await sha256(token), expiresAt, timestamp, getIp(request))
+    ]);
+  } else {
+    await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE nne_user_email_verification_tokens SET status='revoked' WHERE user_id=? AND status='active'"
+      ).bind(identity.id),
+      env.DB.prepare(
+        `INSERT INTO nne_user_email_verification_tokens (
+           id,user_id,token_hash,status,expires_at,created_at,requested_ip
+         ) VALUES (?,?,?,'active',?,?,?)`
+      ).bind(tokenId, identity.id, await sha256(token), expiresAt, timestamp, getIp(request))
+    ]);
+  }
 
   try {
     await sendNneEmail(
       env,
-      { email: application.email, name: application.display_name },
+      { email: identity.email, name: identity.display_name },
       verificationEmail({
-        displayName: application.display_name,
-        username: application.username,
+        displayName: identity.display_name,
+        username: identity.username,
         verificationUrl
       })
     );
   } catch (error) {
     console.error("NNE verification resend failed", error?.message || error);
-    await env.DB.prepare("UPDATE nne_email_verification_tokens SET status='revoked' WHERE id=?")
-      .bind(tokenId)
-      .run();
+    if (application?.id) {
+      await env.DB.prepare("UPDATE nne_email_verification_tokens SET status='revoked' WHERE id=?")
+        .bind(tokenId)
+        .run();
+    } else {
+      await env.DB.prepare("UPDATE nne_user_email_verification_tokens SET status='revoked' WHERE id=?")
+        .bind(tokenId)
+        .run();
+    }
   }
 
   return jsonOk({ message: GENERIC_MESSAGE }, 202);

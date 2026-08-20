@@ -37,6 +37,20 @@ El enlace vence en 30 minutos. Si no pediste este cambio, ignora este correo.`,
   };
 }
 
+export function loginCodeEmail({ displayName, code }) {
+  const safeName = escapeHtml(displayName || "artista");
+  const safeCode = escapeHtml(code);
+  return {
+    subject: `${code} · Tu código para entrar a NNE × WESTDETRO`,
+    text: `Hola ${displayName || "artista"}.
+
+Tu código para iniciar sesión es: ${code}
+
+Vence en 10 minutos. Nunca compartas este código. Si no intentaste entrar, cambia tu contraseña.`,
+    html: `<!doctype html><html lang="es"><body style="margin:0;background:#070707;color:#f7f4ed;font-family:Arial,sans-serif"><div style="max-width:560px;margin:0 auto;padding:48px 24px"><p style="margin:0 0 14px;color:#e7c86e;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase">NNE × WESTDETRO Community</p><h1 style="margin:0 0 18px;font-size:34px;line-height:1.05">Código para entrar.</h1><p style="color:#aaa6a0;line-height:1.6">Hola ${safeName}. Usa este código para terminar de iniciar sesión:</p><div style="margin:24px 0;padding:22px;border:1px solid #39352e;border-radius:14px;background:#111;text-align:center;color:#e7c86e;font-size:42px;font-weight:900;letter-spacing:.22em">${safeCode}</div><p style="color:#aaa6a0;font-size:13px;line-height:1.6">Vence en 10 minutos. Nunca compartas este código. Si no intentaste entrar, cambia tu contraseña.</p></div></body></html>`
+  };
+}
+
 export async function sendNneEmail(env, recipient, content) {
   const to = clean(recipient?.email, 180);
   if (!to) throw new Error("Missing email recipient");

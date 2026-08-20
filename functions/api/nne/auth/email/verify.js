@@ -29,6 +29,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   const timestamp = now();
+  const tokenHash = await sha256(token);
   const record = await env.DB.prepare(
     `SELECT t.id AS token_id, t.expires_at, a.*,
             i.intended_username, i.granted_role, i.status AS invite_status,
@@ -38,9 +39,46 @@ export async function onRequestPost({ request, env }) {
      LEFT JOIN nne_admin_invites i ON i.id = a.admin_invite_id
      WHERE t.token_hash = ? AND t.status = 'active'
      LIMIT 1`
-  ).bind(await sha256(token)).first();
+  ).bind(tokenHash).first();
 
-  if (!record?.token_id || record.expires_at <= timestamp || record.status !== "pending") {
+  if (!record?.token_id) {
+    const member = await env.DB.prepare(
+      `SELECT t.id AS token_id,t.expires_at,u.id AS user_id,u.username,u.email_verified_at
+       FROM nne_user_email_verification_tokens t
+       JOIN nne_users u ON u.id=t.user_id
+       WHERE t.token_hash=? AND t.status='active'
+       LIMIT 1`
+    ).bind(tokenHash).first();
+    if (!member?.token_id || member.expires_at <= timestamp) {
+      if (member?.token_id) {
+        await env.DB.prepare("UPDATE nne_user_email_verification_tokens SET status='revoked' WHERE id=?")
+          .bind(member.token_id)
+          .run();
+      }
+      return jsonError("nne_email_verification_invalid", "Este enlace no es válido o ya venció.", 400);
+    }
+
+    await env.DB.batch([
+      env.DB.prepare("UPDATE nne_user_email_verification_tokens SET status='used',used_at=? WHERE id=? AND status='active'")
+        .bind(timestamp, member.token_id),
+      env.DB.prepare("UPDATE nne_users SET email_verified_at=COALESCE(email_verified_at,?),updated_at=? WHERE id=?")
+        .bind(timestamp, timestamp, member.user_id),
+      env.DB.prepare("UPDATE nne_user_email_verification_tokens SET status='revoked' WHERE user_id=? AND id<>? AND status='active'")
+        .bind(member.user_id, member.token_id)
+    ]);
+    await writeNneAudit(env, request, member.user_id, "auth.email_verified", "nne_user", member.user_id, {
+      username: member.username
+    });
+    return jsonOk({
+      verified: true,
+      activated: true,
+      role: null,
+      username: member.username,
+      message: "Correo verificado. Ya puedes iniciar sesión y pedir tu código de acceso."
+    });
+  }
+
+  if (record.expires_at <= timestamp || record.status !== "pending") {
     if (record?.token_id) {
       await env.DB.prepare("UPDATE nne_email_verification_tokens SET status='revoked' WHERE id=?")
         .bind(record.token_id)
@@ -121,4 +159,3 @@ export async function onRequestPost({ request, env }) {
       : "Correo verificado. Tu solicitud ya está lista para revisión."
   });
 }
-

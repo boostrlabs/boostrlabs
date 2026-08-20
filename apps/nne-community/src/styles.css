@@ -414,6 +414,15 @@ h1 {
 }
 .primary-button.full { width: 100%; }
 .primary-button:disabled { opacity: .55; cursor: not-allowed; }
+.secondary-button {
+  padding: 10px 14px;
+  color: var(--text);
+  font-weight: 700;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.035);
+}
+.secondary-button.full { width: 100%; }
 .danger-button {
   padding: 10px 14px;
   color: #ff9da6;
@@ -801,6 +810,17 @@ select.field { color-scheme: dark; }
 .auth-card { padding: 32px; }
 .auth-card h2 { margin: 8px 0; font-size: 2rem; }
 .auth-note { color: var(--muted); line-height: 1.5; }
+.login-code-step { margin-top: 22px; }
+.login-code-step h3 { margin: 7px 0 8px; font-size: 1.55rem; }
+.login-code-step > p, .login-code-step > small { color: var(--muted); line-height: 1.55; }
+.login-code-step > small { display: block; margin-top: 16px; }
+.login-code-field {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 850;
+  letter-spacing: .28em;
+  font-variant-numeric: tabular-nums;
+}
 .referral-invite {
   position: relative;
   overflow: hidden;
