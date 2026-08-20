@@ -1,34 +1,59 @@
-function getCookie(request, name) {
-  const cookie = request.headers.get("Cookie") || "";
-  for (const part of cookie.split(";")) {
-    const [key, ...rest] = part.trim().split("=");
-    if (key === name) return decodeURIComponent(rest.join("="));
-  }
-  return "";
-}
-
 const redirect = (location, status = 302) => new Response(null, {
   status,
   headers: {
     Location: location,
-    "Cache-Control": "no-store",
-    "Set-Cookie": "nne_ig_oauth_state=; Path=/api/nne/integrations/instagram/; HttpOnly; Secure; SameSite=Lax; Max-Age=0"
+    "Cache-Control": "no-store"
   }
 });
+
+const encoder = new TextEncoder();
+
+async function hmacHex(secret, value) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+  return [...new Uint8Array(signature)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function constantTimeEqual(a, b) {
+  const left = encoder.encode(String(a || ""));
+  const right = encoder.encode(String(b || ""));
+  if (left.length !== right.length) return false;
+  let diff = 0;
+  for (let i = 0; i < left.length; i += 1) diff |= left[i] ^ right[i];
+  return diff === 0;
+}
+
+async function validState(state, secret) {
+  const parts = String(state || "").split(".");
+  if (parts.length !== 3 || !secret) return false;
+  const [issuedAtRaw, nonce, suppliedSignature] = parts;
+  const issuedAt = Number(issuedAtRaw);
+  if (!Number.isFinite(issuedAt) || !nonce || !/^[a-f0-9]{64}$/i.test(suppliedSignature)) return false;
+  const now = Math.floor(Date.now() / 1000);
+  if (issuedAt > now + 60 || now - issuedAt > 600) return false;
+  const payload = `${issuedAtRaw}.${nonce}`;
+  const expectedSignature = await hmacHex(secret, payload);
+  return constantTimeEqual(suppliedSignature, expectedSignature);
+}
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const origin = env.NNE_APP_ORIGIN || url.origin;
   const code = url.searchParams.get("code") || "";
   const state = url.searchParams.get("state") || "";
-  const expectedState = getCookie(request, "nne_ig_oauth_state");
-
-  if (!code || !state || !expectedState || state !== expectedState) {
-    return redirect(`${origin}/integrations/instagram?error=oauth_state`);
-  }
 
   if (!env.INSTAGRAM_APP_ID || !env.INSTAGRAM_APP_SECRET) {
     return redirect(`${origin}/integrations/instagram?error=not_configured`);
+  }
+
+  if (!code || !(await validState(state, env.INSTAGRAM_APP_SECRET))) {
+    return redirect(`${origin}/integrations/instagram?error=oauth_state`);
   }
 
   const redirectUri = `${origin}/api/nne/integrations/instagram/callback`;
