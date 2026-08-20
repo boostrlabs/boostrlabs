@@ -1,4 +1,13 @@
-// NNE × WESTDETRO Meta webhook: verification handshake + signed event intake.
+import { clean } from "../../../../_lib/nne-api.js";
+import {
+  botReply,
+  markMessagingEvent,
+  recordMessagingEvent,
+  sendWhatsAppText,
+  upsertMessagingContact,
+  verifyMetaSignature
+} from "../../../../_lib/nne-messaging.js";
+
 const text = (body, status = 200) => new Response(body, {
   status,
   headers: {
@@ -19,19 +28,6 @@ function constantTimeEqual(a, b) {
   let diff = 0;
   for (let i = 0; i < left.length; i += 1) diff |= left[i] ^ right[i];
   return diff === 0;
-}
-
-async function hmacSha256Hex(secret, payload) {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
-  return [...new Uint8Array(signature)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export async function onRequestGet({ request, env }) {
@@ -55,6 +51,61 @@ export async function onRequestGet({ request, env }) {
   return text("Forbidden", 403);
 }
 
+async function processWhatsAppPayload(env, payload) {
+  const changes = payload?.entry?.flatMap((entry) => entry.changes || []) || [];
+
+  for (const change of changes) {
+    const value = change?.value || {};
+    const contacts = value.contacts || [];
+
+    for (const message of value.messages || []) {
+      const from = clean(message?.from, 60);
+      if (!from || !message?.id) continue;
+
+      const event = await recordMessagingEvent(env, {
+        platform: "whatsapp",
+        externalEventId: message.id,
+        eventType: message.type || "message",
+        externalUserId: from
+      });
+      if (!event.fresh) continue;
+
+      if (message.type !== "text") {
+        await markMessagingEvent(env, event.id, "ignored");
+        continue;
+      }
+
+      try {
+        const profile = contacts.find((contact) => contact?.wa_id === from)?.profile;
+        await upsertMessagingContact(env, {
+          platform: "whatsapp",
+          externalUserId: from,
+          chatId: from,
+          displayName: profile?.name,
+          phoneHint: from.length > 4 ? `***${from.slice(-4)}` : "***"
+        });
+
+        const incomingText = clean(message?.text?.body, 1000);
+        const normalized = incomingText.toLowerCase();
+        if (/^(stop|salir|baja|cancelar)$/i.test(normalized)) {
+          await env.DB.prepare(
+            "UPDATE nne_messaging_contacts SET status='unsubscribed', updated_at=? WHERE platform='whatsapp' AND external_user_id=?"
+          ).bind(new Date().toISOString(), from).run();
+          await sendWhatsAppText(env, from, "Listo. No recibirás más respuestas automáticas de NNE × WESTDETRO. Tu cuenta NNE no se elimina.");
+          await markMessagingEvent(env, event.id, "processed");
+          continue;
+        }
+
+        await sendWhatsAppText(env, from, botReply(incomingText));
+        await markMessagingEvent(env, event.id, "processed");
+      } catch (error) {
+        console.error("NNE WhatsApp Meta webhook failed", error instanceof Error ? error.message : String(error));
+        await markMessagingEvent(env, event.id, "failed", "reply_failed");
+      }
+    }
+  }
+}
+
 export async function onRequestPost({ request, env }) {
   const rawBody = await request.text();
 
@@ -62,10 +113,12 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: "meta_app_secret_not_configured" }, 503);
   }
 
-  const signatureHeader = request.headers.get("X-Hub-Signature-256") || "";
-  const expected = `sha256=${await hmacSha256Hex(env.META_APP_SECRET, rawBody)}`;
-
-  if (!constantTimeEqual(signatureHeader, expected)) {
+  const validSignature = await verifyMetaSignature(
+    rawBody,
+    request.headers.get("X-Hub-Signature-256") || "",
+    env.META_APP_SECRET
+  );
+  if (!validSignature) {
     return json({ ok: false, error: "invalid_signature" }, 401);
   }
 
@@ -76,32 +129,19 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: "invalid_json" }, 400);
   }
 
-  // Acknowledge immediately. Event processing/autoreplies are wired in a later block.
-  // Meta retries webhook deliveries when a 2xx response is not returned quickly.
-  if (env.DB) {
-    try {
-      const objectType = String(payload?.object || "meta");
-      const entries = Array.isArray(payload?.entry) ? payload.entry : [];
-      for (const entry of entries) {
-        const eventId = String(entry?.id || crypto.randomUUID());
-        await env.DB.prepare(
-          `INSERT OR IGNORE INTO nne_messaging_events (
-             id, platform, external_event_id, event_type, external_user_id,
-             received_at, status
-           ) VALUES (?, ?, ?, ?, ?, ?, 'received')`
-        ).bind(
-          crypto.randomUUID(),
-          objectType === "instagram" ? "instagram" : "whatsapp",
-          eventId,
-          objectType,
-          null,
-          new Date().toISOString()
-        ).run();
+  try {
+    if (String(payload?.object || "") === "whatsapp_business_account") {
+      if (!env.WHATSAPP_ACCESS_TOKEN || !env.WHATSAPP_PHONE_NUMBER_ID) {
+        console.error("NNE WhatsApp webhook received but WhatsApp credentials are incomplete");
+      } else if (env.DB) {
+        await processWhatsAppPayload(env, payload);
       }
-    } catch (error) {
-      console.error("NNE Meta webhook logging failed", error?.message || error);
     }
+  } catch (error) {
+    console.error("NNE Meta webhook processing failed", error instanceof Error ? error.message : String(error));
   }
 
+  // Meta retries when the webhook does not acknowledge quickly. Processing errors are
+  // recorded internally but we still acknowledge valid signed deliveries.
   return json({ ok: true }, 200);
 }
