@@ -2,20 +2,18 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usersService } from "../services/users";
-import type { LoginChallengeResult } from "../services/users";
 import { ApiError } from "../services/api";
 import type { ReferralPreview } from "../types";
 import { CollabBrand } from "../components/CollabBrand";
 
 export function AuthPage({ mode }: { mode: "login" | "signup" }) {
-  const { user, login, verifyLoginCode, signup } = useAuth();
+  const { user, login, signup } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [applicationMessage, setApplicationMessage] = useState("");
-  const [loginChallenge, setLoginChallenge] = useState<LoginChallengeResult | null>(null);
   const [needsVerification, setNeedsVerification] = useState(false);
   const [referralPreview, setReferralPreview] = useState<ReferralPreview | null>(null);
   const [referralLoading, setReferralLoading] = useState(false);
@@ -62,55 +60,37 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
     setNeedsVerification(false);
     try {
       if (mode === "login") {
-        setLoginChallenge(await login(String(data.get("identifier") || ""), String(data.get("password") || "")));
-        return;
-      } else {
-        const result = await signup({
-          name: String(data.get("name") || ""),
-          username: String(data.get("username") || ""),
-          email: String(data.get("email") || ""),
-          password: String(data.get("password") || ""),
-          artist_role: String(data.get("artist_role") || "") as any,
-          country: String(data.get("country") || ""),
-          city: String(data.get("city") || ""),
-          instagram_handle: String(data.get("instagram_handle") || ""),
-          whatsapp_contact: String(data.get("whatsapp_contact") || ""),
-          telegram_handle: String(data.get("telegram_handle") || ""),
-          primary_contact: String(data.get("primary_contact") || "") as any,
-          bio: String(data.get("bio") || ""),
-          promo_code: String(data.get("promo_code") || ""),
-          referral_code: referralPreview?.code || "",
-          company_website: String(data.get("company_website") || ""),
-          admin_invite: adminInvite || undefined
-        });
-        setApplicationMessage(result.message);
-        event.currentTarget.reset();
+        await login(String(data.get("identifier") || ""), String(data.get("password") || ""));
+        const from = (location.state as { from?: string } | null)?.from || "/";
+        navigate(from, { replace: true });
         return;
       }
-      const from = (location.state as { from?: string } | null)?.from || "/";
-      navigate(from, { replace: true });
+
+      const result = await signup({
+        name: String(data.get("name") || ""),
+        username: String(data.get("username") || ""),
+        email: String(data.get("email") || ""),
+        password: String(data.get("password") || ""),
+        artist_role: String(data.get("artist_role") || "") as any,
+        country: String(data.get("country") || ""),
+        city: String(data.get("city") || ""),
+        instagram_handle: String(data.get("instagram_handle") || ""),
+        whatsapp_contact: String(data.get("whatsapp_contact") || ""),
+        telegram_handle: String(data.get("telegram_handle") || ""),
+        primary_contact: String(data.get("primary_contact") || "") as any,
+        bio: String(data.get("bio") || ""),
+        promo_code: String(data.get("promo_code") || ""),
+        referral_code: referralPreview?.code || "",
+        company_website: String(data.get("company_website") || ""),
+        admin_invite: adminInvite || undefined
+      });
+      setApplicationMessage(result.message);
+      event.currentTarget.reset();
     } catch (caught) {
       if (caught instanceof ApiError && caught.code === "nne_email_verification_required") {
         setNeedsVerification(true);
       }
       setError(caught instanceof Error ? caught.message : "No pudimos continuar.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const submitLoginCode = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!loginChallenge) return;
-    const data = new FormData(event.currentTarget);
-    setBusy(true);
-    setError("");
-    try {
-      await verifyLoginCode(loginChallenge.challenge_token, String(data.get("code") || ""));
-      const from = (location.state as { from?: string } | null)?.from || "/";
-      navigate(from, { replace: true });
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "No pudimos verificar el código.");
     } finally {
       setBusy(false);
     }
@@ -141,34 +121,6 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
         {error && <div className="form-error">{error}</div>}
         {needsVerification && (
           <Link className="primary-button full button-link" to="/verify-email">Reenviar correo de verificación</Link>
-        )}
-        {loginChallenge && (
-          <div className="login-code-step">
-            <div className="eyebrow">Segundo paso</div>
-            <h3>Revisa tu correo.</h3>
-            <p>Enviamos un código de 6 dígitos a <strong>{loginChallenge.destination}</strong>. Vence en 10 minutos.</p>
-            <form onSubmit={submitLoginCode} className="form-stack">
-              <label>Código de acceso
-                <input
-                  name="code"
-                  className="field login-code-field"
-                  required
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  pattern="[0-9]{6}"
-                  minLength={6}
-                  maxLength={6}
-                  autoFocus
-                  placeholder="000000"
-                />
-              </label>
-              <button className="primary-button full" disabled={busy}>{busy ? "Verificando…" : "Entrar"}</button>
-              <button className="secondary-button full" type="button" onClick={() => { setLoginChallenge(null); setError(""); }}>
-                Usar otra cuenta
-              </button>
-            </form>
-            <small>WhatsApp aparecerá como opción cuando Meta termine de aprobar la línea del bot.</small>
-          </div>
         )}
         {mode === "signup" && adminInvite && (
           <aside className="referral-invite">
@@ -204,7 +156,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             )}
           </aside>
         )}
-        {!applicationMessage && !loginChallenge && <form onSubmit={submit} className="form-stack">
+        {!applicationMessage && <form onSubmit={submit} className="form-stack">
           {mode === "signup" && (
             <>
               <label>Nombre o nombre artístico<input name="name" className="field" required autoComplete="name" /></label>
@@ -255,12 +207,12 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             {busy ? "Enviando…" : mode === "login" ? "Entrar" : "Enviar solicitud"}
           </button>
         </form>}
-        {!loginChallenge && <p className="auth-switch">
+        <p className="auth-switch">
           {mode === "login" ? "¿Todavía no tienes cuenta? " : "¿Ya eres parte? "}
           <Link to={mode === "login" ? "/signup" : "/login"}>
             {mode === "login" ? "Regístrate" : "Inicia sesión"}
           </Link>
-        </p>}
+        </p>
       </section>
     </main>
   );
