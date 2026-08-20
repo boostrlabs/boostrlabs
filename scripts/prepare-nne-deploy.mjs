@@ -6,8 +6,10 @@ const target = resolve(root, ".deploy/nne");
 await rm(target, { recursive: true, force: true });
 await mkdir(resolve(target, "site"), { recursive: true });
 await mkdir(resolve(target, "functions/api"), { recursive: true });
+await mkdir(resolve(target, "functions/join"), { recursive: true });
 await cp(resolve(root, "apps/nne-community/dist"), resolve(target, "site"), { recursive: true });
 await cp(resolve(root, "functions/api/nne"), resolve(target, "functions/api/nne"), { recursive: true });
+await cp(resolve(root, "functions/join"), resolve(target, "functions/join"), { recursive: true });
 await cp(resolve(root, "functions/_lib"), resolve(target, "functions/_lib"), { recursive: true });
 await writeFile(resolve(target, "site/_redirects"), "/* /index.html 200\n");
 await writeFile(resolve(target, "wrangler.jsonc"), `${JSON.stringify({
