@@ -1,3 +1,4 @@
+// NNE × WESTDETRO Meta webhook: verification handshake + signed event intake.
 const text = (body, status = 200) => new Response(body, {
   status,
   headers: {
