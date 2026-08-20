@@ -1,12 +1,18 @@
 name: NNE Cloudflare Deploy
 
 on:
+  push:
+    branches:
+      - agent/nne-referral-v2
+    paths:
+      - "apps/nne-community/**"
+      - "functions/api/nne/**"
+      - "functions/_lib/nne-*.js"
+      - "functions/join/**"
+      - "migrations/**"
+      - "scripts/prepare-nne-deploy.mjs"
+      - ".github/workflows/nne-cloudflare-deploy.yml"
   workflow_dispatch:
-    inputs:
-      production_branch:
-        description: "Cloudflare Pages production branch for nne-westdetro"
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -20,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout requested NNE revision
+      - name: Checkout NNE production source
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -38,10 +44,13 @@ jobs:
       - name: Build standalone NNE deploy package
         run: node scripts/prepare-nne-deploy.mjs
 
-      - name: Verify packaged Meta webhook exists
-        run: test -f .deploy/nne/functions/api/nne/integrations/meta/webhook.js
+      - name: Verify Pages Functions package
+        run: |
+          test ! -f .deploy/nne/site/_worker.js
+          test -f .deploy/nne/functions/api/nne/integrations/meta/webhook.js
+          test -f .deploy/nne/site/index.html
 
-      - name: Deploy NNE to Cloudflare Pages
+      - name: Deploy NNE production to Cloudflare Pages
         working-directory: .deploy/nne
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -49,6 +58,7 @@ jobs:
         run: >-
           npx --yes wrangler@4 pages deploy site
           --project-name=nne-westdetro
-          --branch="${{ inputs.production_branch }}"
+          --branch=main
+          --functions=functions
           --commit-hash="${{ github.sha }}"
           --commit-message="NNE deploy ${{ github.sha }}"
