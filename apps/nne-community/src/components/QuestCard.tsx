@@ -33,7 +33,7 @@ export function QuestCard({ quest, onOpen }: QuestCardProps) {
       </div>
 
       <footer>
-        <strong>+{formatNne(quest.rewardCredits)} Credits</strong>
+        <strong>+{formatNne(quest.rewardCredits)} NNE</strong>
         <button
           className={`primary-button ${quest.status}`}
           disabled={quest.status === "completed" || quest.status === "pending"}

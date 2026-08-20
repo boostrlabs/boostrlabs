@@ -65,7 +65,7 @@ export function AdminPage() {
     event.preventDefault();
     const form = event.currentTarget;
     const payload = Object.fromEntries(new FormData(form));
-    void run(() => adminService.createQuest(payload), "Quest creada.").then(() => form.reset());
+    void run(() => adminService.createQuest(payload), "Bloque creado.").then(() => form.reset());
   };
 
   const createTrivia = (event: FormEvent<HTMLFormElement>) => {
@@ -111,7 +111,7 @@ export function AdminPage() {
         {([
           ["applications", "Solicitudes"],
           ["evidence", "Evidencias"],
-          ["quests", "Quests"],
+          ["quests", "Bloques"],
           ["trivia", "Trivias"],
           ["rewards", "Rewards"],
           ["redemptions", "Canjes"]
@@ -193,7 +193,7 @@ export function AdminPage() {
       {tab === "quests" && (
         <section className="admin-split">
           <form className="card admin-form" onSubmit={createQuest}>
-            <div className="eyebrow">Nueva quest</div>
+            <div className="eyebrow">Nuevo bloque de chamba</div>
             <h2>Crear misión</h2>
             <label>Título<input className="field" name="title" required /></label>
             <label>Descripción<textarea className="field" name="description" required /></label>
@@ -221,7 +221,7 @@ export function AdminPage() {
                 <option value="draft">Draft</option><option value="published">Publicada</option>
               </select></label>
             </div>
-            <button className="primary-button full">Crear quest</button>
+            <button className="primary-button full">Crear bloque</button>
           </form>
           <AdminCatalog
             items={data.quests}
@@ -237,7 +237,7 @@ export function AdminPage() {
           <form className="card admin-form" onSubmit={createTrivia}>
             <div className="eyebrow">Respuesta privada</div>
             <h2>Nueva pregunta</h2>
-            <label>Quest<select className="field" name="quest_id" required>
+            <label>Bloque<select className="field" name="quest_id" required>
               <option value="">Seleccionar</option>
               {data.quests.filter((quest: any) => quest.verification_method === "trivia").map((quest: any) => (
                 <option key={quest.id} value={quest.id}>{quest.title}</option>

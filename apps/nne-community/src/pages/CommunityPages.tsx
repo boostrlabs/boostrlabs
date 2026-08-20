@@ -49,7 +49,7 @@ export function HomePage() {
 
       <article className="card economy-tip">
         <div><div className="eyebrow">Cómo funciona</div><strong>Hoy puedes acumular hasta {formatNne(dashboard.economy.dailyCap)} NNE.</strong></div>
-        <p>Te quedan <strong>{formatNne(dashboard.economy.remainingToday)} NNE</strong> disponibles hoy. Cada quest indica su recompensa y la evidencia es revisada antes de acreditarse.</p>
+        <p>Te quedan <strong>{formatNne(dashboard.economy.remainingToday)} NNE</strong> disponibles hoy. Cada bloque indica cuánto paga y revisamos la evidencia antes de acreditarlo.</p>
         <small>1 NNE Credit representa $1 de valor de canje dentro del catálogo. No es dinero, no se retira ni se transfiere. Reinicia {dashboard.economy.resetsAt}.</small>
       </article>
 
@@ -59,10 +59,10 @@ export function HomePage() {
         <article><VisualMedia src={nneAssets.music.caption} alt="CAPTION" fallback="CAPTION" /><strong>CAPTION</strong></article>
       </section>
 
-      <div className="section-heading"><h2>Quests activas</h2></div>
+      <div className="section-heading"><h2>Bloques de Chamba activos</h2></div>
       <section className="quest-grid">{dashboard.quests.slice(0, 4).map((quest) => <QuestCard key={quest.id} quest={quest} onOpen={openQuest} />)}</section>
       <article className="card progress-card">
-        <div><strong>{completed} de {dashboard.quests.length} quests completadas</strong><p>Tu consistencia construye el score, el nivel y el acceso.</p></div>
+        <div><strong>{completed} de {dashboard.quests.length} bloques completados</strong><p>Tu consistencia construye el score, el nivel y el acceso.</p></div>
         <div className="progress-track"><span style={{ width: `${percentage}%` }} /></div><strong>{percentage}%</strong>
       </article>
     </>
@@ -80,10 +80,10 @@ export function QuestsPage() {
 
   const groups = [
     { id: "featured", label: "Destacadas" },
-    { id: "support", label: "Support" },
+    { id: "support", label: "Apoyo" },
     { id: "comments", label: "Comentarios" },
-    { id: "listening", label: "Listening" },
-    { id: "creator", label: "Creator" },
+    { id: "listening", label: "Escucha" },
+    { id: "creator", label: "Creativos" },
     { id: "all", label: "Todas" }
   ];
   const category = (quest: Quest) => {
@@ -101,12 +101,13 @@ export function QuestsPage() {
   return (
     <>
       <article className="card" style={{ marginBottom: 18 }}>
-        <div className="eyebrow">Cómo completar una quest</div>
-        <h2>Abre. Completa. Sube evidencia.</h2>
-        <p>Las acciones simples pagan 0.25 NNE, las misiones de mayor esfuerzo 0.50 o 1 NNE. El staff valida la evidencia y puedes acumular un máximo de 5 NNE por día.</p>
+        <div className="eyebrow">Cómo funciona la chamba</div>
+        <h2>Hazlo. Sube prueba. Nosotros revisamos.</h2>
+        <p>Hay bloques cortos desde 0.25 NNE y otros creativos de mayor esfuerzo. Un buen concepto o buenos números pueden sumar un plus, pero nadie puede farmear más de 5 NNE diarios con chamba regular.</p>
+        <div className="work-tier-row"><span><b>Base</b>Cumpliste</span><span><b>Intermedio</b>Buena ejecución</span><span><b>Plus</b>Creatividad o números</span></div>
       </article>
-      <div className="section-heading"><h2>Quests disponibles</h2></div>
-      <div className="filter-strip" aria-label="Filtrar quests">
+      <div className="section-heading"><h2>Bloques de Chamba</h2></div>
+      <div className="filter-strip" aria-label="Filtrar bloques de chamba">
         {groups.map((group) => (
           <button key={group.id} className={filter === group.id ? "active" : ""} onClick={() => setFilter(group.id)}>
             {group.label}
@@ -114,7 +115,7 @@ export function QuestsPage() {
         ))}
       </div>
       <section className="quest-grid">{visibleQuests.map((quest) => <QuestCard key={quest.id} quest={quest} onOpen={openQuest} />)}</section>
-      {visibleQuests.length === 0 && <div className="empty-state">No hay quests en esta categoría todavía.</div>}
+      {visibleQuests.length === 0 && <div className="empty-state">No hay bloques en esta categoría todavía.</div>}
     </>
   );
 }
@@ -180,11 +181,11 @@ export function ProfilePage() {
   const { dashboard, showToast } = useApp();
   const referralUrl = useMemo(
     () => dashboard.referralCode
-      ? `${window.location.origin}${import.meta.env.BASE_URL}signup?ref=${encodeURIComponent(dashboard.referralCode)}`
+      ? `${window.location.origin}${import.meta.env.BASE_URL}signup?ref=${encodeURIComponent(dashboard.referralCode)}&promo=PRIMEROS50`
       : "",
     [dashboard.referralCode]
   );
-  const referralMessage = `Únete a NNE × WESTDETRO Community con mi invitación. Tú y ${dashboard.user.handle} reciben +${formatNne(dashboard.referralReward.credits)} NNE Credits y +${dashboard.referralReward.xp.toLocaleString()} XP al crear tu cuenta.`;
+  const referralMessage = `Únete a NNE × WESTDETRO Community. Los primeros 50 aprobados reciben 3 NNE. Si entras con mi enlace, yo sumo +${formatNne(dashboard.referralReward.credits)} NNE cuando aprueben tu cuenta.`;
 
   const copyReferral = async () => {
     await navigator.clipboard.writeText(referralUrl);
@@ -220,7 +221,7 @@ export function ProfilePage() {
           <div className="profile-stats">
             <div><small>Level</small><strong>{dashboard.user.level}</strong></div>
             <div><small>Credits</small><strong>{formatNne(dashboard.user.credits)}</strong></div>
-            <div><small>Quests</small><strong>{dashboard.user.completedQuestCount}</strong></div>
+            <div><small>Chambas</small><strong>{dashboard.user.completedQuestCount}</strong></div>
             <div><small>Streak</small><strong>{dashboard.user.streakDays} días</strong></div>
           </div>
         </div>
@@ -228,13 +229,13 @@ export function ProfilePage() {
       <article className="card referral-card">
         <div>
           <div className="eyebrow">Tu señal se expande</div>
-          <h2>Invita. Crezcan ambos.</h2>
+          <h2>Invita a alguien.</h2>
         </div>
         <div className="referral-card-copy">
-          <p>Cada artista que entra con tu enlace recibe la misma recompensa que tú.</p>
+          <p>Cuando aprobemos a la persona que entra con tu enlace, tú sumas la recompensa. Si todavía quedan cupos de lanzamiento, esa persona empieza con 3 NNE.</p>
           <div className="referral-benefits">
-            <span>+{formatNne(dashboard.referralReward.credits)} NNE Credits cada uno</span>
-            <span>+{dashboard.referralReward.xp.toLocaleString()} XP cada uno</span>
+            <span>+{formatNne(dashboard.referralReward.credits)} NNE para quien invita</span>
+            <span>+3 NNE de bienvenida · primeros 50</span>
           </div>
         </div>
         <div className="referral-actions">

@@ -43,9 +43,9 @@ export function ReviewPage() {
   return (
     <>
       <article className="card" style={{ marginBottom: 18 }}>
-        <div className="eyebrow">Artist Moderation · Season 001</div>
-        <h2>Tu contenido. Tu cola de aprobación.</h2>
-        <p>Scopes: {scopes.join(", ") || "sin asignar"}. El reward base viene fijado por NNE; tú calificas creatividad e impacto y el sistema calcula el bonus.</p>
+        <div className="eyebrow">Revisión de chamba · Season 001</div>
+        <h2>Pruebas pendientes.</h2>
+        <p>Equipo asignado: {scopes.join(", ") || "sin asignar"}. La base está definida; tú calificas ejecución e impacto y el sistema calcula el plus sin pasar el límite diario.</p>
       </article>
       {error && <div className="form-error">{error}</div>}
       <section className="admin-list">
@@ -59,11 +59,11 @@ export function ReviewPage() {
               <h3>{item.user.name} <small>{item.user.handle}</small></h3>
               {item.note && <p>{item.note}</p>}
               <div className="form-grid">
-                <label>Creativity<select className="field" value={selected.quality} onChange={(event) => setGrade(item.id, { quality: event.target.value as Quality })}>
-                  <option value="completed">Completed · +0</option><option value="good">Good · +250</option><option value="standout">Standout · +1,500</option><option value="exceptional">Exceptional · +5,000</option>
+                <label>Ejecución<select className="field" value={selected.quality} onChange={(event) => setGrade(item.id, { quality: event.target.value as Quality })}>
+                  <option value="completed">Cumplió · +0</option><option value="good">Buena · +0.25 NNE</option><option value="standout">Destacada · +0.50 NNE</option><option value="exceptional">Durísima · +1 NNE</option>
                 </select></label>
-                <label>Performance<select className="field" value={selected.performance} onChange={(event) => setGrade(item.id, { performance: event.target.value as Performance })}>
-                  <option value="normal">Normal · +0</option><option value="strong">Strong · +1,000</option><option value="breakout">Breakout · +7,500</option><option value="viral">Viral · +25,000</option>
+                <label>Números<select className="field" value={selected.performance} onChange={(event) => setGrade(item.id, { performance: event.target.value as Performance })}>
+                  <option value="normal">Normal · +0</option><option value="strong">Agarró movimiento · +0.25 NNE</option><option value="breakout">Agarró números · +0.50 NNE</option><option value="viral">Se fue · +1 NNE</option>
                 </select></label>
               </div>
               <p><strong>Base +{Number(item.reward_credits).toLocaleString()}</strong> · Bonus +{bonus.toLocaleString()} · <strong>Total +{(Number(item.reward_credits) + bonus).toLocaleString()} NNE</strong></p>

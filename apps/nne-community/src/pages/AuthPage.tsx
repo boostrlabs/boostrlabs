@@ -17,6 +17,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const [referralLoading, setReferralLoading] = useState(false);
   const [referralError, setReferralError] = useState("");
   const referralCode = mode === "signup" ? String(searchParams.get("ref") || "").trim() : "";
+  const promoCode = mode === "signup" ? String(searchParams.get("promo") || "").trim().toUpperCase() : "";
 
   useEffect(() => {
     let active = true;
@@ -93,7 +94,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
         <div className="eyebrow">NNE × WESTDETRO Community</div>
         <h1>Hazlo real.</h1>
         <p>Cumple tareas cortas, farmea NNE Credits y cámbialos por ropa, beats, producciones y otros rewards sin sacar dinero de tu bolsillo.</p>
-        <p className="auth-brand-secondary">También hacemos sorteos para los miembros que se mantienen activos.</p>
+        <p className="auth-brand-secondary">También habrá drops y oportunidades especiales para los miembros que se mantienen activos.</p>
         <strong className="auth-manifesto">De artistas haciéndolo real, para artistas que quieren hacerlo real.</strong>
       </section>
       <section className="card auth-card">
@@ -120,12 +121,12 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
               <>
                 <div className="eyebrow">Invitación activa</div>
                 <strong>Referido por {referralPreview.referrer.handle}</strong>
-                <p>Al crear tu cuenta, ambos reciben:</p>
+                <p>Cuando aprobemos tu cuenta, quien te invitó recibe:</p>
                 <div className="referral-benefits">
                   <span>+{referralPreview.reward.credits.toLocaleString()} NNE Credits</span>
                   <span>+{referralPreview.reward.xp.toLocaleString()} XP</span>
                 </div>
-                <small>Tu progreso empieza con ventaja. El suyo crece contigo.</small>
+                <small>Si la promo de lanzamiento sigue disponible, tú recibes tus 3 NNE de bienvenida.</small>
               </>
             ) : (
               <>
@@ -157,7 +158,14 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
                 <option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="telegram">Telegram</option>
               </select></label>
               <label>Cuéntanos brevemente quién eres<textarea name="bio" className="field" required minLength={20} maxLength={800} placeholder="Tu proyecto, lo que haces y qué buscas dentro de la comunidad." /></label>
-              <label>Código promocional <span>(opcional)</span><input name="promo_code" className="field" placeholder="PRIMEROS50" /></label>
+              {promoCode === "PRIMEROS50" ? (
+                <>
+                  <aside className="launch-promo-inline"><strong>Primeros 50</strong><span>Si aprobamos tu solicitud mientras quedan cupos, empiezas con 3 NNE.</span></aside>
+                  <input name="promo_code" type="hidden" value="PRIMEROS50" />
+                </>
+              ) : (
+                <label>Código promocional <span>(opcional)</span><input name="promo_code" className="field" placeholder="Código" /></label>
+              )}
               <input name="company_website" className="honeypot" tabIndex={-1} autoComplete="off" />
             </>
           )}

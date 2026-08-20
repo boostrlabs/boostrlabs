@@ -1047,3 +1047,27 @@ select.field { color-scheme: dark; }
   .collab-brand img:first-child { width: 78px; }
   .collab-brand img:last-child { width: 126px; }
 }
+.launch-promo-inline,
+.work-tier-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.launch-promo-inline {
+  padding: 13px 15px;
+  border: 1px solid rgba(231, 191, 92, 0.35);
+  border-radius: 14px;
+  background: rgba(231, 191, 92, 0.07);
+}
+
+.launch-promo-inline span { color: var(--muted); }
+.work-tier-row { margin-top: 16px; }
+.work-tier-row span {
+  flex: 1 1 170px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+}
+.work-tier-row b { display: block; color: var(--gold); margin-bottom: 3px; }

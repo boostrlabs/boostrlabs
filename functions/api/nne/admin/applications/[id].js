@@ -64,7 +64,7 @@ export async function onRequestPatch({ request, env, params }) {
          WHERE id = 'quest_referral_artist' AND status = 'published' LIMIT 1`
       ).first()
     : null;
-  const referralCredits = referral ? Math.min(1, Number(referralReward?.reward_credits || 1)) : 0;
+  const referralCredits = referral ? Math.min(2, Number(referralReward?.reward_credits || 2)) : 0;
   const referralXp = referral ? Math.min(100, Number(referralReward?.reward_xp || 100)) : 0;
 
   const statements = [
@@ -94,7 +94,6 @@ export async function onRequestPatch({ request, env, params }) {
          VALUES (?,?,?,?,'rewarded',?,?,?,?)`
       ).bind(referralEventId, referral.referrer_user_id, userId, referral.referral_code, referralCredits, referralXp, timestamp, timestamp),
       createNneCappedCreditStatement(env, { userId: referral.referrer_user_id, amount: referralCredits, kind: 'referral_reward', sourceType: 'referral_inviter', sourceId: referralEventId, description: `Invitación aprobada de @${application.username}`, actorUserId: auth.user.id, timestamp }),
-      createNneCappedCreditStatement(env, { userId, amount: referralCredits, kind: 'referral_reward', sourceType: 'referral_welcome', sourceId: referralEventId, description: `Bienvenida por invitación de @${referral.username}`, actorUserId: auth.user.id, timestamp }),
       env.DB.prepare(
         `UPDATE nne_profiles SET xp=xp+?, level=1+CAST((xp+?)/1000 AS INTEGER), completed_quest_count=completed_quest_count+1, nne_score=MIN(100,nne_score+1), updated_at=? WHERE user_id=?`
       ).bind(referralXp, referralXp, timestamp, referral.referrer_user_id)

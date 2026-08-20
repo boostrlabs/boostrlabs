@@ -89,7 +89,7 @@ export function QuestModal({ quest, referralCode, referralReward, onClose, onCha
 
   const copyReferral = () => run(async () => {
     if (!referralCode) throw new Error("Tu enlace todavía no está disponible.");
-    const url = `${window.location.origin}${import.meta.env.BASE_URL}signup?ref=${encodeURIComponent(referralCode)}`;
+    const url = `${window.location.origin}${import.meta.env.BASE_URL}signup?ref=${encodeURIComponent(referralCode)}&promo=PRIMEROS50`;
     await navigator.clipboard.writeText(url);
     await onChanged("Enlace de invitación copiado.");
   });
@@ -98,7 +98,7 @@ export function QuestModal({ quest, referralCode, referralReward, onClose, onCha
     <div className="modal-backdrop" onMouseDown={onClose}>
       <section className="modal-card" onMouseDown={(event) => event.stopPropagation()}>
         <header className="modal-header">
-          <div><div className="eyebrow">Quest · Season 001</div><h2>{quest.title}</h2></div>
+          <div><div className="eyebrow">Bloque de Chamba · Season 001</div><h2>{quest.title}</h2></div>
           <button className="icon-button" onClick={onClose} aria-label="Cerrar">×</button>
         </header>
         {error && <div className="form-error">{error}</div>}
@@ -112,7 +112,7 @@ export function QuestModal({ quest, referralCode, referralReward, onClose, onCha
               <span>PNG, JPG o WEBP · máximo 10 MB</span>
               <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setFile(event.target.files?.[0] || null)} />
             </label>
-            <textarea className="field" placeholder="Para Creator Quest: pega aquí el link del TikTok/Reel. Nota adicional opcional." value={note} onChange={(event) => setNote(event.target.value)} />
+            <textarea className="field" placeholder="Para un bloque creativo: pega aquí el link del TikTok/Reel. La nota adicional es opcional." value={note} onChange={(event) => setNote(event.target.value)} />
             <button className="primary-button full" disabled={busy || !file} onClick={uploadEvidence}>{busy ? "Enviando…" : "Enviar evidencia"}</button>
           </>
         )}
@@ -121,12 +121,13 @@ export function QuestModal({ quest, referralCode, referralReward, onClose, onCha
           <>
             <p>{quest.description}</p>
             <div className="modal-referral-reward">
-              <div className="eyebrow">Recompensa para ambos</div>
-              <strong>Tu invitado gana. Tú también.</strong>
+              <div className="eyebrow">Tu recompensa por invitar</div>
+              <strong>Ganas cuando aprobemos la cuenta de tu invitado.</strong>
               <div className="referral-benefits">
                 <span>+{formatNne(referralReward.credits)} NNE Credits</span>
                 <span>+{referralReward.xp.toLocaleString()} XP</span>
               </div>
+              <small>Si todavía quedan cupos de lanzamiento, tu invitado comienza con 3 NNE.</small>
             </div>
             <button className="primary-button full" disabled={busy || !referralCode} onClick={copyReferral}>
               Copiar mi invitación
@@ -152,7 +153,7 @@ export function QuestModal({ quest, referralCode, referralReward, onClose, onCha
           </>
         )}
 
-        {quest.verificationMethod === "trivia" && phase === "result" && <div className="quiz-result"><div className="eyebrow">Resultado</div><strong>{score}%</strong><h3>{passed ? "Quest completada." : "Todavía no."}</h3><p>{passed ? `Ganaste ${formatNne(quest.rewardCredits)} NNE Credits.` : "Escucha nuevamente y vuelve a intentarlo mañana."}</p><button className="primary-button full" onClick={onClose}>Cerrar</button></div>}
+        {quest.verificationMethod === "trivia" && phase === "result" && <div className="quiz-result"><div className="eyebrow">Resultado</div><strong>{score}%</strong><h3>{passed ? "Bloque completado." : "Todavía no."}</h3><p>{passed ? `Ganaste ${formatNne(quest.rewardCredits)} NNE Credits.` : "Escucha nuevamente y vuelve a intentarlo mañana."}</p><button className="primary-button full" onClick={onClose}>Cerrar</button></div>}
       </section>
     </div>
   );

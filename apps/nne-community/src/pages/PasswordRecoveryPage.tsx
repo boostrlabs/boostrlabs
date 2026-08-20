@@ -11,7 +11,7 @@ function RecoveryBrand() {
       <div className="eyebrow">NNE × WESTDETRO Community</div>
       <h1>Hazlo real.</h1>
       <p>Cumple tareas cortas, farmea NNE Credits y cámbialos por ropa, beats, producciones y otros rewards sin sacar dinero de tu bolsillo.</p>
-      <p className="auth-brand-secondary">También hacemos sorteos para los miembros que se mantienen activos.</p>
+      <p className="auth-brand-secondary">También habrá drops y oportunidades especiales para los miembros que se mantienen activos.</p>
       <strong className="auth-manifesto">De artistas haciéndolo real, para artistas que quieren hacerlo real.</strong>
     </section>
   );
@@ -50,7 +50,7 @@ export function ForgotPasswordPage() {
         <p className="auth-note">Elige cómo quieres recuperar tu cuenta.</p>
         <div className="recovery-methods" role="tablist" aria-label="Método de recuperación">
           <button className={channel === "email" ? "active" : ""} type="button" onClick={() => setChannel("email")}>Correo</button>
-          <button className={channel === "sms" ? "active" : ""} type="button" onClick={() => setChannel("sms")}>SMS <small>próximamente</small></button>
+          <button className={channel === "sms" ? "active" : ""} type="button" onClick={() => setChannel("sms")}>WhatsApp <small>próximamente</small></button>
         </div>
         {error && <div className="form-error">{error}</div>}
         {message && <div className="form-success">{message}</div>}
@@ -61,8 +61,8 @@ export function ForgotPasswordPage() {
           </form>
         ) : (
           <div className="sms-coming-soon">
-            <strong>Recuperación por teléfono</strong>
-            <p>La activaremos cuando cada usuario pueda verificar su número desde el perfil. Así nadie podrá usar un teléfono ajeno para tomar una cuenta.</p>
+            <strong>Recuperación por WhatsApp</strong>
+            <p>La activaremos cuando cada usuario pueda verificar su número con un código de seis dígitos. Así nadie podrá usar un teléfono ajeno para tomar una cuenta.</p>
           </div>
         )}
         <p className="auth-switch"><Link to="/login">Volver a iniciar sesión</Link></p>
