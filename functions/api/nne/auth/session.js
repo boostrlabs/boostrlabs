@@ -19,10 +19,9 @@ import {
   verifyNnePassword,
   writeNneAudit
 } from "../../../_lib/nne-api.js";
-import { loginCodeEmail, sendNneEmail, verificationEmail } from "../../../_lib/nne-email.js";
+import { loginCodeEmail, sendNneEmail } from "../../../_lib/nne-email.js";
 
 const LOGIN_CODE_WINDOW_MS = 10 * 60 * 1000;
-const VERIFICATION_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 function randomLoginCode() {
   const values = new Uint32Array(1);
@@ -111,39 +110,20 @@ export async function onRequestPost({ request, env }) {
     return jsonError("nne_user_inactive", "Esta cuenta no está activa.", 403);
   }
 
+  // Compatibility hotfix: nne_users are already approved/activated members.
+  // Legacy accounts existed before email verification was introduced and have
+  // email_verified_at = NULL. Do not force those members through a new
+  // verification-link loop. Backfill verification after a valid password and
+  // continue through the existing one-time login code challenge.
   if (!user.email_verified_at) {
-    if (!env.EMAIL && !env.RESEND_API_KEY) {
-      return jsonError("nne_email_verification_unavailable", "La verificación por correo está temporalmente fuera de servicio.", 503);
-    }
-    const token = randomHex(32);
-    const timestamp = now();
-    const tokenId = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + VERIFICATION_WINDOW_MS).toISOString();
-    const verificationUrl = `${clean(env.NNE_APP_ORIGIN || "https://nne.westdetro.com", 300).replace(/\/$/, "")}/verify-email?token=${encodeURIComponent(token)}`;
-    await env.DB.batch([
-      env.DB.prepare("UPDATE nne_user_email_verification_tokens SET status='revoked' WHERE user_id=? AND status='active'").bind(user.id),
-      env.DB.prepare(
-        `INSERT INTO nne_user_email_verification_tokens (
-           id,user_id,token_hash,status,expires_at,created_at,requested_ip
-         ) VALUES (?,?,?,'active',?,?,?)`
-      ).bind(tokenId, user.id, await sha256(token), expiresAt, timestamp, getIp(request))
-    ]);
-    try {
-      await sendNneEmail(env, { email: user.email, name: user.display_name }, verificationEmail({
-        displayName: user.display_name,
-        username: user.username,
-        verificationUrl
-      }));
-    } catch (error) {
-      console.error("NNE member verification email failed", error?.message || error);
-      await env.DB.prepare("UPDATE nne_user_email_verification_tokens SET status='revoked' WHERE id=?").bind(tokenId).run();
-      return jsonError("nne_email_verification_unavailable", "No pudimos enviar la verificación. Intenta nuevamente en unos minutos.", 503);
-    }
-    return jsonError(
-      "nne_email_verification_required",
-      `Te enviamos un enlace de verificación a ${maskEmail(user.email)}. Verifica tu correo y vuelve a entrar.`,
-      403
-    );
+    const verifiedAt = now();
+    await env.DB.prepare(
+      "UPDATE nne_users SET email_verified_at = COALESCE(email_verified_at, ?), updated_at = ? WHERE id = ?"
+    ).bind(verifiedAt, verifiedAt, user.id).run();
+    user.email_verified_at = verifiedAt;
+    await writeNneAudit(env, request, user.id, "auth.legacy_email_verified", "nne_user", user.id, {
+      reason: "legacy_active_member_compatibility"
+    });
   }
 
   if (!env.EMAIL && !env.RESEND_API_KEY) {
