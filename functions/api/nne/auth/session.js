@@ -1,17 +1,17 @@
 import {
   clean,
   clearNneSessionCookie,
+  createNneSession,
   enforceNneRateLimit,
   getIp,
-  getUa,
   getNneSessionToken,
   jsonError,
   jsonOk,
+  nneSessionCookie,
   normalizeEmail,
   normalizeUsername,
   now,
   onOptions,
-  randomHex,
   readJson,
   requireNneDb,
   requireNneSession,
@@ -19,21 +19,6 @@ import {
   verifyNnePassword,
   writeNneAudit
 } from "../../../_lib/nne-api.js";
-import { loginCodeEmail, sendNneEmail } from "../../../_lib/nne-email.js";
-
-const LOGIN_CODE_WINDOW_MS = 10 * 60 * 1000;
-
-function randomLoginCode() {
-  const values = new Uint32Array(1);
-  crypto.getRandomValues(values);
-  return String(values[0] % 1000000).padStart(6, "0");
-}
-
-function maskEmail(email) {
-  const [local = "", domain = ""] = String(email).split("@");
-  const visible = local.slice(0, Math.min(2, local.length));
-  return `${visible}${"•".repeat(Math.max(2, local.length - visible.length))}@${domain}`;
-}
 
 export const onRequestOptions = onOptions;
 
@@ -89,6 +74,7 @@ export async function onRequestPost({ request, env }) {
        WHERE lower(email) = ? OR username = ?
        LIMIT 1`
     ).bind(normalizeEmail(identifier), normalizeUsername(identifier)).first();
+
     if (application?.status === "pending") {
       if (application.email_verification_status === "pending") {
         return jsonError(
@@ -97,12 +83,21 @@ export async function onRequestPost({ request, env }) {
           403
         );
       }
-      return jsonError("nne_application_pending", "Tu solicitud está pendiente de aprobación. Te avisaremos por el contacto que elegiste.", 403);
+      return jsonError(
+        "nne_application_pending",
+        "Tu solicitud está pendiente de aprobación. Te avisaremos por el contacto que elegiste.",
+        403
+      );
     }
     if (application?.status === "rejected") {
-      return jsonError("nne_application_rejected", "Tu solicitud todavía no fue aprobada. Contacta al equipo NNE × WESTDETRO si necesitas revisarla.", 403);
+      return jsonError(
+        "nne_application_rejected",
+        "Tu solicitud todavía no fue aprobada. Contacta al equipo NNE × WESTDETRO si necesitas revisarla.",
+        403
+      );
     }
   }
+
   if (!user?.id || !(await verifyNnePassword(password, user.password_hash))) {
     return jsonError("nne_invalid_credentials", "Email, username o contraseña incorrectos.", 401);
   }
@@ -110,70 +105,43 @@ export async function onRequestPost({ request, env }) {
     return jsonError("nne_user_inactive", "Esta cuenta no está activa.", 403);
   }
 
-  // Compatibility hotfix: nne_users are already approved/activated members.
-  // Legacy accounts existed before email verification was introduced and have
-  // email_verified_at = NULL. Do not force those members through a new
-  // verification-link loop. Backfill verification after a valid password and
-  // continue through the existing one-time login code challenge.
+  const timestamp = now();
+
+  // Members that already existed before verification was introduced are trusted
+  // after a successful password login. New applications verify email before they
+  // are activated into nne_users, so this only backfills legacy active members.
   if (!user.email_verified_at) {
-    const verifiedAt = now();
     await env.DB.prepare(
       "UPDATE nne_users SET email_verified_at = COALESCE(email_verified_at, ?), updated_at = ? WHERE id = ?"
-    ).bind(verifiedAt, verifiedAt, user.id).run();
-    user.email_verified_at = verifiedAt;
+    ).bind(timestamp, timestamp, user.id).run();
     await writeNneAudit(env, request, user.id, "auth.legacy_email_verified", "nne_user", user.id, {
       reason: "legacy_active_member_compatibility"
     });
   }
 
-  if (!env.EMAIL && !env.RESEND_API_KEY) {
-    return jsonError("nne_login_code_unavailable", "El código de acceso por correo está temporalmente fuera de servicio.", 503);
-  }
+  const session = await createNneSession(env, request, user.id);
+  await env.DB.prepare("UPDATE nne_users SET last_login_at = ?, updated_at = ? WHERE id = ?")
+    .bind(timestamp, timestamp, user.id)
+    .run();
+  await writeNneAudit(env, request, user.id, "auth.login", "nne_user", user.id, {
+    method: "password"
+  });
 
-  const timestamp = now();
-  const challengeToken = randomHex(32);
-  const code = randomLoginCode();
-  const challengeId = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + LOGIN_CODE_WINDOW_MS).toISOString();
-  await env.DB.batch([
-    env.DB.prepare("UPDATE nne_login_challenges SET status='revoked' WHERE user_id=? AND status='active'").bind(user.id),
-    env.DB.prepare(
-      `INSERT INTO nne_login_challenges (
-         id,user_id,channel,destination,challenge_hash,code_hash,status,attempt_count,
-         expires_at,created_at,requested_ip,user_agent
-       ) VALUES (?,?, 'email', ?,?,?,'active',0,?,?,?,?)`
-    ).bind(
-      challengeId,
-      user.id,
-      user.email,
-      await sha256(challengeToken),
-      await sha256(code),
-      expiresAt,
-      timestamp,
-      getIp(request),
-      getUa(request)
-    )
-  ]);
-
-  try {
-    await sendNneEmail(env, { email: user.email, name: user.display_name }, loginCodeEmail({
-      displayName: user.display_name,
-      code
-    }));
-  } catch (error) {
-    console.error("NNE login code email failed", error?.message || error);
-    await env.DB.prepare("UPDATE nne_login_challenges SET status='revoked' WHERE id=?").bind(challengeId).run();
-    return jsonError("nne_login_code_unavailable", "No pudimos enviar el código. Intenta nuevamente en unos minutos.", 503);
-  }
-
-  await writeNneAudit(env, request, user.id, "auth.login_code_sent", "nne_login_challenge", challengeId, { channel: "email" });
-  return jsonOk({
-    two_factor_required: true,
-    challenge_token: challengeToken,
-    channel: "email",
-    destination: maskEmail(user.email),
-    expires_in: Math.floor(LOGIN_CODE_WINDOW_MS / 1000)
-  }, 202);
+  return jsonOk(
+    {
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        handle: `@${user.username}`,
+        name: user.display_name,
+        role: user.role
+      },
+      redirect: user.role === "admin" ? "/admin" : "/"
+    },
+    200,
+    { "Set-Cookie": nneSessionCookie(session.token, request) }
+  );
 }
 
 export async function onRequestDelete({ request, env }) {
