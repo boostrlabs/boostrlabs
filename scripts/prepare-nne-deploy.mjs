@@ -24,6 +24,12 @@ await mkdir(resolve(target, "site"), { recursive: true });
 await mkdir(resolve(target, "functions/api"), { recursive: true });
 await mkdir(resolve(target, "functions/join"), { recursive: true });
 await cp(resolve(root, "apps/nne-community/dist"), resolve(target, "site"), { recursive: true });
+
+// Pages advanced mode (_worker.js in the static output) disables file-based
+// Pages Functions. NNE relies on the sibling functions/ tree for auth/API routes,
+// so explicitly strip any accidental worker from the standalone artifact.
+await rm(resolve(target, "site/_worker.js"), { force: true });
+
 await cp(resolve(root, "functions/api/nne"), resolve(target, "functions/api/nne"), { recursive: true });
 await cp(resolve(root, "functions/join"), resolve(target, "functions/join"), { recursive: true });
 await cp(resolve(root, "functions/_lib"), resolve(target, "functions/_lib"), { recursive: true });
