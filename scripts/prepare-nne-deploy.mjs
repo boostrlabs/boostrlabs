@@ -1,8 +1,24 @@
-import { cp, mkdir, rm, writeFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { promisify } from "node:util";
 
 const root = resolve(import.meta.dirname, "..");
 const target = resolve(root, ".deploy/nne");
+const execFileAsync = promisify(execFile);
+const buildCommand = process.platform === "win32"
+  ? [process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", "corepack pnpm --filter nne-community-frontend build:standalone"]]
+  : ["corepack", ["pnpm", "--filter", "nne-community-frontend", "build:standalone"]];
+
+// nne.westdetro.com serves the app at the domain root. Always create a fresh
+// standalone build here so a previous /nne-community/ build cannot be deployed.
+await execFileAsync(buildCommand[0], buildCommand[1], { cwd: root });
+
+const builtIndex = await readFile(resolve(root, "apps/nne-community/dist/index.html"), "utf8");
+if (/\/(?:nne-community)\/assets\//.test(builtIndex)) {
+  throw new Error("Refusing to deploy NNE with /nne-community/ asset paths. Expected a root standalone build.");
+}
+
 await rm(target, { recursive: true, force: true });
 await mkdir(resolve(target, "site"), { recursive: true });
 await mkdir(resolve(target, "functions/api"), { recursive: true });
