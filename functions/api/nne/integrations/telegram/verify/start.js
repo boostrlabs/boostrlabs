@@ -1,4 +1,18 @@
-import { jsonOk, now, requireNneSession, sha256 } from "../../../../../_lib/nne-api.js";
+import { clean, jsonOk, now, requireNneSession, sha256 } from "../../../../../_lib/nne-api.js";
+
+async function getTelegramBotUsername(env) {
+  const configured = clean(env.TELEGRAM_NNE_BOT_USERNAME, 120).replace(/^@/, "");
+  if (configured) return configured;
+  const token = clean(env.TELEGRAM_NNE_BOT_TOKEN, 240);
+  if (!token) return "";
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+    const data = await response.json().catch(() => null);
+    return data?.ok ? clean(data?.result?.username, 120).replace(/^@/, "") : "";
+  } catch {
+    return "";
+  }
+}
 
 export async function onRequestGet({ request, env }) {
   const auth = await requireNneSession(request, env);
@@ -44,11 +58,18 @@ export async function onRequestPost({ request, env }) {
     timestamp, timestamp, timestamp
   ).run();
 
+  const botUsername = await getTelegramBotUsername(env);
+  const botUrl = botUsername
+    ? `https://t.me/${encodeURIComponent(botUsername)}?start=${encodeURIComponent(`nne_verify_${code}`)}`
+    : null;
+
   return jsonOk({
     channel: "telegram",
     status: "challenge_sent",
     code,
     expires_at: expiresAt,
-    instruction: `Escribe VERIFY ${code} al bot oficial de NNE en Telegram.`
+    instruction: `Escribe VERIFY ${code} al bot oficial de NNE en Telegram.`,
+    bot_username: botUsername ? `@${botUsername}` : null,
+    bot_url: botUrl
   });
 }
