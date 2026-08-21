@@ -2,6 +2,7 @@ import { clean, json, jsonError, now, requireDb } from "../../../_lib/api.js";
 import { syncInteractiveReceipt } from "../../../_lib/payment-receipts.js";
 import { publicParkingTicket, syncParkingSession } from "../../../_lib/smart-parking.js";
 import { ensureStripeSchema, getStripeWebhookSecret, recordStripeActivity } from "../../../_lib/stripe.js";
+import { settleNneMarketplaceCheckout } from "../../../_lib/nne-marketplace-settlement.js";
 
 function parseSignature(header = "") {
   const result = { timestamp: null, signatures: [] };
@@ -157,5 +158,10 @@ export async function onRequestPost({ request, env }) {
   const event = JSON.parse(rawBody);
   await ensureStripeSchema(env);
   const payment = await updatePayment(env, event, new URL(request.url).origin);
-  return json({ ok: true, received: true, event_id: event.id, event_type: event.type, payment });
+  let nneMarketplace = null;
+  if (event.type === "checkout.session.completed") {
+    try { nneMarketplace = await settleNneMarketplaceCheckout(env, event.data?.object || {}); }
+    catch (error) { console.error("NNE marketplace settlement failed", error); }
+  }
+  return json({ ok: true, received: true, event_id: event.id, event_type: event.type, payment, nne_marketplace: nneMarketplace });
 }
