@@ -1,5 +1,6 @@
 import { createNneCappedCreditStatement } from "./nne-community.js";
 import { now } from "./nne-api.js";
+import { promoteApplicationRegistrationProfile } from "./nne-registration.js";
 
 export async function activateNneApplication(env, application, {
   role = "member",
@@ -119,6 +120,8 @@ export async function activateNneApplication(env, application, {
   }
 
   await env.DB.batch(statements);
+  await promoteApplicationRegistrationProfile(env, application.id, userId, timestamp);
+
   return {
     userId,
     role: safeRole,
