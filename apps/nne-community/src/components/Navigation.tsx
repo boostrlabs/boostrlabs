@@ -5,10 +5,19 @@ import { CollabBrand } from "./CollabBrand";
 const items = [
   { to: "/", label: "Home", icon: "⌂" },
   { to: "/quests", label: "Chamba", icon: "◎" },
+  { to: "/profile", label: "Invita +3 NNE", icon: "+" },
   { to: "/raffles", label: "Sorteos", icon: "✦" },
   { to: "/feed", label: "Feed", icon: "◌" },
   { to: "/rewards", label: "Rewards", icon: "◇" },
   { to: "/profile", label: "Profile", icon: "◉" }
+];
+
+const rewardItems = [
+  { to: "/rewards/beats", label: "Beats" },
+  { to: "/rewards/gear", label: "Equipos" },
+  { to: "/rewards/ropa", label: "Ropa" },
+  { to: "/rewards/servicios", label: "Servicios" },
+  { to: "/rewards/acceso", label: "Acceso" }
 ];
 
 export function Navigation() {
@@ -29,16 +38,26 @@ export function Navigation() {
         </div>
 
         <nav className="nav-list">
-          {visibleItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              className={({ isActive }) => isActive ? "nav-button active" : "nav-button"}
-            >
-              <span>{item.icon}</span>
-              {item.label}
-            </NavLink>
+          {visibleItems.map((item, index) => (
+            <div key={`${item.to}-${item.label}`}>
+              <NavLink
+                to={item.to}
+                end={item.to === "/"}
+                className={({ isActive }) => isActive && item.label !== "Invita +3 NNE" ? "nav-button active" : "nav-button"}
+              >
+                <span>{item.icon}</span>
+                {item.label}
+              </NavLink>
+              {item.to === "/rewards" && item.label === "Rewards" && (
+                <div style={{ display: "grid", gap: 4, padding: "4px 0 8px 42px" }}>
+                  {rewardItems.map((reward) => (
+                    <NavLink key={reward.to} to={reward.to} style={{ fontSize: 12, opacity: .72, textDecoration: "none" }}>
+                      {reward.label}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </nav>
 
@@ -51,9 +70,9 @@ export function Navigation() {
       </aside>
 
       <nav className="mobile-navigation">
-        {visibleItems.map((item) => (
+        {visibleItems.filter((item) => item.label !== "Invita +3 NNE").map((item) => (
           <NavLink
-            key={item.to}
+            key={`${item.to}-${item.label}`}
             to={item.to}
             end={item.to === "/"}
             className={({ isActive }) => isActive ? "active" : ""}
