@@ -9,6 +9,7 @@ import { EmailVerificationPage, ForgotPasswordPage, ResetPasswordPage } from "./
 import { JoinPage } from "./pages/JoinPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import { InstagramIntegrationPage } from "./pages/InstagramIntegrationPage";
+import { TelegramVerificationPage } from "./pages/TelegramVerificationPage";
 import {
   FeedPage,
   HomePage,
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="feed" element={<FeedPage />} />
         <Route path="rewards" element={<RewardsPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="verify-telegram" element={<TelegramVerificationPage />} />
         <Route path="review" element={<ReviewPage />} />
       </Route>
       <Route element={<RequireAuth admin />}>
