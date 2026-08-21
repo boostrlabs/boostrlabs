@@ -12,6 +12,7 @@ import { InstagramIntegrationPage } from "./pages/InstagramIntegrationPage";
 import { TelegramVerificationPage } from "./pages/TelegramVerificationPage";
 import { RewardCategoryPage } from "./pages/RewardCategoryPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { EconomyPage } from "./pages/EconomyPage";
 import {
   FeedPage,
   HomePage,
@@ -42,6 +43,7 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route index element={<HomePage />} />
         <Route path="quests" element={<QuestsPage />} />
+        <Route path="economy" element={<EconomyPage />} />
         <Route path="raffles" element={<RafflesPage />} />
         <Route path="feed" element={<FeedPage />} />
         <Route path="rewards" element={<RewardsPage />} />
