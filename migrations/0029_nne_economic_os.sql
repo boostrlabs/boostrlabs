@@ -1,41 +1,79 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS nne_marketplace_beats (
+CREATE TABLE IF NOT EXISTS nne_beats (
   id TEXT PRIMARY KEY,
-  seller_user_id TEXT NOT NULL REFERENCES nne_users(id) ON DELETE CASCADE,
+  owner_user_id TEXT NOT NULL REFERENCES nne_users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
-  producer_name TEXT NOT NULL,
   bpm INTEGER,
   musical_key TEXT,
   tags TEXT,
   preview_url TEXT,
   artwork_url TEXT,
-  lease_price_cents INTEGER CHECK (lease_price_cents IS NULL OR lease_price_cents > 0),
-  exclusive_price_cents INTEGER CHECK (exclusive_price_cents IS NULL OR exclusive_price_cents > 0),
-  currency TEXT NOT NULL DEFAULT 'usd',
-  westdetro_status TEXT NOT NULL DEFAULT 'submitted' CHECK (westdetro_status IN ('submitted','reviewing','certified','not_westdetro')),
-  marketplace_status TEXT NOT NULL DEFAULT 'pending' CHECK (marketplace_status IN ('pending','published','paused','sold','archived')),
+  lease_price_cents INTEGER,
+  exclusive_price_cents INTEGER,
+  status TEXT NOT NULL DEFAULT 'submitted',
+  westdetro_certified INTEGER NOT NULL DEFAULT 0,
+  review_note TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_nne_marketplace_beats_public ON nne_marketplace_beats(marketplace_status, westdetro_status, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_nne_marketplace_beats_seller ON nne_marketplace_beats(seller_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nne_beats_public ON nne_beats(status,westdetro_certified,updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nne_beats_owner ON nne_beats(owner_user_id,created_at DESC);
 
-CREATE TABLE IF NOT EXISTS nne_marketplace_services (
+CREATE TABLE IF NOT EXISTS nne_service_listings (
   id TEXT PRIMARY KEY,
   seller_user_id TEXT NOT NULL REFERENCES nne_users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
   category TEXT NOT NULL,
+  title TEXT NOT NULL,
   description TEXT NOT NULL,
-  price_cents INTEGER NOT NULL CHECK (price_cents > 0),
-  currency TEXT NOT NULL DEFAULT 'usd',
-  delivery_days INTEGER NOT NULL DEFAULT 7 CHECK (delivery_days > 0),
-  revisions INTEGER NOT NULL DEFAULT 1 CHECK (revisions >= 0),
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','published','paused','archived')),
+  price_cents INTEGER NOT NULL,
+  turnaround_days INTEGER,
+  status TEXT NOT NULL DEFAULT 'published',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_nne_marketplace_services_public ON nne_marketplace_services(status, category, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nne_service_listings_public ON nne_service_listings(status,category,updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS nne_seller_ledger (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES nne_users(id) ON DELETE RESTRICT,
+  amount_cents INTEGER NOT NULL,
+  kind TEXT NOT NULL,
+  source_type TEXT NOT NULL,
+  source_id TEXT NOT NULL,
+  description TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE(user_id,kind,source_type,source_id)
+);
+CREATE INDEX IF NOT EXISTS idx_nne_seller_ledger_user ON nne_seller_ledger(user_id,created_at DESC);
+
+CREATE TABLE IF NOT EXISTS nne_academy_items (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  category TEXT NOT NULL,
+  cost_nne REAL NOT NULL,
+  asset_url TEXT,
+  status TEXT NOT NULL DEFAULT 'published',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_nne_academy_public ON nne_academy_items(status,category,updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS nne_jobs (
+  id TEXT PRIMARY KEY,
+  creator_user_id TEXT NOT NULL REFERENCES nne_users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  category TEXT NOT NULL,
+  compensation_type TEXT NOT NULL,
+  budget_cents INTEGER,
+  budget_nne REAL,
+  status TEXT NOT NULL DEFAULT 'open',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_nne_jobs_public ON nne_jobs(status,category,created_at DESC);
 
 CREATE TABLE IF NOT EXISTS nne_marketplace_orders (
   id TEXT PRIMARY KEY,
@@ -55,21 +93,8 @@ CREATE TABLE IF NOT EXISTS nne_marketplace_orders (
   completed_at TEXT,
   updated_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_nne_marketplace_orders_buyer ON nne_marketplace_orders(buyer_user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_nne_marketplace_orders_seller ON nne_marketplace_orders(seller_user_id, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS nne_seller_earnings (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES nne_users(id) ON DELETE RESTRICT,
-  order_id TEXT REFERENCES nne_marketplace_orders(id) ON DELETE RESTRICT,
-  amount_cents INTEGER NOT NULL CHECK (amount_cents <> 0),
-  kind TEXT NOT NULL CHECK (kind IN ('sale','refund','payout','adjustment')),
-  status TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('pending','available','paid','reversed')),
-  description TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  available_at TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_nne_seller_earnings_user ON nne_seller_earnings(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nne_marketplace_orders_buyer ON nne_marketplace_orders(buyer_user_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nne_marketplace_orders_seller ON nne_marketplace_orders(seller_user_id,created_at DESC);
 
 CREATE TABLE IF NOT EXISTS nne_contract_documents (
   id TEXT PRIMARY KEY,
@@ -80,38 +105,7 @@ CREATE TABLE IF NOT EXISTS nne_contract_documents (
   rendered_text TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_nne_contract_documents_order ON nne_contract_documents(order_id, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS nne_jobs (
-  id TEXT PRIMARY KEY,
-  client_user_id TEXT NOT NULL REFERENCES nne_users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  category TEXT NOT NULL,
-  description TEXT NOT NULL,
-  budget_type TEXT NOT NULL DEFAULT 'usd' CHECK (budget_type IN ('usd','nne','mixed')),
-  budget_amount INTEGER NOT NULL CHECK (budget_amount > 0),
-  deadline_at TEXT,
-  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','assigned','completed','cancelled','archived')),
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_nne_jobs_public ON nne_jobs(status, category, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS nne_academy_items (
-  id TEXT PRIMARY KEY,
-  creator_user_id TEXT REFERENCES nne_users(id) ON DELETE SET NULL,
-  title TEXT NOT NULL,
-  category TEXT NOT NULL CHECK (category IN ('course','sample_pack','drum_kit','preset','vocal_chain','project','stems','plugin','data','template','other')),
-  description TEXT NOT NULL,
-  cost_credits INTEGER NOT NULL CHECK (cost_credits > 0),
-  asset_key TEXT,
-  preview_url TEXT,
-  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published','paused','archived')),
-  sort_order INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_nne_academy_public ON nne_academy_items(status, category, sort_order, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nne_contract_documents_order ON nne_contract_documents(order_id,created_at DESC);
 
 CREATE TABLE IF NOT EXISTS nne_cashback_rules (
   id TEXT PRIMARY KEY,
@@ -134,8 +128,13 @@ CREATE TABLE IF NOT EXISTS nne_cashback_events (
   awarded_credits REAL NOT NULL CHECK (awarded_credits > 0),
   status TEXT NOT NULL DEFAULT 'awarded' CHECK (status IN ('pending','awarded','reversed')),
   created_at TEXT NOT NULL,
-  UNIQUE(user_id, source_type, source_id)
+  UNIQUE(user_id,source_type,source_id)
 );
 
 INSERT OR IGNORE INTO nne_cashback_rules (id,label,source_type,cashback_percent,max_credits,status,created_at,updated_at)
 VALUES ('nne_event_cashback_20','Eventos NNE × WESTDETRO · 20% cashback','event_ticket',20,NULL,'active',datetime('now'),datetime('now'));
+
+INSERT OR IGNORE INTO nne_academy_items (id,title,description,category,cost_nne,status,created_at,updated_at) VALUES
+('academy_westdetro_drums_001','WESTDETRO Drum Kit 001','Kit de drums curado para producir dentro del universo WESTDETRO.','drum_kit',20,'published',datetime('now'),datetime('now')),
+('academy_vocal_project_001','Vocal Project 001','Proyecto educativo de voces, routing y procesamiento para estudio.','vocal_project',25,'published',datetime('now'),datetime('now')),
+('academy_production_breakdown_001','Cómo construir un WESTDETRO','Breakdown de producción, estructura, drums y bajos.','course',15,'published',datetime('now'),datetime('now'));
