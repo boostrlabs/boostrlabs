@@ -11,10 +11,10 @@ import { ReviewPage } from "./pages/ReviewPage";
 import { InstagramIntegrationPage } from "./pages/InstagramIntegrationPage";
 import { TelegramVerificationPage } from "./pages/TelegramVerificationPage";
 import { RewardCategoryPage } from "./pages/RewardCategoryPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import {
   FeedPage,
   HomePage,
-  ProfilePage,
   QuestsPage,
   RafflesPage,
   RewardsPage
