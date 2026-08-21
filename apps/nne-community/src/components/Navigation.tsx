@@ -24,7 +24,7 @@ const rewardItems = [
 export function Navigation() {
   const { user, logout } = useAuth();
   const visibleItems = user?.role === "admin"
-    ? [...items, { to: "/admin", label: "Admin", icon: "✦" }]
+    ? [...items, { to: "/admin/economy", label: "Curar Beats", icon: "W" }, { to: "/admin", label: "Admin", icon: "✦" }]
     : items;
 
   return (
@@ -71,7 +71,7 @@ export function Navigation() {
       </aside>
 
       <nav className="mobile-navigation">
-        {visibleItems.filter((item) => item.label !== "Invita +3 NNE").map((item) => (
+        {visibleItems.filter((item) => item.label !== "Invita +3 NNE" && item.label !== "Curar Beats").map((item) => (
           <NavLink
             key={`${item.to}-${item.label}`}
             to={item.to}
