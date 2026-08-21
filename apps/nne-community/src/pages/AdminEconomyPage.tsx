@@ -1,42 +1,34 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { apiRequest } from "../services/api";
 
-type BeatRow = { id:string; title:string; bpm:number|null; musical_key:string|null; tags:string|null; preview_url:string|null; lease_price_cents:number|null; exclusive_price_cents:number|null; status:string; westdetro_certified:number; review_note:string|null; username:string };
-type AdminEconomyData = { beats:BeatRow[]; services:Array<Record<string,unknown>>; jobs:Array<Record<string,unknown>> };
+type BeatRow={id:string;title:string;bpm:number|null;musical_key:string|null;tags:string|null;preview_url:string|null;lease_price_cents:number|null;exclusive_price_cents:number|null;status:string;westdetro_certified:number;username:string};
+type AdminEconomyData={beats:BeatRow[];academy:Array<Record<string,any>>;bounties:Array<Record<string,any>>;partners:Array<Record<string,any>>;drops:Array<Record<string,any>>;payouts:Array<Record<string,any>>;services:Array<Record<string,any>>;jobs:Array<Record<string,any>>};
+const usd=(cents:number|null|undefined)=>cents==null?"—":new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(cents)/100);
 
-const usd = (cents:number|null) => cents == null ? "—" : new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(cents/100);
-
-export function AdminEconomyPage() {
-  const [data,setData] = useState<AdminEconomyData>({beats:[],services:[],jobs:[]});
-  const [message,setMessage] = useState("");
-  const load = () => apiRequest<AdminEconomyData>("/admin/economy").then(setData).catch((e)=>setMessage(e instanceof Error?e.message:"No pudimos cargar curaduría."));
-  useEffect(()=>{ void load(); },[]);
-
-  const review = async (beatId:string, action:string) => {
-    setMessage("");
-    try {
-      await apiRequest("/admin/economy",{method:"POST",body:JSON.stringify({beat_id:beatId,action})});
-      setMessage(action === "certify_publish" ? "Beat certificado y publicado." : action === "publish" ? "Beat publicado en marketplace." : action === "reject" ? "Beat rechazado." : "Beat marcado en revisión.");
-      await load();
-    } catch(e) { setMessage(e instanceof Error?e.message:"No pudimos actualizar el beat."); }
-  };
+export function AdminEconomyPage(){
+  const [data,setData]=useState<AdminEconomyData>({beats:[],academy:[],bounties:[],partners:[],drops:[],payouts:[],services:[],jobs:[]});
+  const [tab,setTab]=useState("beats");
+  const [message,setMessage]=useState("");
+  const load=()=>apiRequest<AdminEconomyData>("/admin/economy").then(setData).catch(e=>setMessage(e instanceof Error?e.message:"No pudimos cargar el Economic OS."));
+  useEffect(()=>{void load();},[]);
+  const run=async(payload:Record<string,unknown>,success:string)=>{setMessage("");try{await apiRequest("/admin/economy",{method:"POST",body:JSON.stringify(payload)});setMessage(success);await load();}catch(e){setMessage(e instanceof Error?e.message:"No pudimos guardar el cambio.");}};
+  const fromForm=(event:FormEvent<HTMLFormElement>,action:string,success:string)=>{event.preventDefault();const form=event.currentTarget;const values=Object.fromEntries(new FormData(form));void run({action,...values},success).then(()=>form.reset());};
 
   return <>
-    <article className="card" style={{marginBottom:18}}><div className="eyebrow">WESTDETRO CURATION</div><h2>Marketplace de beats.</h2><p>Revisa submissions, publica beats generales o marca los que realmente pertenecen al universo como WESTDETRO Certified.</p></article>
-    {message && <div className="form-success" style={{marginBottom:14}}>{message}</div>}
-    <section style={{display:"grid",gap:14}}>
-      {data.beats.map((beat)=><article className="card" key={beat.id} style={{display:"grid",gap:10}}>
-        <div><div className="eyebrow">@{beat.username} · {beat.status}{beat.westdetro_certified?" · WESTDETRO CERTIFIED":""}</div><h3>{beat.title}</h3><p>{beat.bpm?`${beat.bpm} BPM · `:""}{beat.musical_key||"Key pendiente"}{beat.tags?` · ${beat.tags}`:""}</p></div>
-        {beat.preview_url && <audio controls controlsList="nodownload" src={beat.preview_url} style={{width:"100%"}} />}
-        <div className="referral-benefits"><span>Lease: {usd(beat.lease_price_cents)}</span><span>Exclusive: {usd(beat.exclusive_price_cents)}</span></div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          <button className="primary-button" onClick={()=>void review(beat.id,"certify_publish")}>WESTDETRO Certified + publicar</button>
-          <button className="text-button" onClick={()=>void review(beat.id,"publish")}>Publicar sin badge</button>
-          <button className="text-button" onClick={()=>void review(beat.id,"reviewing")}>En revisión</button>
-          <button className="text-button" onClick={()=>void review(beat.id,"reject")}>Rechazar</button>
-        </div>
-      </article>)}
-      {!data.beats.length && <div className="empty-state">No hay beats enviados todavía.</div>}
-    </section>
+    <article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE ECONOMY CONTROL</div><h2>Curación, Academy, bounties, partners y payouts.</h2><p>El backend mantiene NNE Credits separados del dinero real generado por vendedores.</p></article>
+    {message&&<div className="form-success" style={{marginBottom:14}}>{message}</div>}
+    <div className="filter-strip" style={{marginBottom:18}}>{[["beats","Beats"],["academy","Academy"],["bounties","Bounties"],["partners","Partners"],["drops","Drops"],["payouts","Payouts"]].map(([id,label])=><button key={id} className={tab===id?"active":""} onClick={()=>setTab(id)}>{label}</button>)}</div>
+
+    {tab==="beats"&&<section style={{display:"grid",gap:14}}>{data.beats.map(beat=><article className="card" key={beat.id} style={{display:"grid",gap:10}}><div><div className="eyebrow">@{beat.username} · {beat.status}{beat.westdetro_certified?" · WESTDETRO CERTIFIED":""}</div><h3>{beat.title}</h3><p>{beat.bpm?`${beat.bpm} BPM · `:""}{beat.musical_key||"Key pendiente"}{beat.tags?` · ${beat.tags}`:""}</p></div>{beat.preview_url&&<audio controls controlsList="nodownload" src={beat.preview_url} style={{width:"100%"}/>}<div className="referral-benefits"><span>Lease: {usd(beat.lease_price_cents)}</span><span>Exclusive: {usd(beat.exclusive_price_cents)}</span></div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button className="primary-button" onClick={()=>void run({beat_id:beat.id,action:"certify_publish"},"Beat WESTDETRO Certified y publicado.")}>Certified + publicar</button><button className="text-button" onClick={()=>void run({beat_id:beat.id,action:"publish"},"Beat publicado.")}>Publicar normal</button><button className="text-button" onClick={()=>void run({beat_id:beat.id,action:"reviewing"},"Beat en revisión.")}>Revisión</button><button className="text-button" onClick={()=>void run({beat_id:beat.id,action:"reject"},"Beat rechazado.")}>Rechazar</button></div></article>)}{!data.beats.length&&<div className="empty-state">No hay beats enviados.</div>}</section>}
+
+    {tab==="academy"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE ACADEMY CMS</div><h3>Publicar recurso NNE-only</h3><form className="form-grid" onSubmit={e=>fromForm(e,"academy_create","Recurso publicado en Academy.")}><input className="field" name="title" placeholder="Título" required/><select className="field" name="category"><option value="sample_kit">Sample kit</option><option value="drum_kit">Drum kit</option><option value="vocal_project">Proyecto vocal</option><option value="preset">Preset</option><option value="plugin">Plugin</option><option value="course">Curso</option><option value="data">Data</option><option value="template">Template</option><option value="other">Otro</option></select><textarea className="field" name="description" placeholder="Descripción" required/><input className="field" name="cost_nne" type="number" step="0.25" min="0.25" placeholder="Costo NNE" required/><input className="field" name="asset_url" placeholder="URL privada/entrega opcional"/><button className="primary-button">Publicar</button></form></article><section className="reward-grid">{data.academy.map((x:any)=><article className="card reward-card" key={x.id}><div className="eyebrow">{x.category}</div><h3>{x.title}</h3><p>{x.description}</p><footer><strong>{x.cost_nne} NNE</strong></footer></article>)}</section></>}
+
+    {tab==="bounties"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">BOUNTY ENGINE</div><h3>Lanza un reto competitivo</h3><form className="form-grid" onSubmit={e=>fromForm(e,"bounty_create","Bounty publicado.")}><input className="field" name="title" placeholder="Título" required/><textarea className="field" name="description" placeholder="Brief" required/><input className="field" name="reward_nne" type="number" step="0.25" placeholder="Premio NNE"/><input className="field" name="reward_usd" type="number" step="0.01" placeholder="Premio USD opcional"/><input className="field" name="winner_count" type="number" min="1" value="1" readOnly/><input className="field" name="ends_at" type="datetime-local"/><button className="primary-button">Publicar bounty</button></form></article><section className="reward-grid">{data.bounties.map((x:any)=><article className="card reward-card" key={x.id}><div className="eyebrow">{x.status}</div><h3>{x.title}</h3><p>{x.description}</p><footer><strong>{x.reward_nne?`${x.reward_nne} NNE`:usd(x.reward_usd_cents)}</strong></footer></article>)}</section></>}
+
+    {tab==="partners"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE PARTNERS</div><h3>Cashback y utilidad fuera del catálogo propio</h3><form className="form-grid" onSubmit={e=>fromForm(e,"partner_create","Partner publicado.")}><input className="field" name="partner_name" placeholder="Partner" required/><input className="field" name="title" placeholder="Oferta" required/><textarea className="field" name="description" placeholder="Descripción" required/><input className="field" name="cashback_percent" type="number" step="0.1" placeholder="Cashback %"/><input className="field" name="redemption_cost_nne" type="number" step="0.25" placeholder="Canje NNE opcional"/><input className="field" name="external_url" placeholder="URL opcional"/><button className="primary-button">Publicar partner</button></form></article><section className="reward-grid">{data.partners.map((x:any)=><article className="card reward-card" key={x.id}><div className="eyebrow">{x.partner_name}</div><h3>{x.title}</h3><p>{x.description}</p></article>)}</section></>}
+
+    {tab==="drops"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE DROPS</div><h3>Acceso por tiempo o inventario limitado</h3><form className="form-grid" onSubmit={e=>fromForm(e,"drop_create","Drop publicado.")}><input className="field" name="title" placeholder="Título" required/><textarea className="field" name="description" placeholder="Descripción" required/><input className="field" name="drop_type" placeholder="academy, reward, access…"/><input className="field" name="target_id" placeholder="ID objetivo opcional"/><input className="field" name="cost_nne" type="number" step="0.25" placeholder="Costo NNE"/><input className="field" name="inventory" type="number" min="0" placeholder="Inventario"/><input className="field" name="ends_at" type="datetime-local"/><button className="primary-button">Publicar drop</button></form></article><section className="reward-grid">{data.drops.map((x:any)=><article className="card reward-card" key={x.id}><div className="eyebrow">{x.drop_type} · {x.status}</div><h3>{x.title}</h3><p>{x.description}</p></article>)}</section></>}
+
+    {tab==="payouts"&&<section style={{display:"grid",gap:12}}>{data.payouts.map((x:any)=><article className="card" key={x.id}><div className="eyebrow">@{x.username} · {x.status}</div><h3>{usd(x.amount_cents)}</h3><p>{x.payout_method}</p><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{x.status==="requested"&&<button className="text-button" onClick={()=>void run({action:"payout_update",payout_id:x.id,status:"approved"},"Cashout aprobado.")}>Aprobar</button>}{x.status!=="fulfilled"&&x.status!=="rejected"&&<button className="primary-button" onClick={()=>void run({action:"payout_update",payout_id:x.id,status:"fulfilled"},"Cashout marcado como entregado.")}>Marcar entregado</button>}{x.status!=="fulfilled"&&<button className="text-button" onClick={()=>void run({action:"payout_update",payout_id:x.id,status:"rejected"},"Cashout rechazado.")}>Rechazar</button>}</div></article>)}{!data.payouts.length&&<div className="empty-state">No hay solicitudes de cashout.</div>}</section>}
   </>;
 }
