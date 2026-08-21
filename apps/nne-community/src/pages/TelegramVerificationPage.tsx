@@ -13,6 +13,8 @@ interface TelegramChallenge extends TelegramVerificationStatus {
   code: string;
   expires_at: string;
   instruction: string;
+  bot_username?: string | null;
+  bot_url?: string | null;
 }
 
 export function TelegramVerificationPage() {
@@ -55,6 +57,11 @@ export function TelegramVerificationPage() {
     }
   };
 
+  const openTelegram = () => {
+    if (!challenge?.bot_url) return;
+    window.location.href = challenge.bot_url;
+  };
+
   const verified = status?.status === "verified";
 
   return (
@@ -87,12 +94,33 @@ export function TelegramVerificationPage() {
                 {challenge.code}
               </div>
             </div>
-            <div>
-              <p>Abre el bot oficial de NNE en Telegram y envía exactamente:</p>
-              <code style={{ display: "block", padding: 14, border: "1px solid #333", borderRadius: 12, fontSize: 18 }}>
+
+            {challenge.bot_url ? (
+              <div style={{ display: "grid", gap: 10 }}>
+                <p style={{ marginBottom: 0 }}>
+                  Abre {challenge.bot_username || "el bot oficial de NNE"}. El enlace lleva tu verificación preparada.
+                </p>
+                <button className="primary-button" onClick={openTelegram}>
+                  Abrir Telegram y verificar
+                </button>
+                <small>En Telegram solo pulsa <strong>Start / Iniciar</strong>. NNE verificará automáticamente este código.</small>
+              </div>
+            ) : (
+              <div>
+                <p>Abre el bot oficial de NNE en Telegram y envía exactamente:</p>
+                <code style={{ display: "block", padding: 14, border: "1px solid #333", borderRadius: 12, fontSize: 18 }}>
+                  VERIFY {challenge.code}
+                </code>
+              </div>
+            )}
+
+            <details>
+              <summary style={{ cursor: "pointer", opacity: .8 }}>Ver método manual</summary>
+              <code style={{ display: "block", marginTop: 10, padding: 14, border: "1px solid #333", borderRadius: 12, fontSize: 18 }}>
                 VERIFY {challenge.code}
               </code>
-            </div>
+            </details>
+
             <small>Esta pantalla detectará automáticamente cuando Telegram quede verificado.</small>
             <button className="text-button" onClick={() => void loadStatus()}>Comprobar ahora</button>
           </div>
