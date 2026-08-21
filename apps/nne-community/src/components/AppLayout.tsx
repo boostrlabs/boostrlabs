@@ -6,6 +6,7 @@ import type { DashboardData, Quest } from "../types";
 import { Navigation } from "./Navigation";
 import { CollabBrand } from "./CollabBrand";
 import { QuestModal } from "./QuestModal";
+import { ReferralPromo } from "./ReferralPromo";
 
 const pageCopy: Record<string, { title: string; subtitle: string }> = {
   "/": { title: "Tu progreso empieza aquí.", subtitle: "Cada acción suma al movimiento." },
@@ -13,6 +14,11 @@ const pageCopy: Record<string, { title: string; subtitle: string }> = {
   "/raffles": { title: "Tu XP también participa.", subtitle: "La chamba acumulada te mete automáticamente en el sorteo." },
   "/feed": { title: "La comunidad se está moviendo.", subtitle: "Todo avance deja una señal." },
   "/rewards": { title: "Canjea tu progreso.", subtitle: "Servicios reales. Valor real." },
+  "/rewards/beats": { title: "Beats NNE.", subtitle: "Escucha dentro de la plataforma y canjea con NNE Credits." },
+  "/rewards/gear": { title: "Equipos.", subtitle: "Herramientas para seguir creando." },
+  "/rewards/ropa": { title: "Ropa & Lifestyle.", subtitle: "Drops y artículos físicos del catálogo." },
+  "/rewards/servicios": { title: "Servicios.", subtitle: "Producción, feedback y trabajo creativo." },
+  "/rewards/acceso": { title: "Acceso.", subtitle: "Experiencias y contenido exclusivo." },
   "/profile": { title: "Tu carrera, visible.", subtitle: "Este perfil cuenta tu consistencia." },
   "/admin": { title: "NNE Command Center.", subtitle: "Contenido, validación y fulfillment en un solo lugar." }
 };
@@ -44,6 +50,20 @@ export function AppLayout() {
   useEffect(() => {
     void refreshDashboard();
   }, [refreshDashboard]);
+
+  useEffect(() => {
+    const preventContextMenu = (event: MouseEvent) => event.preventDefault();
+    const preventDrag = (event: DragEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("img, audio, video")) event.preventDefault();
+    };
+    document.addEventListener("contextmenu", preventContextMenu);
+    document.addEventListener("dragstart", preventDrag);
+    return () => {
+      document.removeEventListener("contextmenu", preventContextMenu);
+      document.removeEventListener("dragstart", preventDrag);
+    };
+  }, []);
 
   const showToast = (message: string) => {
     setToast(message);
@@ -96,6 +116,7 @@ export function AppLayout() {
           </div>
         ))}
         {dashboard.leaderboard.length === 0 && <p className="empty-copy">La tabla comienza contigo.</p>}
+        <ReferralPromo referralCode={dashboard.referralCode} reward={dashboard.referralReward} compact />
       </aside>
 
       <QuestModal
