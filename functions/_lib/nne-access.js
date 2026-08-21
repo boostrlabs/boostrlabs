@@ -35,7 +35,7 @@ export async function activateNneApplication(env, application, {
          WHERE id = 'quest_referral_artist' AND status = 'published' LIMIT 1`
       ).first()
     : null;
-  const referralCredits = referral ? Math.min(2, Number(referralReward?.reward_credits || 2)) : 0;
+  const referralCredits = referral ? Math.min(3, Number(referralReward?.reward_credits || 3)) : 0;
   const referralXp = referral ? Math.min(100, Number(referralReward?.reward_xp || 100)) : 0;
 
   const statements = [
