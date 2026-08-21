@@ -2,113 +2,63 @@ import { FormEvent, useEffect, useState } from "react";
 import { apiRequest, formatNne } from "../services/api";
 
 type EconomyData = {
-  seller_balance_cents: number;
-  nne_credits: number;
-  beats: Array<{id:string;title:string;bpm:number|null;musical_key:string|null;lease_price_cents:number|null;exclusive_price_cents:number|null;westdetro_certified:number;username:string}>;
-  services: Array<{id:string;category:string;title:string;description:string;price_cents:number;turnaround_days:number|null;username:string}>;
-  academy: Array<{id:string;title:string;description:string;category:string;cost_nne:number}>;
-  jobs: Array<{id:string;title:string;description:string;category:string;compensation_type:string;budget_cents:number|null;budget_nne:number|null;username:string}>;
+  seller_balance_cents:number; nne_credits:number;
+  beats:Array<{id:string;title:string;bpm:number|null;musical_key:string|null;lease_price_cents:number|null;exclusive_price_cents:number|null;westdetro_certified:number;username:string}>;
+  services:Array<{id:string;category:string;title:string;description:string;price_cents:number;turnaround_days:number|null;username:string}>;
+  academy:Array<{id:string;title:string;description:string;category:string;cost_nne:number}>;
+  jobs:Array<{id:string;title:string;description:string;category:string;compensation_type:string;budget_cents:number|null;budget_nne:number|null;username:string}>;
 };
+type Extras = {
+  portfolio:Array<{id:string;item_type:string;title:string;description:string;url:string|null}>;
+  bounties:Array<{id:string;title:string;description:string;reward_nne:number;reward_usd_cents:number|null;winner_count:number;status:string;ends_at:string|null}>;
+  wishlist:Array<{id:string;target_name:string;target_cost_nne:number}>;
+  drops:Array<{id:string;title:string;description:string;cost_nne:number|null;inventory:number|null}>;
+  partners:Array<{id:string;partner_name:string;title:string;description:string;cashback_percent:number|null;redemption_cost_nne:number|null;external_url:string|null}>;
+};
+type CashoutData={balance_cents:number;requests:Array<{id:string;amount_cents:number;payout_method:string;status:string;created_at:string}>};
 
-const usd = (cents: number | null | undefined) => cents == null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+const usd=(cents:number|null|undefined)=>cents==null?"—":new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(cents/100);
 
-export function EconomyPage() {
-  const [data, setData] = useState<EconomyData | null>(null);
-  const [tab, setTab] = useState("beats");
-  const [message, setMessage] = useState("");
-  const load = () => apiRequest<EconomyData>("/economy/overview").then(setData);
-  useEffect(() => { void load(); }, []);
+export function EconomyPage(){
+  const [data,setData]=useState<EconomyData|null>(null);
+  const [extras,setExtras]=useState<Extras|null>(null);
+  const [cashout,setCashout]=useState<CashoutData|null>(null);
+  const [tab,setTab]=useState("beats");
+  const [message,setMessage]=useState("");
+  const load=async()=>{ const [overview,extra,wallet]=await Promise.all([apiRequest<EconomyData>("/economy/overview"),apiRequest<Extras>("/economy/extras"),apiRequest<CashoutData>("/economy/cashout")]); setData(overview);setExtras(extra);setCashout(wallet); };
+  useEffect(()=>{void load();},[]);
+  const run=async(action:()=>Promise<void>)=>{setMessage("");try{await action();await load();}catch(e){setMessage(e instanceof Error?e.message:"No pudimos completar la acción.");}};
 
-  const submitBeat = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    await apiRequest("/economy/beats", { method: "POST", body: JSON.stringify(Object.fromEntries(form)) });
-    event.currentTarget.reset();
-    setMessage("Beat enviado a revisión WESTDETRO.");
-    await load();
-  };
+  const submitBeat=(event:FormEvent<HTMLFormElement>)=>run(async()=>{event.preventDefault();const f=new FormData(event.currentTarget);await apiRequest("/economy/beats",{method:"POST",body:JSON.stringify(Object.fromEntries(f))});event.currentTarget.reset();setMessage("Beat enviado a revisión WESTDETRO.");});
+  const submitService=(event:FormEvent<HTMLFormElement>)=>run(async()=>{event.preventDefault();const f=new FormData(event.currentTarget);await apiRequest("/economy/services",{method:"POST",body:JSON.stringify(Object.fromEntries(f))});event.currentTarget.reset();setMessage("Servicio publicado.");});
+  const submitJob=(event:FormEvent<HTMLFormElement>)=>run(async()=>{event.preventDefault();const f=new FormData(event.currentTarget);await apiRequest("/economy/jobs",{method:"POST",body:JSON.stringify(Object.fromEntries(f))});event.currentTarget.reset();setMessage("Trabajo publicado.");});
+  const addPortfolio=(event:FormEvent<HTMLFormElement>)=>run(async()=>{event.preventDefault();const f=new FormData(event.currentTarget);await apiRequest("/economy/extras",{method:"POST",body:JSON.stringify({action:"portfolio_add",...Object.fromEntries(f)})});event.currentTarget.reset();setMessage("Portfolio actualizado.");});
+  const checkout=(item_type:string,item_id:string,purchase_kind="standard")=>run(async()=>{const r=await apiRequest<{checkout_url:string}>("/economy/checkout",{method:"POST",body:JSON.stringify({item_type,item_id,purchase_kind})});window.location.href=r.checkout_url;});
+  const redeemAcademy=(id:string)=>run(async()=>{const r=await apiRequest<{asset_url?:string|null}>(`/economy/academy/${id}/redeem`,{method:"POST"});setMessage(r.asset_url?"Recurso desbloqueado. Ya tienes acceso al archivo.":"Recurso desbloqueado en NNE Academy.");});
+  const requestCashout=(event:FormEvent<HTMLFormElement>)=>run(async()=>{event.preventDefault();const f=new FormData(event.currentTarget);await apiRequest("/economy/cashout",{method:"POST",body:JSON.stringify(Object.fromEntries(f))});event.currentTarget.reset();setMessage("Solicitud de cashout enviada.");});
 
-  const submitService = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    await apiRequest("/economy/services", { method: "POST", body: JSON.stringify(Object.fromEntries(form)) });
-    event.currentTarget.reset();
-    setMessage("Servicio publicado.");
-    await load();
-  };
-
-  const submitJob = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    await apiRequest("/economy/jobs", { method: "POST", body: JSON.stringify(Object.fromEntries(form)) });
-    event.currentTarget.reset();
-    setMessage("Trabajo publicado.");
-    await load();
-  };
-
-  if (!data) return <div className="empty-state">Cargando economía NNE…</div>;
-
-  const tabs = [
-    ["beats","Beats"], ["services","Servicios"], ["academy","Academy"], ["jobs","Jobs"], ["wallet","Seller Wallet"]
-  ];
+  if(!data||!extras||!cashout)return <div className="empty-state">Cargando NNE Economic OS…</div>;
+  const tabs=[["beats","Beats"],["services","Servicios"],["academy","Academy"],["jobs","Jobs"],["bounties","Bounties"],["portfolio","Portfolio"],["partners","Cashback"],["wallet","Seller Wallet"]];
 
   return <>
-    <article className="card" style={{ marginBottom: 18 }}>
-      <div className="eyebrow">NNE ECONOMIC OS</div>
-      <h2>Trabaja con NNE. Vende tu talento en dinero real.</h2>
-      <p>NNE Credits no se compran ni hacen cashout. Los ingresos por ventas reales de beats y servicios viven en un balance separado para vendedores.</p>
-      <div className="referral-benefits"><span>{formatNne(data.nne_credits)} NNE disponibles</span><span>{usd(data.seller_balance_cents)} Seller Balance</span></div>
-    </article>
-    {message && <div className="form-success" style={{ marginBottom: 14 }}>{message}</div>}
-    <div className="filter-strip" style={{ marginBottom: 18 }}>{tabs.map(([id,label]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>{label}</button>)}</div>
+    <article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE ECONOMIC OS</div><h2>Farmea NNE. Vende talento. Construye carrera.</h2><p>Los NNE Credits solo se ganan trabajando dentro del ecosistema. Beats y servicios entre usuarios sí pueden venderse en dinero real; ese ingreso queda separado en Seller Wallet.</p><div className="referral-benefits"><span>{formatNne(data.nne_credits)} NNE</span><span>{usd(cashout.balance_cents)} Seller Balance</span></div></article>
+    {message&&<div className="form-success" style={{marginBottom:14}}>{message}</div>}
+    <div className="filter-strip" style={{marginBottom:18}}>{tabs.map(([id,label])=><button key={id} className={tab===id?"active":""} onClick={()=>setTab(id)}>{label}</button>)}</div>
 
-    {tab === "beats" && <>
-      <article className="card" style={{ marginBottom: 18 }}><div className="eyebrow">Productores</div><h2>Sube tu beat.</h2><p>Todos los beats pasan por revisión. Los seleccionados reciben WESTDETRO Certified y pueden entrar al catálogo curado.</p>
-        <form className="form-grid" onSubmit={(e) => void submitBeat(e)}>
-          <input className="field" name="title" placeholder="Título del beat" required />
-          <input className="field" name="bpm" type="number" min="40" max="260" placeholder="BPM" />
-          <input className="field" name="musical_key" placeholder="Tonalidad · ej. F# minor" />
-          <input className="field" name="tags" placeholder="Tags · detroit, west coast, dark…" />
-          <input className="field" name="preview_url" placeholder="URL privada/pública del preview" />
-          <input className="field" name="lease_price_usd" type="number" min="1" step="0.01" placeholder="Lease USD" />
-          <input className="field" name="exclusive_price_usd" type="number" min="1" step="0.01" placeholder="Exclusive USD" />
-          <button className="primary-button" type="submit">Enviar a revisión</button>
-        </form>
-      </article>
-      <section className="reward-grid">{data.beats.map(beat => <article className="card reward-card" key={beat.id}><div className="eyebrow">{beat.westdetro_certified ? "WESTDETRO CERTIFIED" : "Marketplace"}</div><h3>{beat.title}</h3><p>@{beat.username}{beat.bpm ? ` · ${beat.bpm} BPM` : ""}{beat.musical_key ? ` · ${beat.musical_key}` : ""}</p><footer><strong>{beat.lease_price_cents ? `${usd(beat.lease_price_cents)} lease` : usd(beat.exclusive_price_cents)}</strong></footer></article>)}</section>
-    </>}
+    {tab==="beats"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">BEAT MARKETPLACE</div><h2>Sube tu beat.</h2><p>Todos pasan por revisión. Los seleccionados reciben WESTDETRO Certified.</p><form className="form-grid" onSubmit={(e)=>void submitBeat(e)}><input className="field" name="title" placeholder="Título" required/><input className="field" name="bpm" type="number" placeholder="BPM"/><input className="field" name="musical_key" placeholder="Tonalidad"/><input className="field" name="tags" placeholder="Tags"/><input className="field" name="preview_url" placeholder="URL del preview"/><input className="field" name="lease_price_usd" type="number" min="1" step="0.01" placeholder="Lease USD"/><input className="field" name="exclusive_price_usd" type="number" min="1" step="0.01" placeholder="Exclusive USD"/><button className="primary-button">Enviar a revisión</button></form></article><section className="reward-grid">{data.beats.map(b=><article className="card reward-card" key={b.id}><div className="eyebrow">{b.westdetro_certified?"WESTDETRO CERTIFIED":"Marketplace"}</div><h3>{b.title}</h3><p>@{b.username}{b.bpm?` · ${b.bpm} BPM`:""}{b.musical_key?` · ${b.musical_key}`:""}</p><footer style={{gap:8,flexWrap:"wrap"}}>{b.lease_price_cents&&<button onClick={()=>void checkout("beat",b.id,"lease")}>{usd(b.lease_price_cents)} Lease</button>}{b.exclusive_price_cents&&<button onClick={()=>void checkout("beat",b.id,"exclusive")}>{usd(b.exclusive_price_cents)} Exclusive</button>}</footer></article>)}</section></>}
 
-    {tab === "services" && <>
-      <article className="card" style={{ marginBottom: 18 }}><div className="eyebrow">Marketplace de talento</div><h2>Vende un servicio.</h2>
-        <form className="form-grid" onSubmit={(e) => void submitService(e)}>
-          <select className="field" name="category"><option value="production">Producción</option><option value="mix_master">Mix / Master</option><option value="design">Diseño</option><option value="video">Video</option><option value="songwriting">Songwriting</option><option value="marketing">Marketing</option><option value="other">Otro</option></select>
-          <input className="field" name="title" placeholder="Nombre del servicio" required />
-          <textarea className="field" name="description" placeholder="Qué entregas" required />
-          <input className="field" name="price_usd" type="number" min="1" step="0.01" placeholder="Precio USD" required />
-          <input className="field" name="turnaround_days" type="number" min="1" max="90" placeholder="Días de entrega" />
-          <button className="primary-button" type="submit">Publicar servicio</button>
-        </form>
-      </article>
-      <section className="reward-grid">{data.services.map(service => <article className="card reward-card" key={service.id}><div className="eyebrow">{service.category}</div><h3>{service.title}</h3><p>{service.description}</p><small>@{service.username}</small><footer><strong>{usd(service.price_cents)}</strong></footer></article>)}</section>
-    </>}
+    {tab==="services"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">MUSIC SERVICES</div><h2>Vende lo que sabes hacer.</h2><form className="form-grid" onSubmit={(e)=>void submitService(e)}><select className="field" name="category"><option value="production">Producción</option><option value="mix_master">Mix / Master</option><option value="design">Diseño</option><option value="video">Video</option><option value="songwriting">Songwriting</option><option value="marketing">Marketing</option><option value="other">Otro</option></select><input className="field" name="title" placeholder="Servicio" required/><textarea className="field" name="description" placeholder="Qué entregas" required/><input className="field" name="price_usd" type="number" min="1" step="0.01" placeholder="Precio USD" required/><input className="field" name="turnaround_days" type="number" min="1" max="90" placeholder="Días"/><button className="primary-button">Publicar servicio</button></form></article><section className="reward-grid">{data.services.map(s=><article className="card reward-card" key={s.id}><div className="eyebrow">{s.category}</div><h3>{s.title}</h3><p>{s.description}</p><small>@{s.username}</small><footer><strong>{usd(s.price_cents)}</strong><button onClick={()=>void checkout("service",s.id)}>Contratar</button></footer></article>)}</section></>}
 
-    {tab === "academy" && <section className="reward-grid">{data.academy.map(item => <article className="card reward-card" key={item.id}><div className="eyebrow">NNE ACADEMY · {item.category}</div><h3>{item.title}</h3><p>{item.description}</p><footer><strong>{formatNne(item.cost_nne)} NNE</strong><button disabled={data.nne_credits < item.cost_nne}> {data.nne_credits < item.cost_nne ? "Farmea más NNE" : "Canjear"}</button></footer></article>)}</section>}
+    {tab==="academy"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE ACADEMY</div><h2>Herramientas que el dinero no compra aquí.</h2><p>Sample kits, proyectos vocales, presets, plugins, cursos, data y templates. Solo NNE Credits farmeados.</p></article><section className="reward-grid">{data.academy.map(i=><article className="card reward-card" key={i.id}><div className="eyebrow">{i.category}</div><h3>{i.title}</h3><p>{i.description}</p><footer><strong>{formatNne(i.cost_nne)} NNE</strong><button disabled={data.nne_credits<i.cost_nne} onClick={()=>void redeemAcademy(i.id)}>{data.nne_credits<i.cost_nne?"Farmea más NNE":"Desbloquear"}</button></footer></article>)}</section></>}
 
-    {tab === "jobs" && <>
-      <article className="card" style={{ marginBottom: 18 }}><div className="eyebrow">NNE JOB BOARD</div><h2>Publica una oportunidad.</h2>
-        <form className="form-grid" onSubmit={(e) => void submitJob(e)}>
-          <input className="field" name="title" placeholder="Qué necesitas" required />
-          <input className="field" name="category" placeholder="Categoría · video, diseño, producción…" required />
-          <textarea className="field" name="description" placeholder="Brief" required />
-          <select className="field" name="compensation_type"><option value="usd">USD</option><option value="nne">NNE</option><option value="mixed">USD + NNE</option></select>
-          <input className="field" name="budget_usd" type="number" min="0" step="0.01" placeholder="Presupuesto USD" />
-          <input className="field" name="budget_nne" type="number" min="0" step="0.25" placeholder="Presupuesto NNE" />
-          <button className="primary-button" type="submit">Publicar trabajo</button>
-        </form>
-      </article>
-      <section className="reward-grid">{data.jobs.map(job => <article className="card reward-card" key={job.id}><div className="eyebrow">{job.category}</div><h3>{job.title}</h3><p>{job.description}</p><small>@{job.username}</small><footer><strong>{job.budget_cents ? usd(job.budget_cents) : ""}{job.budget_cents && job.budget_nne ? " + " : ""}{job.budget_nne ? `${formatNne(job.budget_nne)} NNE` : ""}</strong></footer></article>)}</section>
-    </>}
+    {tab==="jobs"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE JOB BOARD</div><h2>Contrata dentro del underground.</h2><form className="form-grid" onSubmit={(e)=>void submitJob(e)}><input className="field" name="title" placeholder="Qué necesitas" required/><input className="field" name="category" placeholder="Categoría" required/><textarea className="field" name="description" placeholder="Brief" required/><select className="field" name="compensation_type"><option value="usd">USD</option><option value="nne">NNE</option><option value="mixed">USD + NNE</option></select><input className="field" name="budget_usd" type="number" step="0.01" placeholder="USD"/><input className="field" name="budget_nne" type="number" step="0.25" placeholder="NNE"/><button className="primary-button">Publicar trabajo</button></form></article><section className="reward-grid">{data.jobs.map(j=><article className="card reward-card" key={j.id}><div className="eyebrow">{j.category}</div><h3>{j.title}</h3><p>{j.description}</p><small>@{j.username}</small><footer><strong>{j.budget_cents?usd(j.budget_cents):""}{j.budget_cents&&j.budget_nne?" + ":""}{j.budget_nne?`${formatNne(j.budget_nne)} NNE`:""}</strong></footer></article>)}</section></>}
 
-    {tab === "wallet" && <article className="card"><div className="eyebrow">SELLER WALLET</div><h2>{usd(data.seller_balance_cents)}</h2><p>Este balance representa únicamente ingresos por ventas reales. No mezcla NNE Credits. Cashout se habilita cuando Stripe Connect/payouts quede conectado al vendedor.</p><button className="primary-button" disabled>Configurar payout · próximamente</button></article>}
+    {tab==="bounties"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">BOUNTIES</div><h2>Todos pueden competir. Los mejores ganan.</h2><p>Retos creativos, campañas y necesidades puntuales con premio.</p></article><section className="reward-grid">{extras.bounties.map(b=><article className="card reward-card" key={b.id}><div className="eyebrow">{b.status}</div><h3>{b.title}</h3><p>{b.description}</p><footer><strong>{b.reward_nne?`${formatNne(b.reward_nne)} NNE`:usd(b.reward_usd_cents)}</strong></footer></article>)}{!extras.bounties.length&&<div className="empty-state">No hay bounties abiertos todavía.</div>}</section></>}
+
+    {tab==="portfolio"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE PASSPORT</div><h2>Tu trabajo verificable vive aquí.</h2><form className="form-grid" onSubmit={(e)=>void addPortfolio(e)}><select className="field" name="item_type"><option value="beat">Beat</option><option value="music">Música</option><option value="video">Video</option><option value="design">Diseño</option><option value="service">Servicio</option><option value="other">Otro</option></select><input className="field" name="title" placeholder="Título" required/><textarea className="field" name="description" placeholder="Qué hiciste" required/><input className="field" name="url" placeholder="Link opcional"/><button className="primary-button">Agregar al portfolio</button></form></article><section className="reward-grid">{extras.portfolio.map(p=><article className="card reward-card" key={p.id}><div className="eyebrow">{p.item_type}</div><h3>{p.title}</h3><p>{p.description}</p>{p.url&&<a href={p.url} target="_blank" rel="noreferrer">Abrir trabajo</a>}</article>)}</section></>}
+
+    {tab==="partners"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">NNE CASHBACK + PARTNERS</div><h2>El dinero que inviertes en el ecosistema también regresa como NNE.</h2><p>Ejemplo activo: entradas de eventos NNE × WESTDETRO pueden devolver 20% del valor en NNE Credits.</p></article><section className="reward-grid">{extras.partners.map(p=><article className="card reward-card" key={p.id}><div className="eyebrow">{p.partner_name}</div><h3>{p.title}</h3><p>{p.description}</p><footer><strong>{p.cashback_percent?`${p.cashback_percent}% cashback`:p.redemption_cost_nne?`${formatNne(p.redemption_cost_nne)} NNE`:"Partner"}</strong></footer></article>)}{!extras.partners.length&&<div className="empty-state">Los primeros partners aparecerán aquí.</div>}</section></>}
+
+    {tab==="wallet"&&<><article className="card" style={{marginBottom:18}}><div className="eyebrow">SELLER WALLET</div><h2>{usd(cashout.balance_cents)}</h2><p>Solo contiene dinero generado por ventas reales. Los NNE Credits siguen siendo una economía separada y no hacen cashout.</p><form className="form-grid" onSubmit={(e)=>void requestCashout(e)}><input className="field" name="amount_usd" type="number" min="1" step="0.01" placeholder="Monto USD" required/><select className="field" name="payout_method"><option value="gift_card">Gift Card</option><option value="manual">Manual</option></select><button className="primary-button">Solicitar cashout</button></form></article><section style={{display:"grid",gap:10}}>{cashout.requests.map(r=><article className="card" key={r.id}><strong>{usd(r.amount_cents)} · {r.payout_method}</strong><small>{r.status}</small></article>)}</section></>}
   </>;
 }
