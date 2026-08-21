@@ -3,13 +3,19 @@ import { nnePeriodKey, questStatusForUser } from "../../_lib/nne-community.js";
 import { ensureNneSeason001 } from "../../_lib/nne-season-001.js";
 import { ensureNneSeason001Catalog } from "../../_lib/nne-season-001-catalog.js";
 
+function normalizedDescription(description = "") {
+  return String(description).replace(/\\n/g, "\n");
+}
+
 function sourceUrl(description = "") {
-  const match = String(description).match(/https?:\/\/[^\s]+/);
+  const match = normalizedDescription(description).match(/https?:\/\/[^\s]+/);
   return match ? match[0] : null;
 }
 
 function publicDescription(description = "") {
-  return String(description).replace(/\s*\n*Abrir (?:contenido|perfil|release|TikTok):\s*https?:\/\/[^\s]+\s*$/i, "").trim();
+  return normalizedDescription(description)
+    .replace(/\s*\n*Abrir (?:contenido|perfil|release|TikTok):\s*https?:\/\/[^\s]+\s*$/i, "")
+    .trim();
 }
 
 export async function onRequestGet({ request, env }) {
