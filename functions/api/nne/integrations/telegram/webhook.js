@@ -51,10 +51,19 @@ async function telegramAccountReply(env, telegramUserId, command) {
   return null;
 }
 
+function extractVerificationCode(text) {
+  const value = clean(text, 120);
+  const direct = value.match(/^\/?verify\s+(\d{6})$/i);
+  if (direct) return direct[1];
+  const deepLink = value.match(/^\/start\s+nne_verify_(\d{6})$/i);
+  if (deepLink) return deepLink[1];
+  return "";
+}
+
 async function handleVerification(env, telegramUserId, username, chatId, text) {
-  const match = clean(text, 100).match(/^\/?verify\s+(\d{6})$/i);
-  if (!match) return null;
-  const challengeHash = await sha256(match[1]);
+  const code = extractVerificationCode(text);
+  if (!code) return null;
+  const challengeHash = await sha256(code);
   const verification = await env.DB.prepare(
     `SELECT id, user_id FROM nne_identity_verifications
      WHERE channel='telegram' AND status='challenge_sent'
