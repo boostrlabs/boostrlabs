@@ -2,13 +2,19 @@ import { initials, NNE_DAILY_CREDIT_CAP, nnePeriodKey, questStatusForUser } from
 import { jsonOk, requireNneSession } from "../../_lib/nne-api.js";
 import { ensureNneSeason001 } from "../../_lib/nne-season-001.js";
 
+function normalizedDescription(description = "") {
+  return String(description).replace(/\\n/g, "\n");
+}
+
 function sourceUrl(description = "") {
-  const match = String(description).match(/https?:\/\/[^\s]+/);
+  const match = normalizedDescription(description).match(/https?:\/\/[^\s]+/);
   return match ? match[0] : null;
 }
 
 function publicDescription(description = "") {
-  return String(description).replace(/\s*\n*Abrir (?:contenido|perfil|release|TikTok):\s*https?:\/\/[^\s]+\s*$/i, "").trim();
+  return normalizedDescription(description)
+    .replace(/\s*\n*Abrir (?:contenido|perfil|release|TikTok):\s*https?:\/\/[^\s]+\s*$/i, "")
+    .trim();
 }
 
 export async function onRequestGet({ request, env }) {
@@ -118,18 +124,15 @@ export async function onRequestGet({ request, env }) {
     quests,
     feed: feedRows.results || [],
     leaderboard,
-    current_rank: leaderboard.find((entry) => entry.user_id === auth.user.id)?.rank || null,
     referral_code: referral?.referral_code || null,
     referral_reward: {
-      credits: Number(referralReward?.reward_credits || 1),
-      xp: Number(referralReward?.reward_xp || 100)
+      credits: Number(referralReward?.reward_credits || 0),
+      xp: Number(referralReward?.reward_xp || 0)
     },
     economy: {
       daily_cap: NNE_DAILY_CREDIT_CAP,
       earned_today: Number(dailyCredits?.earned || 0),
       remaining_today: Math.max(0, NNE_DAILY_CREDIT_CAP - Number(dailyCredits?.earned || 0)),
-      reference_usd_per_credit: 1,
-      redemption_only: true,
       resets_at: "00:00 UTC"
     }
   });
