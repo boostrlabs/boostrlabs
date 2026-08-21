@@ -1,4 +1,5 @@
 import { clean, jsonError, jsonOk, now, onOptions, sha256 } from "../../../../_lib/nne-api.js";
+import { completeNneQuest, getNneQuest, nnePeriodKey } from "../../../../_lib/nne-community.js";
 import {
   botReply,
   markMessagingEvent,
@@ -92,6 +93,39 @@ async function handleVerification(env, telegramUserId, username, chatId, text) {
   return "Telegram verificado y conectado con tu cuenta NNE. Ya puedes escribirme SALDO, CHAMBAS o REWARDS.";
 }
 
+async function completeTelegramMessageQuest(env, telegramUserId) {
+  const linked = await env.DB.prepare(
+    `SELECT nne_user_id FROM nne_messaging_contacts
+     WHERE platform='telegram' AND external_user_id=? AND status='active' LIMIT 1`
+  ).bind(telegramUserId).first();
+  if (!linked?.nne_user_id) return;
+
+  const quest = await getNneQuest(env, "nne_message_telegram_bot");
+  if (!quest) return;
+  const periodKey = nnePeriodKey(quest.cadence);
+  const timestamp = now();
+  const attemptId = crypto.randomUUID();
+
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO nne_quest_attempts (
+       id, quest_id, user_id, period_key, status, attempt_count, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, 'started', 1, ?, ?)`
+  ).bind(attemptId, quest.id, linked.nne_user_id, periodKey, timestamp, timestamp).run();
+
+  const attempt = await env.DB.prepare(
+    `SELECT id, status FROM nne_quest_attempts
+     WHERE quest_id=? AND user_id=? AND period_key=? LIMIT 1`
+  ).bind(quest.id, linked.nne_user_id, periodKey).first();
+  if (!attempt?.id || ["approved", "completed"].includes(String(attempt.status))) return;
+
+  await completeNneQuest(env, {
+    attemptId: attempt.id,
+    userId: linked.nne_user_id,
+    quest,
+    completionStatus: "completed"
+  });
+}
+
 export async function onRequestPost({ request, env }) {
   if (!env.TELEGRAM_NNE_BOT_TOKEN || !env.TELEGRAM_NNE_WEBHOOK_SECRET) {
     return jsonError("telegram_not_configured", "Telegram todavía no está conectado.", 503);
@@ -121,6 +155,7 @@ export async function onRequestPost({ request, env }) {
   const chatId = String(message.chat.id);
   const username = clean(message.from.username, 120);
   const text = clean(message.text, 1000);
+  const verificationCode = extractVerificationCode(text);
 
   try {
     await upsertMessagingContact(env, {
@@ -132,6 +167,9 @@ export async function onRequestPost({ request, env }) {
     });
 
     let reply = await handleVerification(env, telegramUserId, username, chatId, text);
+    if (!verificationCode) {
+      await completeTelegramMessageQuest(env, telegramUserId);
+    }
     if (!reply) {
       const normalized = text.toLowerCase().replace(/^\//, "").trim();
       if (["saldo", "balance", "credits", "creditos", "créditos"].includes(normalized)) {
