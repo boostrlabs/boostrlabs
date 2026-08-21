@@ -22,10 +22,11 @@ export async function onRequestPost({ request, env }) {
   const action = clean(body.action,40);
   if (!beatId || !['certify_publish','publish','reject','reviewing'].includes(action)) return jsonError('nne_economy_admin_invalid','Acción inválida.',400);
   const timestamp = now();
-  if (action === 'certify_publish') await env.DB.prepare(`UPDATE nne_beats SET status='published',westdetro_certified=1,review_note=?,updated_at=? WHERE id=?`).bind(clean(body.note,500)||null,timestamp,beatId).run();
-  if (action === 'publish') await env.DB.prepare(`UPDATE nne_beats SET status='published',westdetro_certified=0,review_note=?,updated_at=? WHERE id=?`).bind(clean(body.note,500)||null,timestamp,beatId).run();
-  if (action === 'reject') await env.DB.prepare(`UPDATE nne_beats SET status='rejected',westdetro_certified=0,review_note=?,updated_at=? WHERE id=?`).bind(clean(body.note,500)||'No seleccionado',timestamp,beatId).run();
-  if (action === 'reviewing') await env.DB.prepare(`UPDATE nne_beats SET status='reviewing',review_note=?,updated_at=? WHERE id=?`).bind(clean(body.note,500)||null,timestamp,beatId).run();
-  await writeNneAudit(env,{ actorUserId:auth.user.id, action:`economy.beat.${action}`, entityType:'nne_beat', entityId:beatId, metadata:{ note:clean(body.note,500)||null }, request });
+  const note = clean(body.note,500) || null;
+  if (action === 'certify_publish') await env.DB.prepare(`UPDATE nne_beats SET status='published',westdetro_certified=1,review_note=?,updated_at=? WHERE id=?`).bind(note,timestamp,beatId).run();
+  if (action === 'publish') await env.DB.prepare(`UPDATE nne_beats SET status='published',westdetro_certified=0,review_note=?,updated_at=? WHERE id=?`).bind(note,timestamp,beatId).run();
+  if (action === 'reject') await env.DB.prepare(`UPDATE nne_beats SET status='rejected',westdetro_certified=0,review_note=?,updated_at=? WHERE id=?`).bind(note || 'No seleccionado',timestamp,beatId).run();
+  if (action === 'reviewing') await env.DB.prepare(`UPDATE nne_beats SET status='reviewing',review_note=?,updated_at=? WHERE id=?`).bind(note,timestamp,beatId).run();
+  await writeNneAudit(env,request,auth.user.id,`economy.beat.${action}`,'nne_beat',beatId,{ note });
   return jsonOk({ beat_id:beatId, action });
 }
