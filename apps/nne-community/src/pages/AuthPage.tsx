@@ -5,6 +5,42 @@ import { usersService } from "../services/users";
 import { ApiError } from "../services/api";
 import type { ReferralPreview } from "../types";
 import { CollabBrand } from "../components/CollabBrand";
+import { RegistrationProfileFields } from "../components/RegistrationProfileFields";
+
+const LEGACY_ROLE_BY_PROFESSION: Record<string, "artist" | "producer" | "engineer" | "designer" | "manager" | "fan" | "other"> = {
+  nne_fam: "fan",
+  artist: "artist",
+  producer: "producer",
+  composer: "artist",
+  beatmaker: "producer",
+  engineer: "engineer",
+  songwriter: "artist",
+  dj: "artist",
+  a_and_r: "manager",
+  manager: "manager",
+  label: "manager",
+  publisher: "manager",
+  videographer: "designer",
+  video_editor: "designer",
+  director: "designer",
+  photographer: "designer",
+  designer: "designer",
+  "3d_artist": "designer",
+  content_creator: "designer",
+  social_media: "manager",
+  marketing: "manager",
+  pr: "manager",
+  playlist_curator: "fan",
+  promoter: "manager",
+  event_producer: "manager",
+  dancer: "artist",
+  stylist: "designer",
+  makeup: "designer",
+  musician: "artist",
+  music_business: "manager",
+  lawyer: "other",
+  other: "other"
+};
 
 export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const { user, login, signup } = useAuth();
@@ -31,22 +67,16 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
       setReferralLoading(false);
       return () => { active = false; };
     }
-
     setReferralLoading(true);
     setReferralError("");
     usersService.referralPreview(referralCode)
-      .then((preview) => {
-        if (active) setReferralPreview(preview);
-      })
+      .then((preview) => { if (active) setReferralPreview(preview); })
       .catch((caught) => {
         if (!active) return;
         setReferralPreview(null);
         setReferralError(caught instanceof Error ? caught.message : "Esta invitación no está disponible.");
       })
-      .finally(() => {
-        if (active) setReferralLoading(false);
-      });
-
+      .finally(() => { if (active) setReferralLoading(false); });
     return () => { active = false; };
   }, [referralCode]);
 
@@ -66,13 +96,22 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
         return;
       }
 
+      const professions = data.getAll("professions").map((value) => String(value)).filter(Boolean);
+      if (!professions.length) {
+        setError("Selecciona al menos una profesión o NNE FAM.");
+        return;
+      }
+      const artistRole = LEGACY_ROLE_BY_PROFESSION[professions[0]] || "other";
+
       const result = await signup({
         name: String(data.get("name") || ""),
         username: String(data.get("username") || ""),
         email: String(data.get("email") || ""),
         password: String(data.get("password") || ""),
-        artist_role: String(data.get("artist_role") || "") as any,
+        artist_role: artistRole,
+        professions,
         country: String(data.get("country") || ""),
+        origin_country: String(data.get("origin_country") || ""),
         city: String(data.get("city") || ""),
         instagram_handle: String(data.get("instagram_handle") || ""),
         whatsapp_contact: String(data.get("whatsapp_contact") || ""),
@@ -87,9 +126,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
       setApplicationMessage(result.message);
       event.currentTarget.reset();
     } catch (caught) {
-      if (caught instanceof ApiError && caught.code === "nne_email_verification_required") {
-        setNeedsVerification(true);
-      }
+      if (caught instanceof ApiError && caught.code === "nne_email_verification_required") setNeedsVerification(true);
       setError(caught instanceof Error ? caught.message : "No pudimos continuar.");
     } finally {
       setBusy(false);
@@ -119,9 +156,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
           </div>
         )}
         {error && <div className="form-error">{error}</div>}
-        {needsVerification && (
-          <Link className="primary-button full button-link" to="/verify-email">Reenviar correo de verificación</Link>
-        )}
+        {needsVerification && <Link className="primary-button full button-link" to="/verify-email">Reenviar correo de verificación</Link>}
         {mode === "signup" && adminInvite && (
           <aside className="referral-invite">
             <div className="eyebrow">Invitación privada</div>
@@ -131,29 +166,9 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
         )}
         {mode === "signup" && referralCode && (
           <aside className={`referral-invite ${referralError ? "invalid" : ""}`}>
-            {referralLoading ? (
-              <>
-                <div className="eyebrow">Validando invitación</div>
-                <strong>Conectando la señal…</strong>
-              </>
-            ) : referralPreview ? (
-              <>
-                <div className="eyebrow">Invitación activa</div>
-                <strong>Referido por {referralPreview.referrer.handle}</strong>
-                <p>Cuando aprobemos tu cuenta, quien te invitó recibe:</p>
-                <div className="referral-benefits">
-                  <span>+{referralPreview.reward.credits.toLocaleString()} NNE Credits</span>
-                  <span>+{referralPreview.reward.xp.toLocaleString()} XP</span>
-                </div>
-                <small>Si la promo de lanzamiento sigue disponible, tú recibes tus 3 NNE de bienvenida.</small>
-              </>
-            ) : (
-              <>
-                <div className="eyebrow">Invitación no disponible</div>
-                <strong>{referralError}</strong>
-                <Link to="/signup">Continuar sin invitación</Link>
-              </>
-            )}
+            {referralLoading ? <><div className="eyebrow">Validando invitación</div><strong>Conectando la señal…</strong></> : referralPreview ? (
+              <><div className="eyebrow">Invitación activa</div><strong>Referido por {referralPreview.referrer.handle}</strong><p>Cuando aprobemos tu cuenta, quien te invitó recibe:</p><div className="referral-benefits"><span>+{referralPreview.reward.credits.toLocaleString()} NNE Credits</span><span>+{referralPreview.reward.xp.toLocaleString()} XP</span></div><small>Si la promo de lanzamiento sigue disponible, tú recibes tus 3 NNE de bienvenida.</small></>
+            ) : <><div className="eyebrow">Invitación no disponible</div><strong>{referralError}</strong><Link to="/signup">Continuar sin invitación</Link></>}
           </aside>
         )}
         {!applicationMessage && <form onSubmit={submit} className="form-stack">
@@ -161,58 +176,26 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             <>
               <label>Nombre o nombre artístico<input name="name" className="field" required autoComplete="name" /></label>
               <label>Tu @username público <span>(preferiblemente el de Instagram)</span><input name="username" className="field" required minLength={3} autoComplete="username" placeholder="tuusuario" defaultValue={invitedUsername} readOnly={Boolean(adminInvite && invitedUsername)} /></label>
-              <div className="form-grid">
-                <label>¿Qué haces?<select name="artist_role" className="field" required defaultValue="">
-                  <option value="" disabled>Selecciona</option><option value="artist">Artista</option><option value="producer">Productor/a</option><option value="engineer">Ingeniero/a</option><option value="designer">Diseñador/a</option><option value="manager">Manager</option><option value="fan">Fan / comunidad</option><option value="other">Otro</option>
-                </select></label>
-                <label>País<input name="country" className="field" required autoComplete="country-name" /></label>
-              </div>
-              <label>Ciudad <span>(opcional)</span><input name="city" className="field" autoComplete="address-level2" /></label>
+              <RegistrationProfileFields />
               <div className="application-contact-grid">
                 <label>Instagram<input name="instagram_handle" className="field" placeholder="@usuario" /></label>
                 <label>WhatsApp<input name="whatsapp_contact" className="field" placeholder="+1 000 000 0000" inputMode="tel" /></label>
                 <label>Telegram<input name="telegram_handle" className="field" placeholder="@usuario" /></label>
               </div>
-              <label>¿Dónde te contactamos?<select name="primary_contact" className="field" required defaultValue="instagram">
-                <option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="telegram">Telegram</option>
-              </select></label>
+              <p className="auth-note">Estas cuentas se registran inicialmente como no verificadas. NNE podrá verificarlas después por código de Instagram, bot de Telegram o API de WhatsApp.</p>
+              <label>¿Dónde te contactamos?<select name="primary_contact" className="field" required defaultValue="instagram"><option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="telegram">Telegram</option></select></label>
               <label>Cuéntanos brevemente quién eres<textarea name="bio" className="field" required minLength={20} maxLength={800} placeholder="Tu proyecto, lo que haces y qué buscas dentro de la comunidad." /></label>
-              {promoCode === "PRIMEROS50" ? (
-                <>
-                  <aside className="launch-promo-inline"><strong>Primeros 50</strong><span>Si aprobamos tu solicitud mientras quedan cupos, empiezas con 3 NNE.</span></aside>
-                  <input name="promo_code" type="hidden" value="PRIMEROS50" />
-                </>
-              ) : (
-                <label>Código promocional <span>(opcional)</span><input name="promo_code" className="field" placeholder="Código" /></label>
-              )}
+              {promoCode === "PRIMEROS50" ? <><aside className="launch-promo-inline"><strong>Primeros 50</strong><span>Si aprobamos tu solicitud mientras quedan cupos, empiezas con 3 NNE.</span></aside><input name="promo_code" type="hidden" value="PRIMEROS50" /></> : <label>Código promocional <span>(opcional)</span><input name="promo_code" className="field" placeholder="Código" /></label>}
               <input name="company_website" className="honeypot" tabIndex={-1} autoComplete="off" />
             </>
           )}
-          <label>{mode === "login" ? "Email o username" : "Email"}
-            <input
-              name={mode === "login" ? "identifier" : "email"}
-              type={mode === "login" ? "text" : "email"}
-              className="field"
-              required
-              autoComplete={mode === "login" ? "username" : "email"}
-            />
-          </label>
+          <label>{mode === "login" ? "Email o username" : "Email"}<input name={mode === "login" ? "identifier" : "email"} type={mode === "login" ? "text" : "email"} className="field" required autoComplete={mode === "login" ? "username" : "email"} /></label>
           <label>Contraseña<input name="password" type="password" className="field" required minLength={10} autoComplete={mode === "login" ? "current-password" : "new-password"} /></label>
           {mode === "login" && <Link className="forgot-password-link" to="/forgot-password">¿Olvidaste tu contraseña?</Link>}
           {mode === "login" && <Link className="forgot-password-link" to="/verify-email">¿No te llegó la verificación?</Link>}
-          <button
-            className="primary-button full"
-            disabled={busy || Boolean(referralCode && (referralLoading || !referralPreview))}
-          >
-            {busy ? "Enviando…" : mode === "login" ? "Entrar" : "Enviar solicitud"}
-          </button>
+          <button className="primary-button full" disabled={busy || Boolean(referralCode && (referralLoading || !referralPreview))}>{busy ? "Enviando…" : mode === "login" ? "Entrar" : "Enviar solicitud"}</button>
         </form>}
-        <p className="auth-switch">
-          {mode === "login" ? "¿Todavía no tienes cuenta? " : "¿Ya eres parte? "}
-          <Link to={mode === "login" ? "/signup" : "/login"}>
-            {mode === "login" ? "Regístrate" : "Inicia sesión"}
-          </Link>
-        </p>
+        <p className="auth-switch">{mode === "login" ? "¿Todavía no tienes cuenta? " : "¿Ya eres parte? "}<Link to={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Regístrate" : "Inicia sesión"}</Link></p>
       </section>
     </main>
   );
