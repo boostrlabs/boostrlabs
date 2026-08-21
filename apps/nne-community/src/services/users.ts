@@ -9,7 +9,9 @@ export interface SignupInput {
   password: string;
   referral_code?: string;
   artist_role: "artist" | "producer" | "engineer" | "designer" | "manager" | "fan" | "other";
+  professions: string[];
   country: string;
+  origin_country?: string;
   city?: string;
   instagram_handle?: string;
   whatsapp_contact?: string;
@@ -66,7 +68,7 @@ export const usersService = {
   async resetPassword(token: string, password: string): Promise<string> {
     const result = await apiRequest<{ message: string }>("/auth/password/reset", {
       method: "POST",
-      body: JSON.stringify({ token, password })
+      body: JSON.stringify({ token })
     });
     return result.message;
   },
@@ -86,9 +88,9 @@ export const usersService = {
   async dashboard(): Promise<DashboardData> {
     return mapDashboard(await apiRequest<any>("/dashboard"));
   },
-  async referralPreview(code: string): Promise<ReferralPreview> {
+  async referralPreview(referralCode: string): Promise<ReferralPreview> {
     const result = await apiRequest<{ referral: ReferralPreview }>(
-      `/referrals/preview?code=${encodeURIComponent(code)}`
+      `/referrals/preview?code=${encodeURIComponent(referralCode)}`
     );
     return result.referral;
   }
