@@ -21,7 +21,8 @@ const pageCopy: Record<string, { title: string; subtitle: string }> = {
   "/rewards/servicios": { title: "Servicios.", subtitle: "Producción, feedback y trabajo creativo." },
   "/rewards/acceso": { title: "Acceso.", subtitle: "Experiencias y contenido exclusivo." },
   "/profile": { title: "Tu carrera, visible.", subtitle: "Este perfil cuenta tu consistencia." },
-  "/admin": { title: "NNE Command Center.", subtitle: "Contenido, validación y fulfillment en un solo lugar." }
+  "/admin": { title: "NNE Command Center.", subtitle: "Contenido, validación y fulfillment en un solo lugar." },
+  "/admin/economy": { title: "WESTDETRO Curation.", subtitle: "Revisa beats, certifica sonido y controla el marketplace." }
 };
 
 export interface AppOutletContext {
