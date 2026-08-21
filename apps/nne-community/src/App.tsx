@@ -4,6 +4,7 @@ import { CollabBrand } from "./components/CollabBrand";
 import { useAuth } from "./context/AuthContext";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminReviewersPage } from "./pages/AdminReviewersPage";
+import { AdminEconomyPage } from "./pages/AdminEconomyPage";
 import { AuthPage } from "./pages/AuthPage";
 import { EmailVerificationPage, ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordRecoveryPage";
 import { JoinPage } from "./pages/JoinPage";
@@ -55,6 +56,7 @@ export default function App() {
       <Route element={<RequireAuth admin />}>
         <Route path="admin" element={<AdminPage />} />
         <Route path="admin/reviewers" element={<AdminReviewersPage />} />
+        <Route path="admin/economy" element={<AdminEconomyPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
