@@ -10,6 +10,7 @@ import { JoinPage } from "./pages/JoinPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import { InstagramIntegrationPage } from "./pages/InstagramIntegrationPage";
 import { TelegramVerificationPage } from "./pages/TelegramVerificationPage";
+import { RewardCategoryPage } from "./pages/RewardCategoryPage";
 import {
   FeedPage,
   HomePage,
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="raffles" element={<RafflesPage />} />
         <Route path="feed" element={<FeedPage />} />
         <Route path="rewards" element={<RewardsPage />} />
+        <Route path="rewards/:category" element={<RewardCategoryPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="verify-telegram" element={<TelegramVerificationPage />} />
         <Route path="review" element={<ReviewPage />} />
