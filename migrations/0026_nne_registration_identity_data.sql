@@ -1,6 +1,13 @@
 PRAGMA foreign_keys = ON;
 
-ALTER TABLE nne_access_applications ADD COLUMN origin_country TEXT;
+CREATE TABLE IF NOT EXISTS nne_application_demographics (
+  application_id TEXT PRIMARY KEY REFERENCES nne_access_applications(id) ON DELETE CASCADE,
+  residence_country TEXT NOT NULL,
+  origin_country TEXT,
+  city TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS nne_application_professions (
   application_id TEXT NOT NULL REFERENCES nne_access_applications(id) ON DELETE CASCADE,
@@ -21,6 +28,15 @@ CREATE TABLE IF NOT EXISTS nne_user_professions (
 
 CREATE INDEX IF NOT EXISTS idx_nne_user_professions_profession
   ON nne_user_professions(profession, user_id);
+
+CREATE TABLE IF NOT EXISTS nne_user_demographics (
+  user_id TEXT PRIMARY KEY REFERENCES nne_users(id) ON DELETE CASCADE,
+  residence_country TEXT NOT NULL,
+  origin_country TEXT,
+  city TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS nne_identity_verifications (
   id TEXT PRIMARY KEY,
