@@ -5,6 +5,7 @@ import { CollabBrand } from "./CollabBrand";
 const items = [
   { to: "/", label: "Home", icon: "⌂" },
   { to: "/quests", label: "Chamba", icon: "◎" },
+  { to: "/economy", label: "Economic OS", icon: "$" },
   { to: "/profile", label: "Invita +3 NNE", icon: "+" },
   { to: "/raffles", label: "Sorteos", icon: "✦" },
   { to: "/feed", label: "Feed", icon: "◌" },
@@ -38,7 +39,7 @@ export function Navigation() {
         </div>
 
         <nav className="nav-list">
-          {visibleItems.map((item, index) => (
+          {visibleItems.map((item) => (
             <div key={`${item.to}-${item.label}`}>
               <NavLink
                 to={item.to}
