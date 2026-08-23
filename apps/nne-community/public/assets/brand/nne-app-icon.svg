@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NNE">
+  <rect width="512" height="512" rx="112" fill="#050505"/>
+  <rect x="22" y="22" width="468" height="468" rx="96" fill="none" stroke="#d6ad5c" stroke-width="10"/>
+  <text x="256" y="292" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="150" font-weight="900" letter-spacing="-12" fill="#ffffff">NNE</text>
+  <text x="256" y="354" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="8" fill="#d6ad5c">WESTDETRO</text>
+</svg>
