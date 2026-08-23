@@ -98,6 +98,35 @@ export function createNneCappedCreditStatement(env, {
   );
 }
 
+export function createNneExactCreditStatement(env, {
+  userId,
+  amount,
+  kind,
+  sourceType,
+  sourceId,
+  description,
+  actorUserId,
+  timestamp
+}) {
+  const requested = Math.max(0, Number(amount || 0));
+  return env.DB.prepare(
+    `INSERT OR IGNORE INTO nne_credit_transactions (
+       id, user_id, amount, kind, source_type, source_id,
+       description, actor_user_id, created_at
+     ) VALUES (?,?,?,?,?,?,?,?,?)`
+  ).bind(
+    crypto.randomUUID(),
+    userId,
+    requested,
+    kind,
+    sourceType,
+    sourceId,
+    description,
+    actorUserId,
+    timestamp
+  );
+}
+
 export async function awardNneCreditsWithDailyCap(env, award) {
   const timestamp = award.timestamp || now();
   await createNneCappedCreditStatement(env, { ...award, timestamp }).run();
@@ -116,7 +145,8 @@ export async function completeNneQuest(env, {
   score = null,
   actorUserId = null,
   completionStatus = "completed",
-  leadingStatements = []
+  leadingStatements = [],
+  bypassDailyCap = false
 }) {
   const timestamp = now();
   const today = timestamp.slice(0, 10);
@@ -140,16 +170,30 @@ export async function completeNneQuest(env, {
     )
   ];
 
-  statements.push(createNneCappedCreditStatement(env, {
-    userId,
-    amount: Number(quest.reward_credits || 0),
-    kind: "quest_reward",
-    sourceType: "quest_attempt",
-    sourceId: attemptId,
-    description: `Quest completada: ${quest.title} · límite diario de ${NNE_DAILY_CREDIT_CAP} NNE`,
-    actorUserId,
-    timestamp
-  }));
+  const rewardCredits = Number(quest.reward_credits || 0);
+  if (bypassDailyCap) {
+    statements.push(createNneExactCreditStatement(env, {
+      userId,
+      amount: rewardCredits,
+      kind: "quest_reward",
+      sourceType: "quest_attempt",
+      sourceId: attemptId,
+      description: `Chamba limitada completada: ${quest.title}`,
+      actorUserId,
+      timestamp
+    }));
+  } else {
+    statements.push(createNneCappedCreditStatement(env, {
+      userId,
+      amount: rewardCredits,
+      kind: "quest_reward",
+      sourceType: "quest_attempt",
+      sourceId: attemptId,
+      description: `Quest completada: ${quest.title} · límite diario de ${NNE_DAILY_CREDIT_CAP} NNE`,
+      actorUserId,
+      timestamp
+    }));
+  }
 
   statements.push(
     env.DB.prepare(
@@ -193,7 +237,7 @@ export async function completeNneQuest(env, {
        AND source_type = 'quest_attempt' AND source_id = ?
      LIMIT 1`
   ).bind(userId, attemptId).first();
-  return { credited: Number(transaction?.amount || 0), daily_cap: NNE_DAILY_CREDIT_CAP };
+  return { credited: Number(transaction?.amount || 0), daily_cap: bypassDailyCap ? null : NNE_DAILY_CREDIT_CAP };
 }
 
 export function parseOptions(value) {
