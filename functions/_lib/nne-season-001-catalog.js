@@ -22,6 +22,7 @@ const tiktoks = [
 ];
 
 const spotifyProfile = "https://open.spotify.com/artist/4Ft2k88AyQucZ1IXYtLHpu";
+const sisisiFlashReel = "https://www.instagram.com/reel/DcM_FXagmhD/?igsi=cWdxOGx3bXFkZ2Q0";
 
 function upsertQuest(env, id, platform, title, description, credits, sort) {
   return env.DB.prepare(`INSERT INTO nne_quests (id,type,platform,title,description,icon,reward_credits,reward_xp,status,cadence,verification_method,minimum_listen_seconds,pass_percentage,minimum_level,starts_at,ends_at,sort_order,created_at,updated_at)
@@ -32,9 +33,30 @@ function upsertQuest(env, id, platform, title, description, credits, sort) {
 
 export async function ensureNneSeason001Catalog(env) {
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS nne_runtime_flags (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`).run();
-  const ready = await env.DB.prepare(`SELECT value FROM nne_runtime_flags WHERE key='season_001_catalog_economy_v2' LIMIT 1`).first();
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS nne_limited_quest_claims (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES nne_quests(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES nne_users(id) ON DELETE CASCADE,
+    attempt_id TEXT NOT NULL UNIQUE REFERENCES nne_quest_attempts(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL CHECK (position > 0),
+    reward_credits REAL NOT NULL CHECK (reward_credits > 0),
+    created_at TEXT NOT NULL,
+    UNIQUE(quest_id,user_id),
+    UNIQUE(quest_id,position)
+  )`).run();
+  const ready = await env.DB.prepare(`SELECT value FROM nne_runtime_flags WHERE key='season_001_catalog_economy_v3' LIMIT 1`).first();
   if (ready?.value === 'ready') return;
   const statements = [];
+
+  statements.push(upsertQuest(
+    env,
+    "nne_sisisi_10_comments_flash",
+    "Instagram",
+    "🔥 SISISI · 10 comentarios · 3 NNE",
+    `FLASH CHAMBA: deja 10 comentarios reales en el Reel de SISISI. Incluye NNE y 🔥🔥🔥 en la interacción. Sube una captura donde podamos verificar los 10 comentarios. Solo los primeros 8 usuarios aprobados reciben 3 NNE completos.\n\nAbrir contenido: ${sisisiFlashReel}`,
+    3,
+    -100
+  ));
 
   statements.push(upsertQuest(env, "s1_spotify_profile", "Spotify", "Janko Diorr · Artist Profile", `Abre el perfil oficial de Janko Diorr y familiarízate con el catálogo de Season 001. Esta quest es una visita de discovery, no paga por repetir streams. Sube screenshot del perfil abierto.\n\nAbrir perfil: ${spotifyProfile}`, 0.25, 290));
 
@@ -46,6 +68,6 @@ export async function ensureNneSeason001Catalog(env) {
     statements.push(upsertQuest(env, id, "TikTok", title, `Support Bundle: like + comentario + share/repost en el mismo TikTok. Las tres acciones juntas califican; una acción aislada no genera Credits.\n\nAbrir TikTok: ${url}`, 0.25, sort));
   }
 
-  statements.push(env.DB.prepare(`INSERT INTO nne_runtime_flags (key,value,updated_at) VALUES ('season_001_catalog_economy_v2','ready',datetime('now')) ON CONFLICT(key) DO UPDATE SET value='ready',updated_at=datetime('now')`));
+  statements.push(env.DB.prepare(`INSERT INTO nne_runtime_flags (key,value,updated_at) VALUES ('season_001_catalog_economy_v3','ready',datetime('now')) ON CONFLICT(key) DO UPDATE SET value='ready',updated_at=datetime('now')`));
   await env.DB.batch(statements);
 }
