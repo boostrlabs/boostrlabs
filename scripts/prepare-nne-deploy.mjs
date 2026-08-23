@@ -23,6 +23,8 @@ await rm(target, { recursive: true, force: true });
 await mkdir(resolve(target, "site"), { recursive: true });
 await mkdir(resolve(target, "functions/api"), { recursive: true });
 await mkdir(resolve(target, "functions/join"), { recursive: true });
+await mkdir(resolve(target, "functions/chamba"), { recursive: true });
+await mkdir(resolve(target, "functions/music"), { recursive: true });
 await cp(resolve(root, "apps/nne-community/dist"), resolve(target, "site"), { recursive: true });
 
 // Pages advanced mode (_worker.js in the static output) disables file-based
@@ -32,6 +34,8 @@ await rm(resolve(target, "site/_worker.js"), { force: true });
 
 await cp(resolve(root, "functions/api/nne"), resolve(target, "functions/api/nne"), { recursive: true });
 await cp(resolve(root, "functions/join"), resolve(target, "functions/join"), { recursive: true });
+await cp(resolve(root, "functions/chamba"), resolve(target, "functions/chamba"), { recursive: true });
+await cp(resolve(root, "functions/music"), resolve(target, "functions/music"), { recursive: true });
 await cp(resolve(root, "functions/_lib"), resolve(target, "functions/_lib"), { recursive: true });
 await writeFile(resolve(target, "site/_redirects"), "/* /index.html 200\n");
 await writeFile(resolve(target, "wrangler.jsonc"), `${JSON.stringify({
