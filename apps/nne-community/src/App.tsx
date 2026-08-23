@@ -14,6 +14,7 @@ import { TelegramVerificationPage } from "./pages/TelegramVerificationPage";
 import { RewardCategoryPage } from "./pages/RewardCategoryPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { EconomyPage } from "./pages/EconomyPage";
+import { PublicQuestPage } from "./pages/PublicQuestPage";
 import {
   FeedPage,
   HomePage,
@@ -41,6 +42,7 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<EmailVerificationPage />} />
       <Route path="/integrations/instagram" element={<InstagramIntegrationPage />} />
+      <Route path="/chamba/:questId" element={<PublicQuestPage />} />
       <Route element={<RequireAuth />}>
         <Route index element={<HomePage />} />
         <Route path="quests" element={<QuestsPage />} />
