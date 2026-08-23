@@ -9,6 +9,8 @@ on:
       - "functions/api/nne/**"
       - "functions/_lib/nne-*.js"
       - "functions/join/**"
+      - "functions/chamba/**"
+      - "functions/music/**"
       - "migrations/**"
       - "scripts/prepare-nne-deploy.mjs"
       - ".github/workflows/nne-cloudflare-deploy.yml"
@@ -50,6 +52,8 @@ jobs:
         run: |
           test ! -f .deploy/nne/site/_worker.js
           test -f .deploy/nne/functions/api/nne/integrations/meta/webhook.js
+          test -f '.deploy/nne/functions/chamba/[questId].js'
+          test -f '.deploy/nne/functions/music/[slug].js'
           test -f .deploy/nne/site/index.html
 
       - name: Verify Cloudflare credentials
@@ -71,5 +75,3 @@ jobs:
           --branch=main
           --commit-hash="${{ github.sha }}"
           --commit-message="NNE deploy ${{ github.sha }}"
-
-# retrigger: corrected Wrangler v4 deploy path
