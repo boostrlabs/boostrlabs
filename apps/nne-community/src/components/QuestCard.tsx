@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { Quest } from "../types";
 import { formatNne } from "../services/api";
 import { VisualMedia } from "./VisualMedia";
@@ -34,13 +35,16 @@ export function QuestCard({ quest, onOpen }: QuestCardProps) {
 
       <footer>
         <strong>+{formatNne(quest.rewardCredits)} NNE</strong>
-        <button
-          className={`primary-button ${quest.status}`}
-          disabled={quest.status === "completed" || quest.status === "pending"}
-          onClick={() => onOpen(quest)}
-        >
-          {label}
-        </button>
+        <div>
+          <Link className="text-button" to={`/chamba/${encodeURIComponent(quest.id)}`}>Smart link</Link>
+          <button
+            className={`primary-button ${quest.status}`}
+            disabled={quest.status === "completed" || quest.status === "pending"}
+            onClick={() => onOpen(quest)}
+          >
+            {label}
+          </button>
+        </div>
       </footer>
     </article>
   );
