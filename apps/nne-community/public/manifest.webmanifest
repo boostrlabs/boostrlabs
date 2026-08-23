@@ -1,0 +1,20 @@
+{
+  "name": "NNE × WESTDETRO",
+  "short_name": "NNE",
+  "description": "NNE × WESTDETRO Community — chambas, NNE Credits, marketplace, rewards y acceso.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "orientation": "portrait-primary",
+  "categories": ["music", "business", "social"],
+  "icons": [
+    {
+      "src": "/assets/brand/nne-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
