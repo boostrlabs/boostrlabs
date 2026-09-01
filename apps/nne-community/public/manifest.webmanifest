@@ -1,0 +1,22 @@
+{
+  "name": "NNE × WESTDETRO Community",
+  "short_name": "NNE × WESTDETRO",
+  "description": "Cumple chambas, gana NNE Credits y canjea rewards dentro de la comunidad.",
+  "lang": "es",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "categories": ["music", "social", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Chambas", "short_name": "Chambas", "url": "quests" },
+    { "name": "Rewards", "short_name": "Rewards", "url": "rewards" },
+    { "name": "Mi perfil", "short_name": "Perfil", "url": "profile" }
+  ]
+}

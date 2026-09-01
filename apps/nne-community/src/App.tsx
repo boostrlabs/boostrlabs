@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import { CollabBrand } from "./components/CollabBrand";
+import { InstallAppPrompt } from "./components/InstallAppPrompt";
 import { useAuth } from "./context/AuthContext";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminReviewersPage } from "./pages/AdminReviewersPage";
@@ -28,27 +29,30 @@ function RequireAuth({ admin = false }: { admin?: boolean }) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<AuthPage mode="login" />} />
-      <Route path="/signup" element={<AuthPage mode="signup" />} />
-      <Route path="/join" element={<JoinPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/verify-email" element={<EmailVerificationPage />} />
-      <Route element={<RequireAuth />}>
-        <Route index element={<HomePage />} />
-        <Route path="quests" element={<QuestsPage />} />
-        <Route path="raffles" element={<RafflesPage />} />
-        <Route path="feed" element={<FeedPage />} />
-        <Route path="rewards" element={<RewardsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="review" element={<ReviewPage />} />
-      </Route>
-      <Route element={<RequireAuth admin />}>
-        <Route path="admin" element={<AdminPage />} />
-        <Route path="admin/reviewers" element={<AdminReviewersPage />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/login" element={<AuthPage mode="login" />} />
+        <Route path="/signup" element={<AuthPage mode="signup" />} />
+        <Route path="/join" element={<JoinPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<EmailVerificationPage />} />
+        <Route element={<RequireAuth />}>
+          <Route index element={<HomePage />} />
+          <Route path="quests" element={<QuestsPage />} />
+          <Route path="raffles" element={<RafflesPage />} />
+          <Route path="feed" element={<FeedPage />} />
+          <Route path="rewards" element={<RewardsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="review" element={<ReviewPage />} />
+        </Route>
+        <Route element={<RequireAuth admin />}>
+          <Route path="admin" element={<AdminPage />} />
+          <Route path="admin/reviewers" element={<AdminReviewersPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <InstallAppPrompt />
+    </>
   );
 }
