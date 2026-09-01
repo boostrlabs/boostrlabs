@@ -1,7 +1,7 @@
-const CACHE_NAME = "nne-pwa-v1";
+const CACHE_NAME = "nne-pwa-v2";
 const scope = new URL(self.registration.scope);
 const scopedPath = (path) => new URL(path, scope).pathname;
-const APP_SHELL = [scopedPath("./"), scopedPath("manifest.webmanifest"), scopedPath("icons/icon-192.png"), scopedPath("icons/icon-512.png")];
+const APP_SHELL = [scopedPath("./"), scopedPath("manifest.webmanifest"), scopedPath("icons/nne-icon-v2-192.png"), scopedPath("icons/nne-icon-v2-512.png")];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));

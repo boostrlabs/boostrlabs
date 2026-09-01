@@ -73,7 +73,7 @@ export function InstallAppPrompt() {
   return (
     <>
       <aside className="install-app-banner" aria-label="Instalar NNE × WESTDETRO">
-        <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" />
+        <img src={`${import.meta.env.BASE_URL}icons/nne-icon-v2-192.png`} alt="" />
         <div>
           <strong>Ten NNE en tu teléfono</strong>
           <span>Entra más rápido a tus chambas y rewards.</span>
@@ -85,7 +85,7 @@ export function InstallAppPrompt() {
       {showIosHelp && (
         <div className="install-help-backdrop" role="presentation" onClick={() => setShowIosHelp(false)}>
           <section className="install-help-card" role="dialog" aria-modal="true" aria-labelledby="install-help-title" onClick={(event) => event.stopPropagation()}>
-            <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="NNE × WESTDETRO" />
+            <img src={`${import.meta.env.BASE_URL}icons/nne-icon-v2-192.png`} alt="NNE" />
             <p className="eyebrow">INSTALAR EN IPHONE</p>
             <h2 id="install-help-title">Agrégala a tu inicio.</h2>
             <ol>
