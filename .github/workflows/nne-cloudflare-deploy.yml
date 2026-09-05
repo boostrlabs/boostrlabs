@@ -59,6 +59,5 @@ jobs:
           npx --yes wrangler@4 pages deploy site
           --project-name=nne-westdetro
           --branch=main
-          --functions=functions
           --commit-hash="${{ github.sha }}"
           --commit-message="NNE deploy ${{ github.sha }}"
