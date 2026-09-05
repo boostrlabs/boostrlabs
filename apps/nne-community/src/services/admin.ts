@@ -31,6 +31,20 @@ export const adminService = {
   rewards: () => apiRequest<any>("/admin/rewards"),
   createReward: (payload: Record<string, unknown>) =>
     apiRequest<any>("/admin/rewards", { method: "POST", body: JSON.stringify(payload) }),
+  beats: () => apiRequest<any>("/admin/beats"),
+  createBeat: (payload: Record<string, unknown>) =>
+    apiRequest<any>("/admin/beats", { method: "POST", body: JSON.stringify(payload) }),
+  uploadBeatAsset: (beatId: string, kind: "artwork" | "stream" | "master", file: File) =>
+    apiRequest<any>(`/admin/beats/${encodeURIComponent(beatId)}/asset?kind=${kind}`, {
+      method: "PUT",
+      headers: { "Content-Type": file.type || "application/octet-stream" },
+      body: file
+    }),
+  updateBeatStatus: (beatId: string, status: "draft" | "published" | "paused" | "archived") =>
+    apiRequest<any>(`/admin/beats/${encodeURIComponent(beatId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status })
+    }),
   redemptions: () => apiRequest<any>("/admin/redemptions"),
   updateRedemption: (id: string, status: string, fulfillment_note = "") =>
     apiRequest<any>(`/admin/redemptions/${encodeURIComponent(id)}`, {

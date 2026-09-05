@@ -132,6 +132,30 @@ export interface DashboardData {
   };
 }
 
+export interface BeatLicense {
+  id: string;
+  licenseType: "lease" | "exclusive";
+  licenseNumber: string;
+  licensedAt: string;
+}
+
+export interface Beat {
+  id: string;
+  slug: string;
+  title: string;
+  producerName: string;
+  description: string;
+  bpm: number | null;
+  musicalKey: string | null;
+  saleMode: "lease" | "exclusive" | "both";
+  leasePriceCredits: number | null;
+  exclusivePriceCredits: number | null;
+  artworkUrl: string | null;
+  streamReady: boolean;
+  available: boolean;
+  license: BeatLicense | null;
+}
+
 export interface ReferralReward {
   credits: number;
   xp: number;

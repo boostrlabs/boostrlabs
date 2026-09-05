@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import type { AppOutletContext } from "../components/AppLayout";
 import { adminService } from "../services/admin";
 
-type AdminTab = "applications" | "evidence" | "quests" | "trivia" | "rewards" | "redemptions";
+type AdminTab = "applications" | "evidence" | "quests" | "trivia" | "rewards" | "beats" | "redemptions";
 
 export function AdminPage() {
   const { refreshDashboard, showToast } = useOutletContext<AppOutletContext>();
@@ -15,6 +15,7 @@ export function AdminPage() {
     quests: [],
     trivia: [],
     rewards: [],
+    beats: [],
     redemptions: []
   });
   const [busy, setBusy] = useState(true);
@@ -24,13 +25,14 @@ export function AdminPage() {
     setBusy(true);
     setError("");
     try {
-      const [overview, applications, evidence, quests, trivia, rewards, redemptions] = await Promise.all([
+      const [overview, applications, evidence, quests, trivia, rewards, beats, redemptions] = await Promise.all([
         adminService.overview(),
         adminService.applications(),
         adminService.evidence(),
         adminService.quests(),
         adminService.trivia(),
         adminService.rewards(),
+        adminService.beats(),
         adminService.redemptions()
       ]);
       setData({
@@ -40,6 +42,7 @@ export function AdminPage() {
         quests: quests.quests || [],
         trivia: trivia.questions || [],
         rewards: rewards.rewards || [],
+        beats: beats.beats || [],
         redemptions: redemptions.redemptions || []
       });
     } catch (caught) {
@@ -89,6 +92,29 @@ export function AdminPage() {
     void run(() => adminService.createReward(payload), "Reward creado.").then(() => form.reset());
   };
 
+  const createBeat = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    const payload = Object.fromEntries(values);
+    const artwork = values.get("artwork");
+    const stream = values.get("stream");
+    const master = values.get("master");
+    delete payload.artwork;
+    delete payload.stream;
+    delete payload.master;
+    const requestedStatus = payload.status;
+    payload.status = "draft";
+    void run(async () => {
+      const result = await adminService.createBeat(payload);
+      const beatId = result.beat.id as string;
+      if (artwork instanceof File && artwork.size) await adminService.uploadBeatAsset(beatId, "artwork", artwork);
+      if (stream instanceof File && stream.size) await adminService.uploadBeatAsset(beatId, "stream", stream);
+      if (master instanceof File && master.size) await adminService.uploadBeatAsset(beatId, "master", master);
+      if (requestedStatus === "published") await adminService.updateBeatStatus(beatId, "published");
+    }, "Beat cargado en el vault.").then(() => form.reset());
+  };
+
   if (busy && !data.quests.length) return <div className="empty-state">Cargando Command Center…</div>;
   if (error) return <div className="form-error">{error}</div>;
 
@@ -114,6 +140,7 @@ export function AdminPage() {
           ["quests", "Bloques"],
           ["trivia", "Trivias"],
           ["rewards", "Rewards"],
+          ["beats", "Beat Vault"],
           ["redemptions", "Canjes"]
         ] as Array<[AdminTab, string]>).map(([id, label]) => (
           <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>{label}</button>
@@ -301,6 +328,38 @@ export function AdminPage() {
             </article>
           ))}
           {!data.redemptions.length && <div className="empty-state">No hay canjes todavía.</div>}
+        </section>
+      )}
+
+      {tab === "beats" && (
+        <section className="admin-split">
+          <form className="card admin-form" onSubmit={createBeat}>
+            <div className="eyebrow">WESTDETRO Secure Listening</div><h2>Subir al Beat Vault</h2>
+            <label>Título<input className="field" name="title" required /></label>
+            <label>Productor<input className="field" name="producer_name" required /></label>
+            <label>Descripción<textarea className="field" name="description" /></label>
+            <div className="form-grid">
+              <label>BPM<input className="field" name="bpm" type="number" min="30" max="300" /></label>
+              <label>Tonalidad<input className="field" name="musical_key" placeholder="F# minor" /></label>
+              <label>Modalidad<select className="field" name="sale_mode" defaultValue="lease">
+                <option value="lease">Licencias</option><option value="exclusive">Solo exclusiva</option><option value="both">Ambas</option>
+              </select></label>
+              <label>Precio licencia<input className="field" name="lease_price_credits" type="number" min="1" defaultValue="25" /></label>
+              <label>Precio exclusiva<input className="field" name="exclusive_price_credits" type="number" min="1" placeholder="Opcional" /></label>
+              <label>Estado<select className="field" name="status" defaultValue="draft"><option value="draft">Draft</option><option value="published">Publicado</option></select></label>
+            </div>
+            <label>Artwork privado<input className="field file-field" name="artwork" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+            <label>Audio de escucha limpio<input className="field file-field" name="stream" type="file" accept="audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/wav" required /></label>
+            <label>Master entregable<input className="field file-field" name="master" type="file" accept="audio/wav,audio/flac,audio/mpeg" /></label>
+            <p className="privacy-note">Los archivos se guardan en R2 privado. El catálogo público nunca recibe las claves internas ni una URL permanente.</p>
+            <button className="primary-button full">Crear y proteger beat</button>
+          </form>
+          <AdminCatalog
+            items={data.beats}
+            render={(item) => (
+              <><span className="tag">{item.status}</span><h3>{item.title}</h3><p>PROD. {item.producer_name} · {item.sale_mode}</p><small>{item.stream_object_key ? "Escucha lista" : "Falta audio"} · {item.master_object_key ? "Master listo" : "Falta master"} · {item.listen_sessions} sesiones · {item.licenses} licencias</small><div className="action-row">{item.status !== "published" && <button className="primary-button" disabled={!item.stream_object_key} onClick={() => void run(() => adminService.updateBeatStatus(item.id, "published"), `${item.title} publicado.`)}>Publicar</button>}{item.status === "published" && <button onClick={() => void run(() => adminService.updateBeatStatus(item.id, "paused"), `${item.title} pausado.`)}>Pausar</button>}</div></>
+            )}
+          />
         </section>
       )}
     </>
