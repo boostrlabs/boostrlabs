@@ -1,6 +1,7 @@
 import { initials, NNE_DAILY_CREDIT_CAP, nnePeriodKey, questStatusForUser } from "../../_lib/nne-community.js";
 import { jsonOk, requireNneSession } from "../../_lib/nne-api.js";
 import { ensureNneSeason001 } from "../../_lib/nne-season-001.js";
+import { ensureNneChambaDrop002 } from "../../_lib/nne-chamba-drop-002.js";
 
 function sourceUrl(description = "") {
   const match = String(description).match(/https?:\/\/[^\s]+/);
@@ -16,6 +17,7 @@ export async function onRequestGet({ request, env }) {
   if (!auth.ok) return auth.response;
 
   await ensureNneSeason001(env);
+  await ensureNneChambaDrop002(env);
 
   const [questRows, feedRows, leaderRows, referral, referralReward, dailyCredits] = await Promise.all([
     env.DB.prepare(

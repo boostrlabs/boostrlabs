@@ -2,6 +2,7 @@ import { jsonOk, requireNneSession } from "../../_lib/nne-api.js";
 import { nnePeriodKey, questStatusForUser } from "../../_lib/nne-community.js";
 import { ensureNneSeason001 } from "../../_lib/nne-season-001.js";
 import { ensureNneSeason001Catalog } from "../../_lib/nne-season-001-catalog.js";
+import { ensureNneChambaDrop002 } from "../../_lib/nne-chamba-drop-002.js";
 
 function sourceUrl(description = "") {
   const match = String(description).match(/https?:\/\/[^\s]+/);
@@ -18,6 +19,7 @@ export async function onRequestGet({ request, env }) {
 
   await ensureNneSeason001(env);
   await ensureNneSeason001Catalog(env);
+  await ensureNneChambaDrop002(env);
 
   const result = await env.DB.prepare(
     `SELECT
