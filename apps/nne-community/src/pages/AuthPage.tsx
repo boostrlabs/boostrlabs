@@ -21,7 +21,9 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const referralCode = mode === "signup" ? String(searchParams.get("ref") || "").trim() : "";
   const promoCode = mode === "signup" ? String(searchParams.get("promo") || "").trim().toUpperCase() : "";
   const adminInvite = mode === "signup" ? String(searchParams.get("admin_invite") || "").trim() : "";
-  const invitedUsername = adminInvite ? String(searchParams.get("username") || "").trim().toLowerCase() : "";
+  const distributionInvite = mode === "signup" ? String(searchParams.get("distribution_invite") || "").trim() : "";
+  const invitedUsername = (adminInvite || distributionInvite) ? String(searchParams.get("username") || "").trim().toLowerCase() : "";
+  const invitedEmail = distributionInvite ? String(searchParams.get("email") || "").trim().toLowerCase() : "";
 
   useEffect(() => {
     let active = true;
@@ -82,7 +84,8 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
         promo_code: String(data.get("promo_code") || ""),
         referral_code: referralPreview?.code || "",
         company_website: String(data.get("company_website") || ""),
-        admin_invite: adminInvite || undefined
+        admin_invite: adminInvite || undefined,
+        distribution_invite: distributionInvite || undefined
       });
       setApplicationMessage(result.message);
       event.currentTarget.reset();
@@ -127,6 +130,13 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             <div className="eyebrow">Invitación privada</div>
             <strong>Acceso admin para @{invitedUsername || "usuario reservado"}</strong>
             <p>El rol se activa después de verificar el correo. Esta invitación funciona una sola vez.</p>
+          </aside>
+        )}
+        {mode === "signup" && distributionInvite && (
+          <aside className="referral-invite">
+            <div className="eyebrow">NNE Distribution · invitación</div>
+            <strong>Tu catálogo, tu equipo, tu acceso.</strong>
+            <p>Completa la solicitud con el correo invitado. Al aprobar tu identidad, entrarás directamente a tu espacio de distribución.</p>
           </aside>
         )}
         {mode === "signup" && referralCode && (
@@ -195,6 +205,8 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
               className="field"
               required
               autoComplete={mode === "login" ? "username" : "email"}
+              defaultValue={mode === "signup" ? invitedEmail : ""}
+              readOnly={Boolean(mode === "signup" && distributionInvite && invitedEmail)}
             />
           </label>
           <label>Contraseña<input name="password" type="password" className="field" required minLength={10} autoComplete={mode === "login" ? "current-password" : "new-password"} /></label>

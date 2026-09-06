@@ -7,6 +7,7 @@ import { AdminPage } from "./pages/AdminPage";
 import { AdminReviewersPage } from "./pages/AdminReviewersPage";
 import { AuthPage } from "./pages/AuthPage";
 import { BeatCatalogPage } from "./pages/BeatCatalogPage";
+import { DistributionPage } from "./pages/DistributionPage";
 import { EmailVerificationPage, ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordRecoveryPage";
 import { JoinPage } from "./pages/JoinPage";
 import { ReviewPage } from "./pages/ReviewPage";
@@ -43,6 +44,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="quests" element={<QuestsPage />} />
           <Route path="beats" element={<BeatCatalogPage />} />
+          <Route path="distribution" element={<DistributionPage />} />
           <Route path="playlists" element={<PlaylistsPage />} />
           <Route path="raffles" element={<RafflesPage />} />
           <Route path="feed" element={<FeedPage />} />

@@ -36,10 +36,10 @@ await cp(resolve(root, "functions/_lib"), resolve(target, "functions/_lib"), { r
 await writeFile(resolve(target, "site/_redirects"), "/* /index.html 200\n");
 await writeFile(resolve(target, "wrangler.jsonc"), `${JSON.stringify({
   name: "nne-westdetro",
-  compatibility_date: "2026-08-19",
+  compatibility_date: "2026-09-06",
   compatibility_flags: ["nodejs_compat"],
   pages_build_output_dir: "./site",
-  vars: { NNE_APP_ORIGIN: "https://nne.westdetro.com" },
+  vars: { NNE_APP_ORIGIN: "https://nne.westdetro.com", NNE_DISTRIBUTION_PROVIDER: "nne_sandbox" },
   d1_databases: [{ binding: "DB", database_name: "boostr_labs_core", database_id: "3998802e-1829-48b4-91dc-971ecfd4c23d" }],
   r2_buckets: [{ binding: "BOOSTR_ASSETS", bucket_name: "boostr-labs-assets-prod" }]
 }, null, 2)}\n`);

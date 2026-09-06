@@ -7,6 +7,7 @@ const items = [
   { to: "/quests", label: "Chamba", icon: "◎" },
   { to: "/playlists", label: "Playlists", icon: "♫" },
   { to: "/beats", label: "Beats", icon: "▶" },
+  { to: "/distribution", label: "Distribución", icon: "↗" },
   { to: "/raffles", label: "Sorteos", icon: "✦" },
   { to: "/feed", label: "Feed", icon: "◌" },
   { to: "/rewards", label: "Rewards", icon: "◇" },

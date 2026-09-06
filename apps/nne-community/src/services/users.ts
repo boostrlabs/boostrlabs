@@ -19,6 +19,7 @@ export interface SignupInput {
   promo_code?: string;
   company_website?: string;
   admin_invite?: string;
+  distribution_invite?: string;
 }
 
 export interface SignupResult {

@@ -118,6 +118,25 @@ export async function activateNneApplication(env, application, {
     );
   }
 
+  if (application.distribution_invite_id) {
+    const distributionInvite = await env.DB.prepare(
+      `SELECT id,artist_id,role,status,expires_at FROM nne_distribution_invites WHERE id=? LIMIT 1`
+    ).bind(application.distribution_invite_id).first();
+    if (distributionInvite?.status === "active" && distributionInvite.expires_at > timestamp) {
+      statements.push(
+        env.DB.prepare(
+          `INSERT INTO nne_distribution_access (
+            id,user_id,artist_id,role,status,created_by,created_at,updated_at
+          ) VALUES (?,?,?,?, 'active',NULL,?,?)`
+        ).bind(crypto.randomUUID(), userId, distributionInvite.artist_id, distributionInvite.role, timestamp, timestamp),
+        env.DB.prepare(
+          `UPDATE nne_distribution_invites SET status='accepted',accepted_by=?,accepted_at=?
+           WHERE id=? AND status='active'`
+        ).bind(userId, timestamp, distributionInvite.id)
+      );
+    }
+  }
+
   await env.DB.batch(statements);
   return {
     userId,

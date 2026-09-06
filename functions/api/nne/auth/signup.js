@@ -68,6 +68,7 @@ export async function onRequestPost({ request, env }) {
   const bio = clean(payload.bio, 800);
   const promoCode = clean(payload.promo_code, 80).toUpperCase();
   const adminInviteToken = clean(payload.admin_invite, 200);
+  const distributionInviteToken = clean(payload.distribution_invite, 200);
 
   if (name.length < 2) {
     return jsonError("nne_name_required", "Escribe tu nombre o nombre artístico.", 400, { fields: ["name"] });
@@ -176,6 +177,25 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
+  let distributionInvite = null;
+  if (distributionInviteToken) {
+    distributionInvite = await env.DB.prepare(
+      `SELECT id,artist_id,intended_email,intended_username,role,expires_at
+       FROM nne_distribution_invites
+       WHERE token_hash=? AND status='active' AND expires_at>?
+       LIMIT 1`
+    ).bind(await sha256(distributionInviteToken), now()).first();
+    if (!distributionInvite?.id) {
+      return jsonError("nne_distribution_invite_invalid", "Esta invitación de distribución no es válida o ya venció.", 403);
+    }
+    if (distributionInvite.intended_email && normalizeEmail(distributionInvite.intended_email) !== email) {
+      return jsonError("nne_distribution_invite_email", "Usa el correo al que se envió la invitación de distribución.", 400, { fields: ["email"] });
+    }
+    if (distributionInvite.intended_username && normalizeUsername(distributionInvite.intended_username) !== username) {
+      return jsonError("nne_distribution_invite_username", `Esta invitación está reservada para @${distributionInvite.intended_username}.`, 400, { fields: ["username"] });
+    }
+  }
+
   const timestamp = now();
   const applicationId = crypto.randomUUID();
   const passwordHash = await hashNnePassword(password);
@@ -188,13 +208,13 @@ export async function onRequestPost({ request, env }) {
       id, email, username, display_name, password_hash, artist_role, country, city,
       instagram_handle, whatsapp_contact, telegram_handle, primary_contact, bio,
       referral_code, promo_code, status, ip, created_at, updated_at,
-      email_verification_status, admin_invite_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, 'pending', ?)`
+      email_verification_status, admin_invite_id, distribution_invite_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, 'pending', ?, ?)`
   ).bind(
     applicationId, email, username, name, passwordHash, artistRole, country, city || null,
     instagramHandle || null, whatsappContact || null, telegramHandle || null, primaryContact, bio,
     referredBy?.referral_code || null, promoCode || null, getIp(request), timestamp, timestamp,
-    adminInvite?.id || null
+    adminInvite?.id || null, distributionInvite?.id || null
   ).run();
   await env.DB.prepare(
     `INSERT INTO nne_email_verification_tokens (
@@ -228,7 +248,8 @@ export async function onRequestPost({ request, env }) {
     username,
     referred: Boolean(referredBy?.referrer_user_id),
     promo_code: promoCode || null,
-    admin_invite: Boolean(adminInvite?.id)
+    admin_invite: Boolean(adminInvite?.id),
+    distribution_invite: Boolean(distributionInvite?.id)
   });
 
   return jsonOk(

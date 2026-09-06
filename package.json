@@ -18,6 +18,7 @@
     "health:omni-parking:live": "node scripts/omni-parking-live-smoke.mjs",
     "health:pwa-entry": "node scripts/pwa-entry-health.mjs",
     "health:shared-ui": "node scripts/shared-ui-v2-health.mjs",
+    "health:nne-distribution": "node scripts/nne-distribution-health.mjs",
     "stability:check": "node scripts/ecosystem-stability.mjs && node scripts/shared-ui-v2-health.mjs && node scripts/omni-parking-health.mjs && node scripts/pwa-entry-health.mjs",
     "build": "vite build && node scripts/patch-johankarrd-v60.mjs && node scripts/johankarrd-dist-health.mjs && corepack pnpm --filter nne-community-frontend build && node scripts/integrate-nne-community.mjs",
     "preview": "vite preview --host 127.0.0.1",

@@ -11,6 +11,7 @@ on:
       - "functions/join/**"
       - "migrations/**"
       - "scripts/prepare-nne-deploy.mjs"
+      - "scripts/nne-distribution-health.mjs"
       - ".github/workflows/nne-cloudflare-deploy.yml"
   workflow_dispatch:
 
@@ -44,10 +45,15 @@ jobs:
       - name: Build standalone NNE deploy package
         run: node scripts/prepare-nne-deploy.mjs
 
+      - name: Verify NNE Distribution OS
+        run: node scripts/nne-distribution-health.mjs
+
       - name: Verify Pages Functions package
         run: |
           test ! -f .deploy/nne/site/_worker.js
           test -f .deploy/nne/functions/api/nne/integrations/meta/webhook.js
+          test -f .deploy/nne/functions/api/nne/distribution/releases.js
+          test -f .deploy/nne/functions/api/nne/distribution/releases/[id]/review.js
           test -f .deploy/nne/site/index.html
 
       - name: Deploy NNE production to Cloudflare Pages

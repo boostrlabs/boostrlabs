@@ -1,28 +1,11 @@
-# NNE Community Frontend
+# NNE × WESTDETRO
 
-Starter frontend for the NNE Community MVP.
+Production React application for the NNE community, rewards economy, private beat vault, messaging integrations, and the invite-only NNE Distribution OS pilot.
 
-## Run locally
+- Frontend: React + TypeScript + Vite
+- API: Cloudflare Pages Functions under `/api/nne/*`
+- Database: Cloudflare D1 with `nne_*` namespaces
+- Private media: Cloudflare R2
+- Distribution pilot: `/distribution`
 
-```bash
-npm install
-npm run dev
-```
-
-Open `http://localhost:5173`.
-
-## Included
-
-- React
-- TypeScript
-- Vite
-- Responsive dark-luxury interface
-- Dashboard
-- Quests
-- Listening trivia
-- Rewards
-- Feed
-- Profile
-- Mock data
-
-Read `PROJECT_BRIEF_FOR_CODEX.txt` before implementing the backend.
+See [NNE_DISTRIBUTION_OS.md](../../docs/NNE_DISTRIBUTION_OS.md) for the release workflow, storage boundaries, provider adapter contract, and production gates.
