@@ -9,6 +9,7 @@ await mkdir(resolve(target, "site/assets"), { recursive: true });
 await mkdir(resolve(target, "functions"), { recursive: true });
 for (const file of ["index.html", "styles.css", "app.js"]) await cp(resolve(source, file), resolve(target, "site", file));
 await cp(resolve(source, "assets"), resolve(target, "site/assets"), { recursive: true });
+await cp(resolve(source, "playlists"), resolve(target, "site/playlists"), { recursive: true });
 await cp(resolve(source, "functions"), resolve(target, "functions"), { recursive: true });
 await writeFile(resolve(target, "wrangler.jsonc"), `${JSON.stringify({
   name: "westdetro-album",

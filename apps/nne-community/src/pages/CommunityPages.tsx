@@ -10,6 +10,7 @@ import type { FeedItem, Quest, RaffleCampaign, Reward } from "../types";
 import { formatNne, formatRelativeDate } from "../services/api";
 import { VisualMedia } from "../components/VisualMedia";
 import { nneAssets, rewardAssets } from "../config/assets";
+import { nnePlaylistHubUrl, nnePlaylists } from "../config/playlists";
 
 const useApp = () => useOutletContext<AppOutletContext>();
 
@@ -59,6 +60,15 @@ export function HomePage() {
         <p>Cada 10 XP elegibles de chamba aprobada crea una participación automática. No gastas XP ni NNE.</p>
         <Link className="primary-button" to="/raffles">Ver sorteo</Link>
       </article>
+
+      <a className="playlist-home-banner" href={nnePlaylistHubUrl} target="_blank" rel="noreferrer">
+        <div>
+          <div className="eyebrow">NNE OFFICIAL SPOTIFY PLAYLISTS</div>
+          <strong>El movimiento también se escucha.</strong>
+          <p>Essentials, Rotation, Perreo &amp; Sistema y After en un solo lugar.</p>
+        </div>
+        <span>ABRIR HUB <b>↗</b></span>
+      </a>
 
       <section className="music-strip" aria-label="En rotación">
         <article><VisualMedia src={nneAssets.music.sisisi} alt="SISISI" fallback="SISISI" /><strong>SISISI <small>26 AGO</small></strong></article>
@@ -254,6 +264,37 @@ export function ProfilePage() {
           </button>
         </div>
       </article>
+    </>
+  );
+}
+
+export function PlaylistsPage() {
+  return (
+    <>
+      <article className="card playlist-intro">
+        <div>
+          <div className="eyebrow">NNE OFFICIAL SPOTIFY PLAYLISTS</div>
+          <h2>Cuatro mundos.<br />Un movimiento.</h2>
+          <p>Selecciones oficiales de NOSOTROSNOELLOS para descubrir el sonido, los artistas y la energía de NNE.</p>
+        </div>
+        <a className="primary-button" href={nnePlaylistHubUrl} target="_blank" rel="noreferrer">Compartir el hub ↗</a>
+      </article>
+      <section className="playlist-community-grid">
+        {nnePlaylists.map((playlist, index) => (
+          <a key={playlist.id} className="card playlist-community-card" href={playlist.url} target="_blank" rel="noreferrer">
+            <div className="playlist-cover-wrap">
+              <img src={playlist.image} alt={`Portada de ${playlist.title}`} loading={index > 1 ? "lazy" : "eager"} />
+              <span>▶</span>
+            </div>
+            <div className="playlist-community-copy">
+              <small>{playlist.label}</small>
+              <strong>{playlist.title}</strong>
+              <p>{playlist.description}</p>
+              <b>ESCUCHAR EN SPOTIFY ↗</b>
+            </div>
+          </a>
+        ))}
+      </section>
     </>
   );
 }

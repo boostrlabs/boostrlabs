@@ -84,6 +84,9 @@ export async function upsertMessagingContact(env, contact) {
 
 export function botReply(text = "") {
   const normalized = clean(text, 1000).toLowerCase();
+  if (/\b(playlist|playlists|spotify|musica|música)\b/.test(normalized)) {
+    return "Escucha las 4 playlists oficiales de NNE — Essentials, Rotation, Perreo & Sistema y After— desde un solo lugar: https://westdetro.com/playlists";
+  }
   if (/\b(chamba|chambas|tarea|tareas|quest|quests)\b/.test(normalized)) {
     return "Los Bloques de Chamba son tareas cortas. Cumples una, subes evidencia y, cuando se aprueba, recibes NNE Credits. Mira las activas aquí: https://nne.westdetro.com/quests";
   }
@@ -99,7 +102,7 @@ export function botReply(text = "") {
   if (/\b(salir|stop|baja|cancelar)\b/.test(normalized)) {
     return "Entendido. Para dejar de recibir mensajes automáticos escribe STOP. Tu cuenta NNE no se elimina.";
   }
-  return "Somos NNE × WESTDETRO. Aquí cumples Bloques de Chamba, ganas NNE Credits y los cambias por ropa, equipo, beats y producciones. Escribe CHAMBAS, REWARDS, SALDO o SISISI.";
+  return "Somos NNE × WESTDETRO. Aquí cumples Bloques de Chamba, ganas NNE Credits y los cambias por ropa, equipo, beats y producciones. Escribe CHAMBAS, PLAYLISTS, REWARDS, SALDO o SISISI.";
 }
 
 export async function sendTelegramMessage(token, chatId, text) {

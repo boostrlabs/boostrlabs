@@ -16,6 +16,7 @@
   ],
   "shortcuts": [
     { "name": "Chambas", "short_name": "Chambas", "url": "quests" },
+    { "name": "Playlists NNE", "short_name": "Playlists", "url": "playlists" },
     { "name": "Rewards", "short_name": "Rewards", "url": "rewards" },
     { "name": "Mi perfil", "short_name": "Perfil", "url": "profile" }
   ]

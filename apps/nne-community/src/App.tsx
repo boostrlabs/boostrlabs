@@ -13,6 +13,7 @@ import { ReviewPage } from "./pages/ReviewPage";
 import {
   FeedPage,
   HomePage,
+  PlaylistsPage,
   ProfilePage,
   QuestsPage,
   RafflesPage,
@@ -42,6 +43,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="quests" element={<QuestsPage />} />
           <Route path="beats" element={<BeatCatalogPage />} />
+          <Route path="playlists" element={<PlaylistsPage />} />
           <Route path="raffles" element={<RafflesPage />} />
           <Route path="feed" element={<FeedPage />} />
           <Route path="rewards" element={<RewardsPage />} />

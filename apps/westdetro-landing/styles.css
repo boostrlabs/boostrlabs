@@ -456,6 +456,22 @@ main {
   grid-auto-rows: minmax(140px, 12vw);
   gap: 10px;
 }
+.playlist-launch {
+  margin: clamp(22px, 4vw, 60px) clamp(18px, 5vw, 76px) 0;
+  padding: clamp(28px, 6vw, 74px);
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 34px;
+  border: 1px solid rgba(30, 215, 96, .32);
+  background:
+    radial-gradient(circle at 88% 8%, rgba(30, 215, 96, .18), transparent 30%),
+    linear-gradient(135deg, #101612, #080808 67%);
+}
+.playlist-launch h2 { margin: 14px 0 18px; font-size: clamp(2.8rem, 7vw, 7rem); line-height: .88; }
+.playlist-launch > div > p:last-child { max-width: 700px; margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.65; }
+.playlist-button { flex: 0 0 auto; color: #050505 !important; border-color: #1ed760 !important; background: #1ed760 !important; }
+.playlist-button span { margin-left: 8px; font-size: 1rem; }
 .archive-grid figure { grid-column: span 3; grid-row: span 2; }
 .archive-grid .archive-wide { grid-column: span 7; grid-row: span 2; }
 .archive-grid .archive-tall { grid-column: span 5; grid-row: span 3; }
@@ -547,6 +563,7 @@ footer a {
   color: var(--white);
 }
 @media (max-width: 800px) {
+  .playlist-launch { align-items: flex-start; flex-direction: column; }
   .collab-lockup.compact img:first-child { width: 38px; }
   .collab-lockup.compact img:last-child { width: 80px; }
   .hero-logo { width: min(620px, 100%); }
@@ -566,8 +583,8 @@ footer a {
   }
   .nav nav::-webkit-scrollbar { display: none; }
   .nav nav > a { padding: 9px 12px; font-size: .62rem; }
-  .nav nav > a:nth-child(2),
-  .nav nav > a:nth-child(4) { display: none; }
+  .nav nav > a:nth-child(3),
+  .nav nav > a:nth-child(5) { display: none; }
   .nav-cta {
     padding: 10px 13px !important;
   }
@@ -633,6 +650,8 @@ footer a {
   }
 }
 @media (max-width: 480px) {
+  .playlist-launch { margin-inline: 14px; padding: 28px 20px; }
+  .playlist-launch .playlist-button { width: 100%; text-align: center; }
   .nav { padding-left: 14px; }
   .collab-lockup.compact { gap: 5px; }
   .collab-lockup.compact img:first-child { width: 31px; }
