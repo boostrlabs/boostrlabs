@@ -1231,7 +1231,7 @@ select.field { color-scheme: dark; }
 .playlist-cover-wrap span { position: absolute; right: 14px; bottom: 14px; z-index: 1; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: #050505; background: #1ed760; box-shadow: 0 12px 30px rgba(0,0,0,.4); }
 .playlist-community-copy { min-width: 0; padding: 24px; display: flex; flex-direction: column; justify-content: center; }
 .playlist-community-copy small { color: #1ed760; font-size: .68rem; font-weight: 800; letter-spacing: .14em; }
-.playlist-community-copy strong { margin-top: 9px; font-size: clamp(1.15rem, 2vw, 1.6rem); line-height: 1.05; }
+.playlist-community-copy strong { margin-top: 9px; overflow-wrap: anywhere; font-size: clamp(1.05rem, 1.8vw, 1.5rem); line-height: 1.05; }
 .playlist-community-copy p { margin: 9px 0 22px; color: var(--muted); line-height: 1.45; }
 .playlist-community-copy b { color: #1ed760; font-size: .7rem; letter-spacing: .08em; }
 .raffle-rules { padding: 26px; }

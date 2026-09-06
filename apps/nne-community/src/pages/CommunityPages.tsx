@@ -289,7 +289,7 @@ export function PlaylistsPage() {
             <div className="playlist-community-copy">
               <small>{playlist.label}</small>
               <strong>{playlist.title}</strong>
-              <p>{playlist.description}</p>
+              {playlist.description && <p>{playlist.description}</p>}
               <b>ESCUCHAR EN SPOTIFY ↗</b>
             </div>
           </a>
