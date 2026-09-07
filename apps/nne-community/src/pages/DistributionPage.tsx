@@ -489,7 +489,7 @@ export function DistributionPage() {
           <h2>Tu música sale desde aquí.</h2>
           <p>Carga masters, captura derechos, pasa el control de calidad y prepara una entrega real sin salir de NNE.</p>
         </div>
-        <div className="provider-signal"><span className="provider-dot" /><div><small>DELIVERY RAIL</small><strong>NNE SANDBOX</strong><em>Adaptador listo para partner</em></div></div>
+        <div className="provider-signal"><span className={`provider-dot ${index.provider.ready ? "ready" : ""}`} /><div><small>DELIVERY RAIL</small><strong>{index.provider.name}</strong><em>{index.provider.status === "configuration_required" ? "Faltan credenciales del partner" : index.provider.mode === "sandbox" ? "Simulación segura activa" : "Conexión server-to-server activa"}</em></div></div>
       </section>
 
       <section className="distribution-metrics">

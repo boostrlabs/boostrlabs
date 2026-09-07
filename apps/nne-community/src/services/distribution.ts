@@ -6,6 +6,14 @@ export interface DistributionIndex {
   artists: DistributionArtist[];
   metrics: { total: number; in_review: number; approved: number; delivered: number };
   role: string;
+  provider: {
+    key: string;
+    name: string;
+    mode: "sandbox" | "white_label" | "direct_deal";
+    status: "sandbox" | "configuration_required" | "connected" | "paused";
+    ready: boolean;
+    capabilities: Record<string, boolean>;
+  };
 }
 
 export const distributionService = {

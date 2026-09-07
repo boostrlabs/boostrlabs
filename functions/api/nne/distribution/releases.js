@@ -13,6 +13,7 @@ import {
   requireDistributionAccess,
   writeDistributionEvent
 } from "../../../_lib/nne-distribution.js";
+import { distributionProviderState } from "../../../_lib/nne-distribution-provider.js";
 
 const releaseTypes = new Set(["single", "ep", "album"]);
 
@@ -83,7 +84,8 @@ export async function onRequestGet({ request, env }) {
     if (["delivered", "live", "delivered_demo", "live_demo"].includes(release.status)) acc.delivered += 1;
     return acc;
   }, { total: 0, in_review: 0, approved: 0, delivered: 0 });
-  return jsonOk({ releases, artists: artistRows.results || [], metrics: counts, role: auth.distributionRole });
+  const activeProvider = distributionProviderState(env, env.NNE_DISTRIBUTION_PROVIDER || "nne_sandbox");
+  return jsonOk({ releases, artists: artistRows.results || [], metrics: counts, role: auth.distributionRole, provider: activeProvider });
 }
 
 export async function onRequestPost({ request, env }) {

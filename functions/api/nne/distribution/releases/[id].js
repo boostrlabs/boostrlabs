@@ -60,12 +60,13 @@ export async function onRequestPatch({ request, env, params }) {
   const timestamp = now();
   const releaseDate = dateOrNull(payload.release_date ?? current.release_date);
   const copyrightYear = Number(payload.copyright_year ?? current.copyright_year ?? new Date().getUTCFullYear());
+  const activeProviderKey = clean(env.NNE_DISTRIBUTION_PROVIDER || current.provider_key || "nne_sandbox", 80);
   await env.DB.prepare(
     `UPDATE nne_distribution_releases SET
       title=?,release_type=?,version_title=?,label_name=?,catalog_number=?,upc=?,
       primary_genre=?,secondary_genre=?,language_code=?,original_release_date=?,release_date=?,
       copyright_year=?,c_line=?,p_line=?,explicit_content=?,territories_json=?,stores_json=?,
-      rights_confirmed=?,updated_at=?
+      rights_confirmed=?,provider_key=?,updated_at=?
      WHERE id=?`
   ).bind(
     title,
@@ -86,6 +87,7 @@ export async function onRequestPatch({ request, env, params }) {
     JSON.stringify(Array.isArray(payload.territories) && payload.territories.length ? payload.territories.map((item) => clean(item, 20)).filter(Boolean) : current.territories),
     JSON.stringify(Array.isArray(payload.stores) && payload.stores.length ? payload.stores.map((item) => clean(item, 40)).filter(Boolean) : current.stores),
     payload.rights_confirmed ? 1 : 0,
+    activeProviderKey,
     timestamp,
     current.id
   ).run();
