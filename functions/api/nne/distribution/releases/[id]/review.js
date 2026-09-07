@@ -1,9 +1,9 @@
 import { clean, jsonError, jsonOk, now, onOptions, readJson, requireNneAdmin, writeNneAudit } from "../../../../../_lib/nne-api.js";
 import { buildDistributionManifest, loadDistributionRelease, writeDistributionEvent } from "../../../../../_lib/nne-distribution.js";
-import { deliverDistributionPackage } from "../../../../../_lib/nne-distribution-provider.js";
+import { deliverDistributionPackage, deliverDistributionTakedown } from "../../../../../_lib/nne-distribution-provider.js";
 import { requireNneAssets } from "../../../../../_lib/nne-secure-media.js";
 
-const actions = new Set(["approve", "request_changes", "package", "deliver", "mark_live_demo"]);
+const actions = new Set(["approve", "request_changes", "package", "deliver", "mark_live_demo", "send_takedown"]);
 
 export const onRequestOptions = onOptions;
 
@@ -107,6 +107,23 @@ export async function onRequestPost({ request, env, params }) {
     await env.DB.prepare("UPDATE nne_distribution_releases SET status='live_demo',updated_at=? WHERE id=?")
       .bind(timestamp, release.id).run();
     metadata = { ...metadata, environment: "sandbox", simulated: true };
+  }
+
+  if (action === "send_takedown") {
+    if (release.status !== "takedown_requested") return jsonError("nne_distribution_takedown_status", "No existe una solicitud de retiro pendiente.", 409);
+    let providerResult;
+    try {
+      providerResult = await deliverDistributionTakedown(env, {
+        release,
+        reason: release.review_note || note || "Requested by rights holder",
+        idempotencyKey: `takedown:${release.id}:${release.updated_at}`
+      });
+    } catch (error) {
+      return jsonError(error?.code || "nne_distribution_takedown_failed", "El proveedor no aceptó la solicitud de retiro.", 502);
+    }
+    nextStatus = providerResult.environment === "sandbox" ? "taken_down" : "takedown_requested";
+    await env.DB.prepare("UPDATE nne_distribution_releases SET status=?,updated_at=? WHERE id=?").bind(nextStatus, timestamp, release.id).run();
+    metadata = { ...metadata, environment: providerResult.environment, accepted: true };
   }
 
   await writeDistributionEvent(env, release.id, auth.user.id, `release.${action}`, release.status, nextStatus, metadata);

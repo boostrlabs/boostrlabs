@@ -54,6 +54,7 @@ Server-only configuration:
 - `NNE_DISTRIBUTION_PROVIDER_NAME`
 - `NNE_DISTRIBUTION_PROVIDER_ENDPOINT`
 - `NNE_DISTRIBUTION_PROVIDER_TOKEN`
+- `NNE_DISTRIBUTION_PROVIDER_TAKEDOWN_ENDPOINT`
 - `NNE_DISTRIBUTION_PROVIDER_WEBHOOK_SECRET`
 
 The partner reports status to `POST /api/nne/distribution/provider-webhook` with `X-NNE-Signature: sha256=<HMAC-SHA256 of the raw JSON body>`. Normalized payload:

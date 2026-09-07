@@ -75,3 +75,35 @@ export async function deliverDistributionPackage(env, { release, manifest, idemp
     provider_response: body
   };
 }
+
+export async function deliverDistributionTakedown(env, { release, reason, idempotencyKey }) {
+  const provider = distributionProviderState(env, release.provider_key);
+  if (provider.mode === "sandbox") return { accepted: true, environment: "sandbox" };
+  const endpoint = clean(env.NNE_DISTRIBUTION_PROVIDER_TAKEDOWN_ENDPOINT, 500);
+  if (!endpoint || !env.NNE_DISTRIBUTION_PROVIDER_TOKEN) {
+    const error = new Error("distribution_takedown_not_configured");
+    error.code = "distribution_takedown_not_configured";
+    throw error;
+  }
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${env.NNE_DISTRIBUTION_PROVIDER_TOKEN}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey
+    },
+    body: JSON.stringify({
+      schema: "nne-distribution-takedown/1.0",
+      release_id: release.id,
+      provider_release_id: release.provider_release_id,
+      reason
+    })
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(clean(body?.message || `Provider respondió HTTP ${response.status}.`, 500));
+    error.code = "distribution_takedown_rejected";
+    throw error;
+  }
+  return { accepted: true, environment: "production", provider_response: body };
+}

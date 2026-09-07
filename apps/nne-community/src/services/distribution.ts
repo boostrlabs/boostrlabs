@@ -39,8 +39,10 @@ export const distributionService = {
     ),
   submit: (id: string) =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/submit`, { method: "POST" }),
-  review: (id: string, action: "approve" | "request_changes" | "package" | "deliver" | "mark_live_demo", note = "") =>
+  review: (id: string, action: "approve" | "request_changes" | "package" | "deliver" | "mark_live_demo" | "send_takedown", note = "") =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify({ action, note }) }),
+  requestTakedown: (id: string, reason: string) =>
+    apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/takedown`, { method: "POST", body: JSON.stringify({ reason }) }),
   finance: () => apiRequest<DistributionFinance & { ok: true }>("/distribution/finance"),
   importStatement: (payload: {
     provider_key: string;
