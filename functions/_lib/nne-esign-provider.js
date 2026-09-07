@@ -36,7 +36,8 @@ async function jwtAccessToken(env) {
 
 export function esignProviderState(env) {
   const ready = Boolean(env.NNE_DOCUSIGN_ACCOUNT_ID && env.NNE_DOCUSIGN_INTEGRATION_KEY && env.NNE_DOCUSIGN_USER_ID && (env.NNE_DOCUSIGN_PRIVATE_KEY || env.NNE_DOCUSIGN_ACCESS_TOKEN));
-  return { key: "docusign", ready, mode: "external_esign", status: ready ? "connected" : "configuration_required" };
+  const webhooksReady = Boolean(env.NNE_DOCUSIGN_HMAC_SECRET && env.NNE_PUBLIC_URL);
+  return { key: "docusign", ready, webhooks_ready: webhooksReady, mode: "external_esign", status: ready ? "connected" : "configuration_required" };
 }
 
 const apiBase = (env) => `${String(env.NNE_DOCUSIGN_BASE_URI || "https://demo.docusign.net/restapi").replace(/\/$/, "")}/v2.1/accounts/${encodeURIComponent(env.NNE_DOCUSIGN_ACCOUNT_ID)}`;
@@ -57,6 +58,12 @@ export async function sendDocusignEnvelope(env, agreement, pdf, signers, signatu
         email: signer.participant_email, name: signer.participant_name, recipientId: String(index + 1), routingOrder: "1",
         tabs: { signHereTabs: [{ documentId: "1", pageNumber: String(signaturePage), xPosition: "48", yPosition: String(440 + index * 38) }] }
       })) },
+      ...(env.NNE_DOCUSIGN_HMAC_SECRET && env.NNE_PUBLIC_URL ? { eventNotification: {
+        url: `${String(env.NNE_PUBLIC_URL).replace(/\/$/, "")}/api/nne/distribution/docusign-webhook`,
+        loggingEnabled: "true", requireAcknowledgment: "true", deliveryMode: "SIM", includeHMAC: "true",
+        eventData: { version: "restv2.1", format: "json", includeData: ["recipients"] },
+        envelopeEvents: ["sent", "delivered", "completed", "declined", "voided"].map((envelopeEventStatusCode) => ({ envelopeEventStatusCode }))
+      } } : {}),
       status: "sent"
     })
   });

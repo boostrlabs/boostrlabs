@@ -54,6 +54,10 @@ DocuSign secrets:
 - `NNE_DOCUSIGN_PRIVATE_KEY` (PKCS#8 PEM)
 - `NNE_DOCUSIGN_AUTH_BASE` (`https://account-d.docusign.com` in demo)
 - `NNE_DOCUSIGN_BASE_URI` (`https://demo.docusign.net/restapi` in demo)
+- `NNE_DOCUSIGN_HMAC_SECRET` (Connect HMAC key; never expose it to the browser)
+- `NNE_PUBLIC_URL` (used to attach the per-envelope Connect callback)
+
+When the HMAC secret and public URL are configured, every new envelope includes a per-envelope Connect callback at `/api/nne/distribution/docusign-webhook`. The listener verifies `X-DocuSign-Signature-N`, deduplicates events, updates the agreement automatically, and archives the combined executed PDF after completion. The manual refresh button remains as a recovery path.
 
 The integration user must grant impersonation consent before JWT works. Production requires DocuSign go-live approval and a reviewed contract template.
 
