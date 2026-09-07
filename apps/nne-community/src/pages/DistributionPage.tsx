@@ -360,7 +360,7 @@ export function DistributionPage() {
       for (const [index, file] of orderedFiles.entries()) {
         const track = orderedTracks[index];
         setUploadProgress(`${index + 1}/${orderedFiles.length} · ${track.title}`);
-        const result = await distributionService.uploadAsset(release.id, "master", file, track.id);
+        const result = await distributionService.uploadMasterMultipart(release.id, track.id, file, (percent) => setUploadProgress(`${index + 1}/${orderedFiles.length} · ${track.title} · ${percent}%`));
         latest = result.release;
       }
       replaceRelease(latest, `${orderedFiles.length} masters protegidos y enlazados al tracklist.`);
@@ -375,9 +375,11 @@ export function DistributionPage() {
   const uploadSingleMaster = async (track: DistributionTrack, file: File) => {
     try {
       validateMasterFile(file);
-      await run(() => distributionService.uploadAsset(release!.id, "master", file, track.id), `${track.title}: master protegido.`);
+      await run(() => distributionService.uploadMasterMultipart(release!.id, track.id, file, (percent) => setUploadProgress(`${track.title} · ${percent}%`)), `${track.title}: master protegido.`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "El master no es válido.");
+    } finally {
+      setUploadProgress("");
     }
   };
 

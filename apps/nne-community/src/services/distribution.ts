@@ -37,6 +37,39 @@ export const distributionService = {
         "X-File-Name": file.name
       }, body: file }
     ),
+  uploadMasterMultipart: async (releaseId: string, trackId: string, file: File, onProgress?: (percent: number) => void) => {
+    const format = file.name.toLowerCase().endsWith(".flac") ? "flac" : "wav";
+    const base = `/distribution/releases/${encodeURIComponent(releaseId)}/assets?kind=master&track_id=${encodeURIComponent(trackId)}&format=${format}`;
+    const created = await apiRequest<{ ok: true; upload_id: string }>(`${base}&action=mpu-create`, {
+      method: "POST",
+      headers: { "X-File-Name": file.name, "X-File-Size": String(file.size) }
+    });
+    const parts: Array<{ partNumber: number; etag: string }> = [];
+    const chunkSize = 20 * 1024 * 1024;
+    try {
+      for (let offset = 0, partNumber = 1; offset < file.size; offset += chunkSize, partNumber += 1) {
+        const chunk = file.slice(offset, Math.min(offset + chunkSize, file.size));
+        let uploaded: { ok: true; partNumber: number; etag: string } | undefined;
+        for (let attempt = 1; attempt <= 3 && !uploaded; attempt += 1) {
+          try {
+            uploaded = await apiRequest<{ ok: true; partNumber: number; etag: string }>(`${base}&action=mpu-uploadpart&upload_id=${encodeURIComponent(created.upload_id)}&part_number=${partNumber}`, {
+              method: "PUT", headers: { "Content-Type": "application/octet-stream" }, body: chunk
+            });
+          } catch (error) { if (attempt === 3) throw error; }
+        }
+        parts.push({ partNumber: uploaded!.partNumber, etag: uploaded!.etag });
+        onProgress?.(Math.min(99, Math.round((Math.min(offset + chunkSize, file.size) / file.size) * 100)));
+      }
+      const complete = await apiRequest<{ ok: true; release: DistributionRelease }>(`${base}&action=mpu-complete&upload_id=${encodeURIComponent(created.upload_id)}`, {
+        method: "POST", body: JSON.stringify({ parts, original_name: file.name })
+      });
+      onProgress?.(100);
+      return complete;
+    } catch (error) {
+      await apiRequest(`${base}&action=mpu-abort&upload_id=${encodeURIComponent(created.upload_id)}`, { method: "DELETE" }).catch(() => undefined);
+      throw error;
+    }
+  },
   submit: (id: string) =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/submit`, { method: "POST" }),
   review: (id: string, action: "approve" | "request_changes" | "package" | "deliver" | "mark_live_demo" | "send_takedown", note = "") =>

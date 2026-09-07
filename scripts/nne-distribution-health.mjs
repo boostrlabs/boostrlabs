@@ -57,4 +57,7 @@ assert.match(providerEventMigration, /UNIQUE\(provider_key, external_event_id\)/
 const providerWebhook = await readFile(new URL("functions/api/nne/distribution/provider-webhook.js", root), "utf8");
 assert.match(providerWebhook, /NNE_DISTRIBUTION_PROVIDER_WEBHOOK_SECRET/);
 assert.match(providerWebhook, /verifyMetaSignature/);
+const assetUpload = await readFile(new URL("functions/api/nne/distribution/releases/[id]/assets.js", root), "utf8");
+assert.match(assetUpload, /createMultipartUpload/);
+assert.match(assetUpload, /resumeMultipartUpload/);
 console.log("NNE Distribution OS health: OK");
