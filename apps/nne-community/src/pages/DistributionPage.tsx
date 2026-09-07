@@ -201,6 +201,30 @@ export function DistributionPage() {
     }
   };
 
+  const updateArtist = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const values = new FormData(event.currentTarget);
+    setSaving(true);
+    setError("");
+    try {
+      const result = await distributionService.updateArtist({
+        artist_id: String(values.get("artist_id") || ""),
+        name: String(values.get("name") || ""),
+        instagram_handle: String(values.get("instagram_handle") || "").replace(/^@/, ""),
+        country_code: String(values.get("country_code") || ""),
+        primary_genre: String(values.get("primary_genre") || ""),
+        spotify_artist_id: String(values.get("spotify_artist_id") || ""),
+        apple_music_artist_id: String(values.get("apple_music_artist_id") || "")
+      });
+      setIndex(await distributionService.list());
+      setNotice(`${result.artist.name}: identidad DSP actualizada.`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos actualizar el perfil artístico.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const requestPayout = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -526,6 +550,25 @@ export function DistributionPage() {
           {inviteUrl && <div className="distribution-invite-result"><code>{inviteUrl}</code><button onClick={() => void navigator.clipboard.writeText(inviteUrl)}>Copiar link</button></div>}
         </section>
       )}
+
+      <section className="card distribution-artist-identities">
+        <div><div className="eyebrow">ARTIST IDENTITY</div><h3>Identidades oficiales en las tiendas</h3><p>Guarda los IDs existentes para evitar que un lanzamiento termine en el perfil equivocado.</p></div>
+        <div className="distribution-artist-identity-list">
+          {index.artists.map((artist) => <details key={artist.id}>
+            <summary><strong>{artist.name}</strong><span>{artist.spotify_artist_id || artist.apple_music_artist_id ? "DSP enlazados" : "Completar IDs"}</span></summary>
+            <form onSubmit={updateArtist}>
+              <input name="artist_id" type="hidden" value={artist.id} />
+              <input className="field" name="name" defaultValue={artist.name} required placeholder="Nombre artístico" />
+              <input className="field" name="instagram_handle" defaultValue={artist.instagram_handle || ""} placeholder="@Instagram" />
+              <input className="field" name="country_code" defaultValue={artist.country_code || ""} maxLength={2} placeholder="País · VE" />
+              <input className="field" name="primary_genre" defaultValue={artist.primary_genre || ""} placeholder="Género principal" />
+              <input className="field" name="spotify_artist_id" defaultValue={artist.spotify_artist_id || ""} placeholder="Spotify Artist ID" />
+              <input className="field" name="apple_music_artist_id" defaultValue={artist.apple_music_artist_id || ""} placeholder="Apple Music Artist ID" />
+              <button className="primary-button" disabled={saving}>Guardar identidad</button>
+            </form>
+          </details>)}
+        </div>
+      </section>
 
       <div className="distribution-toolbar">
         <div><strong>Mi catálogo</strong><span>Cada artista trabaja únicamente dentro de su acceso.</span></div>

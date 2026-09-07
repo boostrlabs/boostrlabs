@@ -264,7 +264,11 @@ export interface DistributionArtist {
   id: string;
   slug: string;
   name: string;
+  country_code?: string | null;
+  primary_genre?: string | null;
   instagram_handle?: string | null;
+  spotify_artist_id?: string | null;
+  apple_music_artist_id?: string | null;
 }
 
 export interface DistributionFinance {

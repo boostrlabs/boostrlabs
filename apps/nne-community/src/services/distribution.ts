@@ -46,6 +46,8 @@ export const distributionService = {
     apiRequest<{ ok: true; payout_id: string; status: string }>("/distribution/finance", { method: "POST", body: JSON.stringify({ action: "request_payout", ...payload }) }),
   createArtist: (payload: { name: string; instagram_handle?: string; country_code?: string; primary_genre?: string }) =>
     apiRequest<{ ok: true; artist: DistributionArtist }>("/distribution/artists", { method: "POST", body: JSON.stringify(payload) }),
+  updateArtist: (payload: { artist_id: string; name: string; instagram_handle?: string; country_code?: string; primary_genre?: string; spotify_artist_id?: string; apple_music_artist_id?: string }) =>
+    apiRequest<{ ok: true; artist: DistributionArtist }>("/distribution/artists", { method: "PATCH", body: JSON.stringify(payload) }),
   createInvite: (payload: { artist_id: string; email?: string; username?: string; role: "artist" | "manager" }) =>
     apiRequest<{ ok: true; invite: { id: string; artist_name: string; role: string; expires_at: string; invite_url: string } }>("/distribution/invites", { method: "POST", body: JSON.stringify(payload) })
 };
