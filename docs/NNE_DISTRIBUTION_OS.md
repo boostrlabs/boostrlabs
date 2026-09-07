@@ -48,6 +48,28 @@ Submission is blocked until the release has:
 
 The current `nne_sandbox` adapter writes the manifest to private R2 and simulates an accepted delivery. A generic server-only HTTP adapter is already present: configure the provider key/name/endpoint/token and add the partner-specific metadata mapping without modifying the artist experience.
 
+Server-only configuration:
+
+- `NNE_DISTRIBUTION_PROVIDER`
+- `NNE_DISTRIBUTION_PROVIDER_NAME`
+- `NNE_DISTRIBUTION_PROVIDER_ENDPOINT`
+- `NNE_DISTRIBUTION_PROVIDER_TOKEN`
+- `NNE_DISTRIBUTION_PROVIDER_WEBHOOK_SECRET`
+
+The partner reports status to `POST /api/nne/distribution/provider-webhook` with `X-NNE-Signature: sha256=<HMAC-SHA256 of the raw JSON body>`. Normalized payload:
+
+```json
+{
+  "event_id": "partner-event-unique-id",
+  "provider_key": "partner_key",
+  "provider_release_id": "partner-release-id",
+  "status": "accepted | delivered | live | rejected | takedown_requested | taken_down",
+  "message": "optional rejection reason"
+}
+```
+
+Provider events are idempotent and recorded before they change release state.
+
 ## Production gate
 
 The feature remains a demo until all of the following are complete:
@@ -55,7 +77,7 @@ The feature remains a demo until all of the following are complete:
 - provider agreement and sandbox credentials;
 - partner metadata mapping and validation tests;
 - update/takedown flow;
-- webhook replay and signature tests;
+- partner-specific webhook fixture tests;
 - partner royalty report mapping and reconciliation tests (the statement ledger/import path already exists);
 - legal review of artist agreement and rights attestation;
 - isolated staging D1/R2 resources;
@@ -66,4 +88,4 @@ The feature remains a demo until all of the following are complete:
 
 Run `node scripts/nne-distribution-health.mjs`, build the frontend, and then run `node scripts/prepare-nne-deploy.mjs`.
 
-Migration: `migrations/0028_nne_distribution_os.sql`.
+Migrations: `migrations/0028_nne_distribution_os.sql` and `migrations/0029_nne_distribution_provider_events.sql`.

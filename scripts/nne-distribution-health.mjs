@@ -52,4 +52,9 @@ assert.equal(releaseReadiness(baseRelease, tracks, contributors, [{ ...splits[0]
 
 const packageScript = await readFile(new URL("scripts/prepare-nne-deploy.mjs", root), "utf8");
 assert.match(packageScript, /functions\/api\/nne/);
+const providerEventMigration = await readFile(new URL("migrations/0029_nne_distribution_provider_events.sql", root), "utf8");
+assert.match(providerEventMigration, /UNIQUE\(provider_key, external_event_id\)/);
+const providerWebhook = await readFile(new URL("functions/api/nne/distribution/provider-webhook.js", root), "utf8");
+assert.match(providerWebhook, /NNE_DISTRIBUTION_PROVIDER_WEBHOOK_SECRET/);
+assert.match(providerWebhook, /verifyMetaSignature/);
 console.log("NNE Distribution OS health: OK");
