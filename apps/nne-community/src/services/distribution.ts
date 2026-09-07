@@ -81,6 +81,7 @@ export const distributionService = {
   saveCompliance: (payload: { artist_id: string; legal_name: string; entity_type: "individual" | "business"; tax_residency_country: string; address_country: string; payout_method?: string; payout_destination_hint?: string }) =>
     apiRequest<{ ok: true; profile_id: string; tax_form_type: string; tax_status: string }>("/distribution/compliance", { method: "PATCH", body: JSON.stringify(payload) }),
   uploadTaxDocument: (artistId: string, file: File) => apiRequest<{ ok: true; profile_id: string; tax_status: string; document_uploaded: boolean }>(`/distribution/compliance?artist_id=${encodeURIComponent(artistId)}`, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file }),
+  taxDocumentUrl: (artistId: string) => `/api/nne/distribution/compliance/${encodeURIComponent(artistId)}/document`,
   reviewCompliance: (artist_id: string, decision: "verified" | "rejected", note = "") =>
     apiRequest<{ ok: true; profile_id: string; tax_status: string }>("/distribution/compliance", { method: "POST", body: JSON.stringify({ artist_id, decision, note }) }),
   splitAgreements: (releaseId: string) => apiRequest<{ ok: true; agreements: DistributionSplitAgreement[]; provider: { key: string; ready: boolean; mode: string } }>(`/distribution/split-agreements?release_id=${encodeURIComponent(releaseId)}`),

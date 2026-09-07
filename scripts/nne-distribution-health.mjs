@@ -76,4 +76,8 @@ assert.match(splitApi, /sendDocusignEnvelope/);
 const esignProvider = await readFile(new URL("functions/_lib/nne-esign-provider.js", root), "utf8");
 assert.match(esignProvider, /RSASSA-PKCS1-v1_5/);
 assert.match(esignProvider, /\/v2\.1\/accounts/);
+const taxDocumentApi = await readFile(new URL("functions/api/nne/distribution/compliance/[artistId]/document.js", root), "utf8");
+assert.match(taxDocumentApi, /requireDistributionAccess/);
+assert.match(taxDocumentApi, /Cache-Control": "private, no-store/);
+assert.match(taxDocumentApi, /Content-Security-Policy/);
 console.log("NNE Distribution OS health: OK");

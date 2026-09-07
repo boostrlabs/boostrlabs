@@ -667,7 +667,7 @@ export function DistributionPage() {
               </form>
               {profile.id && <label className="tax-upload">{profile.document_uploaded ? "Reemplazar PDF fiscal" : "Subir PDF fiscal firmado"}<input type="file" accept="application/pdf" disabled={saving} onChange={(event) => void uploadTaxDocument(profile.artist_id, event.target.files?.[0])} /></label>}
               {profile.review_note && <small className="tax-note">Nota: {profile.review_note}</small>}
-              {user?.role === "admin" && profile.document_uploaded ? <div className="payout-actions"><button disabled={saving} onClick={() => void reviewCompliance(profile.artist_id, "verified")}>Verificar</button><button disabled={saving} onClick={() => void reviewCompliance(profile.artist_id, "rejected")}>Pedir corrección</button></div> : null}
+              {profile.document_uploaded ? <div className="payout-actions"><a className="secondary-button" href={distributionService.taxDocumentUrl(profile.artist_id)} target="_blank" rel="noreferrer">Revisar PDF</a>{user?.role === "admin" && <><button disabled={saving} onClick={() => void reviewCompliance(profile.artist_id, "verified")}>Verificar</button><button disabled={saving} onClick={() => void reviewCompliance(profile.artist_id, "rejected")}>Pedir corrección</button></>}</div> : null}
             </details>)}</div>
           </article>
           <article className="card distribution-payouts">
