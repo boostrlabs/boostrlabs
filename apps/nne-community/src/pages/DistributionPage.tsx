@@ -257,6 +257,20 @@ export function DistributionPage() {
     }
   };
 
+  const updatePayout = async (payoutId: string, status: "approved" | "processing" | "paid" | "failed" | "cancelled") => {
+    setSaving(true);
+    setError("");
+    try {
+      await distributionService.updatePayout(payoutId, status);
+      setFinance(await distributionService.finance());
+      setNotice(`Payout actualizado: ${status}.`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos actualizar el pago.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const downloadStatementTemplate = () => {
     const exampleArtist = index?.artists[0]?.slug || "nombre-artista";
     const csv = `${statementColumns.join(",")}\n${exampleArtist},,,spotify,US,stream,1000,4.25,0.64,3.61,2026-08-31\n`;
@@ -542,7 +556,12 @@ export function DistributionPage() {
               <input name="destination_hint" className="field" placeholder="Alias o referencia; nunca contraseña" />
               <button className="primary-button" disabled={saving}>Enviar solicitud</button>
             </form>}
-            {finance?.payouts.map((payout) => <div className="payout-row" key={payout.id}><span><strong>{payout.artist_name}</strong><small>{payout.status} · {formatRelativeDate(payout.requested_at)}</small></span><b>{formatMoney(payout.amount_micros, payout.currency)}</b></div>)}
+            {finance?.payouts.map((payout) => <div className="payout-row" key={payout.id}><span><strong>{payout.artist_name}</strong><small>{payout.status} · {formatRelativeDate(payout.requested_at)}</small></span><b>{formatMoney(payout.amount_micros, payout.currency)}</b>{user?.role === "admin" && <span className="payout-actions">
+              {payout.status === "requested" && <><button disabled={saving} onClick={() => void updatePayout(payout.id, "approved")}>Aprobar</button><button disabled={saving} onClick={() => void updatePayout(payout.id, "cancelled")}>Cancelar</button></>}
+              {payout.status === "approved" && <button disabled={saving} onClick={() => void updatePayout(payout.id, "processing")}>Procesar</button>}
+              {payout.status === "processing" && <><button disabled={saving} onClick={() => void updatePayout(payout.id, "paid")}>Marcar pagado</button><button disabled={saving} onClick={() => void updatePayout(payout.id, "failed")}>Falló</button></>}
+              {payout.status === "failed" && <button disabled={saving} onClick={() => void updatePayout(payout.id, "processing")}>Reintentar</button>}
+            </span>}</div>)}
             {!finance?.payouts.length && <p>No hay retiros solicitados.</p>}
           </article>
         </section>

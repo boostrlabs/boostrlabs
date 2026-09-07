@@ -12,6 +12,12 @@ import { requireDistributionAccess } from "../../../_lib/nne-distribution.js";
 
 const currencyPattern = /^[A-Z]{3}$/;
 const payoutStatuses = new Set(["approved", "processing", "paid", "failed", "cancelled"]);
+const payoutTransitions = {
+  requested: new Set(["approved", "cancelled"]),
+  approved: new Set(["processing", "cancelled"]),
+  processing: new Set(["paid", "failed"]),
+  failed: new Set(["processing", "cancelled"])
+};
 
 export const onRequestOptions = onOptions;
 
@@ -220,10 +226,15 @@ async function updatePayout(request, env, payload) {
   const payoutId = clean(payload.payout_id, 120);
   const status = clean(payload.status, 30);
   if (!payoutId || !payoutStatuses.has(status)) return jsonError("nne_distribution_payout_status", "Estado de pago no válido.", 400);
+  const current = await env.DB.prepare("SELECT status FROM nne_distribution_payouts WHERE id=? LIMIT 1").bind(payoutId).first();
+  if (!current?.status) return jsonError("nne_distribution_payout_not_found", "Pago no encontrado.", 404);
+  if (!payoutTransitions[current.status]?.has(status)) {
+    return jsonError("nne_distribution_payout_transition", `No se puede pasar de ${current.status} a ${status}.`, 409);
+  }
   const timestamp = now();
   const result = await env.DB.prepare(
-    `UPDATE nne_distribution_payouts SET status=?,reviewed_by=?,reviewed_at=?,paid_at=? WHERE id=?`
-  ).bind(status, auth.user.id, timestamp, status === "paid" ? timestamp : null, payoutId).run();
+    `UPDATE nne_distribution_payouts SET status=?,reviewed_by=?,reviewed_at=?,paid_at=? WHERE id=? AND status=?`
+  ).bind(status, auth.user.id, timestamp, status === "paid" ? timestamp : null, payoutId, current.status).run();
   if (!result.meta?.changes) return jsonError("nne_distribution_payout_not_found", "Pago no encontrado.", 404);
   await writeNneAudit(env, request, auth.user.id, "distribution.payout_updated", "nne_distribution_payout", payoutId, { status });
   return jsonOk({ payout_id: payoutId, status });

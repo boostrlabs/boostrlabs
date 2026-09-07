@@ -57,6 +57,8 @@ export const distributionService = {
   }),
   requestPayout: (payload: { artist_id: string; currency: string; amount_micros: number; method: string; destination_hint?: string }) =>
     apiRequest<{ ok: true; payout_id: string; status: string }>("/distribution/finance", { method: "POST", body: JSON.stringify({ action: "request_payout", ...payload }) }),
+  updatePayout: (payout_id: string, status: "approved" | "processing" | "paid" | "failed" | "cancelled") =>
+    apiRequest<{ ok: true; payout_id: string; status: string }>("/distribution/finance", { method: "POST", body: JSON.stringify({ action: "update_payout", payout_id, status }) }),
   createArtist: (payload: { name: string; instagram_handle?: string; country_code?: string; primary_genre?: string }) =>
     apiRequest<{ ok: true; artist: DistributionArtist }>("/distribution/artists", { method: "POST", body: JSON.stringify(payload) }),
   updateArtist: (payload: { artist_id: string; name: string; instagram_handle?: string; country_code?: string; primary_genre?: string; spotify_artist_id?: string; apple_music_artist_id?: string }) =>

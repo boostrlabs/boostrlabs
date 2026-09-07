@@ -1433,6 +1433,9 @@ select.field { color-scheme: dark; }
 .distribution-ledger, .distribution-payouts { padding: 24px; }
 .distribution-ledger h3, .distribution-payouts h3 { margin: 8px 0 18px; }
 .distribution-ledger > div:not(.eyebrow), .payout-row { padding: 12px 0; display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); }
+.payout-row { flex-wrap: wrap; align-items: center; }
+.payout-actions { width: 100%; display: flex; gap: 7px; }
+.payout-actions button { padding: 7px 10px; color: var(--text); border: 1px solid var(--line); border-radius: 8px; background: #151416; font-size: .68rem; font-weight: 800; }
 .distribution-ledger span strong, .distribution-ledger span small, .payout-row strong, .payout-row small { display: block; }
 .distribution-ledger small, .payout-row small, .distribution-ledger > p, .distribution-payouts > p { margin-top: 4px; color: var(--muted); }
 .distribution-payouts form { margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
