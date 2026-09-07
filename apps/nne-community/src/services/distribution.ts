@@ -29,6 +29,8 @@ export const distributionService = {
   review: (id: string, action: "approve" | "request_changes" | "package" | "deliver" | "mark_live_demo", note = "") =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify({ action, note }) }),
   finance: () => apiRequest<DistributionFinance & { ok: true }>("/distribution/finance"),
+  requestPayout: (payload: { artist_id: string; currency: string; amount_micros: number; method: string; destination_hint?: string }) =>
+    apiRequest<{ ok: true; payout_id: string; status: string }>("/distribution/finance", { method: "POST", body: JSON.stringify({ action: "request_payout", ...payload }) }),
   createArtist: (payload: { name: string; instagram_handle?: string; country_code?: string; primary_genre?: string }) =>
     apiRequest<{ ok: true; artist: DistributionArtist }>("/distribution/artists", { method: "POST", body: JSON.stringify(payload) }),
   createInvite: (payload: { artist_id: string; email?: string; username?: string; role: "artist" | "manager" }) =>

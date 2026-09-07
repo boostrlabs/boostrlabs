@@ -1409,6 +1409,14 @@ select.field { color-scheme: dark; }
 .distribution-invite-result { grid-column: 1 / -1; padding: 12px; display: flex; gap: 9px; align-items: center; border: 1px solid rgba(89,223,145,.25); border-radius: 12px; background: rgba(89,223,145,.06); }
 .distribution-invite-result code { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #89eeb3; }
 .distribution-invite-result button { padding: 9px 12px; border: 0; border-radius: 9px; font-weight: 800; }
+.distribution-finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.distribution-ledger, .distribution-payouts { padding: 24px; }
+.distribution-ledger h3, .distribution-payouts h3 { margin: 8px 0 18px; }
+.distribution-ledger > div:not(.eyebrow), .payout-row { padding: 12px 0; display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); }
+.distribution-ledger span strong, .distribution-ledger span small, .payout-row strong, .payout-row small { display: block; }
+.distribution-ledger small, .payout-row small, .distribution-ledger > p, .distribution-payouts > p { margin-top: 4px; color: var(--muted); }
+.distribution-payouts form { margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.distribution-payouts form button { grid-column: 1 / -1; }
 .distribution-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 0; }
 .distribution-toolbar strong, .distribution-toolbar span { display: block; }
 .distribution-toolbar span { margin-top: 3px; color: var(--muted); font-size: .8rem; }
@@ -1526,6 +1534,7 @@ select.field { color-scheme: dark; }
   .release-tile { min-width: 230px; }
   .distribution-create { grid-template-columns: 1fr 1fr; }
   .distribution-money, .distribution-onboarding { grid-template-columns: 1fr; }
+  .distribution-finance-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .distribution-hero { min-height: 0; }
@@ -1541,6 +1550,7 @@ select.field { color-scheme: dark; }
   .track-file-row > div { margin-right: 0; }
   .file-button, .track-file-row button { text-align: center; }
   .distribution-money-stats, .distribution-onboarding-forms { grid-template-columns: 1fr; }
+  .distribution-payouts form { grid-template-columns: 1fr; }
   .distribution-money-stats span { border-right: 0; border-bottom: 1px solid var(--line); }
   .distribution-money-stats span:last-child { border-bottom: 0; }
 }

@@ -172,6 +172,31 @@ export function DistributionPage() {
     }
   };
 
+  const requestPayout = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    const amount = Number(values.get("amount") || 0);
+    setSaving(true);
+    setError("");
+    try {
+      await distributionService.requestPayout({
+        artist_id: String(values.get("artist_id")),
+        currency: String(values.get("currency") || "USD"),
+        amount_micros: Math.round(amount * 1_000_000),
+        method: String(values.get("method") || "manual"),
+        destination_hint: String(values.get("destination_hint") || "")
+      });
+      setFinance(await distributionService.finance());
+      setNotice("Solicitud de pago enviada a NNE Finance.");
+      form.reset();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos solicitar el pago.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const patchRelease = (field: keyof DistributionRelease, value: unknown) => {
     setRelease((current) => current ? { ...current, [field]: value } : current);
   };
@@ -270,6 +295,31 @@ export function DistributionPage() {
           <span><small>STATEMENTS</small><strong>{finance?.statements.length || 0}</strong></span>
         </div>
       </section>
+
+      {(finance?.statements.length || finance?.payouts.length || Number(finance?.balances[0]?.available_micros || 0) > 0) ? (
+        <section className="distribution-finance-grid">
+          <article className="card distribution-ledger">
+            <div className="eyebrow">STATEMENTS DSP</div>
+            <h3>Reportes recibidos</h3>
+            {finance?.statements.map((statement) => <div key={statement.id}><span><strong>{statement.provider_key}</strong><small>{statement.period_start} → {statement.period_end} · {statement.line_count} líneas</small></span><b>{formatMoney(statement.net_micros, statement.currency)}</b></div>)}
+            {!finance?.statements.length && <p>Todavía no hay reportes importados.</p>}
+          </article>
+          <article className="card distribution-payouts">
+            <div className="eyebrow">PAYOUTS</div>
+            <h3>Solicitar retiro</h3>
+            {user?.role !== "admin" && Number(finance?.balances[0]?.available_micros || 0) > 0 && <form onSubmit={requestPayout}>
+              <select className="field" name="artist_id" required>{index.artists.map((artist) => <option value={artist.id} key={artist.id}>{artist.name}</option>)}</select>
+              <input name="amount" className="field" type="number" min="0.01" step="0.01" required placeholder="Monto" />
+              <input name="currency" type="hidden" value={finance?.balances[0]?.currency || "USD"} />
+              <select className="field" name="method"><option value="manual">Método acordado con NNE</option><option value="paypal">PayPal</option><option value="wire">Transferencia</option></select>
+              <input name="destination_hint" className="field" placeholder="Alias o referencia; nunca contraseña" />
+              <button className="primary-button" disabled={saving}>Enviar solicitud</button>
+            </form>}
+            {finance?.payouts.map((payout) => <div className="payout-row" key={payout.id}><span><strong>{payout.artist_name}</strong><small>{payout.status} · {formatRelativeDate(payout.requested_at)}</small></span><b>{formatMoney(payout.amount_micros, payout.currency)}</b></div>)}
+            {!finance?.payouts.length && <p>No hay retiros solicitados.</p>}
+          </article>
+        </section>
+      ) : null}
 
       {user?.role === "admin" && (
         <section className="card distribution-onboarding">
