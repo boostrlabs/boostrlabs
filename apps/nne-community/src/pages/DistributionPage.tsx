@@ -18,16 +18,11 @@ const statusCopy: Record<string, string> = {
   taken_down: "Retirado"
 };
 
-const contributorLabels: Record<string, string> = {
-  primary_artist: "Artista principal",
-  featured_artist: "Featuring",
-  producer: "Producción",
-  songwriter: "Composición",
-  composer: "Composición musical",
-  publisher: "Publisher",
-  mix_engineer: "Mezcla",
-  mastering_engineer: "Mastering"
-};
+const storeOptions = [
+  ["spotify", "Spotify"], ["apple_music", "Apple Music"], ["youtube_music", "YouTube Music"],
+  ["amazon_music", "Amazon Music"], ["deezer", "Deezer"], ["tidal", "TIDAL"],
+  ["tiktok", "TikTok"], ["meta", "Instagram / Facebook"]
+] as const;
 
 const contributorsText = (track: DistributionTrack, role: DistributionContributor["role"]) =>
   track.contributors.filter((item) => item.role === role).map((item) => item.name).join(", ");
@@ -246,6 +241,13 @@ export function DistributionPage() {
     setRelease((current) => current ? { ...current, [field]: value } : current);
   };
 
+  const toggleStore = (store: string) => {
+    setRelease((current) => current ? {
+      ...current,
+      stores: current.stores.includes(store) ? current.stores.filter((item) => item !== store) : [...current.stores, store]
+    } : current);
+  };
+
   const patchTrack = (trackId: string, field: keyof DistributionTrack, value: unknown) => {
     setRelease((current) => current ? {
       ...current,
@@ -449,6 +451,8 @@ export function DistributionPage() {
                 <label>Número de catálogo<input className="field" value={release.catalog_number || ""} onChange={(event) => patchRelease("catalog_number", event.target.value)} placeholder="NNE-2026-001" /></label>
                 <label className="wide">Línea ©<input className="field" value={release.c_line || ""} onChange={(event) => patchRelease("c_line", event.target.value)} /></label>
                 <label className="wide">Línea ℗<input className="field" value={release.p_line || ""} onChange={(event) => patchRelease("p_line", event.target.value)} /></label>
+                <label className="wide">Territorios<input className="field" value={release.territories.join(", ")} onChange={(event) => patchRelease("territories", event.target.value.split(",").map((item) => item.trim().toUpperCase()).filter(Boolean))} placeholder="WORLDWIDE o US, VE, MX" /></label>
+                <fieldset className="wide distribution-store-picker"><legend>Plataformas</legend>{storeOptions.map(([value, label]) => <label key={value}><input type="checkbox" checked={release.stores.includes(value)} onChange={() => toggleStore(value)} />{label}</label>)}</fieldset>
               </div>
             </section>
 
@@ -541,9 +545,11 @@ function TrackEditor({ track, locked, busy, onField, onContributors, onSplits, o
           <label>Título<input className="field" disabled={locked} value={track.title} onChange={(event) => onField("title", event.target.value)} /></label>
           <label>Artist display<input className="field" disabled={locked} value={track.artist_display} onChange={(event) => onField("artist_display", event.target.value)} /></label>
           <label>ISRC<input className="field" disabled={locked} value={track.isrc || ""} onChange={(event) => onField("isrc", event.target.value)} placeholder="Se puede asignar después" /></label>
+          <label>Artista principal<input className="field" disabled={locked} value={contributorsText(track, "primary_artist")} onChange={(event) => onContributors("primary_artist", event.target.value)} placeholder="Separados por coma" /></label>
           <label>Featuring<input className="field" disabled={locked} value={contributorsText(track, "featured_artist")} onChange={(event) => onContributors("featured_artist", event.target.value)} placeholder="Separados por coma" /></label>
           <label>Productores<input className="field" disabled={locked} value={contributorsText(track, "producer")} onChange={(event) => onContributors("producer", event.target.value)} placeholder="Separados por coma" /></label>
           <label>Compositores<input className="field" disabled={locked} value={contributorsText(track, "songwriter")} onChange={(event) => onContributors("songwriter", event.target.value)} placeholder="Separados por coma" /></label>
+          <label className="distribution-track-flags"><span><input type="checkbox" disabled={locked} checked={track.explicit_content} onChange={(event) => onField("explicit_content", event.target.checked)} /> Explícito</span><span><input type="checkbox" disabled={locked} checked={track.instrumental} onChange={(event) => onField("instrumental", event.target.checked)} /> Instrumental</span></label>
           <label className="wide">Splits del master<textarea className="field" disabled={locked} value={splitsText(track)} onChange={(event) => onSplits(event.target.value)} placeholder={"Nombre | 50 | email opcional\nOtro nombre | 50"} /><small className={Math.abs(splitTotal - 100) < .001 ? "split-valid" : "split-invalid"}>Total: {splitTotal}%</small></label>
         </div>
         <div className="track-file-row"><div><small>MASTER ENTREGABLE</small><strong>{track.master_original_name || "WAV/FLAC pendiente"}</strong></div>{!locked && <><label className="file-button">{track.master_ready ? "Reemplazar" : "Subir master"}<input type="file" disabled={busy} accept="audio/wav,audio/flac" onChange={(event) => { const file = event.target.files?.[0]; if (file) onUpload(file); }} /></label><button className="danger-button" onClick={onDelete}>Eliminar</button></>}</div>

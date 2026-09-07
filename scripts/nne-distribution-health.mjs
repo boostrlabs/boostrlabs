@@ -34,12 +34,17 @@ const baseRelease = {
   language_code: "es",
   c_line: "© 2026 NNE",
   p_line: "℗ 2026 NNE",
+  stores: ["spotify"],
+  territories: ["WORLDWIDE"],
   artwork_object_key: "artwork.jpg",
   rights_confirmed: true,
   agreement_accepted: true
 };
-const tracks = [{ id: "track-1", master_object_key: "master.wav" }];
-const contributors = [{ track_id: "track-1", name: "Artist", role: "primary_artist" }];
+const tracks = [{ id: "track-1", title: "Test Track", artist_display: "Artist", isrc: null, master_object_key: "master.wav" }];
+const contributors = [
+  { track_id: "track-1", name: "Artist", role: "primary_artist" },
+  { track_id: "track-1", name: "Writer", role: "songwriter" }
+];
 const splits = [{ track_id: "track-1", participant_name: "Artist", percentage_bps: 10000 }];
 assert.equal(releaseReadiness(baseRelease, tracks, contributors, splits).ready, true);
 assert.equal(releaseReadiness({ ...baseRelease, artwork_object_key: null }, tracks, contributors, splits).ready, false);

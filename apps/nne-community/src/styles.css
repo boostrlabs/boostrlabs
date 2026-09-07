@@ -1465,6 +1465,12 @@ select.field { color-scheme: dark; }
 .distribution-form-grid label { min-width: 0; color: var(--muted); font-size: .72rem; }
 .distribution-form-grid .field { margin-top: 7px; }
 .distribution-form-grid .wide { grid-column: 1 / -1; }
+.distribution-store-picker { margin: 0; padding: 13px; display: flex; flex-wrap: wrap; gap: 8px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.distribution-store-picker legend { padding: 0 5px; color: var(--muted); }
+.distribution-store-picker label { display: flex; gap: 6px; align-items: center; color: var(--text); }
+.distribution-store-picker input, .distribution-track-flags input { accent-color: var(--gold); }
+.distribution-track-flags { display: flex; gap: 16px; align-items: center; }
+.distribution-track-flags span { display: flex; gap: 6px; align-items: center; color: var(--text); }
 .batch-split-box { margin-bottom: 16px; padding: 16px; display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: end; border: 1px solid rgba(216,182,106,.18); border-radius: 15px; background: rgba(216,182,106,.035); }
 .bulk-master-upload { margin-bottom: 12px; padding: 15px; display: flex; justify-content: space-between; gap: 16px; align-items: center; border: 1px solid rgba(89,223,145,.2); border-radius: 15px; background: rgba(89,223,145,.035); }
 .bulk-master-upload strong, .bulk-master-upload small { display: block; }

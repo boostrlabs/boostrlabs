@@ -48,8 +48,10 @@ export async function requireDistributionAccess(request, env, releaseId = null) 
 export function releaseReadiness(release, tracks = [], contributors = [], splits = []) {
   const checks = [];
   const add = (key, label, ready, detail) => checks.push({ key, label, ready: Boolean(ready), detail });
-  add("release_date", "Fecha de lanzamiento", release.release_date, "Programa una fecha futura antes de enviar.");
+  const today = new Date().toISOString().slice(0, 10);
+  add("release_date", "Fecha de lanzamiento", /^\d{4}-\d{2}-\d{2}$/.test(release.release_date || "") && release.release_date >= today, "Programa una fecha de hoy en adelante antes de enviar.");
   add("metadata", "Metadata editorial", release.primary_genre && release.language_code && release.c_line && release.p_line, "Completa género, idioma y líneas C/P.");
+  add("destinations", "Tiendas y territorios", Array.isArray(release.stores) && release.stores.length > 0 && Array.isArray(release.territories) && release.territories.length > 0, "Elige al menos una tienda y un territorio.");
   add("artwork", "Portada original", release.artwork_object_key, "Sube la portada final en JPG, PNG o WebP.");
   add("rights", "Derechos confirmados", Number(release.rights_confirmed) === 1, "Confirma que NNE está autorizado a distribuir cada master.");
   add("agreement", "Acuerdo piloto", Number(release.agreement_accepted) === 1, "Acepta el acuerdo de distribución vigente.");
@@ -58,9 +60,20 @@ export function releaseReadiness(release, tracks = [], contributors = [], splits
   const mastersMissing = tracks.filter((track) => !track.master_object_key);
   add("masters", "Masters WAV/FLAC", tracks.length > 0 && mastersMissing.length === 0, mastersMissing.length ? `${mastersMissing.length} master(s) pendiente(s).` : "Masters privados listos.");
 
-  const contributorTrackIds = new Set(contributors.map((item) => item.track_id));
-  const missingCredits = tracks.filter((track) => !contributorTrackIds.has(track.id));
-  add("credits", "Créditos", tracks.length > 0 && missingCredits.length === 0, missingCredits.length ? `${missingCredits.length} track(s) sin créditos.` : "Créditos capturados.");
+  const invalidMetadata = tracks.filter((track) => !track.title || !track.artist_display || (track.isrc && !/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(track.isrc)));
+  add("track_metadata", "Metadata por track", tracks.length > 0 && invalidMetadata.length === 0, invalidMetadata.length ? `${invalidMetadata.length} track(s) tienen metadata o ISRC inválido.` : "Metadata por track lista.");
+
+  const creditsByTrack = new Map();
+  for (const contributor of contributors) {
+    const roles = creditsByTrack.get(contributor.track_id) || new Set();
+    roles.add(contributor.role);
+    creditsByTrack.set(contributor.track_id, roles);
+  }
+  const missingCredits = tracks.filter((track) => {
+    const roles = creditsByTrack.get(track.id) || new Set();
+    return !roles.has("primary_artist") || (!roles.has("songwriter") && !roles.has("composer"));
+  });
+  add("credits", "Créditos esenciales", tracks.length > 0 && missingCredits.length === 0, missingCredits.length ? `${missingCredits.length} track(s) requieren artista principal y compositor.` : "Créditos esenciales capturados.");
 
   const splitTotals = new Map();
   for (const split of splits) splitTotals.set(split.track_id, (splitTotals.get(split.track_id) || 0) + Number(split.percentage_bps || 0));
