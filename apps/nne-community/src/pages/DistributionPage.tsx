@@ -148,6 +148,30 @@ export function DistributionPage() {
     }
   };
 
+  const createArtist = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    setSaving(true);
+    setError("");
+    try {
+      const result = await distributionService.createArtist({
+        name: String(values.get("name") || ""),
+        instagram_handle: String(values.get("instagram_handle") || "").replace(/^@/, ""),
+        country_code: String(values.get("country_code") || ""),
+        primary_genre: String(values.get("primary_genre") || "Latin Urban")
+      });
+      const refreshed = await distributionService.list();
+      setIndex(refreshed);
+      setNotice(`${result.artist.name} ya tiene catálogo privado. Ahora crea su acceso.`);
+      form.reset();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos crear el artista.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const patchRelease = (field: keyof DistributionRelease, value: unknown) => {
     setRelease((current) => current ? { ...current, [field]: value } : current);
   };
@@ -249,14 +273,25 @@ export function DistributionPage() {
 
       {user?.role === "admin" && (
         <section className="card distribution-onboarding">
-          <div><div className="eyebrow">ARTIST ACCESS</div><h3>Invita al dueño de cada catálogo.</h3><p>El enlace es de un solo uso. El artista entra con su cuenta NNE y solo obtiene acceso al perfil asignado.</p></div>
-          <form onSubmit={createArtistInvite}>
-            <select className="field" name="artist_id" required>{index.artists.map((artist) => <option value={artist.id} key={artist.id}>{artist.name}</option>)}</select>
-            <input className="field" name="email" type="email" placeholder="Correo del artista" />
-            <input className="field" name="username" placeholder="@username (opcional)" />
-            <select className="field" name="role"><option value="artist">Artista</option><option value="manager">Manager</option></select>
-            <button className="primary-button" disabled={saving}>Crear acceso</button>
-          </form>
+          <div><div className="eyebrow">ARTIST ACCESS</div><h3>Crea el catálogo. Invita al equipo.</h3><p>Cada artista nace en un espacio separado. El enlace de acceso es de un solo uso y nunca abre catálogos ajenos.</p></div>
+          <div className="distribution-onboarding-forms">
+            <form onSubmit={createArtist}>
+              <strong>1 · Nuevo perfil</strong>
+              <input className="field" name="name" required placeholder="Nombre artístico" />
+              <input className="field" name="instagram_handle" placeholder="@Instagram" />
+              <input className="field" name="country_code" maxLength={2} placeholder="País · VE" />
+              <input className="field" name="primary_genre" defaultValue="Latin Urban" placeholder="Género" />
+              <button disabled={saving}>Crear catálogo</button>
+            </form>
+            <form onSubmit={createArtistInvite}>
+              <strong>2 · Acceso privado</strong>
+              <select className="field" name="artist_id" required>{index.artists.map((artist) => <option value={artist.id} key={artist.id}>{artist.name}</option>)}</select>
+              <input className="field" name="email" type="email" placeholder="Correo del artista" />
+              <input className="field" name="username" placeholder="@username (opcional)" />
+              <select className="field" name="role"><option value="artist">Artista</option><option value="manager">Manager</option></select>
+              <button className="primary-button" disabled={saving}>Crear link de acceso</button>
+            </form>
+          </div>
           {inviteUrl && <div className="distribution-invite-result"><code>{inviteUrl}</code><button onClick={() => void navigator.clipboard.writeText(inviteUrl)}>Copiar link</button></div>}
         </section>
       )}

@@ -1402,8 +1402,10 @@ select.field { color-scheme: dark; }
 .distribution-money-stats small, .distribution-money-stats strong { display: block; }
 .distribution-money-stats small { color: var(--muted); font-size: .58rem; letter-spacing: .08em; }
 .distribution-money-stats strong { margin-top: 7px; overflow: hidden; text-overflow: ellipsis; font-size: 1.15rem; }
-.distribution-onboarding form { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-.distribution-onboarding form button { grid-column: 1 / -1; }
+.distribution-onboarding-forms { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.distribution-onboarding form { padding: 14px; display: grid; grid-template-columns: 1fr; gap: 9px; border: 1px solid var(--line); border-radius: 14px; }
+.distribution-onboarding form > strong { color: var(--gold-light); font-size: .72rem; letter-spacing: .06em; }
+.distribution-onboarding form button { padding: 11px; border: 0; border-radius: 10px; font-weight: 900; }
 .distribution-invite-result { grid-column: 1 / -1; padding: 12px; display: flex; gap: 9px; align-items: center; border: 1px solid rgba(89,223,145,.25); border-radius: 12px; background: rgba(89,223,145,.06); }
 .distribution-invite-result code { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #89eeb3; }
 .distribution-invite-result button { padding: 9px 12px; border: 0; border-radius: 9px; font-weight: 800; }
@@ -1538,7 +1540,7 @@ select.field { color-scheme: dark; }
   .track-file-row { align-items: stretch; flex-direction: column; }
   .track-file-row > div { margin-right: 0; }
   .file-button, .track-file-row button { text-align: center; }
-  .distribution-money-stats, .distribution-onboarding form { grid-template-columns: 1fr; }
+  .distribution-money-stats, .distribution-onboarding-forms { grid-template-columns: 1fr; }
   .distribution-money-stats span { border-right: 0; border-bottom: 1px solid var(--line); }
   .distribution-money-stats span:last-child { border-bottom: 0; }
 }
