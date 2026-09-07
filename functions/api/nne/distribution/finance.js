@@ -120,7 +120,7 @@ async function importStatement(request, env, payload) {
   const periodEnd = clean(payload.period_end, 30);
   const currency = clean(payload.currency, 3).toUpperCase();
   const lines = Array.isArray(payload.lines) ? payload.lines.slice(0, 200) : [];
-  if (!providerKey || !externalId || !periodStart || !periodEnd || !currencyPattern.test(currency) || !lines.length) {
+  if (!providerKey || !externalId || !/^\d{4}-\d{2}-\d{2}$/.test(periodStart) || !/^\d{4}-\d{2}-\d{2}$/.test(periodEnd) || periodStart > periodEnd || !currencyPattern.test(currency) || !lines.length) {
     return jsonError("nne_distribution_statement_invalid", "Proveedor, período, moneda y líneas son requeridos.", 400);
   }
   const duplicate = await env.DB.prepare(
@@ -136,7 +136,9 @@ async function importStatement(request, env, payload) {
     const dsp = clean(line.dsp, 80);
     const lineCurrency = clean(line.currency || currency, 3).toUpperCase();
     const netMicros = Math.trunc(Number(line.net_micros));
-    if (!artistId || !dsp || !currencyPattern.test(lineCurrency) || !Number.isSafeInteger(netMicros)) {
+    const grossMicros = Math.trunc(Number(line.gross_micros ?? netMicros));
+    const feeMicros = Math.trunc(Number(line.fee_micros ?? 0));
+    if (!artistId || !dsp || lineCurrency !== currency || !Number.isSafeInteger(netMicros) || !Number.isSafeInteger(grossMicros) || !Number.isSafeInteger(feeMicros) || grossMicros - feeMicros !== netMicros) {
       return jsonError("nne_distribution_statement_line_invalid", "Una línea del statement no es válida.", 400);
     }
     normalized.push({
@@ -149,8 +151,8 @@ async function importStatement(request, env, payload) {
       territory: clean(line.territory, 8) || null,
       usageType: clean(line.usage_type, 80) || null,
       quantity: Math.max(0, Math.trunc(Number(line.quantity || 0))),
-      grossMicros: Math.trunc(Number(line.gross_micros || netMicros)),
-      feeMicros: Math.trunc(Number(line.fee_micros || 0)),
+      grossMicros,
+      feeMicros,
       netMicros,
       currency: lineCurrency,
       occurredAt: clean(line.occurred_at, 30) || null
@@ -162,6 +164,22 @@ async function importStatement(request, env, payload) {
     .bind(...artistIds).all();
   if ((known.results || []).length !== artistIds.length) {
     return jsonError("nne_distribution_statement_artist_unknown", "El statement contiene un artista no registrado.", 400);
+  }
+  const releaseIds = [...new Set(normalized.map((line) => line.releaseId).filter(Boolean))];
+  if (releaseIds.length) {
+    const releaseRows = await env.DB.prepare(`SELECT id,artist_id FROM nne_distribution_releases WHERE id IN (${releaseIds.map(() => "?").join(",")})`).bind(...releaseIds).all();
+    const releasesById = new Map((releaseRows.results || []).map((row) => [row.id, row.artist_id]));
+    if (normalized.some((line) => line.releaseId && releasesById.get(line.releaseId) !== line.artistId)) {
+      return jsonError("nne_distribution_statement_release_mismatch", "Una línea usa un release que no pertenece al artista.", 400);
+    }
+  }
+  const trackIds = [...new Set(normalized.map((line) => line.trackId).filter(Boolean))];
+  if (trackIds.length) {
+    const trackRows = await env.DB.prepare(`SELECT t.id,r.artist_id FROM nne_distribution_tracks t JOIN nne_distribution_releases r ON r.id=t.release_id WHERE t.id IN (${trackIds.map(() => "?").join(",")})`).bind(...trackIds).all();
+    const tracksById = new Map((trackRows.results || []).map((row) => [row.id, row.artist_id]));
+    if (normalized.some((line) => line.trackId && tracksById.get(line.trackId) !== line.artistId)) {
+      return jsonError("nne_distribution_statement_track_mismatch", "Una línea usa un track que no pertenece al artista.", 400);
+    }
   }
   const gross = normalized.reduce((sum, line) => sum + line.grossMicros, 0);
   const fees = normalized.reduce((sum, line) => sum + line.feeMicros, 0);

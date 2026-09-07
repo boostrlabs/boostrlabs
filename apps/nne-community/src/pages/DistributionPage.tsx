@@ -306,6 +306,10 @@ export function DistributionPage() {
         if (!record.dsp) throw new Error(`Fila ${rowNumber}: falta el DSP.`);
         const quantity = Number(record.quantity || 0);
         if (!Number.isFinite(quantity) || quantity < 0) throw new Error(`Fila ${rowNumber}: quantity no es válida.`);
+        const grossMicros = decimalToMicros(record.gross, rowNumber, "gross");
+        const feeMicros = decimalToMicros(record.fee, rowNumber, "fee");
+        const netMicros = decimalToMicros(record.net, rowNumber, "net");
+        if (grossMicros - feeMicros !== netMicros) throw new Error(`Fila ${rowNumber}: gross - fee debe ser igual a net.`);
         return {
           artist_id: artist.id,
           release_id: record.release_id || null,
@@ -314,9 +318,9 @@ export function DistributionPage() {
           territory: record.territory || null,
           usage_type: record.usage_type || null,
           quantity: Math.trunc(quantity),
-          gross_micros: decimalToMicros(record.gross, rowNumber, "gross"),
-          fee_micros: decimalToMicros(record.fee, rowNumber, "fee"),
-          net_micros: decimalToMicros(record.net, rowNumber, "net"),
+          gross_micros: grossMicros,
+          fee_micros: feeMicros,
+          net_micros: netMicros,
           occurred_at: record.occurred_at || null,
           currency: String(formData.get("currency") || "USD").toUpperCase()
         };
