@@ -24,7 +24,10 @@ export const distributionService = {
   uploadAsset: (releaseId: string, kind: "artwork" | "master", file: File, trackId = "") =>
     apiRequest<{ ok: true; release: DistributionRelease }>(
       `/distribution/releases/${encodeURIComponent(releaseId)}/assets?kind=${kind}${trackId ? `&track_id=${encodeURIComponent(trackId)}` : ""}`,
-      { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream", "X-File-Name": file.name }, body: file }
+      { method: "PUT", headers: {
+        "Content-Type": file.type || (file.name.toLowerCase().endsWith(".wav") ? "audio/wav" : file.name.toLowerCase().endsWith(".flac") ? "audio/flac" : "application/octet-stream"),
+        "X-File-Name": file.name
+      }, body: file }
     ),
   submit: (id: string) =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/submit`, { method: "POST" }),

@@ -75,6 +75,13 @@ const decimalToMicros = (value: string, rowNumber: number, column: string) => {
   return Math.round(number * 1_000_000);
 };
 
+const validateMasterFile = (file: File) => {
+  const extension = file.name.toLowerCase().split(".").pop();
+  if (!file.size) throw new Error(`${file.name}: el archivo está vacío.`);
+  if (extension !== "wav" && extension !== "flac") throw new Error(`${file.name}: usa un master WAV o FLAC sin pérdida.`);
+  if (file.size > 600 * 1024 * 1024) throw new Error(`${file.name}: supera el máximo de 600 MB.`);
+};
+
 export function DistributionPage() {
   const { user } = useAuth();
   const [index, setIndex] = useState<DistributionIndex | null>(null);
@@ -326,6 +333,12 @@ export function DistributionPage() {
       setError(`Elegiste ${orderedFiles.length} archivos para ${orderedTracks.length} tracks.`);
       return;
     }
+    try {
+      orderedFiles.forEach(validateMasterFile);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Uno de los masters no es válido.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -342,6 +355,15 @@ export function DistributionPage() {
     } finally {
       setSaving(false);
       setUploadProgress("");
+    }
+  };
+
+  const uploadSingleMaster = async (track: DistributionTrack, file: File) => {
+    try {
+      validateMasterFile(file);
+      await run(() => distributionService.uploadAsset(release!.id, "master", file, track.id), `${track.title}: master protegido.`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "El master no es válido.");
     }
   };
 
@@ -650,7 +672,7 @@ export function DistributionPage() {
                     onField={(field, value) => patchTrack(track.id, field, value)}
                     onContributors={(role, value) => patchContributors(track.id, role, value)}
                     onSplits={(value) => patchTrack(track.id, "splits", parseSplits(value))}
-                    onUpload={(file) => void run(() => distributionService.uploadAsset(release.id, "master", file, track.id), `${track.title}: master protegido.`)}
+                    onUpload={(file) => void uploadSingleMaster(track, file)}
                     onDelete={() => { if (window.confirm(`¿Eliminar ${track.title} del tracklist?`)) void run(() => distributionService.deleteTrack(track.id), "Track eliminado."); }}
                   />
                 ))}
