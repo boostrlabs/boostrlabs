@@ -92,6 +92,7 @@ export function releaseReadiness(release, tracks = [], contributors = [], splits
 export async function loadDistributionRelease(env, releaseId) {
   const release = await env.DB.prepare(
     `SELECT r.*, a.name AS artist_name, a.slug AS artist_slug, a.instagram_handle,
+            a.spotify_artist_id,a.apple_music_artist_id,a.country_code AS artist_country_code,
             u.username AS owner_username
      FROM nne_distribution_releases r
      JOIN nne_distribution_artists a ON a.id=r.artist_id
@@ -164,8 +165,14 @@ export function buildDistributionManifest(release) {
     release: {
       id: release.id,
       title: release.title,
+      version_title: release.version_title || null,
       type: release.release_type,
       primary_artist: release.artist_name,
+      primary_artist_ids: {
+        spotify: release.spotify_artist_id || null,
+        apple_music: release.apple_music_artist_id || null
+      },
+      artist_country: release.artist_country_code || null,
       label: release.label_name,
       upc: release.upc || null,
       catalog_number: release.catalog_number || null,

@@ -49,6 +49,9 @@ const splits = [{ track_id: "track-1", participant_name: "Artist", percentage_bp
 assert.equal(releaseReadiness(baseRelease, tracks, contributors, splits).ready, true);
 assert.equal(releaseReadiness({ ...baseRelease, artwork_object_key: null }, tracks, contributors, splits).ready, false);
 assert.equal(releaseReadiness(baseRelease, tracks, contributors, [{ ...splits[0], percentage_bps: 9000 }]).ready, false);
+const manifestSource = await readFile(new URL("functions/_lib/nne-distribution.js", root), "utf8");
+assert.match(manifestSource, /primary_artist_ids/);
+assert.match(manifestSource, /spotify_artist_id/);
 
 const packageScript = await readFile(new URL("scripts/prepare-nne-deploy.mjs", root), "utf8");
 assert.match(packageScript, /functions\/api\/nne/);
