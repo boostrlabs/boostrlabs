@@ -708,8 +708,18 @@ export function DistributionPage() {
               </div>
               {(["draft", "changes_requested"].includes(release.status)) && (
                 <div className="rights-confirmation">
+                  <details className="distribution-agreement-summary">
+                    <summary>Leer autorización operativa del piloto</summary>
+                    <div>
+                      <p>Autorizas de forma no exclusiva a NOSOTROSNOELLOS NNE LLC a almacenar y entregar este release y su metadata al proveedor de distribución seleccionado.</p>
+                      <p>Conservas la propiedad de tus masters. Confirmas que cuentas con permisos para beats, samples, voces, composiciones, portada y colaboradores declarados.</p>
+                      <p>Los ingresos DSP se registran como regalías monetarias separadas de NNE Credits. Comisión, plazo de pago y demás términos comerciales deben formalizarse antes de cualquier entrega real.</p>
+                      <p>Puedes solicitar un retiro desde esta plataforma. NNE mantiene evidencia de aceptación, cambios, entregas y solicitudes para proteger a todas las partes.</p>
+                      <small>Versión operativa: {release.agreement_version || "nne-distribution-pilot-2026-09"} · Requiere acuerdo comercial/legal definitivo antes de producción.</small>
+                    </div>
+                  </details>
                   <label><input type="checkbox" checked={release.rights_confirmed} onChange={(event) => patchRelease("rights_confirmed", event.target.checked)} /><span><strong>Tengo autorización para distribuir estos masters.</strong><small>No contienen samples, beats o grabaciones sin los permisos correspondientes.</small></span></label>
-                  <label><input type="checkbox" checked={release.agreement_accepted} disabled={release.agreement_accepted} onChange={(event) => patchRelease("agreement_accepted", event.target.checked)} /><span><strong>Acepto el acuerdo piloto de distribución NNE.</strong><small>La aceptación queda versionada con fecha, usuario, IP y dispositivo.</small></span></label>
+                  <label><input type="checkbox" checked={release.agreement_accepted} disabled={release.agreement_accepted} onChange={(event) => patchRelease("agreement_accepted", event.target.checked)} /><span><strong>Acepto esta autorización operativa del piloto.</strong><small>La aceptación queda versionada con fecha, usuario, IP y dispositivo.</small></span></label>
                 </div>
               )}
               <div className="distribution-actions">

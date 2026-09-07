@@ -1538,6 +1538,11 @@ select.field { color-scheme: dark; }
 .rights-confirmation strong, .rights-confirmation small { display: block; }
 .rights-confirmation small { margin-top: 4px; color: var(--muted); line-height: 1.4; }
 .distribution-actions { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 9px; }
+.distribution-agreement-summary { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.02); }
+.distribution-agreement-summary summary { padding: 13px 15px; color: var(--gold-light); cursor: pointer; font-size: .76rem; font-weight: 900; letter-spacing: .04em; }
+.distribution-agreement-summary > div { padding: 0 15px 15px; }
+.distribution-agreement-summary p { margin: 0 0 9px; color: var(--muted); line-height: 1.5; }
+.distribution-agreement-summary small { color: #d5bd83; }
 .distribution-actions .primary-button { color: #080808; background: var(--gold-light); border-color: var(--gold-light); }
 .distribution-actions button:disabled { opacity: .45; cursor: not-allowed; }
 .distribution-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
