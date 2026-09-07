@@ -1466,6 +1466,11 @@ select.field { color-scheme: dark; }
 .distribution-form-grid .field { margin-top: 7px; }
 .distribution-form-grid .wide { grid-column: 1 / -1; }
 .batch-split-box { margin-bottom: 16px; padding: 16px; display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: end; border: 1px solid rgba(216,182,106,.18); border-radius: 15px; background: rgba(216,182,106,.035); }
+.bulk-master-upload { margin-bottom: 12px; padding: 15px; display: flex; justify-content: space-between; gap: 16px; align-items: center; border: 1px solid rgba(89,223,145,.2); border-radius: 15px; background: rgba(89,223,145,.035); }
+.bulk-master-upload strong, .bulk-master-upload small { display: block; }
+.bulk-master-upload small { margin-top: 4px; color: var(--muted); }
+.bulk-master-upload label { position: relative; min-width: 150px; padding: 11px 14px; overflow: hidden; color: #08110c; border-radius: 10px; background: #72e8a5; font-size: .7rem; font-weight: 900; text-align: center; cursor: pointer; }
+.bulk-master-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .batch-split-box label { color: var(--muted); font-size: .72rem; }
 .batch-split-box textarea { min-height: 66px; margin-top: 7px; resize: vertical; }
 .batch-split-box button, .distribution-add-track, .distribution-actions > button { padding: 12px 15px; color: var(--text); border: 1px solid var(--line); border-radius: 12px; background: #151416; font-weight: 800; }
@@ -1543,6 +1548,7 @@ select.field { color-scheme: dark; }
   .distribution-create, .release-overview, .distribution-form-grid, .distribution-bottom-grid, .readiness-grid { grid-template-columns: 1fr; }
   .release-cover { min-height: 330px; }
   .batch-split-box { grid-template-columns: 1fr; }
+  .bulk-master-upload { align-items: stretch; flex-direction: column; }
   .track-summary { grid-template-columns: 32px minmax(0,1fr) 20px; }
   .track-summary em { grid-column: 2; }
   .track-summary b { grid-column: 3; grid-row: 1; }

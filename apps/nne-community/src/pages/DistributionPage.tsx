@@ -60,6 +60,7 @@ export function DistributionPage() {
   const [batchSplits, setBatchSplits] = useState("");
   const [finance, setFinance] = useState<DistributionFinance | null>(null);
   const [inviteUrl, setInviteUrl] = useState("");
+  const [uploadProgress, setUploadProgress] = useState("");
 
   const loadIndex = useCallback(async () => {
     const [data, financeData] = await Promise.all([distributionService.list(), distributionService.finance()]);
@@ -192,6 +193,50 @@ export function DistributionPage() {
       form.reset();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No pudimos solicitar el pago.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const uploadAlbumMasters = async (files: FileList | null) => {
+    if (!release || !files?.length) return;
+    const orderedFiles = Array.from(files).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    const orderedTracks = [...release.tracks].sort((a, b) => a.disc_number - b.disc_number || a.track_number - b.track_number);
+    if (orderedFiles.length > orderedTracks.length) {
+      setError(`Elegiste ${orderedFiles.length} archivos para ${orderedTracks.length} tracks.`);
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      let latest = release;
+      for (const [index, file] of orderedFiles.entries()) {
+        const track = orderedTracks[index];
+        setUploadProgress(`${index + 1}/${orderedFiles.length} · ${track.title}`);
+        const result = await distributionService.uploadAsset(release.id, "master", file, track.id);
+        latest = result.release;
+      }
+      replaceRelease(latest, `${orderedFiles.length} masters protegidos y enlazados al tracklist.`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "La carga múltiple se detuvo.");
+    } finally {
+      setSaving(false);
+      setUploadProgress("");
+    }
+  };
+
+  const deleteRelease = async () => {
+    if (!release || !window.confirm(`¿Eliminar definitivamente el borrador “${release.title}”?`)) return;
+    setSaving(true);
+    setError("");
+    try {
+      await distributionService.deleteRelease(release.id);
+      setRelease(null);
+      setSelectedId("");
+      await loadIndex();
+      setNotice("Borrador eliminado.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos eliminar el borrador.");
     } finally {
       setSaving(false);
     }
@@ -409,6 +454,7 @@ export function DistributionPage() {
 
             <section className="card distribution-section">
               <div className="distribution-section-title"><div><span>02</span><div><h3>Tracklist + masters</h3><p>WAV/FLAC privados. Nunca quedan en una URL pública.</p></div></div><b>{release.tracks.filter((track) => track.master_ready).length}/{release.tracks.length}</b></div>
+              {(["draft", "changes_requested"].includes(release.status)) && <div className="bulk-master-upload"><div><strong>Subir masters en lote</strong><small>Nombra los archivos 01, 02, 03… El sistema los ordena y los enlaza con el tracklist.</small></div><label>{uploadProgress || "Elegir WAV/FLAC"}<input type="file" multiple disabled={saving} accept="audio/wav,audio/flac" onChange={(event) => void uploadAlbumMasters(event.target.files)} /></label></div>}
               <div className="batch-split-box">
                 <label>Aplicar el mismo split del master a todos los tracks<textarea className="field" value={batchSplits} onChange={(event) => setBatchSplits(event.target.value)} placeholder={"Janko Diorr | 50 | email@ejemplo.com\nColaborador | 50 | otro@ejemplo.com"} /></label>
                 <button onClick={applyBatchSplits}>Aplicar a todo el álbum</button>
@@ -443,7 +489,7 @@ export function DistributionPage() {
                 </div>
               )}
               <div className="distribution-actions">
-                {(["draft", "changes_requested"].includes(release.status)) && <><button className="primary-button" disabled={saving} onClick={save}>Guardar cambios</button><button disabled={saving || !release.readiness.ready} onClick={() => void run(() => distributionService.submit(release.id), "Enviado al equipo de distribución.")}>Enviar a revisión</button></>}
+                {(["draft", "changes_requested"].includes(release.status)) && <><button className="primary-button" disabled={saving} onClick={save}>Guardar cambios</button><button disabled={saving || !release.readiness.ready} onClick={() => void run(() => distributionService.submit(release.id), "Enviado al equipo de distribución.")}>Enviar a revisión</button><button className="danger-button" disabled={saving} onClick={() => void deleteRelease()}>Eliminar borrador</button></>}
                 {user?.role === "admin" && release.status === "in_review" && <><button className="primary-button" disabled={saving} onClick={() => void run(() => distributionService.review(release.id, "approve"), "Release aprobado por NNE.")}>Aprobar release</button><button disabled={saving} onClick={() => { const note = window.prompt("Correcciones requeridas:"); if (note) void run(() => distributionService.review(release.id, "request_changes", note), "Correcciones enviadas."); }}>Pedir correcciones</button></>}
                 {user?.role === "admin" && release.status === "approved" && <button className="primary-button" disabled={saving} onClick={() => void run(() => distributionService.review(release.id, "package"), "Paquete de distribución generado.")}>Generar paquete DSP</button>}
                 {user?.role === "admin" && release.status === "packaged" && <button className="primary-button" disabled={saving} onClick={() => void run(() => distributionService.review(release.id, "deliver"), release.provider?.mode === "sandbox" ? "Sandbox aceptó la simulación." : "Proveedor aceptó la entrega.")}>{release.provider?.mode === "sandbox" ? "Simular entrega" : "Entregar al proveedor"}</button>}

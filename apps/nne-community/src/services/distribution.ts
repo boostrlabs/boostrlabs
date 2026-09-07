@@ -15,6 +15,8 @@ export const distributionService = {
     apiRequest<{ ok: true; release: DistributionRelease }>("/distribution/releases", { method: "POST", body: JSON.stringify(payload) }),
   update: (id: string, payload: Record<string, unknown>) =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteRelease: (id: string) =>
+    apiRequest<{ ok: true; deleted: true; release_id: string }>(`/distribution/releases/${encodeURIComponent(id)}`, { method: "DELETE" }),
   addTrack: (id: string, title: string) =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/tracks`, { method: "POST", body: JSON.stringify({ title }) }),
   deleteTrack: (trackId: string) =>

@@ -13,6 +13,7 @@ import {
   requireDistributionAccess,
   writeDistributionEvent
 } from "../../../../_lib/nne-distribution.js";
+import { requireNneAssets } from "../../../../_lib/nne-secure-media.js";
 
 const releaseTypes = new Set(["single", "ep", "album"]);
 const mutableStatuses = new Set(["draft", "changes_requested"]);
@@ -186,4 +187,26 @@ export async function onRequestPatch({ request, env, params }) {
   await writeDistributionEvent(env, current.id, auth.user.id, "release.updated", current.status, current.status, { fields: Object.keys(payload).slice(0, 30) });
   await writeNneAudit(env, request, auth.user.id, "distribution.release_updated", "nne_distribution_release", current.id, { fields: Object.keys(payload).slice(0, 30) });
   return jsonOk({ release: await loadDistributionRelease(env, current.id) });
+}
+
+export async function onRequestDelete({ request, env, params }) {
+  const auth = await requireDistributionAccess(request, env, params.id);
+  if (!auth.ok) return auth.response;
+  const current = await loadDistributionRelease(env, params.id);
+  if (!current) return jsonError("nne_distribution_release_not_found", "Lanzamiento no encontrado.", 404);
+  if (!["draft", "changes_requested"].includes(current.status)) {
+    return jsonError("nne_distribution_release_delete_locked", "Solo puedes eliminar borradores o releases devueltos para corrección.", 409);
+  }
+  const keys = [current.artwork_object_key, ...current.tracks.map((track) => track.master_object_key)].filter(Boolean);
+  if (keys.length) {
+    const assets = requireNneAssets(env);
+    if (!assets.ok) return assets.response;
+    await env.BOOSTR_ASSETS.delete(keys);
+  }
+  const result = await env.DB.prepare(
+    "DELETE FROM nne_distribution_releases WHERE id=? AND status IN ('draft','changes_requested')"
+  ).bind(current.id).run();
+  if (!result.meta?.changes) return jsonError("nne_distribution_release_delete_conflict", "El estado cambió antes de eliminar el borrador.", 409);
+  await writeNneAudit(env, request, auth.user.id, "distribution.release_deleted", "nne_distribution_release", current.id, { title: current.title, asset_count: keys.length });
+  return jsonOk({ deleted: true, release_id: current.id });
 }
