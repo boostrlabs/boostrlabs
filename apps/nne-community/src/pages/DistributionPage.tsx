@@ -42,6 +42,39 @@ const parseSplits = (value: string): DistributionSplit[] => value.split("\n").ma
   };
 }).filter((item) => item.participant_name && item.percentage > 0);
 
+const statementColumns = ["artist_slug", "release_id", "track_id", "dsp", "territory", "usage_type", "quantity", "gross", "fee", "net", "occurred_at"];
+
+const parseCsv = (source: string) => {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (char === '"' && quoted && next === '"') { cell += '"'; index += 1; }
+    else if (char === '"') quoted = !quoted;
+    else if (char === "," && !quoted) { row.push(cell.trim()); cell = ""; }
+    else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && next === "\n") index += 1;
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      row = [];
+      cell = "";
+    } else cell += char;
+  }
+  row.push(cell.trim());
+  if (row.some(Boolean)) rows.push(row);
+  return rows;
+};
+
+const decimalToMicros = (value: string, rowNumber: number, column: string) => {
+  const normalized = value.replace(/[$\s]/g, "");
+  const number = Number(normalized || 0);
+  if (!Number.isFinite(number)) throw new Error(`Fila ${rowNumber}: ${column} no es un monto válido.`);
+  return Math.round(number * 1_000_000);
+};
+
 export function DistributionPage() {
   const { user } = useAuth();
   const [index, setIndex] = useState<DistributionIndex | null>(null);
@@ -188,6 +221,74 @@ export function DistributionPage() {
       form.reset();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No pudimos solicitar el pago.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const downloadStatementTemplate = () => {
+    const exampleArtist = index?.artists[0]?.slug || "nombre-artista";
+    const csv = `${statementColumns.join(",")}\n${exampleArtist},,,spotify,US,stream,1000,4.25,0.64,3.61,2026-08-31\n`;
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "nne-statement-template.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importStatement = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const file = formData.get("statement_csv");
+    if (!(file instanceof File) || !file.size) return setError("Selecciona el statement CSV normalizado.");
+    setSaving(true);
+    setError("");
+    try {
+      const rows = parseCsv(await file.text());
+      if (rows.length < 2) throw new Error("El CSV no contiene líneas de regalías.");
+      const headers = rows[0].map((value) => value.toLowerCase().replace(/^\uFEFF/, ""));
+      const missing = statementColumns.filter((column) => !headers.includes(column));
+      if (missing.length) throw new Error(`Faltan columnas: ${missing.join(", ")}.`);
+      if (rows.length - 1 > 200) throw new Error("Este piloto acepta hasta 200 líneas por importación. Divide el archivo en partes.");
+      const artistsBySlug = new Map((index?.artists || []).map((artist) => [artist.slug.toLowerCase(), artist]));
+      const lines = rows.slice(1).map((cells, offset) => {
+        const record = Object.fromEntries(headers.map((header, position) => [header, cells[position] || ""]));
+        const artist = artistsBySlug.get(record.artist_slug.toLowerCase());
+        const rowNumber = offset + 2;
+        if (!artist) throw new Error(`Fila ${rowNumber}: artista “${record.artist_slug}” no existe.`);
+        if (!record.dsp) throw new Error(`Fila ${rowNumber}: falta el DSP.`);
+        const quantity = Number(record.quantity || 0);
+        if (!Number.isFinite(quantity) || quantity < 0) throw new Error(`Fila ${rowNumber}: quantity no es válida.`);
+        return {
+          artist_id: artist.id,
+          release_id: record.release_id || null,
+          track_id: record.track_id || null,
+          dsp: record.dsp,
+          territory: record.territory || null,
+          usage_type: record.usage_type || null,
+          quantity: Math.trunc(quantity),
+          gross_micros: decimalToMicros(record.gross, rowNumber, "gross"),
+          fee_micros: decimalToMicros(record.fee, rowNumber, "fee"),
+          net_micros: decimalToMicros(record.net, rowNumber, "net"),
+          occurred_at: record.occurred_at || null,
+          currency: String(formData.get("currency") || "USD").toUpperCase()
+        };
+      });
+      const result = await distributionService.importStatement({
+        provider_key: String(formData.get("provider_key") || ""),
+        external_statement_id: String(formData.get("external_statement_id") || ""),
+        period_start: String(formData.get("period_start") || ""),
+        period_end: String(formData.get("period_end") || ""),
+        currency: String(formData.get("currency") || "USD").toUpperCase(),
+        lines
+      });
+      setFinance(await distributionService.finance());
+      setNotice(`${result.line_count} líneas importadas al ledger. NNE Credits permanecen separados.`);
+      form.reset();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos importar el statement.");
     } finally {
       setSaving(false);
     }
@@ -361,8 +462,23 @@ export function DistributionPage() {
         </div>
       </section>
 
-      {(finance?.statements.length || finance?.payouts.length || Number(finance?.balances[0]?.available_micros || 0) > 0) ? (
+      {(user?.role === "admin" || finance?.statements.length || finance?.payouts.length || Number(finance?.balances[0]?.available_micros || 0) > 0) ? (
         <section className="distribution-finance-grid">
+          {user?.role === "admin" && <article className="card distribution-statement-import">
+            <div className="eyebrow">NNE FINANCE · INGESTA NORMALIZADA</div>
+            <h3>Importar regalías por CSV</h3>
+            <p>Convierte primero el reporte del partner a este formato. El ledger guarda dinero real en micros y nunca entrega NNE Credits.</p>
+            <button type="button" className="secondary-button" onClick={downloadStatementTemplate}>Descargar plantilla CSV</button>
+            <form onSubmit={importStatement}>
+              <input className="field" name="provider_key" required placeholder="Proveedor · ej. partner_x" />
+              <input className="field" name="external_statement_id" required placeholder="ID único del reporte" />
+              <label>Desde<input className="field" name="period_start" type="date" required /></label>
+              <label>Hasta<input className="field" name="period_end" type="date" required /></label>
+              <input className="field" name="currency" defaultValue="USD" maxLength={3} required aria-label="Moneda" />
+              <label className="statement-file">CSV normalizado<input name="statement_csv" type="file" accept=".csv,text/csv" required /></label>
+              <button className="primary-button" disabled={saving}>{saving ? "Importando…" : "Importar al ledger"}</button>
+            </form>
+          </article>}
           <article className="card distribution-ledger">
             <div className="eyebrow">STATEMENTS DSP</div>
             <h3>Reportes recibidos</h3>

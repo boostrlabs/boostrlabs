@@ -31,6 +31,17 @@ export const distributionService = {
   review: (id: string, action: "approve" | "request_changes" | "package" | "deliver" | "mark_live_demo", note = "") =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify({ action, note }) }),
   finance: () => apiRequest<DistributionFinance & { ok: true }>("/distribution/finance"),
+  importStatement: (payload: {
+    provider_key: string;
+    external_statement_id: string;
+    period_start: string;
+    period_end: string;
+    currency: string;
+    lines: Array<Record<string, string | number | null>>;
+  }) => apiRequest<{ ok: true; statement_id: string; line_count: number; net_micros: number }>("/distribution/finance", {
+    method: "POST",
+    body: JSON.stringify({ action: "import_statement", ...payload })
+  }),
   requestPayout: (payload: { artist_id: string; currency: string; amount_micros: number; method: string; destination_hint?: string }) =>
     apiRequest<{ ok: true; payout_id: string; status: string }>("/distribution/finance", { method: "POST", body: JSON.stringify({ action: "request_payout", ...payload }) }),
   createArtist: (payload: { name: string; instagram_handle?: string; country_code?: string; primary_genre?: string }) =>

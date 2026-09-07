@@ -1410,6 +1410,16 @@ select.field { color-scheme: dark; }
 .distribution-invite-result code { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #89eeb3; }
 .distribution-invite-result button { padding: 9px 12px; border: 0; border-radius: 9px; font-weight: 800; }
 .distribution-finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.distribution-statement-import { grid-column: 1 / -1; padding: 24px; }
+.distribution-statement-import h3 { margin: 8px 0; }
+.distribution-statement-import > p { max-width: 760px; margin: 0 0 14px; color: var(--muted); line-height: 1.5; }
+.distribution-statement-import > button { margin-bottom: 14px; }
+.distribution-statement-import form { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr .45fr; gap: 9px; align-items: end; }
+.distribution-statement-import form label { color: var(--muted); font-size: .72rem; }
+.distribution-statement-import form label .field { margin-top: 6px; }
+.distribution-statement-import .statement-file { grid-column: 1 / -2; min-height: 48px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px dashed var(--line); border-radius: 10px; }
+.distribution-statement-import .statement-file input { max-width: 70%; }
+.distribution-statement-import form > button { min-height: 48px; }
 .distribution-ledger, .distribution-payouts { padding: 24px; }
 .distribution-ledger h3, .distribution-payouts h3 { margin: 8px 0 18px; }
 .distribution-ledger > div:not(.eyebrow), .payout-row { padding: 12px 0; display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); }
@@ -1562,6 +1572,9 @@ select.field { color-scheme: dark; }
   .track-file-row > div { margin-right: 0; }
   .file-button, .track-file-row button { text-align: center; }
   .distribution-money-stats, .distribution-onboarding-forms { grid-template-columns: 1fr; }
+  .distribution-statement-import form { grid-template-columns: 1fr; }
+  .distribution-statement-import .statement-file { grid-column: auto; align-items: flex-start; flex-direction: column; }
+  .distribution-statement-import .statement-file input { max-width: 100%; }
   .distribution-payouts form { grid-template-columns: 1fr; }
   .distribution-money-stats span { border-right: 0; border-bottom: 1px solid var(--line); }
   .distribution-money-stats span:last-child { border-bottom: 0; }
