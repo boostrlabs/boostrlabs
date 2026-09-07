@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties, type For
 import { useAuth } from "../context/AuthContext";
 import { ApiError, formatRelativeDate } from "../services/api";
 import { distributionService, type DistributionIndex } from "../services/distribution";
-import type { DistributionContributor, DistributionFinance, DistributionRelease, DistributionSplit, DistributionTrack } from "../types";
+import type { DistributionComplianceProfile, DistributionContributor, DistributionFinance, DistributionRelease, DistributionSplit, DistributionSplitAgreement, DistributionTrack } from "../types";
 
 const statusCopy: Record<string, string> = {
   draft: "Borrador",
@@ -105,18 +105,25 @@ export function DistributionPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [batchSplits, setBatchSplits] = useState("");
   const [finance, setFinance] = useState<DistributionFinance | null>(null);
+  const [compliance, setCompliance] = useState<DistributionComplianceProfile[]>([]);
+  const [splitAgreements, setSplitAgreements] = useState<DistributionSplitAgreement[]>([]);
+  const [esignReady, setEsignReady] = useState(false);
   const [inviteUrl, setInviteUrl] = useState("");
   const [uploadProgress, setUploadProgress] = useState("");
 
   const loadIndex = useCallback(async () => {
-    const [data, financeData] = await Promise.all([distributionService.list(), distributionService.finance()]);
+    const [data, financeData, complianceData] = await Promise.all([distributionService.list(), distributionService.finance(), distributionService.compliance()]);
     setIndex(data);
     setFinance(financeData);
+    setCompliance(complianceData.profiles);
     const target = selectedId || data.releases[0]?.id || "";
     if (target) {
       setSelectedId(target);
       const detail = await distributionService.get(target);
       setRelease(detail.release);
+      const agreementData = await distributionService.splitAgreements(target);
+      setSplitAgreements(agreementData.agreements);
+      setEsignReady(agreementData.provider.ready);
     }
   }, [selectedId]);
 
@@ -131,6 +138,9 @@ export function DistributionPage() {
     try {
       const detail = await distributionService.get(id);
       setRelease(detail.release);
+      const agreementData = await distributionService.splitAgreements(id);
+      setSplitAgreements(agreementData.agreements);
+      setEsignReady(agreementData.provider.ready);
       setError("");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No pudimos abrir el lanzamiento.");
@@ -266,6 +276,73 @@ export function DistributionPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const refreshCompliance = async () => {
+    const [financeData, complianceData] = await Promise.all([distributionService.finance(), distributionService.compliance()]);
+    setFinance(financeData);
+    setCompliance(complianceData.profiles);
+  };
+
+  const saveCompliance = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    setSaving(true); setError("");
+    try {
+      const result = await distributionService.saveCompliance({
+        artist_id: String(values.get("artist_id")), legal_name: String(values.get("legal_name")),
+        entity_type: String(values.get("entity_type")) as "individual" | "business",
+        tax_residency_country: String(values.get("tax_residency_country")).toUpperCase(),
+        address_country: String(values.get("address_country")).toUpperCase(),
+        payout_method: String(values.get("payout_method") || "manual"),
+        payout_destination_hint: String(values.get("payout_destination_hint") || "")
+      });
+      await refreshCompliance();
+      setNotice(`Perfil guardado. Formulario sugerido: ${result.tax_form_type}.`);
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos guardar el perfil fiscal."); }
+    finally { setSaving(false); }
+  };
+
+  const uploadTaxDocument = async (artistId: string, file?: File) => {
+    if (!file) return;
+    setSaving(true); setError("");
+    try { await distributionService.uploadTaxDocument(artistId, file); await refreshCompliance(); setNotice("Documento fiscal recibido y enviado a revisión."); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos subir el documento fiscal."); }
+    finally { setSaving(false); }
+  };
+
+  const reviewCompliance = async (artistId: string, decision: "verified" | "rejected") => {
+    const note = decision === "rejected" ? window.prompt("Indica qué debe corregir el artista:") || "Requiere corrección." : "Revisión fiscal operativa completada.";
+    setSaving(true); setError("");
+    try { await distributionService.reviewCompliance(artistId, decision, note); await refreshCompliance(); setNotice(`Perfil fiscal: ${decision}.`); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos completar la revisión."); }
+    finally { setSaving(false); }
+  };
+
+  const generateSplitAgreement = async () => {
+    if (!release) return;
+    setSaving(true); setError("");
+    try {
+      await distributionService.generateSplitAgreement(release.id);
+      const data = await distributionService.splitAgreements(release.id);
+      setSplitAgreements(data.agreements); setEsignReady(data.provider.ready);
+      setNotice("Split sheet PDF versionado y guardado en privado.");
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos generar el split sheet."); }
+    finally { setSaving(false); }
+  };
+
+  const runSplitAgreement = async (action: "send" | "refresh", agreementId: string) => {
+    if (!release) return;
+    setSaving(true); setError("");
+    try {
+      if (action === "send") await distributionService.sendSplitAgreement(release.id, agreementId);
+      else await distributionService.refreshSplitAgreement(release.id, agreementId);
+      const data = await distributionService.splitAgreements(release.id);
+      setSplitAgreements(data.agreements); setEsignReady(data.provider.ready);
+      setNotice(action === "send" ? "DocuSign envió el acuerdo a todos los firmantes." : "Estado de firmas actualizado.");
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos conectar con DocuSign."); }
+    finally { setSaving(false); }
   };
 
   const updatePayout = async (payoutId: string, status: "approved" | "processing" | "paid" | "failed" | "cancelled") => {
@@ -494,6 +571,7 @@ export function DistributionPage() {
       explicit_content: release.explicit_content,
       rights_confirmed: release.rights_confirmed,
       agreement_accepted: release.agreement_accepted,
+      deal_model: release.deal_model || "fee_100",
       territories: release.territories,
       stores: release.stores,
       tracks: release.tracks
@@ -541,7 +619,7 @@ export function DistributionPage() {
       </section>
 
       <section className="card distribution-money">
-        <div><div className="eyebrow">REGALÍAS REALES · NO SON NNE CREDITS</div><h3>Contabilidad lista para recibir statements.</h3><p>Cada artista ve únicamente su balance, reportes DSP y pagos. Los importes usan precisión contable y nunca se mezclan con la economía promocional de la comunidad.</p></div>
+        <div><div className="eyebrow">REGALÍAS REALES · NO SON NNE CREDITS</div><h3>Cobrar fácil. Cobrar correctamente.</h3><p>Completa tus datos una vez, ve exactamente qué falta y solicita tu retiro en un botón cuando NNE Finance verifique el perfil fiscal. El dinero real nunca se mezcla con los créditos de la comunidad.</p></div>
         <div className="distribution-money-stats">
           <span><small>GENERADO</small><strong>{formatMoney(finance?.balances[0]?.earned_micros || 0, finance?.balances[0]?.currency || "USD")}</strong></span>
           <span><small>DISPONIBLE</small><strong>{formatMoney(finance?.balances[0]?.available_micros || 0, finance?.balances[0]?.currency || "USD")}</strong></span>
@@ -549,8 +627,7 @@ export function DistributionPage() {
         </div>
       </section>
 
-      {(user?.role === "admin" || finance?.statements.length || finance?.payouts.length || Number(finance?.balances[0]?.available_micros || 0) > 0) ? (
-        <section className="distribution-finance-grid">
+      <section className="distribution-finance-grid">
           {user?.role === "admin" && <article className="card distribution-statement-import">
             <div className="eyebrow">NNE FINANCE · INGESTA NORMALIZADA</div>
             <h3>Importar regalías por CSV</h3>
@@ -572,6 +649,27 @@ export function DistributionPage() {
             {finance?.statements.map((statement) => <div key={statement.id}><span><strong>{statement.provider_key}</strong><small>{statement.period_start} → {statement.period_end} · {statement.line_count} líneas</small></span><b>{formatMoney(statement.net_micros, statement.currency)}</b></div>)}
             {!finance?.statements.length && <p>Todavía no hay reportes importados.</p>}
           </article>
+          <article className="card distribution-compliance">
+            <div className="eyebrow">PAYOUT COMPLIANCE · USA PAYER</div>
+            <h3>Tu perfil para cobrar</h3>
+            <p>La plataforma sugiere el formulario; NNE Finance revisa cada caso antes de liberar dinero. Nunca escribas SSN, EIN o claves bancarias en estos campos.</p>
+            <div className="compliance-list">{compliance.map((profile) => <details key={profile.artist_id} open={compliance.length === 1}>
+              <summary><span><strong>{profile.artist_name}</strong><small>{profile.tax_form_type || "Formulario por definir"}</small></span><b className={`tax-${profile.tax_status}`}>{profile.tax_status}</b></summary>
+              <form onSubmit={saveCompliance}>
+                <input type="hidden" name="artist_id" value={profile.artist_id} />
+                <input className="field" name="legal_name" defaultValue={profile.legal_name || ""} required placeholder="Nombre legal completo" />
+                <select className="field" name="entity_type" defaultValue={profile.entity_type || "individual"}><option value="individual">Persona natural</option><option value="business">Empresa / entidad</option></select>
+                <input className="field" name="tax_residency_country" maxLength={2} defaultValue={profile.tax_residency_country || profile.country_code || ""} required placeholder="Residencia fiscal · VE" />
+                <input className="field" name="address_country" maxLength={2} defaultValue={profile.address_country || profile.country_code || ""} required placeholder="País de dirección · VE" />
+                <select className="field" name="payout_method" defaultValue={profile.payout_method || "manual"}><option value="manual">Coordinar con NNE</option><option value="paypal">PayPal</option><option value="wire">Transferencia</option></select>
+                <input className="field" name="payout_destination_hint" defaultValue={profile.payout_destination_hint || ""} placeholder="Alias / últimos 4; nunca contraseña" />
+                <button className="primary-button" disabled={saving}>Guardar perfil</button>
+              </form>
+              {profile.id && <label className="tax-upload">{profile.document_uploaded ? "Reemplazar PDF fiscal" : "Subir PDF fiscal firmado"}<input type="file" accept="application/pdf" disabled={saving} onChange={(event) => void uploadTaxDocument(profile.artist_id, event.target.files?.[0])} /></label>}
+              {profile.review_note && <small className="tax-note">Nota: {profile.review_note}</small>}
+              {user?.role === "admin" && profile.document_uploaded ? <div className="payout-actions"><button disabled={saving} onClick={() => void reviewCompliance(profile.artist_id, "verified")}>Verificar</button><button disabled={saving} onClick={() => void reviewCompliance(profile.artist_id, "rejected")}>Pedir corrección</button></div> : null}
+            </details>)}</div>
+          </article>
           <article className="card distribution-payouts">
             <div className="eyebrow">PAYOUTS</div>
             <h3>Solicitar retiro</h3>
@@ -581,8 +679,9 @@ export function DistributionPage() {
               <input name="currency" type="hidden" value={finance?.balances[0]?.currency || "USD"} />
               <select className="field" name="method"><option value="manual">Método acordado con NNE</option><option value="paypal">PayPal</option><option value="wire">Transferencia</option></select>
               <input name="destination_hint" className="field" placeholder="Alias o referencia; nunca contraseña" />
-              <button className="primary-button" disabled={saving}>Enviar solicitud</button>
+              <button className="primary-button" disabled={saving || !compliance.some((item) => item.tax_status === "verified")}>Enviar solicitud</button>
             </form>}
+            {user?.role !== "admin" && !compliance.some((item) => item.tax_status === "verified") && <p>Completa y verifica tu perfil fiscal para activar el retiro.</p>}
             {finance?.payouts.map((payout) => <div className="payout-row" key={payout.id}><span><strong>{payout.artist_name}</strong><small>{payout.status} · {formatRelativeDate(payout.requested_at)}</small></span><b>{formatMoney(payout.amount_micros, payout.currency)}</b>{user?.role === "admin" && <span className="payout-actions">
               {payout.status === "requested" && <><button disabled={saving} onClick={() => void updatePayout(payout.id, "approved")}>Aprobar</button><button disabled={saving} onClick={() => void updatePayout(payout.id, "cancelled")}>Cancelar</button></>}
               {payout.status === "approved" && <button disabled={saving} onClick={() => void updatePayout(payout.id, "processing")}>Procesar</button>}
@@ -592,7 +691,6 @@ export function DistributionPage() {
             {!finance?.payouts.length && <p>No hay retiros solicitados.</p>}
           </article>
         </section>
-      ) : null}
 
       {user?.role === "admin" && (
         <section className="card distribution-onboarding">
@@ -694,6 +792,7 @@ export function DistributionPage() {
                 <label>Idioma<input className="field" value={release.language_code || "es"} onChange={(event) => patchRelease("language_code", event.target.value)} /></label>
                 <label>UPC existente o reservado<input className="field" inputMode="numeric" value={release.upc || ""} onChange={(event) => patchRelease("upc", event.target.value)} placeholder="Opcional hasta el partner" /></label>
                 <label>Número de catálogo<input className="field" value={release.catalog_number || ""} onChange={(event) => patchRelease("catalog_number", event.target.value)} placeholder="NNE-2026-001" /></label>
+                <label className="wide">Modelo comercial<select className="field" value={release.deal_model || "fee_100"} onChange={(event) => patchRelease("deal_model", event.target.value)}><option value="fee_100">Fee de distribución · artista conserva 100%</option><option value="scholarship_80_20">Beca NNE · artista 80% / NNE 20%</option></select></label>
                 <label className="wide">Línea ©<input className="field" value={release.c_line || ""} onChange={(event) => patchRelease("c_line", event.target.value)} /></label>
                 <label className="wide">Línea ℗<input className="field" value={release.p_line || ""} onChange={(event) => patchRelease("p_line", event.target.value)} /></label>
                 <label className="wide">Territorios<input className="field" value={release.territories.join(", ")} onChange={(event) => patchRelease("territories", event.target.value.split(",").map((item) => item.trim().toUpperCase()).filter(Boolean))} placeholder="WORLDWIDE o US, VE, MX" /></label>
@@ -731,6 +830,11 @@ export function DistributionPage() {
               <div className="distribution-section-title"><div><span>03</span><div><h3>Derechos + control de salida</h3><p>El release no avanza mientras exista un bloqueo.</p></div></div><b>{release.readiness.score}%</b></div>
               <div className="readiness-grid">
                 {release.readiness.checks.map((check) => <article className={check.ready ? "ready" : ""} key={check.key}><span>{check.ready ? "✓" : "·"}</span><div><strong>{check.label}</strong><small>{check.detail}</small></div></article>)}
+              </div>
+              <div className="split-agreement-panel">
+                <div><strong>Split sheet firmado antes de entregar</strong><small>Genera un PDF inmutable con hash. Cada nueva modificación produce una versión nueva; el envío automático se activa al conectar DocuSign.</small></div>
+                <button disabled={saving} onClick={() => void generateSplitAgreement()}>Generar PDF</button>
+                {splitAgreements[0] && <div className="split-agreement-latest"><span><b>V{splitAgreements[0].version}</b><small>{splitAgreements[0].status} · {splitAgreements[0].signers.length} firmas</small></span><a href={splitAgreements[0].document_url} target="_blank" rel="noreferrer">Abrir PDF</a>{["ready", "failed"].includes(splitAgreements[0].status) ? <button disabled={!esignReady || saving} title={esignReady ? "Enviar a firmas" : "Faltan credenciales DocuSign"} onClick={() => void runSplitAgreement("send", splitAgreements[0].id)}>Enviar a DocuSign</button> : <button disabled={!esignReady || saving} onClick={() => void runSplitAgreement("refresh", splitAgreements[0].id)}>Actualizar firmas</button>}</div>}
               </div>
               {(["draft", "changes_requested"].includes(release.status)) && (
                 <div className="rights-confirmation">

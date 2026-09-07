@@ -34,6 +34,36 @@ Submission is blocked until the release has:
 - NNE Credits remain in `nne_credit_transactions` and are not money.
 - Monetary royalties use statement, line-item and payout tables with integer micros. They remain separate from NNE Credits.
 
+## Easy payouts without bypassing tax controls
+
+The payout experience is intentionally short, but the server will not create a payout request until the artist's payee profile is verified and unexpired. The operational default for a US payer suggests W-9 for US payees, W-8BEN for foreign individuals, and W-8BEN-E for foreign entities. This is a routing aid, not country-specific tax advice; NNE Finance must review the document and obtain professional tax guidance before production payouts.
+
+Signed tax PDFs are private R2 objects with a SHA-256 hash. D1 stores only minimal profile metadata, status, audit history, and a safe payout destination hint. SSNs, EINs, full bank credentials, and passwords must never be written to ordinary D1 fields.
+
+## Split agreements and DocuSign
+
+`POST /api/nne/distribution/split-agreements` with `action=generate` creates an immutable, versioned PDF snapshot of every track's master splits and stores it privately. Every participant needs a valid email and every track must total exactly 100%.
+
+When the DocuSign server credentials are configured, `action=send` authenticates with OAuth JWT grant and creates a v2.1 eSignature envelope for all unique participants. `action=refresh` reads envelope state; on completion it downloads the combined executed PDF back into private R2. Until those secrets exist, the send button remains disabled and the local PDF workflow remains usable.
+
+DocuSign secrets:
+
+- `NNE_DOCUSIGN_ACCOUNT_ID`
+- `NNE_DOCUSIGN_INTEGRATION_KEY`
+- `NNE_DOCUSIGN_USER_ID`
+- `NNE_DOCUSIGN_PRIVATE_KEY` (PKCS#8 PEM)
+- `NNE_DOCUSIGN_AUTH_BASE` (`https://account-d.docusign.com` in demo)
+- `NNE_DOCUSIGN_BASE_URI` (`https://demo.docusign.net/restapi` in demo)
+
+The integration user must grant impersonation consent before JWT works. Production requires DocuSign go-live approval and a reviewed contract template.
+
+## Commercial models and TikTok clips
+
+- `fee_100`: artist pays the agreed distribution fee and retains 100% of distributable royalties.
+- `scholarship_80_20`: NNE funds/waives the distribution fee and the artist receives 80%; NNE receives 20%, subject to the signed agreement.
+
+`TikTok Multi-Clip` is modeled as provider-reviewed clip requests. It must only deliver multiple official segments when the selected provider/DSP explicitly supports or approves them. The system must never manufacture duplicate releases or exploit redistributions to bypass platform limits; that behavior risks the whole NNE catalog.
+
 ## Provider adapter contract
 
 `buildDistributionManifest()` produces `nne-distribution-package/1.0`. Every real adapter must:
@@ -89,4 +119,4 @@ The feature remains a demo until all of the following are complete:
 
 Run `node scripts/nne-distribution-health.mjs`, build the frontend, and then run `node scripts/prepare-nne-deploy.mjs`.
 
-Migrations: `migrations/0028_nne_distribution_os.sql` and `migrations/0029_nne_distribution_provider_events.sql`.
+Migrations: `migrations/0028_nne_distribution_os.sql`, `migrations/0029_nne_distribution_provider_events.sql`, and `migrations/0030_nne_distribution_compliance_splits.sql`.

@@ -38,7 +38,7 @@ export async function onRequestGet({ request, env }) {
   const scope = accessClause(isAdmin);
   const values = isAdmin ? [] : [auth.user.id];
 
-  const [earningRows, payoutRows, statementRows, recentPayoutRows] = await env.DB.batch([
+  const [earningRows, payoutRows, statementRows, recentPayoutRows, complianceRows] = await env.DB.batch([
     env.DB.prepare(
       `SELECT lines.currency, SUM(lines.net_micros) AS earned_micros
        FROM nne_distribution_royalty_lines lines
@@ -72,6 +72,15 @@ export async function onRequestGet({ request, env }) {
        JOIN nne_distribution_artists artist ON artist.id=payouts.artist_id
        WHERE ${scope.sql}
        ORDER BY payouts.requested_at DESC LIMIT 30`
+    ).bind(...values),
+    env.DB.prepare(
+      `SELECT artist.id AS artist_id,artist.name AS artist_name,profile.id AS profile_id,
+              profile.tax_form_type,COALESCE(profile.tax_status,'required') AS tax_status,
+              CASE WHEN profile.tax_document_object_key IS NULL THEN 0 ELSE 1 END AS document_uploaded,
+              profile.expires_at
+       FROM nne_distribution_artists artist
+       LEFT JOIN nne_distribution_payee_profiles profile ON profile.artist_id=artist.id
+       WHERE ${scope.sql} ORDER BY artist.name`
     ).bind(...values)
   ]);
 
@@ -96,6 +105,7 @@ export async function onRequestGet({ request, env }) {
     balances: [...byCurrency.values()],
     statements: statementRows.results || [],
     payouts: recentPayoutRows.results || [],
+    compliance: complianceRows.results || [],
     accounting_unit: "micros",
     credits_separated: true
   });
@@ -221,6 +231,19 @@ async function requestPayout(request, env, payload) {
     ).bind(auth.user.id, artistId).first();
     if (!access?.id) return jsonError("nne_distribution_artist_forbidden", "No tienes acceso a ese balance.", 403);
   }
+  const compliance = await env.DB.prepare(
+    `SELECT id,tax_status,expires_at FROM nne_distribution_payee_profiles
+     WHERE artist_id=? LIMIT 1`
+  ).bind(artistId).first();
+  const expired = compliance?.expires_at && compliance.expires_at < now().slice(0, 10);
+  if (!compliance?.id || compliance.tax_status !== "verified" || expired) {
+    return jsonError(
+      "nne_distribution_payout_compliance_required",
+      "Antes de retirar, completa tu perfil fiscal y espera la verificación de NNE Finance.",
+      409,
+      { tax_status: expired ? "expired" : compliance?.tax_status || "required" }
+    );
+  }
   const totals = await env.DB.prepare(
     `SELECT
       COALESCE((SELECT SUM(net_micros) FROM nne_distribution_royalty_lines WHERE artist_id=? AND currency=?),0) AS earned,
@@ -231,9 +254,10 @@ async function requestPayout(request, env, payload) {
   const id = `dist_pay_${crypto.randomUUID().replaceAll("-", "")}`;
   await env.DB.prepare(
     `INSERT INTO nne_distribution_payouts (
-      id,artist_id,payee_user_id,currency,amount_micros,method,destination_hint,status,requested_at
-    ) VALUES (?,?,?,?,?,?,?,'requested',?)`
-  ).bind(id, artistId, auth.user.id, currency, amount, method, destinationHint || null, now()).run();
+      id,artist_id,payee_user_id,currency,amount_micros,method,destination_hint,status,requested_at,
+      compliance_profile_id,compliance_status_at_request
+    ) VALUES (?,?,?,?,?,?,?,'requested',?,?,?)`
+  ).bind(id, artistId, auth.user.id, currency, amount, method, destinationHint || null, now(), compliance.id, compliance.tax_status).run();
   await writeNneAudit(env, request, auth.user.id, "distribution.payout_requested", "nne_distribution_payout", id, { artist_id: artistId, currency, amount_micros: amount });
   return jsonOk({ payout_id: id, status: "requested" }, 201);
 }

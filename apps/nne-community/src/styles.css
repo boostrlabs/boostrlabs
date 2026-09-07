@@ -1431,6 +1431,23 @@ select.field { color-scheme: dark; }
 .distribution-statement-import .statement-file input { max-width: 70%; }
 .distribution-statement-import form > button { min-height: 48px; }
 .distribution-ledger, .distribution-payouts { padding: 24px; }
+.distribution-compliance { grid-column: 1 / -1; padding: 24px; }
+.distribution-compliance h3 { margin: 8px 0; }
+.distribution-compliance > p { max-width: 760px; color: var(--muted); line-height: 1.5; }
+.compliance-list { display: grid; gap: 10px; }
+.compliance-list details { border: 1px solid var(--line); border-radius: 13px; overflow: hidden; }
+.compliance-list summary { padding: 14px; display: flex; justify-content: space-between; gap: 14px; cursor: pointer; }
+.compliance-list summary span strong, .compliance-list summary span small { display: block; }
+.compliance-list summary span small { margin-top: 3px; color: var(--muted); }
+.compliance-list summary b { align-self: center; padding: 6px 9px; border-radius: 999px; color: #e9c96f; background: rgba(216,182,106,.1); font-size: .68rem; text-transform: uppercase; }
+.compliance-list summary .tax-verified { color: #72e6a7; background: rgba(60,180,110,.12); }
+.compliance-list summary .tax-rejected { color: #ff8e97; background: rgba(180,45,60,.12); }
+.compliance-list form { padding: 0 14px 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.compliance-list form button { grid-column: 1 / -1; }
+.tax-upload { margin: 0 14px 14px; padding: 11px; display: flex; justify-content: center; border: 1px dashed rgba(216,182,106,.35); border-radius: 10px; color: var(--gold-light); cursor: pointer; font-weight: 800; }
+.tax-upload input { display: none; }
+.tax-note { margin: 0 14px 14px; display: block; color: #dc8b91; }
+.compliance-list .payout-actions { padding: 0 14px 14px; }
 .distribution-ledger h3, .distribution-payouts h3 { margin: 8px 0 18px; }
 .distribution-ledger > div:not(.eyebrow), .payout-row { padding: 12px 0; display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); }
 .payout-row { flex-wrap: wrap; align-items: center; }
@@ -1543,6 +1560,15 @@ select.field { color-scheme: dark; }
 .distribution-agreement-summary > div { padding: 0 15px 15px; }
 .distribution-agreement-summary p { margin: 0 0 9px; color: var(--muted); line-height: 1.5; }
 .distribution-agreement-summary small { color: #d5bd83; }
+.split-agreement-panel { margin-top: 18px; padding: 16px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; border: 1px solid rgba(216,182,106,.24); border-radius: 14px; background: rgba(216,182,106,.035); }
+.split-agreement-panel > div > strong, .split-agreement-panel > div > small { display: block; }
+.split-agreement-panel > div > small { margin-top: 5px; max-width: 720px; color: var(--muted); line-height: 1.45; }
+.split-agreement-panel > button, .split-agreement-latest button { padding: 10px 13px; border: 1px solid var(--line); border-radius: 9px; background: #171617; color: var(--text); font-weight: 800; }
+.split-agreement-latest { grid-column: 1 / -1; padding-top: 12px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--line); }
+.split-agreement-latest span { margin-right: auto; }
+.split-agreement-latest span b, .split-agreement-latest span small { display: block; }
+.split-agreement-latest span small { color: var(--muted); }
+.split-agreement-latest a { color: var(--gold-light); font-weight: 850; }
 .distribution-actions .primary-button { color: #080808; background: var(--gold-light); border-color: var(--gold-light); }
 .distribution-actions button:disabled { opacity: .45; cursor: not-allowed; }
 .distribution-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -1595,6 +1621,8 @@ select.field { color-scheme: dark; }
   .distribution-statement-import .statement-file { grid-column: auto; align-items: flex-start; flex-direction: column; }
   .distribution-statement-import .statement-file input { max-width: 100%; }
   .distribution-payouts form { grid-template-columns: 1fr; }
+  .compliance-list form, .split-agreement-panel { grid-template-columns: 1fr; }
+  .split-agreement-latest { align-items: stretch; flex-direction: column; }
   .distribution-money-stats span { border-right: 0; border-bottom: 1px solid var(--line); }
   .distribution-money-stats span:last-child { border-bottom: 0; }
 }

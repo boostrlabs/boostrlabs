@@ -240,6 +240,8 @@ export interface DistributionRelease {
   agreement_version?: string | null;
   status: DistributionReleaseStatus;
   provider_key: string;
+  deal_model?: "fee_100" | "scholarship_80_20";
+  label_share_bps?: number;
   provider?: {
     key: string;
     name: string;
@@ -298,8 +300,49 @@ export interface DistributionFinance {
     status: string;
     requested_at: string;
   }>;
+  compliance: Array<{
+    artist_id: string;
+    artist_name: string;
+    profile_id?: string | null;
+    tax_form_type?: "W-9" | "W-8BEN" | "W-8BEN-E" | "manual-review" | null;
+    tax_status: "required" | "submitted" | "verified" | "rejected" | "expired";
+    document_uploaded: number;
+    expires_at?: string | null;
+  }>;
   accounting_unit: "micros";
   credits_separated: true;
+}
+
+export interface DistributionComplianceProfile {
+  artist_id: string;
+  artist_name: string;
+  country_code?: string | null;
+  id?: string | null;
+  legal_name?: string | null;
+  entity_type?: "individual" | "business" | null;
+  tax_residency_country?: string | null;
+  address_country?: string | null;
+  tax_form_type?: "W-9" | "W-8BEN" | "W-8BEN-E" | "manual-review" | null;
+  tax_status: "required" | "submitted" | "verified" | "rejected" | "expired";
+  document_uploaded: number;
+  payout_method?: string | null;
+  payout_destination_hint?: string | null;
+  review_note?: string | null;
+  reviewed_at?: string | null;
+  expires_at?: string | null;
+}
+
+export interface DistributionSplitAgreement {
+  id: string;
+  release_id: string;
+  version: number;
+  title: string;
+  status: "draft" | "ready" | "sent" | "partially_signed" | "completed" | "declined" | "voided" | "failed";
+  provider: "nne_local" | "docusign";
+  document_url: string;
+  content_hash: string;
+  created_at: string;
+  signers: Array<{ participant_name: string; participant_email: string; role: string; percentage_bps: number; status: string; signed_at?: string | null }>;
 }
 
 export interface ReferralReward {

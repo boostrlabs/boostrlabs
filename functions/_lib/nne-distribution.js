@@ -174,6 +174,11 @@ export function buildDistributionManifest(release) {
       },
       artist_country: release.artist_country_code || null,
       label: release.label_name,
+      commercial_terms: {
+        model: release.deal_model || "fee_100",
+        artist_share_bps: 10000 - Number(release.label_share_bps || 0),
+        nne_share_bps: Number(release.label_share_bps || 0)
+      },
       upc: release.upc || null,
       catalog_number: release.catalog_number || null,
       release_date: release.release_date,

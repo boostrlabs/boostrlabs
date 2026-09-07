@@ -63,4 +63,17 @@ assert.match(providerWebhook, /verifyMetaSignature/);
 const assetUpload = await readFile(new URL("functions/api/nne/distribution/releases/[id]/assets.js", root), "utf8");
 assert.match(assetUpload, /createMultipartUpload/);
 assert.match(assetUpload, /resumeMultipartUpload/);
+const complianceMigration = await readFile(new URL("migrations/0030_nne_distribution_compliance_splits.sql", root), "utf8");
+for (const table of ["nne_distribution_payee_profiles", "nne_distribution_split_agreements", "nne_distribution_split_signers", "nne_distribution_esign_events", "nne_distribution_tiktok_clip_requests"]) {
+  assert.match(complianceMigration, new RegExp(`CREATE TABLE IF NOT EXISTS ${table}`));
+}
+const financeApi = await readFile(new URL("functions/api/nne/distribution/finance.js", root), "utf8");
+assert.match(financeApi, /nne_distribution_payout_compliance_required/);
+assert.match(financeApi, /compliance_status_at_request/);
+const splitApi = await readFile(new URL("functions/api/nne/distribution/split-agreements.js", root), "utf8");
+assert.match(splitApi, /buildSplitSheetPdf/);
+assert.match(splitApi, /sendDocusignEnvelope/);
+const esignProvider = await readFile(new URL("functions/_lib/nne-esign-provider.js", root), "utf8");
+assert.match(esignProvider, /RSASSA-PKCS1-v1_5/);
+assert.match(esignProvider, /\/v2\.1\/accounts/);
 console.log("NNE Distribution OS health: OK");

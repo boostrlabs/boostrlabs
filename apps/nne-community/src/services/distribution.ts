@@ -1,5 +1,5 @@
 import { apiRequest } from "./api";
-import type { DistributionArtist, DistributionFinance, DistributionRelease } from "../types";
+import type { DistributionArtist, DistributionComplianceProfile, DistributionFinance, DistributionRelease, DistributionSplitAgreement } from "../types";
 
 export interface DistributionIndex {
   releases: Array<DistributionRelease & { track_count: number; master_count: number; delivery_count: number; readiness_score: number }>;
@@ -77,6 +77,16 @@ export const distributionService = {
   requestTakedown: (id: string, reason: string) =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/takedown`, { method: "POST", body: JSON.stringify({ reason }) }),
   finance: () => apiRequest<DistributionFinance & { ok: true }>("/distribution/finance"),
+  compliance: () => apiRequest<{ ok: true; profiles: DistributionComplianceProfile[]; guidance: { payer_country: string; stores_sensitive_tax_ids: boolean; disclaimer: string } }>("/distribution/compliance"),
+  saveCompliance: (payload: { artist_id: string; legal_name: string; entity_type: "individual" | "business"; tax_residency_country: string; address_country: string; payout_method?: string; payout_destination_hint?: string }) =>
+    apiRequest<{ ok: true; profile_id: string; tax_form_type: string; tax_status: string }>("/distribution/compliance", { method: "PATCH", body: JSON.stringify(payload) }),
+  uploadTaxDocument: (artistId: string, file: File) => apiRequest<{ ok: true; profile_id: string; tax_status: string; document_uploaded: boolean }>(`/distribution/compliance?artist_id=${encodeURIComponent(artistId)}`, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file }),
+  reviewCompliance: (artist_id: string, decision: "verified" | "rejected", note = "") =>
+    apiRequest<{ ok: true; profile_id: string; tax_status: string }>("/distribution/compliance", { method: "POST", body: JSON.stringify({ artist_id, decision, note }) }),
+  splitAgreements: (releaseId: string) => apiRequest<{ ok: true; agreements: DistributionSplitAgreement[]; provider: { key: string; ready: boolean; mode: string } }>(`/distribution/split-agreements?release_id=${encodeURIComponent(releaseId)}`),
+  generateSplitAgreement: (release_id: string) => apiRequest<{ ok: true; agreement_id: string; version: number; status: string; document_url: string; content_hash: string }>("/distribution/split-agreements", { method: "POST", body: JSON.stringify({ action: "generate", release_id }) }),
+  sendSplitAgreement: (release_id: string, agreement_id: string) => apiRequest<{ ok: true; agreement_id: string; envelope_id: string; status: string }>("/distribution/split-agreements", { method: "POST", body: JSON.stringify({ action: "send", release_id, agreement_id }) }),
+  refreshSplitAgreement: (release_id: string, agreement_id: string) => apiRequest<{ ok: true; agreement_id: string; status: string; external_status: string }>("/distribution/split-agreements", { method: "POST", body: JSON.stringify({ action: "refresh", release_id, agreement_id }) }),
   importStatement: (payload: {
     provider_key: string;
     external_statement_id: string;

@@ -66,7 +66,7 @@ export async function onRequestPatch({ request, env, params }) {
       title=?,release_type=?,version_title=?,label_name=?,catalog_number=?,upc=?,
       primary_genre=?,secondary_genre=?,language_code=?,original_release_date=?,release_date=?,
       copyright_year=?,c_line=?,p_line=?,explicit_content=?,territories_json=?,stores_json=?,
-      rights_confirmed=?,provider_key=?,updated_at=?
+      rights_confirmed=?,provider_key=?,deal_model=?,label_share_bps=?,updated_at=?
      WHERE id=?`
   ).bind(
     title,
@@ -88,6 +88,8 @@ export async function onRequestPatch({ request, env, params }) {
     JSON.stringify(Array.isArray(payload.stores) && payload.stores.length ? payload.stores.map((item) => clean(item, 40)).filter(Boolean) : current.stores),
     payload.rights_confirmed ? 1 : 0,
     activeProviderKey,
+    clean(payload.deal_model ?? current.deal_model, 30) === "scholarship_80_20" ? "scholarship_80_20" : "fee_100",
+    clean(payload.deal_model ?? current.deal_model, 30) === "scholarship_80_20" ? 2000 : 0,
     timestamp,
     current.id
   ).run();
