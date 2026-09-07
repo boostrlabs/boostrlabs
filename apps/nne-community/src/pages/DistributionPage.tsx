@@ -27,6 +27,17 @@ const storeOptions = [
 const contributorsText = (track: DistributionTrack, role: DistributionContributor["role"]) =>
   track.contributors.filter((item) => item.role === role).map((item) => item.name).join(", ");
 
+const contributorDetailsText = (track: DistributionTrack, role: DistributionContributor["role"]) =>
+  track.contributors.filter((item) => item.role === role)
+    .map((item) => `${item.name} | ${item.ipi_cae || ""} | ${item.pro_name || ""} | ${item.publisher_name || ""}`)
+    .join("\n");
+
+const parseContributorDetails = (value: string, role: DistributionContributor["role"]): DistributionContributor[] =>
+  value.split("\n").map((line) => {
+    const [name, ipiCae, proName, publisherName] = line.split("|").map((item) => item.trim());
+    return { name, role, ipi_cae: ipiCae || null, pro_name: proName || null, publisher_name: publisherName || null };
+  }).filter((item) => item.name);
+
 const splitsText = (track: DistributionTrack) => track.splits
   .map((split) => `${split.participant_name} | ${split.percentage}${split.participant_email ? ` | ${split.participant_email}` : ""}`)
   .join("\n");
@@ -453,6 +464,16 @@ export function DistributionPage() {
     } : current);
   };
 
+  const patchDetailedContributors = (trackId: string, role: DistributionContributor["role"], value: string) => {
+    setRelease((current) => current ? {
+      ...current,
+      tracks: current.tracks.map((track) => track.id === trackId ? {
+        ...track,
+        contributors: [...track.contributors.filter((item) => item.role !== role), ...parseContributorDetails(value, role)]
+      } : track)
+    } : current);
+  };
+
   const save = () => {
     if (!release) return;
     const payload = {
@@ -696,6 +717,7 @@ export function DistributionPage() {
                     busy={saving}
                     onField={(field, value) => patchTrack(track.id, field, value)}
                     onContributors={(role, value) => patchContributors(track.id, role, value)}
+                    onDetailedContributors={(role, value) => patchDetailedContributors(track.id, role, value)}
                     onSplits={(value) => patchTrack(track.id, "splits", parseSplits(value))}
                     onUpload={(file) => void uploadSingleMaster(track, file)}
                     onDelete={() => { if (window.confirm(`¿Eliminar ${track.title} del tracklist?`)) void run(() => distributionService.deleteTrack(track.id), "Track eliminado."); }}
@@ -756,12 +778,13 @@ function formatMoney(micros: number, currency: string) {
   return new Intl.NumberFormat("es", { style: "currency", currency, maximumFractionDigits: 2 }).format(Number(micros || 0) / 1_000_000);
 }
 
-function TrackEditor({ track, locked, busy, onField, onContributors, onSplits, onUpload, onDelete }: {
+function TrackEditor({ track, locked, busy, onField, onContributors, onDetailedContributors, onSplits, onUpload, onDelete }: {
   track: DistributionTrack;
   locked: boolean;
   busy: boolean;
   onField: (field: keyof DistributionTrack, value: unknown) => void;
   onContributors: (role: DistributionContributor["role"], value: string) => void;
+  onDetailedContributors: (role: DistributionContributor["role"], value: string) => void;
   onSplits: (value: string) => void;
   onUpload: (file: File) => void;
   onDelete: () => void;
@@ -784,7 +807,9 @@ function TrackEditor({ track, locked, busy, onField, onContributors, onSplits, o
           <label>Artista principal<input className="field" disabled={locked} value={contributorsText(track, "primary_artist")} onChange={(event) => onContributors("primary_artist", event.target.value)} placeholder="Separados por coma" /></label>
           <label>Featuring<input className="field" disabled={locked} value={contributorsText(track, "featured_artist")} onChange={(event) => onContributors("featured_artist", event.target.value)} placeholder="Separados por coma" /></label>
           <label>Productores<input className="field" disabled={locked} value={contributorsText(track, "producer")} onChange={(event) => onContributors("producer", event.target.value)} placeholder="Separados por coma" /></label>
-          <label>Compositores<input className="field" disabled={locked} value={contributorsText(track, "songwriter")} onChange={(event) => onContributors("songwriter", event.target.value)} placeholder="Separados por coma" /></label>
+          <label>Ing. de mezcla<input className="field" disabled={locked} value={contributorsText(track, "mix_engineer")} onChange={(event) => onContributors("mix_engineer", event.target.value)} placeholder="Separados por coma" /></label>
+          <label>Ing. de mastering<input className="field" disabled={locked} value={contributorsText(track, "mastering_engineer")} onChange={(event) => onContributors("mastering_engineer", event.target.value)} placeholder="Separados por coma" /></label>
+          <label className="wide">Compositores · Nombre | IPI/CAE | PRO | Publisher<textarea className="field" disabled={locked} value={contributorDetailsText(track, "songwriter")} onChange={(event) => onDetailedContributors("songwriter", event.target.value)} placeholder={"Nombre legal | IPI/CAE | ASCAP/BMI/SACVEN | Publisher\nOtro compositor | | |"} /></label>
           <label className="distribution-track-flags"><span><input type="checkbox" disabled={locked} checked={track.explicit_content} onChange={(event) => onField("explicit_content", event.target.checked)} /> Explícito</span><span><input type="checkbox" disabled={locked} checked={track.instrumental} onChange={(event) => onField("instrumental", event.target.checked)} /> Instrumental</span></label>
           <label className="wide">Splits del master<textarea className="field" disabled={locked} value={splitsText(track)} onChange={(event) => onSplits(event.target.value)} placeholder={"Nombre | 50 | email opcional\nOtro nombre | 50"} /><small className={Math.abs(splitTotal - 100) < .001 ? "split-valid" : "split-invalid"}>Total: {splitTotal}%</small></label>
         </div>
