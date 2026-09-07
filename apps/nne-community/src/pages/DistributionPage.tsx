@@ -220,6 +220,24 @@ export function DistributionPage() {
     }
   };
 
+  const uploadArtwork = async (file: File) => {
+    setSaving(true);
+    setError("");
+    try {
+      const bitmap = await createImageBitmap(file);
+      const { width, height } = bitmap;
+      bitmap.close();
+      if (width !== height) throw new Error(`La portada mide ${width}×${height}. Debe ser cuadrada.`);
+      if (width < 3000) throw new Error(`La portada mide ${width}×${height}. El mínimo entregable es 3000×3000.`);
+      const result = await distributionService.uploadAsset(release!.id, "artwork", file);
+      replaceRelease(result.release, `Portada ${width}×${height} protegida en R2.`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No pudimos validar la portada.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const deleteRelease = async () => {
     if (!release || !window.confirm(`¿Eliminar definitivamente el borrador “${release.title}”?`)) return;
     setSaving(true);
@@ -423,7 +441,7 @@ export function DistributionPage() {
             <header className="card release-overview">
               <div className="release-cover">
                 {release.artwork_url ? <img src={release.artwork_url} alt={`Portada de ${release.title}`} /> : <span>NNE</span>}
-                {(["draft", "changes_requested"].includes(release.status)) && <label className="cover-upload">Subir portada<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void run(() => distributionService.uploadAsset(release.id, "artwork", file), "Portada protegida en R2."); }} /></label>}
+                {(["draft", "changes_requested"].includes(release.status)) && <label className="cover-upload">Subir portada<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadArtwork(file); }} /></label>}
               </div>
               <div className="release-overview-copy">
                 <div className="release-status-row"><span className={`release-status ${release.status}`}>{statusCopy[release.status]}</span><small>{release.provider_release_id || "ID pendiente"}</small></div>
