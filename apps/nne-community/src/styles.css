@@ -1581,6 +1581,23 @@ select.field { color-scheme: dark; }
 .royalty-results header b { padding: 6px 9px; border-radius: 99px; font-size: .65rem; letter-spacing: .06em; }
 .royalty-results header b.ready { color: #9fe4b0; background: rgba(74,180,102,.12); }
 .royalty-results header b.pending { color: var(--gold-light); background: rgba(216,182,106,.1); }
+.tiktok-multiclip { margin-top: 16px; padding: 18px; border: 1px solid rgba(238,40,88,.25); border-radius: 14px; background: linear-gradient(135deg,rgba(238,40,88,.05),rgba(37,244,238,.025)); }
+.tiktok-multiclip > div:first-child > strong, .tiktok-multiclip > div:first-child > small { display: block; }
+.tiktok-multiclip > div:first-child > strong { margin-top: 6px; }
+.tiktok-multiclip > div:first-child > small, .multiclip-warning { margin-top: 5px; color: var(--muted); }
+.tiktok-multiclip form { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr 110px 110px auto; gap: 9px; align-items: end; }
+.tiktok-multiclip form label { color: var(--muted); font-size: .68rem; }
+.tiktok-multiclip form label .field { margin-top: 5px; }
+.tiktok-multiclip form button { min-height: 44px; border: 0; border-radius: 9px; padding: 0 14px; background: #f2f0e9; color: #090807; font-weight: 900; }
+.tiktok-multiclip form button:disabled { opacity: .4; }
+.multiclip-list article { padding: 12px 0; display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--line); }
+.multiclip-list article:first-child { margin-top: 14px; }
+.multiclip-list article > span { margin-right: auto; }
+.multiclip-list article > span strong, .multiclip-list article > span small { display: block; }
+.multiclip-list article > span small { color: var(--muted); }
+.multiclip-list article > b { padding: 6px 8px; border-radius: 99px; color: var(--gold-light); background: rgba(216,182,106,.1); font-size: .62rem; text-transform: uppercase; }
+.multiclip-list article > div { display: flex; gap: 6px; }
+.multiclip-list button { padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: #171617; color: var(--text); }
 .distribution-actions .primary-button { color: #080808; background: var(--gold-light); border-color: var(--gold-light); }
 .distribution-actions button:disabled { opacity: .45; cursor: not-allowed; }
 .distribution-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -1637,6 +1654,8 @@ select.field { color-scheme: dark; }
   .compliance-list form, .split-agreement-panel { grid-template-columns: 1fr; }
   .split-agreement-latest { align-items: stretch; flex-direction: column; }
   .royalty-simulator form { grid-template-columns: 1fr; }
+  .tiktok-multiclip form { grid-template-columns: 1fr; }
+  .multiclip-list article { align-items: flex-start; flex-direction: column; }
   .distribution-money-stats span { border-right: 0; border-bottom: 1px solid var(--line); }
   .distribution-money-stats span:last-child { border-bottom: 0; }
 }

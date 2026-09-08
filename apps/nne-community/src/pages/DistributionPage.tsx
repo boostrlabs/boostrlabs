@@ -111,6 +111,7 @@ export function DistributionPage() {
   const [inviteUrl, setInviteUrl] = useState("");
   const [uploadProgress, setUploadProgress] = useState("");
   const [royaltySimulation, setRoyaltySimulation] = useState<Awaited<ReturnType<typeof distributionService.simulateSplit>> | null>(null);
+  const [tiktokClipRequests, setTiktokClipRequests] = useState<Awaited<ReturnType<typeof distributionService.tiktokClips>>["requests"]>([]);
 
   const loadIndex = useCallback(async () => {
     const [data, financeData, complianceData] = await Promise.all([distributionService.list(), distributionService.finance(), distributionService.compliance()]);
@@ -120,11 +121,13 @@ export function DistributionPage() {
     const target = selectedId || data.releases[0]?.id || "";
     if (target) {
       setSelectedId(target);
-      const detail = await distributionService.get(target);
+      const [detail, agreementData, clipData] = await Promise.all([
+        distributionService.get(target), distributionService.splitAgreements(target), distributionService.tiktokClips(target)
+      ]);
       setRelease(detail.release);
-      const agreementData = await distributionService.splitAgreements(target);
       setSplitAgreements(agreementData.agreements);
       setEsignReady(agreementData.provider.ready);
+      setTiktokClipRequests(clipData.requests);
     }
   }, [selectedId]);
 
@@ -137,11 +140,13 @@ export function DistributionPage() {
     setSelectedId(id);
     setSaving(true);
     try {
-      const detail = await distributionService.get(id);
+      const [detail, agreementData, clipData] = await Promise.all([
+        distributionService.get(id), distributionService.splitAgreements(id), distributionService.tiktokClips(id)
+      ]);
       setRelease(detail.release);
-      const agreementData = await distributionService.splitAgreements(id);
       setSplitAgreements(agreementData.agreements);
       setEsignReady(agreementData.provider.ready);
+      setTiktokClipRequests(clipData.requests);
       setError("");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No pudimos abrir el lanzamiento.");
@@ -373,6 +378,36 @@ export function DistributionPage() {
         net_micros: Math.round(Number(values.get("amount") || 0) * 1_000_000)
       }));
     } catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos calcular el reparto."); }
+    finally { setSaving(false); }
+  };
+
+  const requestTiktokClip = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!release) return;
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    setSaving(true); setError("");
+    try {
+      await distributionService.requestTiktokClip({ track_id: String(values.get("track_id")),
+        start_seconds: Number(values.get("start_seconds") || 0), duration_seconds: Number(values.get("duration_seconds") || 60),
+        label: String(values.get("label") || "") });
+      setTiktokClipRequests((await distributionService.tiktokClips(release.id)).requests);
+      setNotice("Solicitud Multi-Clip enviada a revisión del partner.");
+      form.reset();
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos crear la solicitud Multi-Clip."); }
+    finally { setSaving(false); }
+  };
+
+  const reviewTiktokClip = async (requestId: string, status: "provider_review" | "approved" | "rejected" | "delivered") => {
+    if (!release) return;
+    const reference = status === "delivered" ? window.prompt("Referencia o ID entregado por el partner:") || "" : "";
+    if (status === "delivered" && !reference) return;
+    setSaving(true); setError("");
+    try {
+      await distributionService.reviewTiktokClip(requestId, status, reference);
+      setTiktokClipRequests((await distributionService.tiktokClips(release.id)).requests);
+      setNotice(`Multi-Clip actualizado: ${status}.`);
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos actualizar Multi-Clip."); }
     finally { setSaving(false); }
   };
 
@@ -865,6 +900,22 @@ export function DistributionPage() {
                   <header><span><small>INGRESO NETO</small><strong>{formatMoney(royaltySimulation.net_micros, royaltySimulation.currency)}</strong></span><b className={royaltySimulation.settlement_ready ? "ready" : "pending"}>{royaltySimulation.settlement_ready ? "FIRMAS COMPLETAS" : "PROYECCIÓN · FALTAN FIRMAS"}</b></header>
                   {royaltySimulation.allocations.map((item, index) => <div key={`${item.beneficiary_type}-${item.name}-${index}`}><span><strong>{item.name}</strong><small>{item.beneficiary_type === "label" ? "Participación NNE" : `${item.split_bps / 100}% del pool del artista`}</small></span><b>{formatMoney(item.amount_micros, royaltySimulation.currency)}</b></div>)}
                 </div>}
+              </div>
+              <div className="tiktok-multiclip">
+                <div><span className="eyebrow">PRO · TIKTOK MULTI-CLIP</span><strong>Solicita hasta tres fragmentos oficiales.</strong><small>Cada clip pasa por revisión humana y solo se entrega si el partner o TikTok lo autoriza.</small></div>
+                <form onSubmit={requestTiktokClip}>
+                  <select className="field" name="track_id" required>{release.tracks.map((track) => <option key={track.id} value={track.id}>{String(track.track_number).padStart(2, "0")} · {track.title}</option>)}</select>
+                  <input className="field" name="label" required placeholder="Ej. Coro / Open verse" />
+                  <label>Inicio (seg)<input className="field" name="start_seconds" type="number" min="0" defaultValue="0" required /></label>
+                  <label>Duración<input className="field" name="duration_seconds" type="number" min="5" max="60" defaultValue="60" required /></label>
+                  <button disabled={saving || !release.stores.includes("tiktok")}>Enviar solicitud</button>
+                </form>
+                {!release.stores.includes("tiktok") && <small className="multiclip-warning">Activa TikTok en Plataformas para usar esta función.</small>}
+                <div className="multiclip-list">{tiktokClipRequests.map((item) => <article key={item.id}><span><strong>{item.label}</strong><small>{item.track_title} · {item.start_seconds}s–{item.start_seconds + item.duration_seconds}s</small></span><b className={`clip-${item.status}`}>{item.status.replaceAll("_", " ")}</b>{user?.role === "admin" && <div>
+                  {item.status === "requested" && <><button disabled={saving} onClick={() => void reviewTiktokClip(item.id, "provider_review")}>Enviar al partner</button><button disabled={saving} onClick={() => void reviewTiktokClip(item.id, "rejected")}>Rechazar</button></>}
+                  {item.status === "provider_review" && <><button disabled={saving} onClick={() => void reviewTiktokClip(item.id, "approved")}>Aprobar</button><button disabled={saving} onClick={() => void reviewTiktokClip(item.id, "rejected")}>Rechazar</button></>}
+                  {item.status === "approved" && <button disabled={saving} onClick={() => void reviewTiktokClip(item.id, "delivered")}>Marcar entregado</button>}
+                </div>}</article>)}</div>
               </div>
               {(["draft", "changes_requested"].includes(release.status)) && (
                 <div className="rights-confirmation">

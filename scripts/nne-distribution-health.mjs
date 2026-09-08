@@ -90,4 +90,7 @@ assert.match(docusignWebhook, /archiveExecutedPdf/);
 const packageDownload = await readFile(new URL("functions/api/nne/distribution/packages/[jobId]/manifest.js", root), "utf8");
 assert.match(packageDownload, /requireDistributionAccess/);
 assert.match(packageDownload, /attachment; filename/);
+const tiktokClips = await readFile(new URL("functions/api/nne/distribution/tiktok-clips.js", root), "utf8");
+assert.match(tiktokClips, /máximo tres solicitudes activas/);
+assert.match(tiktokClips, /provider_review/);
 console.log("NNE Distribution OS health: OK");
