@@ -18,6 +18,20 @@ const statusCopy: Record<string, string> = {
   taken_down: "Retirado"
 };
 
+const signatureStatusCopy: Record<string, string> = {
+  draft: "Borrador",
+  ready: "PDF listo",
+  pending: "Pendiente",
+  sent: "Enviado",
+  delivered: "Visto",
+  signed: "Firmado",
+  partially_signed: "Firma parcial",
+  completed: "Firmado por todos",
+  declined: "Rechazado",
+  voided: "Anulado",
+  failed: "Error"
+};
+
 const storeOptions = [
   ["spotify", "Spotify"], ["apple_music", "Apple Music"], ["youtube_music", "YouTube Music"],
   ["amazon_music", "Amazon Music"], ["deezer", "Deezer"], ["tidal", "TIDAL"],
@@ -916,8 +930,8 @@ export function DistributionPage() {
                   {esignHealth && <em>{esignHealth.provider.hmac_key_count ?? 0} llave(s) HMAC · {new Date(esignHealth.checked_at).toLocaleTimeString("es")}</em>}
                   <button disabled={checkingEsign} onClick={() => void checkDocusign()}>{checkingEsign ? "Probando…" : esignHealth ? "Probar otra vez" : "Probar DocuSign"}</button>
                 </div>}
-                {splitAgreements[0] && <div className="split-agreement-latest"><span><b>V{splitAgreements[0].version}</b><small>{splitAgreements[0].status} · {splitAgreements[0].signers.length} firmas</small></span><a href={splitAgreements[0].document_url} target="_blank" rel="noreferrer">Abrir PDF</a>{["ready", "failed"].includes(splitAgreements[0].status) ? <button disabled={!esignReady || saving} title={esignReady ? "Enviar a firmas" : "Faltan credenciales DocuSign"} onClick={() => void runSplitAgreement("send", splitAgreements[0].id)}>Enviar a DocuSign</button> : <button disabled={!esignReady || saving} onClick={() => void runSplitAgreement("refresh", splitAgreements[0].id)}>Actualizar firmas</button>}</div>}
-                {splitAgreements[0]?.signers.length ? <div className="split-signer-list">{splitAgreements[0].signers.map((signer, index) => <span key={`${signer.participant_email}-${signer.role}-${index}`}><i>{signer.status === "signed" ? "✓" : "·"}</i><span><strong>{signer.participant_name}</strong><small>{signer.participant_email} · {signer.role}</small></span><b>{signer.status}</b></span>)}</div> : null}
+                {splitAgreements[0] && <div className="split-agreement-latest"><span><b>V{splitAgreements[0].version}</b><small>{signatureStatusCopy[splitAgreements[0].status] || splitAgreements[0].status} · {splitAgreements[0].signers.filter((signer) => signer.status === "signed").length}/{splitAgreements[0].signers.length} firmas</small></span><a href={splitAgreements[0].document_url} target="_blank" rel="noreferrer">Abrir PDF</a>{["ready", "failed"].includes(splitAgreements[0].status) ? <button disabled={!esignReady || saving} title={esignReady ? "Enviar a firmas" : "Faltan credenciales DocuSign"} onClick={() => void runSplitAgreement("send", splitAgreements[0].id)}>Enviar a DocuSign</button> : <button disabled={!esignReady || saving} onClick={() => void runSplitAgreement("refresh", splitAgreements[0].id)}>Actualizar firmas</button>}</div>}
+                {splitAgreements[0]?.signers.length ? <div className="split-signer-list">{splitAgreements[0].signers.map((signer, index) => <span key={`${signer.participant_email}-${signer.role}-${index}`}><i>{signer.status === "signed" ? "✓" : "·"}</i><span><strong>{signer.participant_name}</strong><small>{signer.participant_email} · {signer.role}</small></span><b>{signatureStatusCopy[signer.status] || signer.status}</b></span>)}</div> : null}
               </div>
               <div className="royalty-simulator">
                 <div><strong>Simulador de regalías</strong><small>Calcula el reparto exacto según el deal y los splits guardados. Es una proyección; no mueve dinero.</small></div>
