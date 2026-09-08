@@ -8,7 +8,7 @@ import {
   requireNneAdmin,
   writeNneAudit
 } from "../../../_lib/nne-api.js";
-import { requireDistributionAccess } from "../../../_lib/nne-distribution.js";
+import { loadDistributionRelease, requireDistributionAccess } from "../../../_lib/nne-distribution.js";
 
 const currencyPattern = /^[A-Z]{3}$/;
 const payoutStatuses = new Set(["approved", "processing", "paid", "failed", "cancelled"]);
@@ -115,10 +115,52 @@ export async function onRequestPost({ request, env }) {
   const parsed = await readJson(request);
   if (!parsed.ok) return parsed.response;
   const action = clean(parsed.payload?.action, 40);
+  if (action === "simulate_split") return simulateSplit(request, env, parsed.payload);
   if (action === "import_statement") return importStatement(request, env, parsed.payload);
   if (action === "request_payout") return requestPayout(request, env, parsed.payload);
   if (action === "update_payout") return updatePayout(request, env, parsed.payload);
   return jsonError("nne_distribution_finance_action", "Acción financiera no válida.", 400);
+}
+
+async function simulateSplit(request, env, payload) {
+  const releaseId = clean(payload.release_id, 120);
+  const trackId = clean(payload.track_id, 120);
+  const currency = clean(payload.currency || "USD", 3).toUpperCase();
+  const netMicros = Math.trunc(Number(payload.net_micros));
+  const auth = await requireDistributionAccess(request, env, releaseId);
+  if (!auth.ok) return auth.response;
+  if (!releaseId || !trackId || !currencyPattern.test(currency) || !Number.isSafeInteger(netMicros) || netMicros <= 0) {
+    return jsonError("nne_distribution_split_simulation_invalid", "Selecciona un track e introduce un ingreso neto válido.", 400);
+  }
+  const release = await loadDistributionRelease(env, releaseId);
+  const track = release?.tracks.find((item) => item.id === trackId);
+  if (!release || !track) return jsonError("nne_distribution_track_not_found", "Track no encontrado.", 404);
+  const splitTotal = track.splits.reduce((sum, item) => sum + Number(item.percentage_bps || 0), 0);
+  if (!track.splits.length || splitTotal !== 10000) {
+    return jsonError("nne_distribution_split_total", "Guarda splits que sumen exactamente 100% antes de simular.", 409);
+  }
+  const labelShareBps = Number(release.label_share_bps || 0);
+  const artistPoolMicros = Math.floor(netMicros * (10000 - labelShareBps) / 10000);
+  const allocations = [];
+  let distributed = 0;
+  track.splits.forEach((split, index) => {
+    const amount = index === track.splits.length - 1
+      ? artistPoolMicros - distributed
+      : Math.floor(artistPoolMicros * Number(split.percentage_bps) / 10000);
+    distributed += amount;
+    allocations.push({ beneficiary_type: "participant", name: split.participant_name,
+      email: split.participant_email || null, split_bps: Number(split.percentage_bps), amount_micros: amount });
+  });
+  const labelAmountMicros = netMicros - artistPoolMicros;
+  if (labelAmountMicros > 0) allocations.push({ beneficiary_type: "label", name: "NOSOTROSNOELLOS NNE LLC",
+    email: null, split_bps: labelShareBps, amount_micros: labelAmountMicros });
+  const agreement = await env.DB.prepare(
+    "SELECT id,version,status FROM nne_distribution_split_agreements WHERE release_id=? ORDER BY version DESC LIMIT 1"
+  ).bind(release.id).first();
+  return jsonOk({ release_id: release.id, track_id: track.id, track_title: track.title, currency,
+    net_micros: netMicros, deal_model: release.deal_model || "fee_100", artist_pool_micros: artistPoolMicros,
+    label_amount_micros: labelAmountMicros, allocations, agreement: agreement || null,
+    settlement_ready: agreement?.status === "completed" });
 }
 
 async function importStatement(request, env, payload) {

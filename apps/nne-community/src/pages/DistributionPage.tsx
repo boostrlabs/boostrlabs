@@ -110,6 +110,7 @@ export function DistributionPage() {
   const [esignReady, setEsignReady] = useState(false);
   const [inviteUrl, setInviteUrl] = useState("");
   const [uploadProgress, setUploadProgress] = useState("");
+  const [royaltySimulation, setRoyaltySimulation] = useState<Awaited<ReturnType<typeof distributionService.simulateSplit>> | null>(null);
 
   const loadIndex = useCallback(async () => {
     const [data, financeData, complianceData] = await Promise.all([distributionService.list(), distributionService.finance(), distributionService.compliance()]);
@@ -357,6 +358,22 @@ export function DistributionPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const simulateRoyaltySplit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!release) return;
+    const values = new FormData(event.currentTarget);
+    setSaving(true); setError("");
+    try {
+      setRoyaltySimulation(await distributionService.simulateSplit({
+        release_id: release.id,
+        track_id: String(values.get("track_id")),
+        currency: String(values.get("currency") || "USD").toUpperCase(),
+        net_micros: Math.round(Number(values.get("amount") || 0) * 1_000_000)
+      }));
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos calcular el reparto."); }
+    finally { setSaving(false); }
   };
 
   const downloadStatementTemplate = () => {
@@ -835,6 +852,19 @@ export function DistributionPage() {
                 <div><strong>Split sheet firmado antes de entregar</strong><small>Genera un PDF inmutable con hash. Cada nueva modificación produce una versión nueva; el envío automático se activa al conectar DocuSign.</small></div>
                 <button disabled={saving} onClick={() => void generateSplitAgreement()}>Generar PDF</button>
                 {splitAgreements[0] && <div className="split-agreement-latest"><span><b>V{splitAgreements[0].version}</b><small>{splitAgreements[0].status} · {splitAgreements[0].signers.length} firmas</small></span><a href={splitAgreements[0].document_url} target="_blank" rel="noreferrer">Abrir PDF</a>{["ready", "failed"].includes(splitAgreements[0].status) ? <button disabled={!esignReady || saving} title={esignReady ? "Enviar a firmas" : "Faltan credenciales DocuSign"} onClick={() => void runSplitAgreement("send", splitAgreements[0].id)}>Enviar a DocuSign</button> : <button disabled={!esignReady || saving} onClick={() => void runSplitAgreement("refresh", splitAgreements[0].id)}>Actualizar firmas</button>}</div>}
+              </div>
+              <div className="royalty-simulator">
+                <div><strong>Simulador de regalías</strong><small>Calcula el reparto exacto según el deal y los splits guardados. Es una proyección; no mueve dinero.</small></div>
+                <form onSubmit={simulateRoyaltySplit}>
+                  <select className="field" name="track_id" required>{release.tracks.map((track) => <option key={track.id} value={track.id}>{String(track.track_number).padStart(2, "0")} · {track.title}</option>)}</select>
+                  <input className="field" name="amount" type="number" min="0.01" step="0.01" defaultValue="1000" aria-label="Ingreso neto" required />
+                  <input className="field" name="currency" maxLength={3} defaultValue="USD" aria-label="Moneda" required />
+                  <button disabled={saving}>Calcular reparto</button>
+                </form>
+                {royaltySimulation?.release_id === release.id && <div className="royalty-results">
+                  <header><span><small>INGRESO NETO</small><strong>{formatMoney(royaltySimulation.net_micros, royaltySimulation.currency)}</strong></span><b className={royaltySimulation.settlement_ready ? "ready" : "pending"}>{royaltySimulation.settlement_ready ? "FIRMAS COMPLETAS" : "PROYECCIÓN · FALTAN FIRMAS"}</b></header>
+                  {royaltySimulation.allocations.map((item, index) => <div key={`${item.beneficiary_type}-${item.name}-${index}`}><span><strong>{item.name}</strong><small>{item.beneficiary_type === "label" ? "Participación NNE" : `${item.split_bps / 100}% del pool del artista`}</small></span><b>{formatMoney(item.amount_micros, royaltySimulation.currency)}</b></div>)}
+                </div>}
               </div>
               {(["draft", "changes_requested"].includes(release.status)) && (
                 <div className="rights-confirmation">

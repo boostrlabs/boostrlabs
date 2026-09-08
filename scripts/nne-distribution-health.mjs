@@ -70,6 +70,8 @@ for (const table of ["nne_distribution_payee_profiles", "nne_distribution_split_
 const financeApi = await readFile(new URL("functions/api/nne/distribution/finance.js", root), "utf8");
 assert.match(financeApi, /nne_distribution_payout_compliance_required/);
 assert.match(financeApi, /compliance_status_at_request/);
+assert.match(financeApi, /simulateSplit/);
+assert.match(financeApi, /artistPoolMicros/);
 const splitApi = await readFile(new URL("functions/api/nne/distribution/split-agreements.js", root), "utf8");
 assert.match(splitApi, /buildSplitSheetPdf/);
 assert.match(splitApi, /sendDocusignEnvelope/);

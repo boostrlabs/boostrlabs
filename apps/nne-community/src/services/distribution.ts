@@ -77,6 +77,8 @@ export const distributionService = {
   requestTakedown: (id: string, reason: string) =>
     apiRequest<{ ok: true; release: DistributionRelease }>(`/distribution/releases/${encodeURIComponent(id)}/takedown`, { method: "POST", body: JSON.stringify({ reason }) }),
   finance: () => apiRequest<DistributionFinance & { ok: true }>("/distribution/finance"),
+  simulateSplit: (payload: { release_id: string; track_id: string; currency: string; net_micros: number }) =>
+    apiRequest<{ ok: true; release_id: string; track_id: string; track_title: string; currency: string; net_micros: number; deal_model: string; artist_pool_micros: number; label_amount_micros: number; allocations: Array<{ beneficiary_type: "participant" | "label"; name: string; email?: string | null; split_bps: number; amount_micros: number }>; agreement?: { id: string; version: number; status: string } | null; settlement_ready: boolean }>("/distribution/finance", { method: "POST", body: JSON.stringify({ action: "simulate_split", ...payload }) }),
   compliance: () => apiRequest<{ ok: true; profiles: DistributionComplianceProfile[]; guidance: { payer_country: string; stores_sensitive_tax_ids: boolean; disclaimer: string } }>("/distribution/compliance"),
   saveCompliance: (payload: { artist_id: string; legal_name: string; entity_type: "individual" | "business"; tax_residency_country: string; address_country: string; payout_method?: string; payout_destination_hint?: string }) =>
     apiRequest<{ ok: true; profile_id: string; tax_form_type: string; tax_status: string }>("/distribution/compliance", { method: "PATCH", body: JSON.stringify(payload) }),
