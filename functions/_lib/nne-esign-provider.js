@@ -34,6 +34,53 @@ async function jwtAccessToken(env) {
   return data.access_token;
 }
 
+const withoutRestApi = (value) => String(value || "").replace(/\/(?:restapi)?\/?$/, "");
+
+export async function checkDocusignConnection(env) {
+  const state = esignProviderState(env);
+  if (!state.ready) throw new Error("Faltan credenciales server-to-server de DocuSign.");
+
+  const authBase = String(env.NNE_DOCUSIGN_AUTH_BASE || "https://account-d.docusign.com").replace(/\/$/, "");
+  const token = await jwtAccessToken(env);
+  const response = await fetch(`${authBase}/oauth/userinfo`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error_description || data.error || "DocuSign no devolvió la cuenta OAuth.");
+
+  const accounts = Array.isArray(data.accounts) ? data.accounts : [];
+  const account = accounts.find((item) => item.account_id === env.NNE_DOCUSIGN_ACCOUNT_ID);
+  const configuredBase = withoutRestApi(env.NNE_DOCUSIGN_BASE_URI || "https://demo.docusign.net/restapi");
+  const remoteBase = withoutRestApi(account?.base_uri);
+  const accountMatches = Boolean(account);
+  const baseUriMatches = Boolean(account && configuredBase === remoteBase);
+
+  let hmacKeyCount = null;
+  if (accountMatches) {
+    const hmacResponse = await fetch(`${apiBase(env)}/connect/secret`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
+    });
+    if (hmacResponse.ok) {
+      const hmacData = await hmacResponse.json().catch(() => ({}));
+      hmacKeyCount = Array.isArray(hmacData.secrets) ? hmacData.secrets.length : null;
+    }
+  }
+
+  return {
+    connected: accountMatches && baseUriMatches,
+    ready: accountMatches && baseUriMatches && state.webhooks_ready,
+    authentication: "jwt",
+    environment: new URL(authBase).host.includes("account-d") ? "demo" : "production",
+    account_id_match: accountMatches,
+    base_uri_match: baseUriMatches,
+    webhooks_ready: state.webhooks_ready,
+    hmac_key_count: hmacKeyCount,
+    callback_url: state.webhooks_ready
+      ? `${String(env.NNE_PUBLIC_URL).replace(/\/$/, "")}/api/nne/distribution/docusign-webhook`
+      : null
+  };
+}
+
 export function esignProviderState(env) {
   const ready = Boolean(env.NNE_DOCUSIGN_ACCOUNT_ID && env.NNE_DOCUSIGN_INTEGRATION_KEY && env.NNE_DOCUSIGN_USER_ID && (env.NNE_DOCUSIGN_PRIVATE_KEY || env.NNE_DOCUSIGN_ACCESS_TOKEN));
   const webhooksReady = Boolean(env.NNE_DOCUSIGN_HMAC_SECRET && env.NNE_PUBLIC_URL);

@@ -79,6 +79,12 @@ const esignProvider = await readFile(new URL("functions/_lib/nne-esign-provider.
 assert.match(esignProvider, /RSASSA-PKCS1-v1_5/);
 assert.match(esignProvider, /\/v2\.1\/accounts/);
 assert.match(esignProvider, /eventNotification/);
+assert.match(esignProvider, /checkDocusignConnection/);
+assert.match(esignProvider, /oauth\/userinfo/);
+const docusignHealth = await readFile(new URL("functions/api/nne/distribution/docusign-health.js", root), "utf8");
+assert.match(docusignHealth, /requireDistributionAccess/);
+assert.match(docusignHealth, /auth\.user\.role !== "admin"/);
+assert.match(docusignHealth, /checkDocusignConnection/);
 const taxDocumentApi = await readFile(new URL("functions/api/nne/distribution/compliance/[artistId]/document.js", root), "utf8");
 assert.match(taxDocumentApi, /requireDistributionAccess/);
 assert.match(taxDocumentApi, /Cache-Control": "private, no-store/);

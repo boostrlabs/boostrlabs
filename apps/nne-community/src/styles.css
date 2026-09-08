@@ -1584,6 +1584,13 @@ select.field { color-scheme: dark; }
 .split-agreement-latest span b, .split-agreement-latest span small { display: block; }
 .split-agreement-latest span small { color: var(--muted); }
 .split-agreement-latest a { color: var(--gold-light); font-weight: 850; }
+.docusign-health { grid-column: 1 / -1; padding: 12px; display: flex; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; background: rgba(0,0,0,.3); }
+.docusign-health > span { margin-right: auto; display: flex; gap: 10px; align-items: center; }
+.docusign-health i { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #252225; color: var(--muted); font-size: .7rem; font-style: normal; font-weight: 900; }
+.docusign-health.ready i { background: rgba(59,193,126,.16); color: #70dea9; }
+.docusign-health strong, .docusign-health small { display: block; }
+.docusign-health small, .docusign-health em { color: var(--muted); font-size: .7rem; font-style: normal; }
+.docusign-health button { padding: 9px 12px; border: 1px solid rgba(216,182,106,.3); border-radius: 9px; background: transparent; color: var(--gold-light); font-weight: 800; }
 .split-signer-list { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
 .split-signer-list > span { padding: 9px; display: flex; gap: 9px; align-items: center; border: 1px solid var(--line); border-radius: 9px; }
 .split-signer-list i { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: var(--gold); background: rgba(216,182,106,.1); font-style: normal; }
@@ -1676,6 +1683,7 @@ select.field { color-scheme: dark; }
   .distribution-payouts form { grid-template-columns: 1fr; }
   .compliance-list form, .split-agreement-panel { grid-template-columns: 1fr; }
   .split-agreement-latest { align-items: stretch; flex-direction: column; }
+  .docusign-health { align-items: stretch; flex-direction: column; }
   .release-steps { position: static; grid-template-columns: 1fr 1fr; }
   .split-signer-list { grid-template-columns: 1fr; }
   .royalty-simulator form { grid-template-columns: 1fr; }

@@ -108,6 +108,8 @@ export function DistributionPage() {
   const [compliance, setCompliance] = useState<DistributionComplianceProfile[]>([]);
   const [splitAgreements, setSplitAgreements] = useState<DistributionSplitAgreement[]>([]);
   const [esignReady, setEsignReady] = useState(false);
+  const [esignHealth, setEsignHealth] = useState<Awaited<ReturnType<typeof distributionService.checkDocusign>> | null>(null);
+  const [checkingEsign, setCheckingEsign] = useState(false);
   const [inviteUrl, setInviteUrl] = useState("");
   const [uploadProgress, setUploadProgress] = useState("");
   const [royaltySimulation, setRoyaltySimulation] = useState<Awaited<ReturnType<typeof distributionService.simulateSplit>> | null>(null);
@@ -349,6 +351,18 @@ export function DistributionPage() {
       setNotice(action === "send" ? "DocuSign envió el acuerdo a todos los firmantes." : "Estado de firmas actualizado.");
     } catch (caught) { setError(caught instanceof Error ? caught.message : "No pudimos conectar con DocuSign."); }
     finally { setSaving(false); }
+  };
+
+  const checkDocusign = async () => {
+    setCheckingEsign(true); setError("");
+    try {
+      const result = await distributionService.checkDocusign();
+      setEsignHealth(result);
+      setEsignReady(result.provider.connected);
+    } catch (caught) {
+      setEsignHealth(null);
+      setError(caught instanceof Error ? caught.message : "No pudimos verificar DocuSign.");
+    } finally { setCheckingEsign(false); }
   };
 
   const updatePayout = async (payoutId: string, status: "approved" | "processing" | "paid" | "failed" | "cancelled") => {
@@ -897,6 +911,11 @@ export function DistributionPage() {
               <div className="split-agreement-panel">
                 <div><strong>Split sheet firmado antes de entregar</strong><small>Genera un PDF inmutable con hash. Cada nueva modificación produce una versión nueva; el envío automático se activa al conectar DocuSign.</small></div>
                 <button disabled={saving} onClick={() => void generateSplitAgreement()}>Generar PDF</button>
+                {user?.role === "admin" && <div className={`docusign-health ${esignHealth?.provider.ready ? "ready" : ""}`}>
+                  <span><i>{esignHealth?.provider.ready ? "✓" : "DS"}</i><span><strong>DocuSign Connect</strong><small>{esignHealth ? `${esignHealth.provider.environment.toUpperCase()} · JWT ${esignHealth.provider.connected ? "OK" : "ERROR"} · HMAC ${esignHealth.provider.webhooks_ready ? "LISTO" : "PENDIENTE"}` : "Prueba las credenciales sin enviar documentos."}</small></span></span>
+                  {esignHealth && <em>{esignHealth.provider.hmac_key_count ?? 0} llave(s) HMAC · {new Date(esignHealth.checked_at).toLocaleTimeString("es")}</em>}
+                  <button disabled={checkingEsign} onClick={() => void checkDocusign()}>{checkingEsign ? "Probando…" : esignHealth ? "Probar otra vez" : "Probar DocuSign"}</button>
+                </div>}
                 {splitAgreements[0] && <div className="split-agreement-latest"><span><b>V{splitAgreements[0].version}</b><small>{splitAgreements[0].status} · {splitAgreements[0].signers.length} firmas</small></span><a href={splitAgreements[0].document_url} target="_blank" rel="noreferrer">Abrir PDF</a>{["ready", "failed"].includes(splitAgreements[0].status) ? <button disabled={!esignReady || saving} title={esignReady ? "Enviar a firmas" : "Faltan credenciales DocuSign"} onClick={() => void runSplitAgreement("send", splitAgreements[0].id)}>Enviar a DocuSign</button> : <button disabled={!esignReady || saving} onClick={() => void runSplitAgreement("refresh", splitAgreements[0].id)}>Actualizar firmas</button>}</div>}
                 {splitAgreements[0]?.signers.length ? <div className="split-signer-list">{splitAgreements[0].signers.map((signer, index) => <span key={`${signer.participant_email}-${signer.role}-${index}`}><i>{signer.status === "signed" ? "✓" : "·"}</i><span><strong>{signer.participant_name}</strong><small>{signer.participant_email} · {signer.role}</small></span><b>{signer.status}</b></span>)}</div> : null}
               </div>
