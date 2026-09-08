@@ -1390,6 +1390,15 @@ select.field { color-scheme: dark; }
 .provider-signal strong { margin: 5px 0 3px; }
 .provider-signal em { color: var(--gold-light); font-size: .7rem; font-style: normal; }
 .distribution-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.distribution-review-queue { padding: 22px; display: grid; grid-template-columns: minmax(240px,.7fr) 1.3fr; gap: 22px; }
+.distribution-review-queue h3 { margin: 7px 0 5px; font-size: 1.6rem; }
+.distribution-review-queue p { margin: 0; color: var(--muted); line-height: 1.45; }
+.distribution-review-queue > div:last-child { display: grid; gap: 8px; }
+.distribution-review-queue button { padding: 12px 14px; display: flex; align-items: center; gap: 12px; text-align: left; border: 1px solid var(--line); border-radius: 11px; background: #111; color: var(--text); }
+.distribution-review-queue button span { margin-right: auto; }
+.distribution-review-queue button small, .distribution-review-queue button strong { display: block; }
+.distribution-review-queue button small { color: var(--muted); }
+.distribution-review-queue button b { color: var(--gold-light); }
 .distribution-metrics article { padding: 18px; }
 .distribution-metrics small, .distribution-metrics strong { display: block; }
 .distribution-metrics small { color: var(--muted); }
@@ -1464,6 +1473,12 @@ select.field { color-scheme: dark; }
 .distribution-create label { color: var(--muted); font-size: .76rem; }
 .distribution-create .field { margin-top: 7px; }
 .distribution-workspace { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 18px; align-items: start; }
+.release-steps { position: sticky; top: 8px; z-index: 8; margin-bottom: 12px; padding: 8px; display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; border: 1px solid var(--line); border-radius: 14px; background: rgba(8,8,8,.92); backdrop-filter: blur(14px); }
+.release-steps a { min-width: 0; padding: 10px; display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 8px; align-items: center; color: var(--muted); text-decoration: none; border-radius: 9px; }
+.release-steps a:hover { color: var(--text); background: rgba(255,255,255,.045); }
+.release-steps a span { color: var(--gold); font-size: .64rem; }
+.release-steps a strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .7rem; }
+.release-steps a b { color: var(--gold-light); }
 .release-rail { position: sticky; top: 16px; display: grid; gap: 9px; }
 .release-tile { width: 100%; padding: 10px; display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 11px; align-items: center; color: var(--text); border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.018); text-align: left; }
 .release-tile:hover, .release-tile.active { border-color: rgba(216,182,106,.5); background: rgba(216,182,106,.06); }
@@ -1569,6 +1584,13 @@ select.field { color-scheme: dark; }
 .split-agreement-latest span b, .split-agreement-latest span small { display: block; }
 .split-agreement-latest span small { color: var(--muted); }
 .split-agreement-latest a { color: var(--gold-light); font-weight: 850; }
+.split-signer-list { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.split-signer-list > span { padding: 9px; display: flex; gap: 9px; align-items: center; border: 1px solid var(--line); border-radius: 9px; }
+.split-signer-list i { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: var(--gold); background: rgba(216,182,106,.1); font-style: normal; }
+.split-signer-list > span > span { min-width: 0; margin-right: auto; }
+.split-signer-list strong, .split-signer-list small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.split-signer-list small { color: var(--muted); }
+.split-signer-list > span > b { color: var(--gold-light); font-size: .62rem; text-transform: uppercase; }
 .royalty-simulator { margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.018); }
 .royalty-simulator > div:first-child strong, .royalty-simulator > div:first-child small { display: block; }
 .royalty-simulator > div:first-child small { margin-top: 5px; color: var(--muted); }
@@ -1630,6 +1652,7 @@ select.field { color-scheme: dark; }
   .distribution-create { grid-template-columns: 1fr 1fr; }
   .distribution-money, .distribution-onboarding, .distribution-artist-identities { grid-template-columns: 1fr; }
   .distribution-finance-grid { grid-template-columns: 1fr; }
+  .distribution-review-queue { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .distribution-hero { min-height: 0; }
@@ -1653,6 +1676,8 @@ select.field { color-scheme: dark; }
   .distribution-payouts form { grid-template-columns: 1fr; }
   .compliance-list form, .split-agreement-panel { grid-template-columns: 1fr; }
   .split-agreement-latest { align-items: stretch; flex-direction: column; }
+  .release-steps { position: static; grid-template-columns: 1fr 1fr; }
+  .split-signer-list { grid-template-columns: 1fr; }
   .royalty-simulator form { grid-template-columns: 1fr; }
   .tiktok-multiclip form { grid-template-columns: 1fr; }
   .multiclip-list article { align-items: flex-start; flex-direction: column; }

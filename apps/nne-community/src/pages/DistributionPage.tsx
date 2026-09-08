@@ -670,6 +670,11 @@ export function DistributionPage() {
         <Metric label="Entregas demo" value={index.metrics.delivered} />
       </section>
 
+      {user?.role === "admin" && index.releases.some((item) => item.status === "in_review") && <section className="card distribution-review-queue">
+        <div><div className="eyebrow">NNE REVIEW DESK</div><h3>Esperando decisión</h3><p>Abre un lanzamiento, revisa los bloqueos y aprueba o devuelve con instrucciones.</p></div>
+        <div>{index.releases.filter((item) => item.status === "in_review").map((item) => <button key={item.id} onClick={() => void openRelease(item.id)}><span><small>{item.artist_name}</small><strong>{item.title}</strong></span><b>{item.readiness_score}%</b></button>)}</div>
+      </section>}
+
       <section className="card distribution-money">
         <div><div className="eyebrow">REGALÍAS REALES · NO SON NNE CREDITS</div><h3>Cobrar fácil. Cobrar correctamente.</h3><p>Completa tus datos una vez, ve exactamente qué falta y solicita tu retiro en un botón cuando NNE Finance verifique el perfil fiscal. El dinero real nunca se mezcla con los créditos de la comunidad.</p></div>
         <div className="distribution-money-stats">
@@ -815,6 +820,12 @@ export function DistributionPage() {
 
         {release && (
           <div className="release-editor">
+            <nav className="release-steps" aria-label="Etapas del lanzamiento">
+              <a href="#release-metadata"><span>01</span><strong>Metadata</strong><b>{release.readiness.checks.find((item) => item.key === "metadata")?.ready ? "✓" : "·"}</b></a>
+              <a href="#release-tracks"><span>02</span><strong>Masters + créditos</strong><b>{release.tracks.length && release.tracks.every((track) => track.master_ready) ? "✓" : "·"}</b></a>
+              <a href="#release-rights"><span>03</span><strong>Splits + derechos</strong><b>{release.readiness.ready ? "✓" : "·"}</b></a>
+              <a href="#release-delivery"><span>04</span><strong>Revisión + entrega</strong><b>{["packaged","delivered","live","delivered_demo","live_demo"].includes(release.status) ? "✓" : "·"}</b></a>
+            </nav>
             <header className="card release-overview">
               <div className="release-cover">
                 {release.artwork_url ? <img src={release.artwork_url} alt={`Portada de ${release.title}`} /> : <span>NNE</span>}
@@ -833,7 +844,7 @@ export function DistributionPage() {
             {error && <div className="form-error">{error}</div>}
             {notice && <div className="distribution-notice">{notice}</div>}
 
-            <section className="card distribution-section">
+            <section className="card distribution-section" id="release-metadata">
               <div className="distribution-section-title"><div><span>01</span><div><h3>Identidad del lanzamiento</h3><p>La metadata que verán las plataformas.</p></div></div><b>{release.readiness.checks.find((item) => item.key === "metadata")?.ready ? "LISTO" : "PENDIENTE"}</b></div>
               <div className="distribution-form-grid">
                 <label>Título<input className="field" value={release.title} onChange={(event) => patchRelease("title", event.target.value)} /></label>
@@ -852,7 +863,7 @@ export function DistributionPage() {
               </div>
             </section>
 
-            <section className="card distribution-section">
+            <section className="card distribution-section" id="release-tracks">
               <div className="distribution-section-title"><div><span>02</span><div><h3>Tracklist + masters</h3><p>WAV/FLAC privados. Nunca quedan en una URL pública.</p></div></div><b>{release.tracks.filter((track) => track.master_ready).length}/{release.tracks.length}</b></div>
               {(["draft", "changes_requested"].includes(release.status)) && <div className="bulk-master-upload"><div><strong>Subir masters en lote</strong><small>Nombra los archivos 01, 02, 03… El sistema los ordena y los enlaza con el tracklist.</small></div><label>{uploadProgress || "Elegir WAV/FLAC"}<input type="file" multiple disabled={saving} accept="audio/wav,audio/flac" onChange={(event) => void uploadAlbumMasters(event.target.files)} /></label></div>}
               <div className="batch-split-box">
@@ -878,7 +889,7 @@ export function DistributionPage() {
               {(["draft", "changes_requested"].includes(release.status)) && <button className="distribution-add-track" onClick={() => { const title = window.prompt("Título del nuevo track:"); if (title) void run(() => distributionService.addTrack(release.id, title), "Track agregado."); }}>+ Agregar track</button>}
             </section>
 
-            <section className="card distribution-section">
+            <section className="card distribution-section" id="release-rights">
               <div className="distribution-section-title"><div><span>03</span><div><h3>Derechos + control de salida</h3><p>El release no avanza mientras exista un bloqueo.</p></div></div><b>{release.readiness.score}%</b></div>
               <div className="readiness-grid">
                 {release.readiness.checks.map((check) => <article className={check.ready ? "ready" : ""} key={check.key}><span>{check.ready ? "✓" : "·"}</span><div><strong>{check.label}</strong><small>{check.detail}</small></div></article>)}
@@ -887,6 +898,7 @@ export function DistributionPage() {
                 <div><strong>Split sheet firmado antes de entregar</strong><small>Genera un PDF inmutable con hash. Cada nueva modificación produce una versión nueva; el envío automático se activa al conectar DocuSign.</small></div>
                 <button disabled={saving} onClick={() => void generateSplitAgreement()}>Generar PDF</button>
                 {splitAgreements[0] && <div className="split-agreement-latest"><span><b>V{splitAgreements[0].version}</b><small>{splitAgreements[0].status} · {splitAgreements[0].signers.length} firmas</small></span><a href={splitAgreements[0].document_url} target="_blank" rel="noreferrer">Abrir PDF</a>{["ready", "failed"].includes(splitAgreements[0].status) ? <button disabled={!esignReady || saving} title={esignReady ? "Enviar a firmas" : "Faltan credenciales DocuSign"} onClick={() => void runSplitAgreement("send", splitAgreements[0].id)}>Enviar a DocuSign</button> : <button disabled={!esignReady || saving} onClick={() => void runSplitAgreement("refresh", splitAgreements[0].id)}>Actualizar firmas</button>}</div>}
+                {splitAgreements[0]?.signers.length ? <div className="split-signer-list">{splitAgreements[0].signers.map((signer, index) => <span key={`${signer.participant_email}-${signer.role}-${index}`}><i>{signer.status === "signed" ? "✓" : "·"}</i><span><strong>{signer.participant_name}</strong><small>{signer.participant_email} · {signer.role}</small></span><b>{signer.status}</b></span>)}</div> : null}
               </div>
               <div className="royalty-simulator">
                 <div><strong>Simulador de regalías</strong><small>Calcula el reparto exacto según el deal y los splits guardados. Es una proyección; no mueve dinero.</small></div>
@@ -944,7 +956,7 @@ export function DistributionPage() {
               </div>
             </section>
 
-            <section className="distribution-bottom-grid">
+            <section className="distribution-bottom-grid" id="release-delivery">
               <article className="card distribution-timeline"><div className="eyebrow">AUDIT TRAIL</div><h3>Todo cambio deja huella.</h3>{release.events.slice(0, 8).map((event) => <div key={event.id}><span /><p><strong>{event.event_type.replaceAll("_", " ").replaceAll(".", " · ")}</strong><small>{formatRelativeDate(event.created_at)}</small></p></div>)}</article>
               <article className="card delivery-rail"><div className="eyebrow">DELIVERY ADAPTER</div><h3>{release.provider?.name || (release.provider_key === "nne_sandbox" ? "NNE Sandbox" : release.provider_key)}</h3><p>NNE conserva la data canónica. Al cerrar el acuerdo, conectamos credenciales y mapping del partner sin cambiar el flujo de Janko, Gemese o Xiam.</p><div><span>Conexión</span><strong>{release.provider?.status || "sandbox"}</strong></div><div><span>Paquete</span><strong>{release.delivery_jobs[0]?.status || "Pendiente"}</strong></div><div><span>Provider ID</span><strong>{release.provider_release_id || "—"}</strong></div>{release.delivery_jobs[0]?.package_url && <a className="secondary-button package-download" href={release.delivery_jobs[0].package_url}>Descargar manifest universal</a>}</article>
             </section>
