@@ -85,4 +85,7 @@ const docusignWebhook = await readFile(new URL("functions/api/nne/distribution/d
 assert.match(docusignWebhook, /X-DocuSign-Signature/i);
 assert.match(docusignWebhook, /nne_distribution_esign_events/);
 assert.match(docusignWebhook, /archiveExecutedPdf/);
+const packageDownload = await readFile(new URL("functions/api/nne/distribution/packages/[jobId]/manifest.js", root), "utf8");
+assert.match(packageDownload, /requireDistributionAccess/);
+assert.match(packageDownload, /attachment; filename/);
 console.log("NNE Distribution OS health: OK");

@@ -258,7 +258,7 @@ export interface DistributionRelease {
   tracks: DistributionTrack[];
   readiness: { score: number; ready: boolean; checks: DistributionCheck[]; blockers: DistributionCheck[] };
   events: Array<{ id: string; event_type: string; from_status?: string | null; to_status?: string | null; created_at: string }>;
-  delivery_jobs: Array<{ id: string; provider_key: string; status: string; created_at: string; accepted_at?: string | null }>;
+  delivery_jobs: Array<{ id: string; provider_key: string; status: string; package_ready?: number; package_url?: string | null; created_at: string; accepted_at?: string | null }>;
   updated_at: string;
 }
 

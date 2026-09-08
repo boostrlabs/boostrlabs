@@ -1583,6 +1583,7 @@ select.field { color-scheme: dark; }
 .delivery-rail > p { color: var(--muted); line-height: 1.5; }
 .delivery-rail > div:not(.eyebrow) { padding: 12px 0; display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); }
 .delivery-rail span { color: var(--muted); }
+.delivery-rail .package-download { margin-top: 14px; display: inline-flex; justify-content: center; text-decoration: none; }
 .distribution-locked { padding: 44px; }
 .distribution-locked h2 { font-size: 3rem; margin: 12px 0; }
 .distribution-locked p { color: var(--muted); }

@@ -106,7 +106,7 @@ export async function loadDistributionRelease(env, releaseId) {
     env.DB.prepare("SELECT c.* FROM nne_distribution_contributors c JOIN nne_distribution_tracks t ON t.id=c.track_id WHERE t.release_id=? ORDER BY t.track_number,c.role,c.name").bind(release.id),
     env.DB.prepare("SELECT s.* FROM nne_distribution_splits s JOIN nne_distribution_tracks t ON t.id=s.track_id WHERE t.release_id=? ORDER BY t.track_number,s.participant_name").bind(release.id),
     env.DB.prepare("SELECT * FROM nne_distribution_events WHERE release_id=? ORDER BY created_at DESC LIMIT 100").bind(release.id),
-    env.DB.prepare("SELECT id,provider_key,status,attempt_count,last_error,created_at,updated_at,accepted_at FROM nne_distribution_delivery_jobs WHERE release_id=? ORDER BY created_at DESC LIMIT 20").bind(release.id)
+    env.DB.prepare("SELECT id,provider_key,status,attempt_count,last_error,created_at,updated_at,accepted_at,CASE WHEN package_object_key IS NULL THEN 0 ELSE 1 END AS package_ready FROM nne_distribution_delivery_jobs WHERE release_id=? ORDER BY created_at DESC LIMIT 20").bind(release.id)
   ]);
 
   const tracks = trackRows.results || [];
@@ -134,7 +134,10 @@ export async function loadDistributionRelease(env, releaseId) {
       }))
     })),
     events: eventRows.results || [],
-    delivery_jobs: jobRows.results || []
+    delivery_jobs: (jobRows.results || []).map((job) => ({
+      ...job,
+      package_url: job.package_ready ? `/api/nne/distribution/packages/${encodeURIComponent(job.id)}/manifest` : null
+    }))
   };
   normalized.readiness = releaseReadiness(normalized, tracks, contributors, splits);
   normalized.provider = distributionProviderState(env, normalized.provider_key);
