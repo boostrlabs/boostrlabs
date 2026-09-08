@@ -94,6 +94,13 @@ export async function sendDocusignEnvelope(env, agreement, pdf, signers, signatu
   if (!state.ready) throw new Error("Faltan las credenciales server-to-server de DocuSign.");
   const token = await jwtAccessToken(env);
   const unique = [...new Map(signers.map((signer) => [signer.participant_email.toLowerCase(), signer])).values()];
+  const recipients = unique.map((signer, index) => ({
+    email: signer.participant_email,
+    name: signer.participant_name,
+    recipientId: String(index + 1),
+    routingOrder: "1",
+    tabs: { signHereTabs: [{ documentId: "1", pageNumber: String(signaturePage), xPosition: "48", yPosition: String(440 + index * 38) }] }
+  }));
   const response = await fetch(`${apiBase(env)}/envelopes`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -101,10 +108,7 @@ export async function sendDocusignEnvelope(env, agreement, pdf, signers, signatu
       emailSubject: `Firma tu split sheet: ${agreement.title}`,
       emailBlurb: "Revisa y firma el acuerdo de splits generado por NNE Distribution OS.",
       documents: [{ documentBase64: base64(pdf), name: `${agreement.title} - split sheet v${agreement.version}.pdf`, fileExtension: "pdf", documentId: "1" }],
-      recipients: { signers: unique.map((signer, index) => ({
-        email: signer.participant_email, name: signer.participant_name, recipientId: String(index + 1), routingOrder: "1",
-        tabs: { signHereTabs: [{ documentId: "1", pageNumber: String(signaturePage), xPosition: "48", yPosition: String(440 + index * 38) }] }
-      })) },
+      recipients: { signers: recipients },
       ...(env.NNE_DOCUSIGN_HMAC_SECRET && env.NNE_PUBLIC_URL ? { eventNotification: {
         url: `${String(env.NNE_PUBLIC_URL).replace(/\/$/, "")}/api/nne/distribution/docusign-webhook`,
         loggingEnabled: "true", requireAcknowledgment: "true", deliveryMode: "SIM", includeHMAC: "true",
@@ -116,7 +120,10 @@ export async function sendDocusignEnvelope(env, agreement, pdf, signers, signatu
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || !data.envelopeId) throw new Error(data.message || data.errorCode || "DocuSign rejected the envelope");
-  return data;
+  return {
+    ...data,
+    recipients: recipients.map(({ email, name, recipientId }) => ({ email, name, recipient_id: recipientId }))
+  };
 }
 
 export async function downloadDocusignEnvelopePdf(env, envelopeId) {

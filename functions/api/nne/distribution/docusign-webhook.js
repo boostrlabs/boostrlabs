@@ -20,12 +20,34 @@ async function validHmac(raw, supplied, secret) {
 }
 
 const localStatus = (event, remoteStatus, current) => {
-  const value = `${event} ${remoteStatus}`.toLowerCase();
-  if (value.includes("completed")) return "completed";
-  if (value.includes("declined")) return "declined";
-  if (value.includes("void")) return "voided";
-  if (value.includes("sent") || value.includes("delivered")) return "sent";
+  if (["completed", "declined", "voided"].includes(current)) return current;
+  const remote = clean(remoteStatus, 80).toLowerCase();
+  if (remote === "completed") return "completed";
+  if (remote === "declined") return "declined";
+  if (remote === "voided") return "voided";
+  if (["sent", "delivered"].includes(remote)) return current === "partially_signed" ? current : "sent";
+  const envelopeEvent = clean(event, 100).toLowerCase();
+  if (envelopeEvent.includes("envelope-completed")) return "completed";
+  if (envelopeEvent.includes("envelope-declined")) return "declined";
+  if (envelopeEvent.includes("envelope-voided")) return "voided";
   return current;
+};
+
+const signerStatus = (value) => {
+  const status = clean(value, 40).toLowerCase();
+  if (["signed", "completed"].includes(status)) return "signed";
+  if (status === "declined") return "declined";
+  if (status === "delivered") return "delivered";
+  return "sent";
+};
+
+const payloadSigners = (payload) => {
+  const candidates = [
+    payload?.data?.envelopeSummary?.recipients?.signers,
+    payload?.data?.recipients?.signers,
+    payload?.recipients?.signers
+  ];
+  return candidates.find(Array.isArray) || [];
 };
 
 async function archiveExecutedPdf(env, agreement) {
@@ -46,7 +68,10 @@ async function archiveExecutedPdf(env, agreement) {
 export async function onRequestPost(context) {
   const { request, env } = context;
   if (!env.NNE_DOCUSIGN_HMAC_SECRET) return jsonError("nne_docusign_webhook_unconfigured", "Webhook de DocuSign no configurado.", 503);
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > 1_000_000) return jsonError("nne_docusign_webhook_too_large", "Payload de DocuSign demasiado grande.", 413);
   const raw = await request.text();
+  if (raw.length > 1_000_000) return jsonError("nne_docusign_webhook_too_large", "Payload de DocuSign demasiado grande.", 413);
   const signatures = [...request.headers.entries()]
     .filter(([name]) => /^x-docusign-signature-\d+$/i.test(name))
     .map(([, value]) => value);
@@ -76,12 +101,28 @@ export async function onRequestPost(context) {
   if (!agreement?.id) return jsonOk({ accepted: true, matched: false });
 
   const remoteStatus = clean(payload?.data?.envelopeSummary?.status || event, 80);
-  const status = localStatus(event, remoteStatus, agreement.status);
+  const signers = payloadSigners(payload);
+  const signerStates = signers.map((signer) => signerStatus(signer.status));
+  const status = localStatus(event, remoteStatus, signerStates.includes("signed") ? "partially_signed" : agreement.status);
+  const signerUpdates = signers.map((signer) => env.DB.prepare(
+    `UPDATE nne_distribution_split_signers
+     SET status=CASE WHEN status='signed' THEN status ELSE ? END,
+         external_recipient_id=COALESCE(?,external_recipient_id),
+         signed_at=COALESCE(signed_at,?)
+     WHERE agreement_id=? AND (external_recipient_id=? OR LOWER(participant_email)=LOWER(?))`
+  ).bind(
+    signerStatus(signer.status),
+    clean(signer.recipientId, 40) || null,
+    signerStatus(signer.status) === "signed" ? clean(signer.signedDateTime, 80) || now() : null,
+    agreement.id,
+    clean(signer.recipientId, 40) || "",
+    clean(signer.email, 180)
+  ));
   await env.DB.batch([
     env.DB.prepare("UPDATE nne_distribution_split_agreements SET status=?,external_status=?,completed_at=?,updated_at=? WHERE id=?")
       .bind(status, remoteStatus, status === "completed" ? now() : agreement.completed_at, now(), agreement.id),
-    env.DB.prepare("UPDATE nne_distribution_split_signers SET status=?,signed_at=? WHERE agreement_id=?")
-      .bind(status === "completed" ? "signed" : status === "declined" ? "declined" : "sent", status === "completed" ? now() : null, agreement.id),
+    ...(signerUpdates.length ? signerUpdates : [env.DB.prepare("UPDATE nne_distribution_split_signers SET status=?,signed_at=? WHERE agreement_id=?")
+      .bind(status === "completed" ? "signed" : status === "declined" ? "declined" : "sent", status === "completed" ? now() : null, agreement.id)]),
     env.DB.prepare("UPDATE nne_distribution_esign_events SET processed_at=? WHERE id=?").bind(now(), eventRowId)
   ]);
   if (status === "completed") context.waitUntil(archiveExecutedPdf(env, agreement));

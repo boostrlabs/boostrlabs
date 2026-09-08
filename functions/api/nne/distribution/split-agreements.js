@@ -7,6 +7,15 @@ import { downloadDocusignEnvelopePdf, esignProviderState, getDocusignEnvelope, s
 export const onRequestOptions = onOptions;
 
 const hex = (bytes) => [...bytes].map((v) => v.toString(16).padStart(2, "0")).join("");
+const normalizedSignerStatus = (value) => {
+  const status = clean(value, 40).toLowerCase();
+  if (["signed", "completed"].includes(status)) return "signed";
+  if (status === "declined") return "declined";
+  if (status === "delivered") return "delivered";
+  return "sent";
+};
+
+const remoteSigners = (remote) => Array.isArray(remote?.recipients?.signers) ? remote.recipients.signers : [];
 
 export async function onRequestGet({ request, env }) {
   const auth = await requireDistributionAccess(request, env);
@@ -82,7 +91,10 @@ async function sendAgreement(request, env, auth, releaseId, agreementId) {
     await env.DB.batch([
       env.DB.prepare("UPDATE nne_distribution_split_agreements SET status='sent',provider='docusign',external_envelope_id=?,external_status=?,sent_at=?,updated_at=? WHERE id=?")
         .bind(result.envelopeId, result.status || "sent", now(), now(), agreement.id),
-      env.DB.prepare("UPDATE nne_distribution_split_signers SET status='sent' WHERE agreement_id=?").bind(agreement.id)
+      env.DB.prepare("UPDATE nne_distribution_split_signers SET status='sent' WHERE agreement_id=?").bind(agreement.id),
+      ...result.recipients.map((recipient) => env.DB.prepare(
+        "UPDATE nne_distribution_split_signers SET external_recipient_id=? WHERE agreement_id=? AND LOWER(participant_email)=LOWER(?)"
+      ).bind(recipient.recipient_id, agreement.id, recipient.email))
     ]);
     await writeNneAudit(env, request, auth.user.id, "distribution.split_agreement_sent", "nne_distribution_split_agreement", agreement.id, { envelope_id: result.envelopeId });
     return jsonOk({ agreement_id: agreement.id, envelope_id: result.envelopeId, status: "sent" });
@@ -99,18 +111,40 @@ async function refreshAgreement(request, env, auth, releaseId, agreementId) {
   if (!agreement?.external_envelope_id) return jsonError("nne_distribution_docusign_envelope_missing", "Este acuerdo todavía no fue enviado.", 409);
   try {
     const remote = await getDocusignEnvelope(env, agreement.external_envelope_id);
-    const status = remote.status === "completed" ? "completed" : remote.status === "declined" ? "declined" : remote.status === "sent" || remote.status === "delivered" ? "sent" : agreement.status;
+    const signers = remoteSigners(remote);
+    const signerStates = signers.map((signer) => normalizedSignerStatus(signer.status));
+    const status = remote.status === "completed"
+      ? "completed"
+      : remote.status === "declined"
+        ? "declined"
+        : signerStates.includes("signed")
+          ? "partially_signed"
+          : remote.status === "sent" || remote.status === "delivered" ? "sent" : agreement.status;
     let executedKey = agreement.executed_pdf_object_key || null;
     if (status === "completed" && !executedKey) {
       const executed = await downloadDocusignEnvelopePdf(env, agreement.external_envelope_id);
       executedKey = `nne/distribution/agreements/${agreement.release_id}/executed-${agreement.id}.pdf`;
       await env.BOOSTR_ASSETS.put(executedKey, executed, { httpMetadata: { contentType: "application/pdf" }, customMetadata: { agreementId: agreement.id, envelopeId: agreement.external_envelope_id } });
     }
+    const signerUpdates = signers.map((signer) => env.DB.prepare(
+      `UPDATE nne_distribution_split_signers
+       SET status=CASE WHEN status='signed' THEN status ELSE ? END,
+           external_recipient_id=COALESCE(?,external_recipient_id),
+           signed_at=COALESCE(signed_at,?)
+       WHERE agreement_id=? AND (external_recipient_id=? OR LOWER(participant_email)=LOWER(?))`
+    ).bind(
+      normalizedSignerStatus(signer.status),
+      clean(signer.recipientId, 40) || null,
+      normalizedSignerStatus(signer.status) === "signed" ? clean(signer.signedDateTime, 80) || now() : null,
+      agreement.id,
+      clean(signer.recipientId, 40) || "",
+      clean(signer.email, 180)
+    ));
     await env.DB.batch([
       env.DB.prepare("UPDATE nne_distribution_split_agreements SET status=?,external_status=?,executed_pdf_object_key=?,completed_at=?,updated_at=? WHERE id=?")
         .bind(status, remote.status || null, executedKey, status === "completed" ? now() : agreement.completed_at, now(), agreement.id),
-      env.DB.prepare("UPDATE nne_distribution_split_signers SET status=?,signed_at=? WHERE agreement_id=?")
-        .bind(status === "completed" ? "signed" : "sent", status === "completed" ? now() : null, agreement.id)
+      ...(signerUpdates.length ? signerUpdates : [env.DB.prepare("UPDATE nne_distribution_split_signers SET status=?,signed_at=? WHERE agreement_id=?")
+        .bind(status === "completed" ? "signed" : status === "declined" ? "declined" : "sent", status === "completed" ? now() : null, agreement.id)])
     ]);
     await writeNneAudit(env, request, auth.user.id, "distribution.split_agreement_refreshed", "nne_distribution_split_agreement", agreement.id, { remote_status: remote.status });
     return jsonOk({ agreement_id: agreement.id, status, external_status: remote.status });
