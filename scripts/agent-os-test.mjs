@@ -1,0 +1,57 @@
+import {DatabaseSync} from 'node:sqlite';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {onRequest} from '../functions/api/agent-os/[[path]].js';
+const sqlite=new DatabaseSync(':memory:');
+for(const p of fs.readdirSync('agent-migrations').sort()) sqlite.exec(fs.readFileSync('agent-migrations/'+p,'utf8'));
+function prepare(sql){let args=[];return {bind(...a){args=a;return this},async first(){return sqlite.prepare(sql).get(...args)||null},async all(){return {results:sqlite.prepare(sql).all(...args)}},async run(){const r=sqlite.prepare(sql).run(...args);return {meta:{changes:Number(r.changes)}}}}}
+const db={prepare,async batch(statements){sqlite.exec('BEGIN');try{const out=[];for(const s of statements)out.push(await s.run());sqlite.exec('COMMIT');return out}catch(e){sqlite.exec('ROLLBACK');throw e}}};
+const env={AGENT_DB:db,ADMIN_EMAIL:'admin@example.test',ADMIN_PASSWORD:'test-long-password'};
+let cookie='';
+async function call(path,body,method=body?'POST':'GET'){
+ const r=await onRequest({env,params:{path:path.split('/')},request:new Request('https://example.test/api/agent-os/'+path,{method,headers:{'content-type':'application/json',cookie},...(body?{body:JSON.stringify(body)}:{})})});
+ if(r.headers.has('set-cookie'))cookie=r.headers.get('set-cookie').split(';')[0];
+ const data=await r.json();return {status:r.status,data};
+}
+assert.equal((await call('admin/applications')).status,401);
+assert.equal((await call('public/catalog')).data[0].price,200);
+assert.equal((await call('public/contact',{name:'Test',business_name:'Test',message:'Testing'})).status,201);
+assert.equal((await call('public/applications',{name:'Agent',country:'VE',city:'Caracas',whatsapp:'123',email:'agent@example.test'})).status,201);
+assert.equal((await call('auth/login',{email:env.ADMIN_EMAIL,secret:env.ADMIN_PASSWORD})).status,200);
+const app=(await call('admin/applications')).data[0];
+const invite=(await call(`admin/applications/${app.id}/approve`,{})).data.invite_path.split('invite=')[1];
+for(let i=0;i<11;i++)assert.equal((await call('admin/pool',{business_name:'Pool '+i,temperature:'TIBIO',phone:'555123',closing_notes:'private'})).status,201);
+assert.equal((await call('auth/register',{invite,email:'agent@example.test',name:'Agent',password:'long-password',pin:'123456'})).status,201);
+assert.equal((await call('admin/pool')).status,401);
+const pool=(await call('agent/pool')).data;
+assert.equal(pool[0].phone,undefined);
+assert.equal((await call(`agent/pool/${pool[0].id}/claim`,{})).status,201);
+assert.equal((await call(`agent/pool/${pool[0].id}/claim`,{})).status,409);
+assert.equal((await call('agent/quota')).data.used,1);
+for(let i=1;i<10;i++)assert.equal((await call(`agent/pool/${pool[i].id}/claim`,{})).status,201);
+assert.equal((await call(`agent/pool/${pool[10].id}/claim`,{})).status,429);
+assert.equal((await call('agent/leads')).data[0].closing_notes,'private');
+assert.equal((await call('agent/leads',{business_name:'Own',contact_name:'Customer'})).status,201);
+await call('auth/logout',{});
+assert.equal((await call('auth/login',{email:'agent@example.test',mode:'pin',secret:'123456'})).status,200);
+assert.equal((await call('auth/login',{email:'agent@example.test',mode:'pin',secret:'654321'})).status,401);
+console.log('PASS: forms, admin authorization, invite registration, PIN, lead privacy, claim conflict, weekly limit and own leads.');
+const agent=sqlite.prepare('SELECT id FROM users LIMIT 1').get();
+const lead=sqlite.prepare('SELECT id FROM leads LIMIT 1').get();
+sqlite.prepare("INSERT INTO private_settings VALUES('stripe_webhook','test-webhook-secret')").run();
+sqlite.prepare("INSERT INTO deals(id,lead_id,agent_id,business_name,customer_email,amount_cents,commission_cents,scope,terms,stripe_invoice_id,created_at) VALUES('deal_test',?,?,'Test','test@example.test',20000,5000,'Scope','Terms','in_test','2026-09-09')").run(lead.id,agent.id);
+const invoice={id:'in_test',status:'paid',currency:'usd',amount_paid:20000,metadata:{boostr_agent_deal:'deal_test'}};
+const raw=JSON.stringify({type:'invoice.paid',data:{object:invoice}}), timestamp=Math.floor(Date.now()/1000);
+const key=await crypto.subtle.importKey('raw',new TextEncoder().encode('test-webhook-secret'),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+const sig=Buffer.from(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(`${timestamp}.${raw}`))).toString('hex');
+async function webhook(signature){return onRequest({env,params:{path:['stripe','webhook']},request:new Request('https://example.test/api/agent-os/stripe/webhook',{method:'POST',headers:{'stripe-signature':signature},body:raw})})}
+assert.equal((await webhook('bad')).status,400);
+assert.equal((await webhook(`t=${timestamp},v1=${sig}`)).status,200);
+assert.equal((await webhook(`t=${timestamp},v1=${sig}`)).status,200);
+assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM commissions').get().n,1);
+assert.equal(sqlite.prepare('SELECT amount FROM commissions').get().amount,50);
+assert.equal((await call('admin/payout',{id:'com_deal_test',method:'Zelle',reference:'test'})).status,401);
+await call('auth/login',{email:env.ADMIN_EMAIL,secret:env.ADMIN_PASSWORD});
+assert.equal((await call('admin/payout',{id:'com_deal_test',method:'Zelle',reference:'test'})).data.ok,true);
+assert.equal(sqlite.prepare('SELECT status FROM commissions').get().status,'PAID');
+console.log('PASS: Stripe signature validation, idempotent commission creation, payout authorization and payout records.');

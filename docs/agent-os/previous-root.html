@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0c1118">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BOOSTR">
+  <meta http-equiv="refresh" content="1;url=/app/">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="canonical" href="/app/">
+  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
+  <title>BOOSTR App</title>
+  <meta name="description" content="Abriendo BOOSTR App.">
+  <script>
+    (() => {
+      const standalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      const target = standalone ? '/app/?source=pwa' : '/app/';
+      window.location.replace(target);
+    })();
+  </script>
+  <style>
+    :root{color-scheme:dark;background:#0c1118;color:#f7f9fc;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    *{box-sizing:border-box}
+    body{min-height:100dvh;margin:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 20%,rgba(61,124,255,.22),transparent 34%),linear-gradient(145deg,#0c1118,#111826)}
+    main{display:grid;justify-items:center;gap:18px;padding:28px;text-align:center}
+    img{width:150px;max-width:54vw}
+    p{margin:0;color:#8f9bad;font-weight:700}
+    a{min-height:48px;padding:0 20px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3d7cff,#31baff);color:#fff;text-decoration:none;font-weight:900}
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
+    <p>Abriendo BOOSTR App…</p>
+    <a href="/app/">Continuar</a>
+  </main>
+</body>
+</html>
