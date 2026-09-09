@@ -1,0 +1,67 @@
+/* BOOSTR v17 — responsive guardrails for public + agent experiences */
+html,body{max-width:100%;overflow-x:hidden}
+.route{max-width:100%}
+
+/* Editorial landing: keep the oversized look without clipping on laptops. */
+.editorial-home .eh-shell{width:100%;max-width:1500px}
+.editorial-home .eh-hero h1{font-size:clamp(56px,8vw,124px);max-width:1120px}
+.editorial-home .eh-dark h2{font-size:clamp(54px,7.5vw,116px);max-width:1080px}
+.editorial-home .eh-head h3{font-size:clamp(46px,5.8vw,82px)}
+.editorial-home .eh-agent-card h3{font-size:clamp(40px,5vw,68px)}
+.editorial-home .eh-panel h3{font-size:clamp(34px,3.5vw,50px)}
+
+/* Work + application: readable on laptops and genuinely usable on mobile. */
+.agent-v2-shell,.agent-apply-shell{width:min(1180px,calc(100% - 32px));margin-left:auto;margin-right:auto}
+.agent-v2-hero h1{font-size:clamp(48px,6.8vw,92px);line-height:.9}
+.agent-apply-head h2{font-size:clamp(42px,5.4vw,72px);line-height:.92}
+.agent-apply-section h3{font-size:clamp(26px,2.5vw,36px)}
+.agent-apply-form input,.agent-apply-form select,.agent-apply-form textarea{max-width:100%}
+
+/* Internal portals: headings should never push cards outside the viewport. */
+#adminMain .dashhero h2,#agentMain .dashhero h2{font-size:clamp(34px,4.6vw,58px)!important;line-height:.94;max-width:100%}
+#adminMain h3,#agentMain h3{max-width:100%}
+
+@media(max-width:900px){
+  .editorial-home .eh-hero{padding-left:28px;padding-right:28px}
+  .editorial-home .eh-hero h1{font-size:clamp(52px,10vw,82px)}
+  .editorial-home .eh-dark h2{font-size:clamp(48px,9vw,76px)}
+  .agent-v2-shell,.agent-apply-shell{width:min(100% - 24px,900px)}
+}
+
+@media(max-width:600px){
+  .top .nav{display:none}
+  .topin{height:64px;padding:0 12px}
+  .logoasset img{max-width:108px}
+  .topin>.actions .btn{font-size:11px;padding:9px 11px}
+  .topin>.actions .btn.dark{display:none}
+
+  .editorial-home .eh-hero{padding:24px 16px 0}
+  .editorial-home .eh-brand{width:min(190px,58vw)}
+  .editorial-home .eh-hero h1{font-size:clamp(44px,13.4vw,60px);line-height:.86;margin:30px auto 20px;letter-spacing:-.06em}
+  .editorial-home .eh-dark h2{font-size:clamp(42px,12vw,58px);line-height:.88;letter-spacing:-.055em}
+  .editorial-home .eh-head h3{font-size:clamp(40px,11vw,50px)}
+  .editorial-home .eh-agent-card h3{font-size:clamp(36px,10vw,46px)}
+  .editorial-home .eh-panel h3{font-size:clamp(32px,9vw,42px)}
+  .editorial-home .eh-pricing{min-height:190px}
+  .editorial-home .eh-tower-1{height:112px}.editorial-home .eh-tower-2{height:150px}.editorial-home .eh-tower-3{height:190px}
+  .editorial-home .eh-price{font-size:21px}
+
+  .agent-v2-shell,.agent-apply-shell{width:100%;padding-left:14px;padding-right:14px}
+  .agent-v2-hero{padding:32px 22px}
+  .agent-v2-hero h1{font-size:clamp(42px,12.5vw,54px);line-height:.9;letter-spacing:-.055em}
+  .agent-apply-head{padding:30px 20px}
+  .agent-apply-head h2{font-size:clamp(38px,11.5vw,50px);line-height:.92;letter-spacing:-.05em}
+  .agent-apply-section{padding:22px 18px}
+  .agent-form-grid{grid-template-columns:1fr!important}
+  .agent-form-grid .full{grid-column:auto!important}
+  .check-grid{grid-template-columns:1fr 1fr}
+
+  #adminMain .dashhero h2,#agentMain .dashhero h2{font-size:clamp(30px,9.5vw,42px)!important}
+}
+
+@media(max-width:390px){
+  .check-grid{grid-template-columns:1fr}
+  .editorial-home .eh-hero h1{font-size:43px}
+  .agent-v2-hero h1{font-size:40px}
+  .agent-apply-head h2{font-size:38px}
+}
