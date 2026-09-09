@@ -7,10 +7,10 @@
       <section class="eh-hero" id="home">
         <div class="eh-top">
           <img class="eh-brand" src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.style.display='none'">
-          <div class="eh-kicker">digital systems · sales · automation</div>
-          <h1>tu negocio se ve<br><span class="eh-gradient-text">como vende</span></h1>
-          <p class="eh-sub">páginas web, apps y sistemas pensados para que tu empresa se vea mejor, funcione mejor y venda más</p>
-          <div class="eh-actions"><a class="eh-btn eh-btn-dark" href="#/#services">ver soluciones</a><a class="eh-btn eh-btn-light" href="#/work">trabaja con nosotros</a></div>
+          <div class="eh-kicker">digital systems · branding · marketing</div>
+          <h1>tu negocio vende<br><span class="eh-gradient-text">como se ve</span></h1>
+          <p class="eh-sub">websites, apps, sistemas, marketing, diseño y branding para que tu empresa se vea profesional, funcione mejor y venda más</p>
+          <div class="eh-actions"><a class="eh-btn eh-btn-dark" href="#/#services">nuestros productos</a><a class="eh-btn eh-btn-light" href="#/work">trabaja con nosotros</a></div>
         </div>
         <div class="eh-pricing-wrap">
           <div class="eh-pricing"><div class="eh-tower eh-tower-1"></div><div class="eh-tower eh-tower-2"></div><div class="eh-tower eh-tower-3"></div></div>
@@ -20,19 +20,21 @@
 
       <section class="eh-dark" id="reality"><div class="eh-dark-inner">
         <div class="eh-section-index"><div class="eh-small">la realidad</div><div class="eh-num">02</div></div>
-        <h2>las redes llaman<br>la atención<br><br>tu página web genera<br><span class="eh-gradient-text">confianza</span></h2>
-        <div class="eh-truth"><div class="eh-truth-copy">Instagram puede hacer que te descubran.<br>Una plataforma propia hace que te tomen en serio.</div><div class="eh-truth-card"><b>.com</b><span>tu dominio · tus clientes · tus datos</span></div></div>
+        <h2>las redes llaman<br>la atención<br><br>tu presencia digital genera<br><span class="eh-gradient-text">confianza</span></h2>
+        <div class="eh-truth"><div class="eh-truth-copy">Una buena imagen hace que te descubran.<br>Una presencia profesional hace que te tomen en serio.</div><div class="eh-truth-card"><b>BOOSTR</b><span>imagen · tecnología · crecimiento</span></div></div>
       </div></section>
 
       <section class="eh-section" id="services"><div class="eh-section-inner">
-        <div class="eh-head"><h3>lo que<br>construimos</h3><p>soluciones digitales simples de entender, diseñadas para vender más y operar mejor</p></div>
+        <div class="eh-head"><h3>lo que<br>ofrecemos</h3><p>tecnología, diseño y crecimiento para que tu negocio se vea mejor, opere mejor y venda más</p></div>
         <div class="eh-services">
           <article class="eh-service"><div class="n">01</div><h4>websites</h4><p>dominio propio, presencia profesional, leads, bookings y ventas</p><div class="eh-accent"></div></article>
           <article class="eh-service"><div class="n">02</div><h4>apps & business os</h4><p>clientes, procesos, bases de datos, pagos y sistemas internos</p><div class="eh-accent"></div></article>
           <article class="eh-service"><div class="n">03</div><h4>crm & automation</h4><p>seguimiento, pipelines, mensajes y procesos conectados</p><div class="eh-accent"></div></article>
-          <article class="eh-service"><div class="n">04</div><h4>digital team</h4><p>asistentes y agentes virtuales reales con talento LATAM</p><div class="eh-accent"></div></article>
-          <article class="eh-service"><div class="n">05</div><h4>ai chatbots</h4><p>automatización conversacional supervisada por personas</p><div class="eh-accent"></div></article>
-          <article class="eh-service"><div class="n">06</div><h4>custom systems</h4><p>parking, automotive, ecommerce y soluciones hechas a medida</p><div class="eh-accent"></div></article>
+          <article class="eh-service"><div class="n">04</div><h4>branding & design</h4><p>identidad visual, logos, piezas gráficas y una estética profesional consistente</p><div class="eh-accent"></div></article>
+          <article class="eh-service"><div class="n">05</div><h4>marketing</h4><p>estrategia, campañas, contenido y presencia digital para atraer y convertir más clientes</p><div class="eh-accent"></div></article>
+          <article class="eh-service"><div class="n">06</div><h4>digital team</h4><p>asistentes y agentes virtuales reales con talento LATAM</p><div class="eh-accent"></div></article>
+          <article class="eh-service"><div class="n">07</div><h4>ai chatbots</h4><p>automatización conversacional supervisada por personas</p><div class="eh-accent"></div></article>
+          <article class="eh-service"><div class="n">08</div><h4>custom systems</h4><p>parking, automotive, ecommerce y soluciones hechas a medida</p><div class="eh-accent"></div></article>
         </div>
         <a class="eh-portfolio-link" href="/portfolio/">ver portfolio</a>
       </div></section>
