@@ -36,7 +36,7 @@
           <article class="eh-service"><div class="n">07</div><h4>ai chatbots</h4><p>automatización conversacional supervisada por personas</p><div class="eh-accent"></div></article>
           <article class="eh-service"><div class="n">08</div><h4>custom systems</h4><p>parking, automotive, ecommerce y soluciones hechas a medida</p><div class="eh-accent"></div></article>
         </div>
-        <a class="eh-portfolio-link" href="/portfolio/">ver portfolio</a>
+        <a class="eh-portfolio-link" href="/showcase/">explora lo que ya construimos →</a>
       </div></section>
 
       <section class="eh-agent" id="work"><div class="eh-agent-card">
