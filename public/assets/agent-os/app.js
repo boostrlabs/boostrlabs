@@ -120,7 +120,13 @@ function login(){
   let mode="password";
   $("#passMode").onclick=()=>{mode="password";$("#secretLabel").innerHTML=`Contraseña<input name="secret" type="password" required>`};
   $("#pinMode").onclick=()=>{mode="pin";$("#secretLabel").innerHTML=`PIN<input name="secret" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required>`};
-  $("#loginForm").onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));try{await api("/api/auth/login",{method:"POST",body:JSON.stringify({email:f.email,secret:f.secret,mode})});location.hash="#/agent/dashboard"}catch(err){$("#loginMsg").innerHTML=`<div class="msg err">${esc(err.message)}</div>`}};
+  $("#loginForm").onsubmit=async e=>{
+    e.preventDefault();const form=e.target,button=form.querySelector('button'),f=Object.fromEntries(new FormData(form));
+    button.disabled=true;button.textContent="Entrando…";$("#loginMsg").textContent="";
+    try{const result=await api("/api/auth/login",{method:"POST",body:JSON.stringify({email:f.email,secret:f.secret,mode})});location.hash=result.role==="ADMIN"?"#/admin":"#/agent/dashboard"}
+    catch(err){$("#loginMsg").innerHTML=`<div class="msg err" role="alert">${esc(err.message)}</div>`}
+    finally{button.disabled=false;button.textContent="Entrar"}
+  };
 }
 function register(){
   show("#register"); const token=new URLSearchParams(route().split("?")[1]||"").get("invite")||"";
@@ -136,7 +142,7 @@ function register(){
 }
 
 async function agent(){
-  try{me=await api("/api/auth/me");if(!me.user||me.user.role!=="AGENT"){location.hash="#/agent/login";return}}catch{location.hash="#/agent/login";return}
+  try{me=await api("/api/auth/me");if(me.user?.role==="ADMIN"){location.hash="#/admin";return}if(!me.user||me.user.role!=="AGENT"){location.hash="#/agent/login";return}}catch{location.hash="#/agent/login";return}
   show("#agent");
   $("#agent").innerHTML=`<div class="agent-shell">
     <aside class="side"><div class="logo">BOOSTR<small>AGENT OS</small></div><nav>
@@ -260,4 +266,5 @@ async function salesModule(h){
  document.getElementById('reconcile').onclick=async()=>{try{await api('/api/admin/reconcile',{method:'POST'});salesModule(h)}catch(e){alert(e.message)}};
  document.querySelectorAll('.payout').forEach(b=>b.onclick=async()=>{const method=prompt('Método: Zelle, PayPal, Crypto o Moneda local');if(!method)return;const reference=prompt('Referencia del pago ya enviado al agente');if(!reference)return;try{await api('/api/admin/payout',{method:'POST',body:JSON.stringify({id:b.dataset.id,method,reference})});salesModule(h)}catch(e){alert(e.message)}});
 }
+
 
