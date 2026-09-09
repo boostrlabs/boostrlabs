@@ -1,5 +1,5 @@
 (function(){
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
 const MARK='[BOOSTR_HIGH_POTENTIAL]';
 const URLMARK='[PREVIEW_URL]';
 const stripMeta=s=>String(s||'').replace(/\[BOOSTR_HIGH_POTENTIAL\]\s*/g,'').replace(/\[PREVIEW_URL\]\s*https?:\/\/\S+\s*/g,'').trim();
@@ -21,7 +21,6 @@ function addAdminFields(){
  toggle.onchange=()=>{fields.hidden=!toggle.checked};
 }
 
-// Transform the extra UI fields into the existing lead fields before the current submit handler serializes them.
 document.addEventListener('submit',e=>{
  const form=e.target;if(!(form instanceof HTMLFormElement)||form.id!=='poolForm')return;
  const high=form.querySelector('[name="high_potential"]')?.checked;if(!high)return;
@@ -46,7 +45,7 @@ function decorateAdminCards(){
  });
 }
 
-function decorateAgentCards(module){
+function decorateAgentCards(){
  const host=document.querySelector('#agentMain');if(!host)return;
  host.querySelectorAll('.leadcard').forEach(card=>{
   if(card.dataset.previewV8)return;const ps=[...card.querySelectorAll('p')];const p=ps.find(x=>isHigh(x.textContent));if(!p)return;card.dataset.previewV8='1';const raw=p.textContent,url=previewUrl(raw);p.textContent=stripMeta(raw);
@@ -57,7 +56,16 @@ function decorateAgentCards(module){
  });
 }
 
-const previous=window.agentModule;if(typeof previous==='function')window.agentModule=async function(m){await previous(m);setTimeout(()=>decorateAgentCards(m),40)};
-const obs=new MutationObserver(()=>{addAdminFields();decorateAdminCards()});obs.observe(document.documentElement,{childList:true,subtree:true});
-setTimeout(()=>{addAdminFields();decorateAdminCards()},200);
+const previousAgent=window.agentModule;
+if(typeof previousAgent==='function') window.agentModule=async function(m){await previousAgent(m);requestAnimationFrame(()=>decorateAgentCards())};
+
+const previousAdmin=window.adminModule;
+if(typeof previousAdmin==='function') window.adminModule=async function(m){await previousAdmin(m);if(m==='pool')requestAnimationFrame(()=>{addAdminFields();decorateAdminCards()})};
+
+window.addEventListener('hashchange',()=>{
+  const r=location.hash.replace(/^#/,'');
+  if(r.startsWith('/admin')) setTimeout(()=>{addAdminFields();decorateAdminCards()},60);
+  if(r.startsWith('/agent/')) setTimeout(decorateAgentCards,60);
+});
+setTimeout(()=>{addAdminFields();decorateAdminCards();decorateAgentCards()},200);
 })();
