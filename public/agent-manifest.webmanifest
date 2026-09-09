@@ -1,0 +1,19 @@
+{
+  "name": "BOOSTR Agent",
+  "short_name": "BOOSTR Agent",
+  "description": "BOOSTR Agent OS — leads, commissions, scripts and sales tools.",
+  "start_url": "/#/agent/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8f8fb",
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/icons/09.-b-star-favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
