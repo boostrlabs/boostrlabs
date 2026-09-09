@@ -25,7 +25,13 @@ const forbid = (source, markers, label) => markers.forEach((marker) => {
 if (manifest.start_url !== '/app/?source=pwa') failures.push('manifest start_url');
 if (manifest.scope !== '/') failures.push('manifest scope');
 if (manifest.display !== 'standalone') failures.push('manifest display');
-need(root, ['(display-mode: standalone)', "const target = standalone ? '/app/?source=pwa' : '/app/'", 'window.location.replace(target)'], 'root');
+need(root, [
+  'BOOSTR Labs | Soluciones digitales',
+  '/assets/agent-os/styles.css',
+  '/assets/agent-os/app.js',
+  'maximum-scale=1',
+  'user-scalable=no'
+], 'root');
 need(sessionUi, ['redirectInstalledLaunch', '/manifest.webmanifest'], 'session ui');
 
 need(app, [
