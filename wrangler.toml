@@ -4,6 +4,7 @@ pages_build_output_dir = "dist"
 [vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
 VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
+ADMIN_EMAIL = "boostrlabs@gmail.com"
 
 [[d1_databases]]
 binding = "DB"
@@ -19,6 +20,7 @@ preview_bucket_name = "boostr-labs-assets-prod"
 [env.production.vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
 VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
+ADMIN_EMAIL = "boostrlabs@gmail.com"
 
 [[env.production.d1_databases]]
 binding = "DB"
@@ -32,6 +34,7 @@ bucket_name = "boostr-labs-assets-prod"
 [env.preview.vars]
 VITE_SITE_URL = "https://boostrlabs.pages.dev"
 VITE_CONTACT_EMAIL = "boostrlabs@gmail.com"
+ADMIN_EMAIL = "boostrlabs@gmail.com"
 
 [[env.preview.d1_databases]]
 binding = "DB"
@@ -43,3 +46,22 @@ preview_database_id = "3998802e-1829-48b4-91dc-971ecfd4c23d"
 binding = "BOOSTR_ASSETS"
 bucket_name = "boostr-labs-assets-prod"
 preview_bucket_name = "boostr-labs-assets-prod"
+
+[[d1_databases]]
+binding = "AGENT_DB"
+database_name = "boostr-agent-os"
+database_id = "5618ac8c-abea-4ea0-894a-afafbed205c9"
+migrations_dir = "agent-migrations"
+
+[[env.production.d1_databases]]
+binding = "AGENT_DB"
+database_name = "boostr-agent-os"
+database_id = "5618ac8c-abea-4ea0-894a-afafbed205c9"
+migrations_dir = "agent-migrations"
+
+[[env.preview.d1_databases]]
+binding = "AGENT_DB"
+database_name = "boostr-agent-os"
+database_id = "5618ac8c-abea-4ea0-894a-afafbed205c9"
+migrations_dir = "agent-migrations"
+

@@ -79,6 +79,7 @@ function markSharedUi(html, path) {
 
 export async function onRequest(context) {
   const response = await context.next();
+  if (["/", "/index.html"].includes(new URL(context.request.url).pathname)) return response;
   const contentType = response.headers.get("Content-Type") || "";
   if (!contentType.toLowerCase().includes("text/html")) return response;
 
@@ -215,3 +216,4 @@ export async function onRequest(context) {
 
   return new Response(html, init);
 }
+
