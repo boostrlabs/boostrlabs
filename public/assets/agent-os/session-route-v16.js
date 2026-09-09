@@ -5,6 +5,16 @@
   const currentRoute=()=>location.hash.replace(/^#/,'')||'/';
   const isProtected=r=>r.startsWith('/admin')||r.startsWith('/agent/dashboard');
 
+  function syncPortalChrome(){
+    const r=currentRoute();
+    const portal=isProtected(r);
+    document.body.classList.toggle('boostr-portal',portal);
+    const top=document.querySelector('header.top');
+    const footer=document.querySelector('body>footer');
+    if(top)top.style.display=portal?'none':'';
+    if(footer)footer.style.display=portal?'none':'';
+  }
+
   async function session(){
     try{
       const response=await fetch('/api/agent-os/auth/me',{
@@ -21,6 +31,7 @@
   }
 
   async function reconcile(){
+    syncPortalChrome();
     if(checking)return;
     const r=currentRoute();
     if(!r.startsWith('/agent/login')&&!isProtected(r))return;
