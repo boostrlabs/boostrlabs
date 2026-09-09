@@ -1,0 +1,52 @@
+/* BOOSTR Agent OS — mobile hardening */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+#agent,#admin,.agent-shell,.agent-shell>*,.module,.module.active,.adminpanel,.dashhero,.card,.leadcard,.auth-card{min-width:0;max-width:100%}
+
+@media(max-width:700px){
+  body{overflow-x:hidden}
+  .topin{height:66px;padding:0 14px;gap:10px}
+  .logoasset{min-width:0;flex:0 1 126px}
+  .logoasset img{max-width:124px;max-height:30px}
+  .topin>.actions{margin:0!important;min-width:0;flex:0 1 auto}
+  .topin>.actions .btn{font-size:11px;padding:10px 12px;white-space:nowrap}
+  .topin>.actions .btn.light{display:none}
+
+  .agent-shell{display:block;width:100%;padding:10px;margin:0}
+  .side{position:relative;top:auto;width:100%;height:auto;margin:0 0 12px;padding:16px;border-radius:24px;overflow:hidden}
+  .side nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;overflow:visible;margin-top:14px}
+  .side button{width:100%;min-width:0;white-space:normal;text-align:center;padding:11px 8px;line-height:1.12;font-size:12px;overflow-wrap:anywhere}
+  .sidefoot{display:none}
+
+  .dashhero,.adminpanel,.auth-card,.leadcard,.card{width:100%;padding:18px;border-radius:24px}
+  .dashhero h1,.dashhero h2,.adminpanel h1,.adminpanel h2,.adminpanel h3,.module h1,.module h2,.module h3{max-width:100%;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+  .dashhero h1,.adminpanel h1,.module h1{font-size:clamp(40px,12vw,54px);line-height:.9;letter-spacing:-.06em}
+  .dashhero h2,.adminpanel h2,.module h2{font-size:clamp(30px,9vw,42px);line-height:.94;letter-spacing:-.055em}
+  .dashhero h3,.adminpanel h3,.module h3{font-size:22px;line-height:1}
+  .eyebrow{font-size:10px;letter-spacing:.2em}
+
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .stat{min-width:0;padding:14px;border-radius:16px}
+  .stat b{font-size:25px}
+  .flygrid,.poolgrid,.formgrid,.auth-grid{grid-template-columns:1fr}
+  .actions,.contactbar,.socials{max-width:100%}
+  .actions .btn{max-width:100%}
+
+  .adminpanel{overflow:hidden}
+  .adminpanel .table{display:block;width:100%;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .adminpanel .table thead,.adminpanel .table tbody{min-width:620px}
+  .table th,.table td{padding:9px;font-size:11px}
+
+  input,select,textarea{font-size:16px;max-width:100%}
+  .script{max-width:100%;overflow:hidden}
+  .script p{padding-right:0;padding-top:42px;overflow-wrap:anywhere}
+  footer{margin-top:48px;padding:28px 16px 36px;flex-direction:column}
+}
+
+@media(max-width:390px){
+  .topin{padding:0 10px}
+  .logoasset img{max-width:108px}
+  .topin>.actions .btn{padding:9px 10px;font-size:10px}
+  .side nav{grid-template-columns:1fr 1fr}
+  .dashhero,.adminpanel,.auth-card,.leadcard,.card{padding:16px}
+  .stats{grid-template-columns:1fr 1fr}
+}
