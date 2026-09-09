@@ -1,0 +1,47 @@
+/* BOOSTR Agent context v3 — keep internal surfaces visually aligned with the approved landing */
+body.agent-context{background:#f7f7fa;color:#050505}
+body.agent-context .top{background:rgba(255,255,255,.92);border-bottom:1px solid #e7e7ec;backdrop-filter:blur(28px) saturate(140%)}
+body.agent-context .topin{max-width:1380px}
+body.agent-context .nav{display:none!important}
+body.agent-context .topin>.actions{display:flex!important;gap:8px!important;align-items:center}
+body.agent-context .context-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:#09090b;color:#fff;font:900 12px/1 Arial,Helvetica,sans-serif;text-transform:lowercase;letter-spacing:-.01em}
+body.agent-context .context-user{display:inline-flex;align-items:center;padding:10px 14px;border-radius:999px;background:linear-gradient(90deg,#f0edff,#edf8ff);color:#111;font:800 12px/1 Arial,Helvetica,sans-serif;text-transform:lowercase}
+body.agent-context .context-back{display:inline-flex;align-items:center;padding:10px 14px;border-radius:999px;border:1px solid #dedee4;background:#fff;color:#111;font:800 12px/1 Arial,Helvetica,sans-serif;text-transform:lowercase}
+body.agent-context .top .logoasset{min-width:145px}
+body.agent-context .top .logoasset img{max-width:146px}
+
+body.agent-context #login .auth-shell,body.agent-context #register .auth-shell{max-width:1120px;margin:34px auto 70px}
+body.agent-context #login .auth-card,body.agent-context #register .auth-card{border-radius:30px;border:1px solid #e7e7ec;box-shadow:0 20px 70px rgba(20,20,30,.06);background:#fff}
+body.agent-context #login .auth-card:first-child{background:radial-gradient(circle at 90% 0%,rgba(220,216,255,.42),transparent 32%),#fff}
+body.agent-context #login h2,body.agent-context #register h2,body.agent-context #agent h2,body.agent-context #admin h2,body.agent-context #agent h3,body.agent-context #admin h3{font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;letter-spacing:-.055em;text-transform:lowercase}
+body.agent-context #login .eyebrow,body.agent-context #register .eyebrow,body.agent-context #agent .eyebrow,body.agent-context #admin .eyebrow{text-transform:lowercase;letter-spacing:.16em}
+body.agent-context #login .btn,body.agent-context #register .btn,body.agent-context #agent .btn,body.agent-context #admin .btn{text-transform:lowercase}
+body.agent-context #login .btn.red{background:linear-gradient(90deg,#ffd9c7,#ffe2ef);color:#050505}
+body.agent-context #login .btn.light{background:#fff;color:#050505;border-color:#dedee4}
+body.agent-context #login .btn.dark{background:#09090b;color:#fff}
+
+body.agent-context #agent .agent-shell,body.agent-context #admin .agent-shell{max-width:1480px;padding:18px;gap:16px}
+body.agent-context #agent .side,body.agent-context #admin .side{background:#09090b;color:#fff;border-color:#1a1a1e;box-shadow:0 24px 80px rgba(0,0,0,.13)}
+body.agent-context #agent .side .logo,body.agent-context #admin .side .logo{font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;text-transform:lowercase;letter-spacing:-.035em;font-size:26px}
+body.agent-context #agent .side .logo small,body.agent-context #admin .side .logo small{text-transform:lowercase;color:#a8a8b0;letter-spacing:.18em}
+body.agent-context #agent .side button,body.agent-context #admin .side button{color:#d8d8de;text-transform:lowercase;font-weight:800}
+body.agent-context #agent .side button.active,body.agent-context #admin .side button.active,body.agent-context #agent .side button:hover,body.agent-context #admin .side button:hover{background:#fff;color:#050505}
+body.agent-context #agent .sidefoot .btn,body.agent-context #admin .sidefoot .btn{background:#17171b!important;color:#fff!important;border-color:#29292f!important}
+body.agent-context .dashhero{background:radial-gradient(circle at 90% 0%,rgba(220,216,255,.48),transparent 33%),linear-gradient(145deg,#fff,#fbfbfd);border-radius:30px}
+body.agent-context .card,body.agent-context .adminpanel,body.agent-context .leadcard{border-radius:26px}
+body.agent-context .stat{border-radius:18px}
+body.agent-context footer{display:none}
+
+body.agent-context.logged-in .context-badge:before{content:"●";color:#58d47a;font-size:10px}
+
+@media(max-width:760px){
+ body.agent-context .topin{height:68px;padding:0 12px}
+ body.agent-context .top .logoasset img{max-width:114px}
+ body.agent-context .context-user{display:none}
+ body.agent-context .context-badge,body.agent-context .context-back{padding:9px 11px;font-size:11px}
+ body.agent-context #agent .agent-shell,body.agent-context #admin .agent-shell{padding:10px}
+ body.agent-context #agent .side,body.agent-context #admin .side{border-radius:24px}
+ body.agent-context #login .auth-shell,body.agent-context #register .auth-shell{margin:16px auto 50px;padding:0 12px}
+ body.agent-context #login .auth-card,body.agent-context #register .auth-card{padding:22px;border-radius:26px}
+ body.agent-context #login h2,body.agent-context #register h2{font-size:42px!important;line-height:.9}
+}
