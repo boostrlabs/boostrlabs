@@ -1,40 +1,37 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0c1118">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="BOOSTR">
-  <meta http-equiv="refresh" content="1;url=/app/">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="canonical" href="/app/">
-  <link rel="icon" href="/assets/icons/09.-b-star-favicon.png">
-  <title>BOOSTR App</title>
-  <meta name="description" content="Abriendo BOOSTR App.">
-  <script>
-    (() => {
-      const standalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      const target = standalone ? '/app/?source=pwa' : '/app/';
-      window.location.replace(target);
-    })();
-  </script>
-  <style>
-    :root{color-scheme:dark;background:#0c1118;color:#f7f9fc;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    *{box-sizing:border-box}
-    body{min-height:100dvh;margin:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 20%,rgba(61,124,255,.22),transparent 34%),linear-gradient(145deg,#0c1118,#111826)}
-    main{display:grid;justify-items:center;gap:18px;padding:28px;text-align:center}
-    img{width:150px;max-width:54vw}
-    p{margin:0;color:#8f9bad;font-weight:700}
-    a{min-height:48px;padding:0 20px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3d7cff,#31baff);color:#fff;text-decoration:none;font-weight:900}
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="description" content="BOOSTR Labs — websites, apps, systems, automation and digital teams for businesses.">
+<link rel="icon" href="/assets/icons/09.-b-star-favicon.png"><title>BOOSTR Labs | Soluciones digitales</title><link rel="stylesheet" href="/assets/agent-os/styles.css">
+<style>
+html,body{max-width:100%;overflow-x:hidden}img,video,canvas,svg{max-width:100%;height:auto}.adminpanel{overflow-x:auto}.table{min-width:680px}.topin,.hero-content,.card,.dashhero,.auth-card,.leadcard{min-width:0}h1,h2,h3,p,a,button,label,td,th{overflow-wrap:anywhere}@media(max-width:600px){.topin{height:68px;padding:0 12px;gap:8px}.logoasset{min-width:0}.logoasset img{max-width:118px}.topin>.actions{gap:6px;flex-wrap:nowrap}.topin>.actions .btn{padding:9px 11px;font-size:11px}.topin>.actions .btn.light{display:none}.hero{padding:30px 20px;min-height:540px}.hero h1{font-size:clamp(44px,15vw,58px);line-height:.86}.hero h2,h2{font-size:clamp(34px,10vw,48px)}.lead{font-size:16px}.card,.auth-card,.dashhero,.adminpanel{padding:20px}.agent-shell{padding:10px}.side nav{-webkit-overflow-scrolling:touch}.table{min-width:640px}footer{padding-left:16px;padding-right:16px;flex-direction:column}}
+</style>
 </head>
 <body>
-  <main>
-    <img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs">
-    <p>Abriendo BOOSTR App…</p>
-    <a href="/app/">Continuar</a>
-  </main>
-</body>
-</html>
+<header class="top">
+  <div class="topin">
+    <a class="logo logoasset" href="#/"><img src="/assets/logos/boostr-logo-nav.png" alt="BOOSTR Labs" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="logofallback" style="display:none">BOOSTR<small>LABS</small></span></a>
+    <nav class="nav">
+      <a href="/portfolio/">Portfolio</a><a href="#/#services">Servicios</a><a href="#/#pricing">Precios</a><a href="#/work">Trabaja con nosotros</a><a href="#/#contact">Contacto</a>
+    </nav>
+    <div class="actions" style="margin:0">
+      <a class="btn light" href="#/agent/login">Agent Login</a>
+      <a class="btn dark" href="#/work">Trabaja con nosotros</a>
+    </div>
+  </div>
+</header>
+
+<div id="landing" class="route"></div>
+<div id="work" class="route"></div>
+<div id="apply" class="route"></div>
+<div id="login" class="route"></div>
+<div id="register" class="route"></div>
+<div id="agent" class="route"></div>
+<div id="admin" class="route"></div>
+
+<footer><span>BOOSTR LABS</span><span id="footerSocial"></span></footer>
+<script src="/assets/agent-os/app.js?v=login-fix-1"></script>
+</body></html>
+
+
