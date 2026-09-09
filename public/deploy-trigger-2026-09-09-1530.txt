@@ -1,0 +1,2 @@
+Force Cloudflare Pages rebuild from main.
+Timestamp: 2026-09-09T15:30:00-04:00
