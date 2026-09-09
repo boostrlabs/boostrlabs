@@ -48,6 +48,7 @@
       <section class="work-v9-cta"><small>BOOSTR AGENT LATAM</small><h2>buscamos potencial.<br>nosotros entrenamos.</h2><p>No necesitas programar ni ser experto técnico. Necesitas comunicar bien, aprender el sistema y tomarte cada lead en serio.</p><a href="#/agent/apply">llenar aplicación →</a></section>
     </main>`;
   }
+  window.__renderBoostrWork=renderWork;
   window.addEventListener('hashchange',()=>setTimeout(renderWork,0));
   window.addEventListener('pageshow',renderWork);
   document.addEventListener('DOMContentLoaded',renderWork);
