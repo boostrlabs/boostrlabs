@@ -39,7 +39,7 @@
         <a class="eh-portfolio-link" href="/showcase/">explora lo que ya construimos →</a>
       </div></section>
 
-      <section class="eh-agent" id="work"><div class="eh-agent-card">
+      <section class="eh-agent" id="agent-program"><div class="eh-agent-card">
         <div class="eh-small">BOOSTR Agents · LATAM</div>
         <h3>convierte conversaciones<br>en comisiones</h3>
         <p>BOOSTR te da producto, contenido, entrenamiento y oportunidades. Tú hablas con negocios, agendas, cierras y ganas comisión en USD.</p>
